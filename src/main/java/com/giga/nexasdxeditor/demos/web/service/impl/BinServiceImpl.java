@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 @Service
@@ -56,18 +57,13 @@ public class BinServiceImpl implements BinService {
 
             hexOutput.append(hexPart);  // 拼接到十六进制输出部分
 
-            // ASCII 字符部分，显示可打印字符，不可打印字符为 '.'
-            for (int j = 0; j < bytesRead; j++) {
-                byte b = fileBytes[i + j];
-                if (b >= 32 && b <= 126) {  // 可打印字符
-                    asciiPart.append((char) b);
-                } else {  // 不可打印字符
-                    asciiPart.append('.');
-                }
-            }
+            // 使用正确的字符编码（例如 Shift-JIS）转换字节为字符串
+            byte[] segment = new byte[bytesRead];
+            System.arraycopy(fileBytes, i, segment, 0, bytesRead);
+            String asciiString = new String(segment, Charset.forName("Shift-JIS"));
 
             // 输出十六进制和字符
-            System.out.println(hexOutput.toString() + " | " + asciiPart.toString());
+            System.out.println(hexOutput.toString() + " | " + asciiString);
         }
 
         System.out.println("Conversion complete.");
