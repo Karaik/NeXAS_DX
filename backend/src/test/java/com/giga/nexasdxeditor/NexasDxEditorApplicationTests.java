@@ -1,11 +1,9 @@
 package com.giga.nexasdxeditor;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.URLUtil;
-import cn.hutool.json.JSONUtil;
 import com.giga.nexasdxeditor.demos.web.service.impl.BinServiceImpl;
 import com.giga.nexasdxeditor.demos.web.service.impl.PacServiceImpl;
-import com.giga.nexasdxeditor.demos.web.util.ZbspacUtil;
+import com.giga.nexasdxeditor.demos.web.util.PacUtil;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +15,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
 import java.nio.file.Files;
-import java.util.Map;
 
 @SpringBootTest
 class NexasDxEditorApplicationTests {
@@ -57,18 +52,18 @@ class NexasDxEditorApplicationTests {
     @Test
     void testUnpac() throws Exception {
         String filename = this.getPacName();
-        Map<String, String> unpackOutput = ZbspacUtil.unpack(
+        String result = PacUtil.unpack(
                 "D:\\A\\NeXAS_DX\\backend\\src\\main\\resources\\"+filename+".pac",
                 "D:\\A\\NeXAS_DX\\backend\\src\\main\\resources\\"+filename);
-        log.info("\nunpack output: \n{}", JSONUtil.toJsonPrettyStr(unpackOutput));
+        log.info("\nunpack output: \n{}", result);
 
     }
     @Test
     void testPac() throws Exception {
 //        String filename = this.getPacName();
-        Map<String, String> packOutput = ZbspacUtil.pack(
+        String result = PacUtil.pack(
                 "D:\\A\\NeXAS_DX\\backend\\src\\main\\resources\\Update3");
-        log.info("\npack output: \n{}", JSONUtil.toJsonPrettyStr(packOutput));
+        log.info("\npack output: \n{}", result);
     }
 
     private String getPacName() throws IOException {

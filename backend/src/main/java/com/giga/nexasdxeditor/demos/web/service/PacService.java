@@ -5,5 +5,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
 public interface PacService {
-    Map<String, String> unPac(MultipartFile pac) throws Exception;
+    Map<String, String> unPac(String sourcePath) throws Exception;
+    Map<String, String> pac(String sourcePath) throws Exception;
 }

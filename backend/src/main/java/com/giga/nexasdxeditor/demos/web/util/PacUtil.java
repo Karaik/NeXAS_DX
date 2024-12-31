@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ZbspacUtil {
+public class PacUtil {
 
     private static final String ZBSPAC_EXE_NAME = "zbspac.exe";
     private static final String ZLIBPAC_EXE_NAME = "pac_pack.exe";
@@ -16,7 +16,7 @@ public class ZbspacUtil {
     // 获取指定的命令行
     private static String getExePath(String exeName) throws IOException, URISyntaxException {
         // 获取exe文件所在的文件夹资源
-        InputStream exeFolderStream = ZbspacUtil.class.getResourceAsStream("/exe/");
+        InputStream exeFolderStream = PacUtil.class.getResourceAsStream("/exe/");
 
         if (exeFolderStream == null) {
             throw new IOException("无法找到exe文件夹");
@@ -29,7 +29,7 @@ public class ZbspacUtil {
         }
 
         // 获取exe文件夹路径
-        Path exeFolderPath = Paths.get(ZbspacUtil.class.getResource("/exe/").toURI());
+        Path exeFolderPath = Paths.get(PacUtil.class.getResource("/exe/").toURI());
         File folder = new File(exeFolderPath.toString());
 
         // 确保是文件夹
@@ -92,39 +92,23 @@ public class ZbspacUtil {
     }
 
     // 打包操作
-    public static Map<String, String> pack(String sourcePath) {
-        Map<String, String> result = new HashMap<>();
-        try {
-            String exePath = getExePath(ZLIBPAC_EXE_NAME);
-            String command = exePath + " " + sourcePath;
-            String output = executeCommand(command, true);
-            result.put("status", "success");
-            result.put("output", output);
-        } catch (IOException e) {
-            result.put("status", "error");
-            result.put("message", e.getMessage());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-        return result;
+    public static String pack(String sourcePath) throws Exception{
+
+        String exePath = getExePath(ZLIBPAC_EXE_NAME);
+        String command = exePath + " " + sourcePath;
+        String output = executeCommand(command, true);
+
+        return output;
     }
 
     // 解包操作
-    public static Map<String, String> unpack(String sourcePath, String targetPath) {
-        Map<String, String> result = new HashMap<>();
-        try {
-            String exePath = getExePath(ZBSPAC_EXE_NAME);
-            String command = exePath + " unpack " + sourcePath + " " + targetPath;
-            String output = executeCommand(command, false);
-            result.put("status", "success");
-            result.put("output", output);
-        } catch (IOException e) {
-            result.put("status", "error");
-            result.put("message", e.getMessage());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-        return result;
+    public static String unpack(String sourcePath, String targetPath) throws Exception{
+
+        String exePath = getExePath(ZBSPAC_EXE_NAME);
+        String command = exePath + " unpack " + sourcePath + " " + targetPath;
+        String output = executeCommand(command, false);
+
+        return output;
     }
 
 }
