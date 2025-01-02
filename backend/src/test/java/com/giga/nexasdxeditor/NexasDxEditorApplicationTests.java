@@ -1,9 +1,10 @@
 package com.giga.nexasdxeditor;
 
 import cn.hutool.core.util.StrUtil;
-import com.giga.nexasdxeditor.demos.web.service.impl.BinServiceImpl;
-import com.giga.nexasdxeditor.demos.web.service.impl.PacServiceImpl;
-import com.giga.nexasdxeditor.demos.web.util.PacUtil;
+import com.giga.nexasdxeditor.dto.ResponseDTO;
+import com.giga.nexasdxeditor.service.impl.BinServiceImpl;
+import com.giga.nexasdxeditor.service.impl.PacServiceImpl;
+import com.giga.nexasdxeditor.util.PacUtil;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,18 +53,17 @@ class NexasDxEditorApplicationTests {
     @Test
     void testUnpac() throws Exception {
         String filename = this.getPacName();
-        String result = PacUtil.unpack(
-                "D:\\A\\NeXAS_DX\\backend\\src\\main\\resources\\"+filename+".pac",
-                "D:\\A\\NeXAS_DX\\backend\\src\\main\\resources\\"+filename);
-        log.info("\nunpack output: \n{}", result);
+        ResponseDTO responseDTO = pacServiceImpl.unPac(
+                "D:\\A\\NeXAS_DX\\backend\\src\\main\\resources\\" + filename + ".pac");
+        log.info("\nunpack output: \n{}", responseDTO);
 
     }
     @Test
     void testPac() throws Exception {
 //        String filename = this.getPacName();
-        String result = PacUtil.pack(
+        ResponseDTO responseDTO = pacServiceImpl.pac(
                 "D:\\A\\NeXAS_DX\\backend\\src\\main\\resources\\Update3");
-        log.info("\npack output: \n{}", result);
+        log.info("\npack output: \n{}", responseDTO);
     }
 
     private String getPacName() throws IOException {

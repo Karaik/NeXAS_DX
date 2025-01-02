@@ -1,12 +1,10 @@
-package com.giga.nexasdxeditor.demos.web.util;
+package com.giga.nexasdxeditor.util;
 
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 
 public class PacUtil {
 
@@ -78,7 +76,7 @@ public class PacUtil {
             }
         }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.forName(simulateEnter?"GBK":"Shift-JIS")))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.forName(simulateEnter?"GBK":"Shift-JIS")))) { //前为打包程序输出编码，后为解包
             StringBuilder output = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {

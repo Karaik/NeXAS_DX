@@ -1,6 +1,6 @@
-package com.giga.nexasdxeditor.demos.web.service.impl;
+package com.giga.nexasdxeditor.service.impl;
 
-import com.giga.nexasdxeditor.demos.web.service.BinService;
+import com.giga.nexasdxeditor.service.BinService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 
 @Service
 public class BinServiceImpl implements BinService {
