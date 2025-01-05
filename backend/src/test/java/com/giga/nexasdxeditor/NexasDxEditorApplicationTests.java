@@ -16,6 +16,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 
 @SpringBootTest
@@ -64,6 +65,23 @@ class NexasDxEditorApplicationTests {
         ResponseDTO responseDTO = pacServiceImpl.pac(
                 "D:\\A\\NeXAS_DX\\backend\\src\\main\\resources\\Update3");
         log.info("\npack output: \n{}", responseDTO);
+    }
+
+    @Test
+    void test1() {
+        String text = "前方に宙返りを行い、連続押すと最大3回行うことができます。ダメージはありませんが、ブースターがあれば空中移動に回れます。";
+        try {
+            // 使用Shift-JIS编码将字符串转换为字节数组
+            byte[] bytes = text.getBytes(Charset.forName("Shift-JIS"));
+            // 转换为十六进制字符串
+            StringBuilder hexBuilder = new StringBuilder();
+            for (byte b : bytes) {
+                hexBuilder.append(String.format("%02X ", b)); // 大写十六进制，带空格分隔
+            }
+            log.info(hexBuilder.toString().trim());
+        } catch (Exception e) {
+            System.err.println("编码转换失败: " + e.getMessage());
+        }
     }
 
     private String getPacName() throws IOException {

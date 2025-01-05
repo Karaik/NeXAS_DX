@@ -28,7 +28,6 @@ public class BinServiceImpl implements BinService {
             asciiOutput.setLength(0); // 清空字符输出缓存
 
             // 输出当前内存地址（使用文件指针地址）
-            hexOutput.append(String.format("%08X  ", filePointerAddress)); // 输出当前内存地址
             filePointerAddress += 16;
 
             // 处理16个字节的内容
