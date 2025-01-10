@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.giga.nexasdxeditor.dto.ResponseDTO;
 import com.giga.nexasdxeditor.service.impl.BinServiceImpl;
 import com.giga.nexasdxeditor.service.impl.PacServiceImpl;
+import com.giga.nexasdxeditor.service.parser.MekaParser;
 import com.giga.nexasdxeditor.util.PacUtil;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -29,25 +30,17 @@ class NexasDxEditorApplicationTests {
     PacServiceImpl pacServiceImpl;
 
     @Test
-    void testWazAndMek() throws IOException {
+    void testParseMek() throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        // 获取resources目录下的以.waz和.mek结尾的文件
-        Resource[] resourcesWaz = resolver.getResources("classpath*:/*.waz");
-        Resource[] resourcesMek = resolver.getResources("classpath*:/*.mek");
+        // 获取resources目录下的文件
+        Resource[] resources = resolver.getResources("classpath*:/*.bin");
 
-        // 打印文件路径
-        MultipartFile wazMultipartFile = null;
-        for (Resource resource : resourcesWaz) {
-            wazMultipartFile = convertToMultipartFile(resource);
-            System.out.println("Found .waz file: " + resource.getURI());
-        }
-        MultipartFile mekMultipartFile = null;
-        for (Resource resource : resourcesMek) {
-            mekMultipartFile = convertToMultipartFile(resource);
-            System.out.println("Found .mek file: " + resource.getURI());
+        String path = null;
+        for (Resource resource : resources) {
+            path = resource.getFile().getPath();
         }
 
-        binServiceImpl.convertBin2Hex(wazMultipartFile, mekMultipartFile);
+        binServiceImpl.parse(path);
 
     }
 
