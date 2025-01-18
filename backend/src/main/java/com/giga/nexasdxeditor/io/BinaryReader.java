@@ -29,6 +29,19 @@ public class BinaryReader {
         position = (int) newPosition;
     }
 
+    public void rewind(long offset) throws IOException {
+        long currentPosition = randomAccessFile.getFilePointer();
+        long newPosition = currentPosition - offset;
+
+        if (newPosition < 0) {
+            throw new IOException("Cannot rewind beyond the start of the stream");
+        }
+
+        // 使用 RandomAccessFile 的 seek 方法调整文件指针
+        randomAccessFile.seek(newPosition);
+        position = (int) newPosition;
+    }
+
     public int readInt32() throws IOException {
         incrementPosition(4);
         return ByteBuffer.wrap(this.readBytes(4))

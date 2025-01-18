@@ -64,7 +64,6 @@ public class Script {
         StringBuilder sb = new StringBuilder();
         int count = 0;
 
-        // 判断是否为新版本
         count = br.readInt32();
         script.setPreInstructions(br.readBytes(count * 8)); // 读取预指令
 
@@ -92,7 +91,7 @@ public class Script {
             br.setPosition(curPos);
             String txt = new String(br.readBytes(len), Charset.forName("UTF-8")).replace("\0", "");
             if (forceEncoding && txt.length() > 3 && txt.substring(txt.length() - 3).equals("bin")) {
-                br.setPosition(curPos);
+                br.rewind(curPos);
                 txt = new String(br.readBytes(len), Charset.forName("Shift-JIS")).replace("\0", "");
             }
 
