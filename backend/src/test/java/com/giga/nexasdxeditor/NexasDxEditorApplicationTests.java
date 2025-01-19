@@ -2,10 +2,9 @@ package com.giga.nexasdxeditor;
 
 import cn.hutool.core.util.StrUtil;
 import com.giga.nexasdxeditor.dto.ResponseDTO;
+import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.Mek;
 import com.giga.nexasdxeditor.service.impl.BinServiceImpl;
 import com.giga.nexasdxeditor.service.impl.PacServiceImpl;
-import com.giga.nexasdxeditor.service.parser.MekaParser;
-import com.giga.nexasdxeditor.util.PacUtil;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +32,7 @@ class NexasDxEditorApplicationTests {
     void testParseMek() throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         // 获取resources目录下的文件
-        Resource[] resources = resolver.getResources("classpath*:/*.bin");
+        Resource[] resources = resolver.getResources("classpath*:/*.mek");
 
         String path = null;
         for (Resource resource : resources) {
@@ -45,24 +44,58 @@ class NexasDxEditorApplicationTests {
     }
 
     @Test
+    void testParseWaz() throws IOException {
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        // 获取resources目录下的文件
+        Resource[] resources = resolver.getResources("classpath*:/*.waz");
+
+        String path = null;
+        for (Resource resource : resources) {
+            path = resource.getFile().getPath();
+        }
+
+        binServiceImpl.parse(path);
+
+    }
+
+    @Test
+    void testGenerate() throws IOException {
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        // 获取resources目录下的文件
+        Resource[] resources = resolver.getResources("classpath*:/*.mek");
+
+        String path = null;
+        for (Resource resource : resources) {
+            path = resource.getFile().getPath();
+            break;
+        }
+
+        Mek mek = (Mek) binServiceImpl.parse(path).getData();
+        binServiceImpl.generate(path, mek);
+
+    }
+
+
+
+    @Test
     void testUnpac() throws Exception {
         String filename = this.getPacName();
         ResponseDTO responseDTO = pacServiceImpl.unPac(
-                "D:\\A\\NeXAS_DX\\backend\\src\\main\\resources\\" + filename + ".pac");
+                "D:\\Code\\java\\NeXAS_DX\\backend\\src\\main\\resources\\" + filename + ".pac");
         log.info("\nunpack output: \n{}", responseDTO);
 
     }
     @Test
     void testPac() throws Exception {
-//        String filename = this.getPacName();
+        String filename = this.getPacName();
         ResponseDTO responseDTO = pacServiceImpl.pac(
-                "D:\\A\\NeXAS_DX\\backend\\src\\main\\resources\\Update3");
+                "D:\\Code\\java\\NeXAS_DX\\backend\\src\\main\\resources\\"+"test");
         log.info("\npack output: \n{}", responseDTO);
     }
 
     @Test
     void test1() {
-        String text = "前方に宙返りを行い、連続押すと最大3回行うことができます。ダメージはありませんが、ブースターがあれば空中移動に回れます。";
+        String text = "機動力上昇し、長時間にわたって移動速度を上げる。攻撃距離に影響なし、効果時間は長いし、長時間作戦に対してはとても有利な技です。";
         try {
             // 使用Shift-JIS编码将字符串转换为字节数组
             byte[] bytes = text.getBytes(Charset.forName("Shift-JIS"));

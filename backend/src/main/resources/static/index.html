@@ -1,6 +1,229 @@
-<html>
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日语hex转换</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/2.0.0/encoding.min.js"></script>
+    <style>
+        #dropZone {
+            width: 300px;
+            height: 100px;
+            border: 2px dashed #999;
+            border-radius: 10px;
+            text-align: center;
+            line-height: 100px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+        /* 使Hex文本根据窗口大小自动折行 */
+        #hexResult {
+            white-space: pre-wrap;     /* 保留空白并允许换行 */
+            word-wrap: break-word;     /* 大多数浏览器通用写法 */
+            word-break: break-all;     /* 支持较老浏览器或特殊情况 */
+            max-width: 90vw;          /* 根据视口宽度自适应，可自行调整 */
+            background: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+    </style>
+    <script>
+        // 使用 Encoding.js 进行编码
+        function convertToHex() {
+            const inputText = document.getElementById('inputText').value;
+            const resultBox = document.getElementById('result');
+
+            try {
+                const encodedBytes = Encoding.convert(inputText, {
+                    to: 'SJIS',
+                    type: 'array'
+                });
+
+                const hexString = Array.from(encodedBytes)
+                    .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
+                    .join(' ');
+
+                resultBox.textContent = hexString;
+                resultBox.setAttribute('data-bytes', JSON.stringify(encodedBytes));
+            } catch (error) {
+                resultBox.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // 使用 Encoding.js 进行解码
+        function convertToText() {
+            const hexInput = document.getElementById('hexInput').value;
+            const textResultBox = document.getElementById('textResult');
+
+            try {
+                const hexArray = hexInput.split(' ').map(h => parseInt(h, 16));
+
+                const decodedText = Encoding.convert(hexArray, {
+                    from: 'SJIS',
+                    to: 'UNICODE',
+                    type: 'string'
+                });
+
+                textResultBox.textContent = decodedText;
+            } catch (error) {
+                textResultBox.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        function saveAsBinaryFile() {
+            const resultBox = document.getElementById('result');
+            const encodedBytes = JSON.parse(resultBox.getAttribute('data-bytes') || '[]');
+
+            if (encodedBytes.length === 0) {
+                alert('没有可保存的二进制数据，请先进行转换。');
+                return;
+            }
+
+            const blob = new Blob([new Uint8Array(encodedBytes)], { type: 'application/octet-stream' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'output.bin';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        let currentFile = null;
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function handleFileDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                currentFile = files[0];
+                document.getElementById('fileInfo').textContent = '已拖拽文件: ' + currentFile.name;
+            }
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files && files.length > 0) {
+                currentFile = files[0];
+                document.getElementById('fileInfo').textContent = '已选择文件: ' + currentFile.name;
+            }
+        }
+
+        function convertToHexText() {
+            const hexResultBox = document.getElementById('hexResult');
+            if (!currentFile) {
+                alert('请先拖拽或选择一个文件');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const byteArray = new Uint8Array(arrayBuffer);
+                const hexNoSpace = Array.from(byteArray)
+                    .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
+                    .join('');
+                hexResultBox.textContent = hexNoSpace;
+            };
+            reader.onerror = function(error) {
+                hexResultBox.textContent = 'Error: ' + error.message;
+            };
+            reader.readAsArrayBuffer(currentFile);
+        }
+
+        function copyHexResult() {
+            const hexResultBox = document.getElementById('hexResult');
+            const range = document.createRange();
+            range.selectNodeContents(hexResultBox);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                alert('已复制到剪贴板');
+            } catch (err) {
+                alert('复制失败: ' + err);
+            }
+            selection.removeAllRanges();
+        }
+
+        function convertToHexEditorFormat() {
+            const hexResultBox = document.getElementById('hexResult');
+            if (!currentFile) {
+                alert('请先拖拽或选择一个文件');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const byteArray = new Uint8Array(arrayBuffer);
+
+                let hexOutput = '';
+                for (let i = 0; i < byteArray.length; i += 16) {
+                    // 地址部分
+                    const address = i.toString(16).toUpperCase().padStart(8, '0');
+
+                    // HEX 部分
+                    const hexBytes = Array.from(byteArray.slice(i, i + 16))
+                        .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
+                        .join(' ')
+                        .padEnd(47, ' '); // 补齐到 16 组
+
+                    hexOutput += `${address}  ${hexBytes}\n`;
+                }
+
+                // 设置到结果框中
+                hexResultBox.textContent = hexOutput;
+            };
+
+            reader.onerror = function(error) {
+                hexResultBox.textContent = 'Error: ' + error.message;
+            };
+
+            reader.readAsArrayBuffer(currentFile);
+        }
+
+    </script>
+</head>
 <body>
-<h1>hello word!!!</h1>
-<p>this is a html page</p>
+<h1>日语hex转换</h1>
+
+<label for="inputText">日文文本:</label>
+<input type="text" id="inputText" placeholder="输入日文内容">
+<button onclick="convertToHex()">转换为Hex（带空格）</button>
+<h3>hex结果:</h3>
+<pre id="result" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd;"></pre>
+<button onclick="saveAsBinaryFile()">保存为二进制文件</button>
+
+<h1>hex转回日文文本</h1>
+<label for="hexInput">Hex（带空格）:</label>
+<input type="text" id="hexInput" placeholder="输入Hex...">
+<button onclick="convertToText()">转换为日文文本</button>
+<h3>日文文本结果:</h3>
+<pre id="textResult" style="background: #f4f4f4; padding: 10px; border: 1px solid #ddd;"></pre>
+
+<h1>二进制文件转为Hex文本（16字节一行，含地址和ASCII部分）</h1>
+
+<div id="dropZone"
+     ondragover="handleDragOver(event)"
+     ondrop="handleFileDrop(event)">
+    拖拽文件到此处
+</div>
+
+<label for="fileInput">或选择一个文件：</label>
+<input type="file" id="fileInput" onchange="handleFileSelect(event)"><br><br>
+
+<div id="fileInfo" style="color: #666;"></div>
+
+<button onclick="convertToHexText()">转换为Hex文本（中间无空格）</button>
+<button onclick="convertToHexEditorFormat()">转换为Hex文本 (16字节一行)</button>
+<button onclick="copyHexResult()">一键复制</button>
+
+<h3>Hex文本结果:</h3>
+<pre id="hexResult"></pre>
+
 </body>
 </html>

@@ -1,8 +1,12 @@
 package com.giga.nexasdxeditor.service.impl;
 
 import com.giga.nexasdxeditor.dto.ResponseDTO;
-import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.*;
+import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.Mek;
+import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.generator.MekGenerator;
 import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.parser.MekParser;
+import com.giga.nexasdxeditor.dto.bsdx.mecha.waz.Waz;
+import com.giga.nexasdxeditor.dto.bsdx.mecha.waz.parser.WazParser;
+import com.giga.nexasdxeditor.exception.BusinessException;
 import com.giga.nexasdxeditor.service.BinService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,11 +23,36 @@ public class BinServiceImpl implements BinService {
     @Override
     public ResponseDTO parse(String path) throws IOException {
 
+        Object binFile = null;
+        String fileExtension = getFileExtension(path);
 
-        byte[] mekFile = Files.readAllBytes(Paths.get(path));
-        Mek mek = MekParser.parseMek(mekFile);
+        if ("mek".equalsIgnoreCase(fileExtension)) {
+            byte[] mekFile = Files.readAllBytes(Paths.get(path));
+            binFile = MekParser.parseMek(mekFile);
+        } else if ("waz".equalsIgnoreCase(fileExtension)) {
+            byte[] wazFile = Files.readAllBytes(Paths.get(path));
+            binFile = WazParser.parseWaz(wazFile);
+        } else {
+            throw new BusinessException(500, "文件上传错误！");
+        }
 
-        return new ResponseDTO<>(mek, "ok");
+        return new ResponseDTO<>(binFile, "ok");
+    }
+
+    @Override
+    public ResponseDTO generate(String path, Mek mek) throws IOException {
+
+        MekGenerator.generate(path, mek);
+
+        return new ResponseDTO<>(null, "ok");
+    }
+
+    private String getFileExtension(String path) {
+        int lastDotIndex = path.lastIndexOf(".");
+        if (lastDotIndex == -1) {
+            throw new BusinessException(500, "文件路径错误");
+        }
+        return path.substring(lastDotIndex + 1).toLowerCase();
     }
 
 }
