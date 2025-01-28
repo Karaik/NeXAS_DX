@@ -5,6 +5,7 @@ import com.giga.nexasdxeditor.dto.ResponseDTO;
 import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.Mek;
 import com.giga.nexasdxeditor.service.impl.BinServiceImpl;
 import com.giga.nexasdxeditor.service.impl.PacServiceImpl;
+import com.giga.nexasdxeditor.util.TransferUtil;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ class NexasDxEditorApplicationTests {
             path = resource.getFile().getPath();
         }
 
-        binServiceImpl.parse(path);
+        binServiceImpl.parse(path, "Shift-jis");
 
     }
 
@@ -54,7 +55,7 @@ class NexasDxEditorApplicationTests {
             path = resource.getFile().getPath();
         }
 
-        binServiceImpl.parse(path);
+        binServiceImpl.parse(path, "Shift-JIS");
 
     }
 
@@ -70,8 +71,8 @@ class NexasDxEditorApplicationTests {
             break;
         }
 
-        Mek mek = (Mek) binServiceImpl.parse(path).getData();
-        binServiceImpl.generate(path, mek);
+        Mek mek = (Mek) binServiceImpl.parse(path, "Shift-JIS").getData();
+        binServiceImpl.generate(path, mek, "Shift-JIS");
 
     }
 
@@ -87,10 +88,34 @@ class NexasDxEditorApplicationTests {
     }
     @Test
     void testPac() throws Exception {
-        String filename = this.getPacName();
         ResponseDTO responseDTO = pacServiceImpl.pac(
                 "D:\\Code\\java\\NeXAS_DX\\backend\\src\\main\\resources\\"+"test");
         log.info("\npack output: \n{}", responseDTO);
+    }
+
+    @Test
+    void transJA2ZH() throws IOException {
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        // 获取resources目录下的文件
+        Resource[] resources1 = resolver.getResources("classpath*:/*.zh.mek");
+        Resource[] resources2 = resolver.getResources("classpath*:/*.ja.mek");
+        String path1 = null;
+        for (Resource resource : resources1) {
+            path1 = resource.getFile().getPath();
+            break;
+        }
+        String path2 = null;
+        for (Resource resource : resources2) {
+            path2 = resource.getFile().getPath();
+            break;
+        }
+
+        Mek zhMek = (Mek) binServiceImpl.parse(path1, "GBK").getData();
+        Mek jaMek = (Mek) binServiceImpl.parse(path2, "Shift-JIS").getData();
+
+        TransferUtil.transJA2ZH(jaMek, zhMek);
+
+        binServiceImpl.generate(path1, jaMek, "GBK");
     }
 
     @Test

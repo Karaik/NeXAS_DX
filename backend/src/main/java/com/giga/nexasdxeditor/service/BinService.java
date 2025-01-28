@@ -5,6 +5,6 @@ import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.Mek;
 import java.io.IOException;
 
 public interface BinService {
-    ResponseDTO parse(String path) throws IOException;
-    ResponseDTO generate(String path, Mek mek) throws IOException;
+    ResponseDTO parse(String path, String charset) throws IOException;
+    ResponseDTO generate(String path, Mek mek, String charset) throws IOException;
 }

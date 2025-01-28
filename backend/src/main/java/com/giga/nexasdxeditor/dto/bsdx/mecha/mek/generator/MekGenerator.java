@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public class MekGenerator {
 
-    public static void generate(String path, Mek mek) throws IOException {
+    public static void generate(String path, Mek mek, String charset) throws IOException {
         File originalFile = new File(path);
         String parentDir = originalFile.getParent();
         String fileNameWithoutExt = originalFile.getName().replaceFirst("\\.mek$", "");
@@ -29,18 +29,18 @@ public class MekGenerator {
 
         List<byte[]> blocks = new ArrayList<>();
 
-        byte[] bodyInfoBlock = serializeMekBasicInfo(mek);
+        byte[] bodyInfoBlock = serializeMekBasicInfo(mek, charset);
         byte[] unknownInfo1Block = mek.getMekUnknownBlock1().getInfo();
-        byte[] weaponInfoBlock = serializeMekWeaponInfoMap(mek);
+        byte[] weaponInfoBlock = serializeMekWeaponInfoMap(mek, charset);
         byte[] aiInfo1Block = mek.getMekAi1Info().getInfo();
         byte[] aiInfo2Block = mek.getMekAi2Info().getInfo();
-        byte[] unknownInfo2Block = mek.getMekUnknownBlock2().getInfo();
+        byte[] mekPluginBlock = mek.getMekPluginBlock().getInfo();
         blocks.add(bodyInfoBlock);
         blocks.add(unknownInfo1Block);
         blocks.add(weaponInfoBlock);
         blocks.add(aiInfo1Block);
         blocks.add(aiInfo2Block);
-        blocks.add(unknownInfo2Block);
+        blocks.add(mekPluginBlock);
 
         // 计算块序列值
         int sequence1 = 24;
@@ -51,7 +51,7 @@ public class MekGenerator {
         int sequence6 = sequence5 + aiInfo2Block.length;
 
         try (FileOutputStream fos = new FileOutputStream(newFile)) {
-            ByteBuffer buffer = ByteBuffer.allocate(sequence6+mek.getMekUnknownBlock2().getInfo().length);
+            ByteBuffer buffer = ByteBuffer.allocate(sequence6+mek.getMekPluginBlock().getInfo().length);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
 
             // 写入头部
@@ -71,16 +71,16 @@ public class MekGenerator {
         }
     }
 
-    private static byte[] serializeMekBasicInfo(Mek mek) {
+    private static byte[] serializeMekBasicInfo(Mek mek, String charset) {
         Mek.MekBasicInfo mekBasicInfo = mek.getMekBasicInfo();
-        ByteBuffer buffer = ByteBuffer.allocate(calculateBodyInfoBlockSize(mek));
+        ByteBuffer buffer = ByteBuffer.allocate(calculateBodyInfoBlockSize(mek, charset));
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
-        putString(buffer, mekBasicInfo.getMekNameKana(), "Shift-JIS");
-        putString(buffer, mekBasicInfo.getMekNameEnglish(), "Shift-JIS");
-        putString(buffer, mekBasicInfo.getPilotNameKanji(), "Shift-JIS");
-        putString(buffer, mekBasicInfo.getPilotNameRoma(), "Shift-JIS");
-        putString(buffer, mekBasicInfo.getMekDescription(), "Shift-JIS");
+        putString(buffer, mekBasicInfo.getMekNameKana(), charset);
+        putString(buffer, mekBasicInfo.getMekNameEnglish(), charset);
+        putString(buffer, mekBasicInfo.getPilotNameKanji(), charset);
+        putString(buffer, mekBasicInfo.getPilotNameRoma(), charset);
+        putString(buffer, mekBasicInfo.getMekDescription(), charset);
         buffer.putInt(mekBasicInfo.getWazFileSequence());
         buffer.putInt(mekBasicInfo.getSpmFileSequence());
         buffer.putInt(mekBasicInfo.getMekType());
@@ -106,17 +106,17 @@ public class MekGenerator {
         return buffer.array();
     }
 
-    private static byte[] serializeMekWeaponInfoMap(Mek mek) {
+    private static byte[] serializeMekWeaponInfoMap(Mek mek, String charset) {
         Map<Integer, Mek.MekWeaponInfo> weaponInfoMap = mek.getMekWeaponInfoMap();
-        ByteBuffer buffer = ByteBuffer.allocate(calculateWeaponInfoBlockSize(mek));
+        ByteBuffer buffer = ByteBuffer.allocate(calculateWeaponInfoBlockSize(mek, charset));
         buffer.order(ByteOrder.LITTLE_ENDIAN);
 
         buffer.putInt(weaponInfoMap.size());
         weaponInfoMap.values().forEach(weaponInfo -> {
             buffer.putInt(0x01);
-            putString(buffer, weaponInfo.getWeaponName(), "Shift-JIS");
-            putString(buffer, weaponInfo.getWeaponSequence(), "Shift-JIS");
-            putString(buffer, weaponInfo.getWeaponDescription(), "Shift-JIS");
+            putString(buffer, weaponInfo.getWeaponName(), charset);
+            putString(buffer, weaponInfo.getWeaponSequence(), charset);
+            putString(buffer, weaponInfo.getWeaponDescription(), charset);
             buffer.putInt(0xFF_FF_FF_FF);
             buffer.putInt(weaponInfo.getWazSequence());
             buffer.putInt(weaponInfo.getForceCrashAmount());
@@ -140,27 +140,27 @@ public class MekGenerator {
         return buffer.array();
     }
 
-    private static int calculateBodyInfoBlockSize(Mek mek) {
+    private static int calculateBodyInfoBlockSize(Mek mek, String charset) {
         Mek.MekBasicInfo mekBasicInfo = mek.getMekBasicInfo();
         int size = 0;
-        size += calculateStringSize(mekBasicInfo.getMekNameKana(), "Shift-JIS");
-        size += calculateStringSize(mekBasicInfo.getMekNameEnglish(), "Shift-JIS");
-        size += calculateStringSize(mekBasicInfo.getPilotNameKanji(), "Shift-JIS");
-        size += calculateStringSize(mekBasicInfo.getPilotNameRoma(), "Shift-JIS");
-        size += calculateStringSize(mekBasicInfo.getMekDescription(), "Shift-JIS");
+        size += calculateStringSize(mekBasicInfo.getMekNameKana(), charset);
+        size += calculateStringSize(mekBasicInfo.getMekNameEnglish(), charset);
+        size += calculateStringSize(mekBasicInfo.getPilotNameKanji(), charset);
+        size += calculateStringSize(mekBasicInfo.getPilotNameRoma(), charset);
+        size += calculateStringSize(mekBasicInfo.getMekDescription(), charset);
         size += 4 * 22;
         return size;
     }
 
-    private static int calculateWeaponInfoBlockSize(Mek mek) {
+    private static int calculateWeaponInfoBlockSize(Mek mek, String charset) {
         Map<Integer, Mek.MekWeaponInfo> weaponInfoMap = mek.getMekWeaponInfoMap();
         int size = 4;
         for (Mek.MekWeaponInfo weaponInfo : weaponInfoMap.values()) {
             // 01 00 00 00
             size += 4;
-            size += calculateStringSize(weaponInfo.getWeaponName(), "Shift-JIS");
-            size += calculateStringSize(weaponInfo.getWeaponSequence(), "Shift-JIS");
-            size += calculateStringSize(weaponInfo.getWeaponDescription(), "Shift-JIS");
+            size += calculateStringSize(weaponInfo.getWeaponName(), charset);
+            size += calculateStringSize(weaponInfo.getWeaponSequence(), charset);
+            size += calculateStringSize(weaponInfo.getWeaponDescription(), charset);
             // FF FF FF FF
             size += 4;
             size += 4 * 17;

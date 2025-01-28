@@ -21,14 +21,14 @@ public class BinServiceImpl implements BinService {
     private static final Logger log = LoggerFactory.getLogger(BinServiceImpl.class);
 
     @Override
-    public ResponseDTO parse(String path) throws IOException {
+    public ResponseDTO parse(String path, String charset) throws IOException {
 
         Object binFile = null;
         String fileExtension = getFileExtension(path);
 
         if ("mek".equalsIgnoreCase(fileExtension)) {
             byte[] mekFile = Files.readAllBytes(Paths.get(path));
-            binFile = MekParser.parseMek(mekFile);
+            binFile = MekParser.parseMek(mekFile, charset);
         } else if ("waz".equalsIgnoreCase(fileExtension)) {
             byte[] wazFile = Files.readAllBytes(Paths.get(path));
             binFile = WazParser.parseWaz(wazFile);
@@ -40,9 +40,9 @@ public class BinServiceImpl implements BinService {
     }
 
     @Override
-    public ResponseDTO generate(String path, Mek mek) throws IOException {
+    public ResponseDTO generate(String path, Mek mek, String charset) throws IOException {
 
-        MekGenerator.generate(path, mek);
+        MekGenerator.generate(path, mek, charset);
 
         return new ResponseDTO<>(null, "ok");
     }

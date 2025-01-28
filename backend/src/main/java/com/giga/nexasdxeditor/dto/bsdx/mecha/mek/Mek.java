@@ -2,7 +2,9 @@ package com.giga.nexasdxeditor.dto.bsdx.mecha.mek;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,7 +41,7 @@ public class Mek {
     private MekAi2Info mekAi2Info;
 
     // 未知信息块2
-    private MekUnknownBlock2 mekUnknownBlock2;
+    private MekPluginBlock mekPluginBlock;
 
     public Mek() {
         this.mekHead = new MekHead();
@@ -49,7 +51,7 @@ public class Mek {
         this.mekWeaponInfoMap = new HashMap<>();
         this.mekAi1Info = new MekAi1Info();
         this.mekAi2Info = new MekAi2Info();
-        this.mekUnknownBlock2 = new MekUnknownBlock2();
+        this.mekPluginBlock = new MekPluginBlock();
     }
 
     @Data
@@ -412,6 +414,16 @@ public class Mek {
          */
         private Integer weaponIdentifier;
 
+        /**
+         * 18.虽然只是推测，但是这里应该也是数据，而不是结尾符
+         */
+//        private Integer weaponUnknown1;
+
+        /**
+         * 该武装对应的插槽信息
+         */
+        private byte[] weaponPluginInfo;
+
     }
 
     @Data
@@ -428,10 +440,25 @@ public class Mek {
 
     }
 
+    /**
+     * 极大可能为武装选择列表（插槽块）
+     * 其中，开头的几个为常规块，如走路、站立、ND、BD等，因机体的不同有包括数量在内的差异
+     * 另，内容物作用尚未查明，故直接以byte数组存储
+     * 因此采用倒序匹配插槽所对应武装
+     */
     @Data
-    public static class MekUnknownBlock2 {
+    public static class MekPluginBlock {
 
         private byte[] info;
+
+        private  List<byte[]> regularPluginInfoList;
+
+        private List<byte[]> weaponPluginInfoList;
+
+        public MekPluginBlock() {
+            this.regularPluginInfoList = new ArrayList<>();
+            this.weaponPluginInfoList = new ArrayList<>();
+        }
 
     }
 

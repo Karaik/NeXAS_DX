@@ -13,6 +13,9 @@ public class ParserUtil {
     // 常用于块与块之间分割符
     public static final byte[] FLAG_DATA =  new byte[] { (byte) 0x01, 0x00, 0x00, 0x00 };
 
+    // 常用mek中，武装插槽块与块之间分割符
+    public static final byte[] WEAPON_PLUGINS_FLAG_DATA =  new byte[] { (byte) 0x8A, 0x00, 0x00, 0x00 };
+
     // 大概、可能、也许是代表同一个块之间的功能分隔符
     public static final byte[] SPLIT_DATA = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
 
