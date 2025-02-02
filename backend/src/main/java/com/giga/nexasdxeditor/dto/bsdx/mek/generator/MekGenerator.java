@@ -1,7 +1,7 @@
-package com.giga.nexasdxeditor.dto.bsdx.mecha.mek.generator;
+package com.giga.nexasdxeditor.dto.bsdx.mek.generator;
 
 import cn.hutool.core.date.DateUtil;
-import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.Mek;
+import com.giga.nexasdxeditor.dto.bsdx.mek.Mek;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -117,7 +117,7 @@ public class MekGenerator {
             putString(buffer, weaponInfo.getWeaponName(), charset);
             putString(buffer, weaponInfo.getWeaponSequence(), charset);
             putString(buffer, weaponInfo.getWeaponDescription(), charset);
-            buffer.putInt(0xFF_FF_FF_FF);
+            buffer.putInt(weaponInfo.getWeaponUnknownProperty1());
             buffer.putInt(weaponInfo.getWazSequence());
             buffer.putInt(weaponInfo.getForceCrashAmount());
             buffer.putInt(weaponInfo.getHeatMaxConsumption());
@@ -135,7 +135,7 @@ public class MekGenerator {
             buffer.putInt(weaponInfo.getExplosiveSkillFlag());
             buffer.putInt(weaponInfo.getDefensiveWeaponSkillFlag());
             buffer.putInt(weaponInfo.getWeaponIdentifier());
-            buffer.putInt(0x01);
+            buffer.putInt(weaponInfo.getWeaponUnknownProperty19());
         });
         return buffer.array();
     }
@@ -162,10 +162,10 @@ public class MekGenerator {
             size += calculateStringSize(weaponInfo.getWeaponSequence(), charset);
             size += calculateStringSize(weaponInfo.getWeaponDescription(), charset);
             // FF FF FF FF
-            size += 4;
-            size += 4 * 17;
+//            size += 4;
+            size += 4 * 19;
             // 01 00 00 00
-            size += 4;
+//            size += 4;
         }
         return size;
     }

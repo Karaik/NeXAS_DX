@@ -1,6 +1,6 @@
 package com.giga.nexasdxeditor.service;
 import com.giga.nexasdxeditor.dto.ResponseDTO;
-import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.Mek;
+import com.giga.nexasdxeditor.dto.bsdx.mek.Mek;
 
 import java.io.IOException;
 

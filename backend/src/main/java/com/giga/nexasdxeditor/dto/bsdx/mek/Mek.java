@@ -1,4 +1,4 @@
-package com.giga.nexasdxeditor.dto.bsdx.mecha.mek;
+package com.giga.nexasdxeditor.dto.bsdx.mek;
 
 import lombok.Data;
 
@@ -15,9 +15,21 @@ import java.util.Map;
  * @蓝色幻想
  * @柚木式子
  * 对逆向做出的贡献
+ *
+ * @note mek中的数据大致可分为7个部分，目前的发现为
+ * 1 偏移量块
+ * 2 机体基本信息块
+ * 3 spm信息块
+ * 4 武装信息块
+ * 5 ai块1
+ * 6 ai块2
+ * 7 武装栏位块
+ *
  */
 @Data
 public class Mek {
+
+    private String fileName;
 
     // 存储各个数据块的字节大小
     private MekBlocks mekBlocks;
@@ -287,13 +299,12 @@ public class Mek {
     }
 
     /**
-     *
-     * 该大块数据信息由
+     * 该大块数据信息感谢以下
      * @柚木式子
      * （b站主页：https://space.bilibili.com/1420258295）
      * @；）
      * （b站主页：https://space.bilibili.com/3546627702786420）
-     * 总结与发现
+     * 群友的部分总结与发现
      *
      */
     @Data
@@ -304,41 +315,47 @@ public class Mek {
         private String weaponDescription;
 
         /**
-         * 1.对应.waz中的哪一个武装
+         * 1.未知，大多为FF FF FF FF（-1）
+         * 为-1时疑似为不启用该数值
+         */
+        private Integer weaponUnknownProperty1;
+
+        /**
+         * 2.对应.waz中的哪一个武装
          */
         private Integer wazSequence;
 
         /**
-         * 2.使用时获得的FC（是叫force crash来着？）
+         * 3.使用时获得的FC（是叫force crash来着？）
          */
         private Integer forceCrashAmount;
 
         /**
-         * 3.消耗的最大热量（一管热量是80）
+         * 4.消耗的最大热量（一管热量是80）
          */
         private Integer heatMaxConsumption;
 
         /**
-         * 4.武装master后的热量
+         * 5.武装master后的热量
          *
-         * 关于3和4，除主角机外这俩值都一样
+         * 关于4和5，除主角机外这俩值都一样
          */
         private Integer heatMinConsumption;
 
         /**
-         * 5.疑似和升级经验有关
+         * 6.疑似和升级经验有关
          */
         private Integer necessaryUpgradeExp;
 
         /**
-         * 6.武装演示时机体的起始坐标
+         * 7.武装演示时机体的起始坐标
          *
          * 负数则在右边
          */
         private Integer startPointWhenDemonstrate;
 
         /**
-         * 7.武装种类
+         * 8.武装种类
          *
          * 其中
          * 00   - 常规武装
@@ -351,7 +368,7 @@ public class Mek {
         private Integer weaponCategory;
 
         /**
-         * 8.武装类型
+         * 9.武装类型
          *
          * 其中
          * 00   - 格斗
@@ -363,47 +380,47 @@ public class Mek {
 
         // 【以下武装标签能在究极生存的兵器情报里查看，值大于0就有标签，大于0的数值具体影响未知，武装标签对武装的影响未知】
         /**
-         * 9.格斗技
+         * 10.格斗技
          */
         private Integer meleeSkillFlag;
 
         /**
-         * 10.兵器
+         * 11.兵器
          */
         private Integer coldWeaponSkillFlag;
 
         /**
-         * 11.导弹
+         * 12.导弹
          */
         private Integer missileSkillFlag;
 
         /**
-         * 12.实弹
+         * 13.实弹
          */
         private Integer bulletCategorySkillFlag;
 
         /**
-         * 13.光学兵器
+         * 14.光学兵器
          */
         private Integer opticalWeaponSkillFlag;
 
         /**
-         * 14.无人机
+         * 15.无人机
          */
         private Integer droneSkillFlag;
 
         /**
-         * 15.爆炸物
+         * 16.爆炸物
          */
         private Integer explosiveSkillFlag;
 
         /**
-         * 16.防御兵器
+         * 17.防御兵器
          */
         private Integer defensiveWeaponSkillFlag;
 
         /**
-         * 17.武装标识符
+         * 18.武装标识符
          *
          * 其中
          * 00   - 常规武装
@@ -415,9 +432,9 @@ public class Mek {
         private Integer weaponIdentifier;
 
         /**
-         * 18.虽然只是推测，但是这里应该也是数据，而不是结尾符
+         * 19.虽然只是推测，但是这里应该也是数据，而不是结尾符
          */
-//        private Integer weaponUnknown1;
+        private Integer weaponUnknownProperty19;
 
         /**
          * 该武装对应的插槽信息

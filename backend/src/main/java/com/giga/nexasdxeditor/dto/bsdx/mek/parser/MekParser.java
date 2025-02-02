@@ -1,13 +1,11 @@
-package com.giga.nexasdxeditor.dto.bsdx.mecha.mek.parser;
+package com.giga.nexasdxeditor.dto.bsdx.mek.parser;
 
-import cn.hutool.core.util.ByteUtil;
-import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.Mek;
-import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.checker.MekChecker;
+import com.giga.nexasdxeditor.dto.bsdx.mek.Mek;
+import com.giga.nexasdxeditor.dto.bsdx.mek.checker.MekChecker;
 import com.giga.nexasdxeditor.exception.BusinessException;
 import com.giga.nexasdxeditor.util.ParserUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,6 +80,7 @@ public class MekParser {
 
         } catch (Exception e) {
             log.info("error === {}", e.getMessage());
+            throw e;
         }
 
         return mek;
@@ -205,6 +204,8 @@ public class MekParser {
             // 起始符
             if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.FLAG_DATA)) {
                 offset += 4;
+            } else {
+                throw new BusinessException(500, "文件数据格式错误！（武装起始符）");
             }
 
             Mek.MekWeaponInfo mekWeaponInfo = new Mek.MekWeaponInfo();
@@ -218,9 +219,16 @@ public class MekParser {
             mekWeaponInfo.setWeaponDescription(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName(charset)));
             offset += findNullTerminator(bytes, offset) + 1;
 
-            if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.SPLIT_DATA)) {
-                offset += 4;
-            }
+//            // 数据块与描述块间的分隔符
+//            if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.SPLIT_DATA)) {
+//                offset += 4;
+//            } else {
+//                offset += 4;
+////                throw new BusinessException(500, "文件数据格式错误！（武装中间分隔符）");
+//            }
+
+            mekWeaponInfo.setWeaponUnknownProperty1(readInt32(bytes, offset));
+            offset += 4;
 
             mekWeaponInfo.setWazSequence(readInt32(bytes, offset));
             offset += 4;
@@ -273,10 +281,16 @@ public class MekParser {
             mekWeaponInfo.setWeaponIdentifier(readInt32(bytes, offset));
             offset += 4;
 
-            // 结尾符
-            if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.FLAG_DATA)) {
-                offset += 4;
-            }
+//            // 结尾符
+//            if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.FLAG_DATA)) {
+//                offset += 4;
+//            } else {
+//                offset += 4;
+////                throw new BusinessException(500, "文件数据格式错误！（武装结尾符）");
+//            }
+
+            mekWeaponInfo.setWeaponUnknownProperty19(readInt32(bytes, offset));
+            offset += 4;
 
             mekWeaponInfoMap.put(i, mekWeaponInfo);
         }
@@ -306,9 +320,20 @@ public class MekParser {
         int offset = 0;
         int start = 0;
         List<byte[]> infoList = new ArrayList<>();
+
+        // 判断起始符类型
+        byte[] startFlag = null;
+        if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.WEAPON_PLUGINS_FLAG_DATA)) {
+            startFlag = ParserUtil.WEAPON_PLUGINS_FLAG_DATA;
+        } else if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.WEAPON_PLUGINS_FLAG_DATA_2)) {
+            startFlag = ParserUtil.WEAPON_PLUGINS_FLAG_DATA_2;
+        } else {
+            throw new BusinessException(500, "未曾设想的起始符类型！");
+        }
+
         while (offset < bytes.length) {
             // 起始符
-            if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.WEAPON_PLUGINS_FLAG_DATA)) {
+            if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), startFlag)) {
                 offset += 4;
                 start = offset;
             } else {
@@ -318,7 +343,7 @@ public class MekParser {
             // 内容物
             while (offset <= bytes.length) {
                 if (offset != bytes.length &&
-                        !Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.WEAPON_PLUGINS_FLAG_DATA)) {
+                        !Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), startFlag)) {
                     offset += 4;
                 } else {
                     byte[] chunk = Arrays.copyOfRange(bytes, start, offset);
@@ -349,3 +374,4 @@ public class MekParser {
     }
 
 }
+

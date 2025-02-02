@@ -1,9 +1,8 @@
 package com.giga.nexasdxeditor.util;
 
-import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.Mek;
+import com.giga.nexasdxeditor.dto.bsdx.mek.Mek;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @Author 这位同学(Karaik)

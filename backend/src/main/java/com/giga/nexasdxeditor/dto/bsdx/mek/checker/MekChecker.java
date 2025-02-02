@@ -1,6 +1,6 @@
-package com.giga.nexasdxeditor.dto.bsdx.mecha.mek.checker;
+package com.giga.nexasdxeditor.dto.bsdx.mek.checker;
 
-import com.giga.nexasdxeditor.dto.bsdx.mecha.mek.Mek;
+import com.giga.nexasdxeditor.dto.bsdx.mek.Mek;
 
 /**
  * @Author 这位同学(Karaik)
