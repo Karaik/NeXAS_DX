@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dat解析</title>
+
+  <!-- 引入 Bootstrap 和 jQuery -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/2.0.0/encoding.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+  <style>
+    body {
+      padding: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+    }
+
+    input.string-input, input.integer-input {
+      padding: 5px;
+      border: 1px solid #ced4da;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    input.modified {
+      background-color: #ffe5e5; /* 修改后的单元格标记为淡红色 */
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+    .btn {
+      margin-top: 10px;
+    }
+
+    .add-row-btn {
+      cursor: pointer;
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    .add-row-btn:hover {
+      color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+<h1>dat解析</h1>
+
+<label for="datFileInput" class="form-label">选择 .dat 文件：</label>
+<input type="file" id="datFileInput" class="form-control" accept=".dat"><br><br>
+
+<div id="tableContainer"></div>
+
+<button id="exportButton" class="btn btn-primary" style="display:none;">导出修改后的 .dat 文件</button>
+
+<script>
+  let datData = { columns: [], rows: [] };
+  let columnWidths = [];
+
+  $('#datFileInput').on('change', function (e) {
+    const file = e.target.files[0];
+
+    if (!file) {
+      return;
+    }
+
+    datData = { columns: [], rows: [] };
+    columnWidths = [];
+    $('#tableContainer').html('');
+    $('#exportButton').hide();
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const bytes = new Uint8Array(e.target.result);
+      parseDatFile(bytes);
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  function parseDatFile(bytes) {
+    let offset = 0;
+
+    const columnCount = new DataView(bytes.buffer).getInt32(offset, true);
+    offset += 4;
+
+    datData.columns = [];
+    for (let i = 0; i < columnCount; i++) {
+      const typeFlag = new DataView(bytes.buffer).getInt32(offset, true);
+      offset += 4;
+      datData.columns.push(typeFlag === 1 ? "String" : "Integer");
+    }
+
+    parseDataRows(bytes, offset);
+  }
+
+  function parseDataRows(bytes, offset) {
+    while (offset < bytes.length) {
+      const row = [];
+      for (let colType of datData.columns) {
+        if (colType === "String") {
+          let length = 0;
+          while (bytes[offset + length] !== 0) length++;
+          const value = new TextDecoder('shift-jis').decode(bytes.slice(offset, offset + length)).trim();
+          offset += length + 1;
+          row.push(value);
+        } else {
+          const value = new DataView(bytes.buffer).getInt32(offset, true);
+          offset += 4;
+          row.push(value);
+        }
+      }
+      datData.rows.push(row);
+    }
+    calculateColumnWidths();
+    generateEditableTable();
+    $('#exportButton').show();
+  }
+
+  function calculateColumnWidths() {
+    const canvasContext = document.createElement('canvas').getContext('2d');
+    canvasContext.font = "16px Arial";
+
+    datData.columns.forEach((_, colIndex) => {
+      let maxWidth = 100;
+      datData.rows.forEach(row => {
+        const textWidth = canvasContext.measureText(row[colIndex]).width + 20;
+        maxWidth = Math.max(maxWidth, textWidth);
+      });
+      columnWidths[colIndex] = Math.min(600, maxWidth);
+    });
+  }
+
+  function generateEditableTable() {
+    let tableHtml = `<table class="table table-striped table-bordered"><thead><tr><th>行号</th>`;
+    datData.columns.forEach((colType, index) => {
+      tableHtml += `<th style="width:${columnWidths[index]}px;">${colType} (${index + 1})</th>`;
+    });
+    tableHtml += `</tr></thead><tbody>`;
+
+    datData.rows.forEach((row, rowIndex) => {
+      tableHtml += `<tr><td>${rowIndex + 1}</td>`;
+      row.forEach((value, colIndex) => {
+        if (datData.columns[colIndex] === "String") {
+          tableHtml += `<td><input type="text" class="string-input" style="width:${columnWidths[colIndex]}px;" value="${value}" oninput="markModified(this)"></td>`;
+        } else {
+          tableHtml += `<td><input type="text" class="integer-input" style="width:${columnWidths[colIndex]}px;" value="${value}" oninput="validateAndMarkInteger(this)"></td>`;
+        }
+      });
+      tableHtml += `</tr>`;
+    });
+
+    // 添加最后一行，包含 "+ 添加新行" 按钮
+    tableHtml += `
+      <tr>
+        <td colspan="${datData.columns.length + 1}" class="text-center">
+          <span class="add-row-btn" onclick="addEmptyRow()">+ 添加新行</span>
+        </td>
+      </tr>
+    `;
+
+    tableHtml += `</tbody></table>`;
+    $('#tableContainer').html(tableHtml);
+  }
+
+  function addEmptyRow() {
+    const newRow = [];
+    datData.columns.forEach(colType => {
+      newRow.push(colType === "String" ? "" : "0");  // 默认字符串为空，整数为 0
+    });
+    datData.rows.push(newRow);
+    generateEditableTable();  // 重新生成表格以显示新行
+  }
+
+  $('#exportButton').on('click', function () {
+    const editedRows = [];
+
+    $('#tableContainer tbody tr').each(function () {
+      const row = [];
+      $(this).find('input').each(function () {
+        const value = $(this).val();
+        row.push(value);
+      });
+      if (row.length > 0) editedRows.push(row);
+    });
+
+    const buffer = [];
+    writeInt32(buffer, datData.columns.length);
+
+    datData.columns.forEach(colType => {
+      writeInt32(buffer, colType === "String" ? 1 : 0);
+    });
+
+    editedRows.forEach(row => {
+      row.forEach((value, colIndex) => {
+        if (datData.columns[colIndex] === "String") {
+          const encodedText = Encoding.convert(value, {
+            to: 'SJIS',
+            from: 'UNICODE',
+            type: 'array'
+          });
+          buffer.push(...encodedText);
+          buffer.push(0);
+        } else {
+          const intValue = parseInt(value) || 0;
+          writeInt32(buffer, intValue);
+        }
+      });
+    });
+
+    const blob = new Blob([new Uint8Array(buffer)], { type: 'application/octet-stream' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'edited_output.dat';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+
+  function writeInt32(buffer, value) {
+    buffer.push(value & 0xFF);
+    buffer.push((value >> 8) & 0xFF);
+    buffer.push((value >> 16) & 0xFF);
+    buffer.push((value >> 24) & 0xFF);
+  }
+
+  function markModified(input) {
+    $(input).addClass('modified');
+  }
+
+  function validateAndMarkInteger(input) {
+    let value = input.value;
+
+    // 允许负号和小数点，修正非法字符
+    if (!/^[-]?\d*(\.\d*)?$/.test(value)) {
+      value = value.replace(/[^0-9\.\-]/g, '');  // 过滤非法字符
+      value = value.replace(/(?!^)-/g, '');  // 删除中间位置的负号
+      value = value.replace(/(\..*)\./g, '$1');  // 删除多余的小数点
+    }
+
+    input.value = value;
+    $(input).addClass('modified');
+  }
+
+</script>
+
+</body>
+</html>

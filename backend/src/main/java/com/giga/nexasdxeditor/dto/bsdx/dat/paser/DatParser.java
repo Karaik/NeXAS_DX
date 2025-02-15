@@ -30,7 +30,8 @@ public class DatParser {
             int columnCount = readInt32(bytes, offset);
             offset += 4;
             dat.setColumnCount(columnCount);
-            log.info("Column count: {}", columnCount);
+            log.info("Column count == {}", columnCount);
+            log.info("fileName == {}", fileName);
 
             // Step 2: 读取每列的数据类型
             for (int i = 0; i < columnCount; i++) {
@@ -44,7 +45,8 @@ public class DatParser {
                 } else if (typeFlag == ParserUtil.DAT_COLUMN_TYPE_UNKNOWN) {
                     type = "Unknown";
                 } else {
-                    throw new IllegalArgumentException("未知的类型！" + typeFlag);
+//                    throw new IllegalArgumentException("未知的类型！" + typeFlag);
+                    return dat;
                 }
                 dat.addColumnType(type);
             }

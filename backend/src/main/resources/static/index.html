@@ -186,6 +186,175 @@
             reader.readAsArrayBuffer(currentFile);
         }
 
+        let datData = {
+            columns: [],
+            rows: []
+        };
+
+        function readDatFile(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                alert('请选择一个 .dat 文件');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const byteArray = new Uint8Array(arrayBuffer);
+                parseDatFile(byteArray);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function parseDatFile(byteArray) {
+            let offset = 0;
+
+            // 读取列数
+            const columnCount = readInt32(byteArray, offset);
+            offset += 4;
+
+            datData.columns = [];
+            for (let i = 0; i < columnCount; i++) {
+                const typeFlag = readInt32(byteArray, offset);
+                offset += 4;
+                let columnType = "Unknown";
+                if (typeFlag === 1) columnType = "String";
+                else if (typeFlag === 0) columnType = "Integer";
+                else if (typeFlag === 2) columnType = "Sequence";
+
+                datData.columns.push(columnType);
+            }
+
+            // 读取数据行
+            datData.rows = [];
+            while (offset < byteArray.length) {
+                const row = [];
+                for (let i = 0; i < datData.columns.length; i++) {
+                    if (datData.columns[i] === "String") {
+                        const stringLength = readInt32(byteArray, offset);
+                        offset += 4;
+                        const text = new TextDecoder('shift-jis').decode(byteArray.slice(offset, offset + stringLength)).trim();
+                        offset += stringLength;
+                        row.push(text);
+                    } else {
+                        const value = readInt32(byteArray, offset);
+                        offset += 4;
+                        row.push(value);
+                    }
+                }
+                datData.rows.push(row);
+            }
+
+            generateEditableTable();
+        }
+
+        function generateEditableTable() {
+            const container = document.getElementById('tableContainer');
+            container.innerHTML = '';
+
+            const table = document.createElement('table');
+            table.border = "1";
+
+            // 创建表头
+            const headerRow = table.insertRow();
+
+            // 添加行号列标题
+            const rowNumTh = document.createElement('th');
+            rowNumTh.textContent = "行号";
+            headerRow.appendChild(rowNumTh);
+
+            // 添加其他列标题
+            datData.columns.forEach((colType, index) => {
+                const th = document.createElement('th');
+                th.textContent = `${colType} (${index + 1})`;
+                headerRow.appendChild(th);
+            });
+
+            // 创建数据行
+            datData.rows.forEach((row, rowIndex) => {
+                const tr = table.insertRow();
+
+                // 添加行号列
+                const rowNumTd = tr.insertCell();
+                rowNumTd.textContent = rowIndex + 1;
+
+                row.forEach((cellValue, colIndex) => {
+                    const td = tr.insertCell();
+                    const input = document.createElement('input');
+                    input.type = "text";
+                    input.value = cellValue;
+                    input.dataset.rowIndex = rowIndex;
+                    input.dataset.colIndex = colIndex;
+                    td.appendChild(input);
+                });
+            });
+
+            container.appendChild(table);
+        }
+
+        function exportEditedDat() {
+            const editedRows = [];
+
+            // 获取表格中的编辑数据
+            document.querySelectorAll('#tableContainer input').forEach(input => {
+                const rowIndex = input.dataset.rowIndex;
+                const colIndex = input.dataset.colIndex;
+
+                if (!editedRows[rowIndex]) {
+                    editedRows[rowIndex] = [];
+                }
+                editedRows[rowIndex][colIndex] = input.value;
+            });
+
+            // 生成新的字节数组
+            const buffer = [];
+            // 写入列数
+            writeInt32(buffer, datData.columns.length);
+
+            // 写入列类型
+            datData.columns.forEach(colType => {
+                if (colType === "String") writeInt32(buffer, 1);
+                else if (colType === "Integer") writeInt32(buffer, 0);
+                else if (colType === "Sequence") writeInt32(buffer, 2);
+            });
+
+            // 写入数据
+            editedRows.forEach(row => {
+                row.forEach((value, colIndex) => {
+                    if (datData.columns[colIndex] === "String") {
+                        const encodedText = new TextEncoder('shift-jis').encode(value);
+                        writeInt32(buffer, encodedText.length);
+                        buffer.push(...encodedText);
+                    } else {
+                        writeInt32(buffer, parseInt(value));
+                    }
+                });
+            });
+
+            // 导出二进制文件
+            const blob = new Blob([new Uint8Array(buffer)], { type: 'application/octet-stream' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'edited_output.dat';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function readInt32(array, offset) {
+            return (array[offset] & 0xFF) |
+                ((array[offset + 1] & 0xFF) << 8) |
+                ((array[offset + 2] & 0xFF) << 16) |
+                ((array[offset + 3] & 0xFF) << 24);
+        }
+
+        function writeInt32(buffer, value) {
+            buffer.push(value & 0xFF);
+            buffer.push((value >> 8) & 0xFF);
+            buffer.push((value >> 16) & 0xFF);
+            buffer.push((value >> 24) & 0xFF);
+        }
+
     </script>
 </head>
 <body>
@@ -224,6 +393,16 @@
 
 <h3>Hex文本结果:</h3>
 <pre id="hexResult"></pre>
+
+
+<h1>读取并编辑 .dat 文件</h1>
+
+<label for="datFileInput">选择 .dat 文件：</label>
+<input type="file" id="datFileInput" accept=".dat" onchange="readDatFile(event)"><br><br>
+
+<div id="tableContainer"></div>
+
+<button onclick="exportEditedDat()">导出修改后的 .dat 文件</button>
 
 </body>
 </html>
