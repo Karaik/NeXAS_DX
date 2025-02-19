@@ -35,6 +35,7 @@ public class Waz {
 
     /**
      * 技能的阶段
+     * 逆向得知，每个阶段信息内，有72个最小单元，每个最小单元大小为3*4字节
      */
     @Data
     public static class WazPhase {
@@ -49,6 +50,11 @@ public class Waz {
          */
         private List<spmCallingInfo> spmCallingInfoList;
 
+        /**
+         * 逆向所得
+         */
+        private List<List<wazPhaseDataUnit>> wazPhaseDataUnitList;
+
         private byte[] wazPhaseData;
 
         /**
@@ -58,6 +64,7 @@ public class Waz {
 
         public WazPhase () {
             this.spmCallingInfoList = new ArrayList<>();
+            this.wazPhaseDataUnitList = new ArrayList<>();
         }
 
         @Data
@@ -88,6 +95,13 @@ public class Waz {
              */
             private Integer actionNumber;
 
+        }
+
+        @Data
+        public static class wazPhaseDataUnit {
+            private Integer int1;
+            private Integer int2;
+            private Integer int3;
         }
 
 

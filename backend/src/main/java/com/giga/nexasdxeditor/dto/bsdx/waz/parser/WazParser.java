@@ -129,6 +129,12 @@ public class WazParser {
                 spmCallingInfoList.add(spmCallingInfo);
             }
 
+//            int start = offsetInner;
+//            offsetInner = setWazPhaseUnit(wazPhase, bytes, offsetInner);
+//            wazPhase.setWazPhaseData(Arrays.copyOfRange(bytes, start, offsetInner));
+
+            // todo 应该还有另一块别的数据
+
             int start = offsetInner;
             if (i == waz.getPhaseQuantity() - 1) {
                 // 最后一个phase
@@ -142,6 +148,34 @@ public class WazParser {
 
         }
 
+    }
+
+    private static int setWazPhaseUnit(Waz.WazPhase wazPhase, byte[] bytes, int offset) {
+        List<List<Waz.WazPhase.wazPhaseDataUnit>> wazPhaseDataInfoList = wazPhase.getWazPhaseDataUnitList();
+        int startPoint = offset;
+        for (int i = 0; i < 72; i++) { // 逆向得知循环72次
+            List<Waz.WazPhase.wazPhaseDataUnit> wazPhaseDataUnitList = new ArrayList<>();
+            int unitCount = readInt32(bytes, startPoint + i * 4);
+            startPoint+=4;
+
+            startPoint = readWazPhaseUnit(wazPhaseDataUnitList, startPoint, unitCount, bytes);
+            wazPhaseDataInfoList.add(wazPhaseDataUnitList);
+        }
+        return startPoint;
+    }
+
+    private static int readWazPhaseUnit(List<Waz.WazPhase.wazPhaseDataUnit> wazPhaseDataUnitList, int start, int unitCount, byte[] bytes) {
+        for (int i = 0; i < unitCount; i++) {
+            Waz.WazPhase.wazPhaseDataUnit wazPhaseDataUnit = new Waz.WazPhase.wazPhaseDataUnit();
+            wazPhaseDataUnit.setInt1(readInt32(bytes, start));
+            start+=4;
+            wazPhaseDataUnit.setInt2(readInt32(bytes, start));
+            start+=4;
+            wazPhaseDataUnit.setInt3(readInt32(bytes, start));
+            start+=4;
+            wazPhaseDataUnitList.add(wazPhaseDataUnit);
+        }
+        return start;
     }
 
     /**
