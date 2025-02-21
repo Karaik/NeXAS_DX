@@ -130,10 +130,11 @@ public class WazParser {
             }
 
 //            int start = offsetInner;
-//            offsetInner = setWazPhaseUnit(wazPhase, bytes, offsetInner);
+            setWazPhaseUnit(wazPhase, bytes, offsetInner - spmCallingInfoList.size() * 4*5 - 4);
+//            offsetInner += padding;
+
 //            wazPhase.setWazPhaseData(Arrays.copyOfRange(bytes, start, offsetInner));
 
-            // todo 应该还有另一块别的数据
 
             int start = offsetInner;
             if (i == waz.getPhaseQuantity() - 1) {
@@ -151,31 +152,65 @@ public class WazParser {
     }
 
     private static int setWazPhaseUnit(Waz.WazPhase wazPhase, byte[] bytes, int offset) {
-        List<List<Waz.WazPhase.wazPhaseDataUnit>> wazPhaseDataInfoList = wazPhase.getWazPhaseDataUnitList();
-        int startPoint = offset;
-        for (int i = 0; i < 72; i++) { // 逆向得知循环72次
-            List<Waz.WazPhase.wazPhaseDataUnit> wazPhaseDataUnitList = new ArrayList<>();
-            int unitCount = readInt32(bytes, startPoint + i * 4);
-            startPoint+=4;
+        // 存放单个阶段的数据信息
+        List<Waz.WazPhase.wazPhaseDataUnit> wazPhaseDataUnitList = new ArrayList<>();
 
-            startPoint = readWazPhaseUnit(wazPhaseDataUnitList, startPoint, unitCount, bytes);
-            wazPhaseDataInfoList.add(wazPhaseDataUnitList);
-        }
+            int startPoint = offset;
+            for (int i = 0; i < 72; i++) { // 逆向得知循环72次
+                try{
+                    Waz.WazPhase.wazPhaseDataUnit wazPhaseDataUnit = new Waz.WazPhase.wazPhaseDataUnit();
+
+                    // 读?*4的unit1
+                    int unit1Count = readInt32(bytes, startPoint);
+                    startPoint += 4;
+                    List<Waz.WazPhase.wazPhaseDataUnit.Unit1> unit1List = wazPhaseDataUnit.getUnit1List();
+                    for (int j = 0; j < unit1Count; j++) {
+                        Waz.WazPhase.wazPhaseDataUnit.Unit1 unit1 = new Waz.WazPhase.wazPhaseDataUnit.Unit1();
+
+
+                        for (int k = 0; k < 5; k++) {
+                            unit1.getData().add(readInt32(bytes, startPoint));
+                            startPoint += 4;
+                        }
+
+
+                        // todo 万策尽きた！！！
+
+                        unit1List.add(unit1);
+                    }
+
+                    // 读5*4的unit2
+                    int unit2Count = readInt32(bytes, startPoint);
+                    startPoint += 4;
+                    List<Waz.WazPhase.wazPhaseDataUnit.Unit2> unit2List = wazPhaseDataUnit.getUnit2List();
+                    for (int j = 0; j < unit2Count; j++) {
+                        Waz.WazPhase.wazPhaseDataUnit.Unit2 unit2 = new Waz.WazPhase.wazPhaseDataUnit.Unit2();
+
+                        unit2.setInt1(readInt32(bytes, startPoint));
+                        startPoint += 4;
+                        unit2.setInt2(readInt32(bytes, startPoint));
+                        startPoint += 4;
+                        unit2.setInt3(readInt32(bytes, startPoint));
+                        startPoint += 4;
+                        unit2.setInt4(readInt32(bytes, startPoint));
+                        startPoint += 4;
+                        unit2.setInt5(readInt32(bytes, startPoint));
+                        startPoint += 4;
+
+                        unit2List.add(unit2);
+                    }
+
+                    wazPhaseDataUnitList.add(wazPhaseDataUnit);
+                } catch (Exception e) {
+                    log.info("for === {}", i+1);
+                    log.info("error === {}", e.getMessage());
+        //            throw new RuntimeException(e);
+                }
+            }
+
+        wazPhase.setWazPhaseDataUnitList(wazPhaseDataUnitList);
+
         return startPoint;
-    }
-
-    private static int readWazPhaseUnit(List<Waz.WazPhase.wazPhaseDataUnit> wazPhaseDataUnitList, int start, int unitCount, byte[] bytes) {
-        for (int i = 0; i < unitCount; i++) {
-            Waz.WazPhase.wazPhaseDataUnit wazPhaseDataUnit = new Waz.WazPhase.wazPhaseDataUnit();
-            wazPhaseDataUnit.setInt1(readInt32(bytes, start));
-            start+=4;
-            wazPhaseDataUnit.setInt2(readInt32(bytes, start));
-            start+=4;
-            wazPhaseDataUnit.setInt3(readInt32(bytes, start));
-            start+=4;
-            wazPhaseDataUnitList.add(wazPhaseDataUnit);
-        }
-        return start;
     }
 
     /**
