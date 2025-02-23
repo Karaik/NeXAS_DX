@@ -1,0 +1,11 @@
+int __thiscall CEventBlur::Read(int *this, void *a2)
+{
+  read_spm_frame(this[1], a2);
+  read_waz_unit_collection(this[2], a2);
+  File::read(a2, this + 3, 4u);
+  File::read(a2, this + 4, 4u);
+  File::read(a2, this + 5, 4u);
+  File::read(a2, this + 6, 4u);
+  File::read(a2, this + 7, 4u);
+  return File::read(a2, this + 8, 4u);
+}

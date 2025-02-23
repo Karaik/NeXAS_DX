@@ -1,0 +1,73 @@
+エフェクトタイプ1 10h
+エフェクトタイプ2
+フラグ 10h
+エフェクト番号 10h
+同時発射数
+最大発射数
+発射間隔
+発射位置 10h
+発射位置補正：方向
+発射位置補正：方向補正
+発射位置補正：距離 10h
+発射位置補正：高さ
+発射方向：１発ごとの補正 10h
+発射方向：同時発射補正
+発射方向：全体補正
+発射ＳＥ
+ｽﾌﾟﾗｲﾄ：拡大縮小
+ｽﾌﾟﾗｲﾄ：拡大縮小X 10h
+ｽﾌﾟﾗｲﾄ：拡大縮小Y
+ｽﾌﾟﾗｲﾄ：拡大縮小Y(ｽﾛｰ影響) 10h
+ｽﾌﾟﾗｲﾄ：振動 10h
+ｽﾌﾟﾗｲﾄ：属性 10h
+ｽﾌﾟﾗｲﾄ：方向 10h
+ｽﾌﾟﾗｲﾄ：方向補正
+ｽﾌﾟﾗｲﾄ：方向増分
+位置 10h
+位置：分散率 10h
+座標移動
+ﾍﾞｸﾄﾙ：方向
+ﾍﾞｸﾄﾙ：方向補正
+ﾍﾞｸﾄﾙ：方向増分
+ﾍﾞｸﾄﾙ：速度
+ﾍﾞｸﾄﾙ：高さ
+ﾍﾞｸﾄﾙ：重力
+ﾍﾞｸﾄﾙ：最低高度
+ﾍﾞｸﾄﾙ：慣性
+汎用変数
+溜め攻撃力 10h
+影の濃さ
+優先順位補正
+耐久力
+記憶ＯＢＪの最大数
+指定OBJ数以下なら生成 10h
+指定画面範囲内なら生成
+指定画面範囲外なら削除 10h
+
+
+int __thiscall CEventCpuButton::Read(int this, int Buffer)
+{
+  int v2; // esi
+  int result; // eax
+  int i; // ebx
+
+  v2 = Buffer;
+  read_spm_frame(*(this + 4), Buffer);
+  File::read(v2, (this + 12), 4u);
+  File::read(v2, (this + 16), 4u);
+  File::read(v2, (this + 20), 4u);
+  File::read(v2, (this + 24), 4u);
+  File::read(v2, (this + 28), 4u);
+  File::read(v2, (this + 32), 2u);
+  result = File::read(v2, (this + 34), 2u);
+  for ( i = 0; i < 8; ++i )
+  {
+    if ( !i )
+    {
+      result = File::read(v2, &Buffer, 4u);
+      if ( Buffer )
+        result = (*(**(this + 8) + 24))(*(this + 8), v2);
+    }
+  }
+  return result;
+}

@@ -1,0 +1,33 @@
+int __thiscall au_re_File::read_2(void *this)
+{
+  int Buffer; // [esp+0h] [ebp-4h] BYREF
+
+  Buffer = 0;
+  File::read(this, &Buffer, 4u);
+  return Buffer;
+}
+
+int __thiscall CEventVoice::Read(int *this, void *a2)
+{
+  int result; // eax
+  int v4; // edi
+  _BYTE Buffer[12]; // [esp+8h] [ebp-Ch] BYREF
+
+  read_spm_frame(this[1], a2);
+  File::read(a2, this + 2, 4u);
+  File::read(a2, this + 3, 4u);
+  File::read(a2, this + 4, 4u);
+  result = au_re_File::read_2(a2);
+  if ( result > 0 )
+  {
+    v4 = result;
+    do
+    {
+      File::read(a2, Buffer, 0xCu);
+      result = sub_647500(Buffer);
+      --v4;
+    }
+    while ( v4 );
+  }
+  return result;
+}

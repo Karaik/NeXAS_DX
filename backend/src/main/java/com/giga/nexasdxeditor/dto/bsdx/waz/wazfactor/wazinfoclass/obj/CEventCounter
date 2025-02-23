@@ -1,0 +1,5 @@
+int __thiscall CEventCounter::Read(int *this, int a2)
+{
+  read_spm_frame(this[1], a2);
+  return File::read(a2, this + 2, 0x1Cu);
+}
