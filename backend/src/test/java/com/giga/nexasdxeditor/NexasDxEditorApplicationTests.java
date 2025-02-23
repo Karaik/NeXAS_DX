@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.poi.excel.ExcelUtil;
@@ -278,6 +279,23 @@ class NexasDxEditorApplicationTests {
 
         Mek mek = (Mek) binServiceImpl.parse(path, "Shift-JIS").getData();
         binServiceImpl.generate(path, mek, "Shift-JIS");
+
+    }
+
+    @Test
+    void testCreateTestWazDat() throws IOException {
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        // 获取resources目录下的文件
+        Resource[] resources = resolver.getResources("classpath*:/test/*.waz");
+
+        if (resources.length > 0) {
+            byte[] firstFileContent = FileUtil.readBytes(resources[0].getFile());
+
+            for (int i = 1; i < resources.length; i++) {
+                File file = resources[i].getFile();
+                FileUtil.writeBytes(firstFileContent, file);
+            }
+        }
 
     }
 

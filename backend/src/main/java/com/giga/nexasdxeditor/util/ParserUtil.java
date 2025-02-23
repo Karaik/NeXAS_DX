@@ -30,11 +30,26 @@ public class ParserUtil {
     public static final Integer DAT_COLUMN_TYPE_UNKNOWN = 2;
 
     /**
+     * 以16位的小端有符号整型方式读取short
+     */
+    public static short readInt16(byte[] bytes, int start) {
+        return ByteUtil.bytesToShort(bytes, start, ByteOrder.LITTLE_ENDIAN);
+    }
+
+    /**
      * 以32位的小端有符号整型方式读取int
      */
     public static Integer readInt32(byte[] bytes, int start) {
         // 小端字节序
         return ByteUtil.bytesToInt(bytes, start, ByteOrder.LITTLE_ENDIAN);
+    }
+
+    /**
+     * 以64位的小端有符号整型方式读取long
+     */
+    public static long readInt64(byte[] bytes, int start) {
+        // 小端字节序
+        return ByteUtil.bytesToLong(bytes, start, ByteOrder.LITTLE_ENDIAN);
     }
 
     /**
