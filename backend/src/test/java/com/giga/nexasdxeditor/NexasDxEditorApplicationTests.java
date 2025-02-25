@@ -286,7 +286,7 @@ class NexasDxEditorApplicationTests {
     void testCreateTestWazDat() throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         // 获取resources目录下的文件
-        Resource[] resources = resolver.getResources("classpath*:/test/*.waz");
+        Resource[] resources = resolver.getResources("classpath*:/Update3/*.waz");
 
         if (resources.length > 0) {
             byte[] firstFileContent = FileUtil.readBytes(resources[0].getFile());
@@ -331,7 +331,7 @@ class NexasDxEditorApplicationTests {
     @Test
     void testPac() throws Exception {
         ResponseDTO responseDTO = pacServiceImpl.pac(
-                "D:\\Code\\java\\NeXAS_DX\\backend\\src\\main\\resources\\"+"test");
+                "D:\\Code\\java\\NeXAS_DX\\backend\\src\\main\\resources\\"+"Update3");
         log.info("\npack output: \n{}", responseDTO);
     }
 

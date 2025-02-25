@@ -1,0 +1,9 @@
+int __thiscall CEventScreenYure::Read(int *this, void *a2)
+{
+  read_spm_frame(this[1], a2);
+  read_waz_unit_collection(this[2], a2);
+  File::read(a2, this + 3, 4);
+  File::read(a2, this + 4, 4);
+  File::read(a2, this + 5, 4);
+  return File::read(a2, this + 6, 4);
+}

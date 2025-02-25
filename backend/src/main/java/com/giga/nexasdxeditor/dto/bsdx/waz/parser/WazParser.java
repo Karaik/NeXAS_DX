@@ -5,7 +5,7 @@ import com.giga.nexasdxeditor.dto.bsdx.waz.Waz;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazUnit;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.WazInfoObject;
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.WazInfoObject2;
+import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.WazInfoUnknown;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
@@ -96,11 +96,13 @@ public class WazParser {
                 }
             }
 
-            List<WazInfoObject2> wazInfoObject2List = wazUnit.getWazInfoObject2List();
+            List<WazInfoUnknown> wazInfoUnknownList = wazUnit.getWazInfoUnknownList();
             int count2 = readInt32(bytes, offset); offset += 4;
             for (int j = 0; j < count2; j++) {
                 try {
-                    // TODO
+                    WazInfoUnknown wazInfoUnknown = (WazInfoUnknown) WazInfoFactory.createEventObject(0xFF);
+                    offset = wazInfoUnknown.readInfo(bytes, offset);
+                    wazInfoUnknownList.add(wazInfoUnknown);
                 } catch (Exception e) {
                     log.info("error === i={}", i);
                 }

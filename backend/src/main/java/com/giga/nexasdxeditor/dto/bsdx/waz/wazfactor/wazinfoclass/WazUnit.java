@@ -1,7 +1,7 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.WazInfoObject;
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.WazInfoObject2;
+import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.WazInfoUnknown;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -16,11 +16,11 @@ import java.util.List;
 public class WazUnit {
 
     private List<WazInfoObject> wazInfoObjectList;
-    private List<WazInfoObject2> wazInfoObject2List;
+    private List<WazInfoUnknown> wazInfoUnknownList;
 
     public WazUnit() {
         wazInfoObjectList = new ArrayList<>();
-        wazInfoObject2List = new ArrayList<>();
+        wazInfoUnknownList = new ArrayList<>();
     }
 
 }

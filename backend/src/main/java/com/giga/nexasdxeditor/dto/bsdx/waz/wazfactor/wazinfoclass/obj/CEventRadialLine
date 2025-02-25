@@ -1,0 +1,31 @@
+int __thiscall CEventRadialLine::Read(int this, int Buffer)
+{
+  int v2; // esi
+  int result; // eax
+  int i; // ebx
+
+  v2 = Buffer;
+  read_spm_frame(*(this + 4), Buffer);
+  File::read(v2, (this + 8), 4);
+  File::read(v2, (this + 12), 4);
+  File::read(v2, (this + 16), 4);
+  File::read(v2, (this + 20), 4);
+  File::read(v2, (this + 28), 4);
+  File::read(v2, (this + 32), 4);
+  File::read(v2, (this + 36), 4);
+  File::read(v2, (this + 40), 4);
+  File::read(v2, (this + 44), 4);
+  File::read(v2, (this + 48), 4);
+  File::read(v2, (this + 52), 4);
+  result = File::read(v2, (this + 56), 4);
+  for ( i = 0; i < 13; ++i )
+  {
+    if ( i == 4 )
+    {
+      result = File::read(v2, &Buffer, 4);
+      if ( Buffer )
+        result = (*(**(this + 24) + 24))(*(this + 24), v2);
+    }
+  }
+  return result;
+}
