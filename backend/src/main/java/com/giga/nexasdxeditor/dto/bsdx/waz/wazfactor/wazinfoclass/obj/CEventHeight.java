@@ -1,6 +1,5 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazInfoObject;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -61,17 +60,14 @@ public class CEventHeight extends WazInfoObject {
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
-        offset += super.readInfo(bytes, offset);
+        offset = super.readInfo(bytes, offset);
 
-        setInt1(readInt32(bytes, offset));
-        offset += 4;
+        setInt1(readInt32(bytes, offset)); offset += 4;
 
         for (int i = 0; i < 3; i++) {
-            int flag = readInt32(bytes, offset);
-            offset += 4;
+            int flag = readInt32(bytes, offset); offset += 4;
             if (flag != 0) {
-                typeCollection.add(readInt32(bytes, offset));
-                offset += 4;
+                typeCollection.add(readInt32(bytes, offset)); offset += 4;
             }
         }
 

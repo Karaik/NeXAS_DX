@@ -1,6 +1,5 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazInfoObject;
 import lombok.Data;
 
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
@@ -42,30 +41,19 @@ public class CEventTerm extends WazInfoObject {
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
-        offset += super.readInfo(bytes, offset);
+        offset = super.readInfo(bytes, offset);
 
-        setInt1(readInt32(bytes, offset));
-        offset += 4;
-        setInt2(readInt32(bytes, offset));
-        offset += 4;
-        setInt3(readInt32(bytes, offset));
-        offset += 4;
-        setInt4(readInt32(bytes, offset));
-        offset += 4;
-        setInt5(readInt32(bytes, offset));
-        offset += 4;
-        setInt6(readInt32(bytes, offset));
-        offset += 4;
-        setInt7(readInt32(bytes, offset));
-        offset += 4;
-        setInt8(readInt32(bytes, offset));
-        offset += 4;
-        setInt9(readInt32(bytes, offset));
-        offset += 4;
-        setInt10(readInt32(bytes, offset));
-        offset += 4;
-        setInt11(readInt32(bytes, offset));
-        offset += 4;
+        setInt1(readInt32(bytes, offset)); offset += 4;
+        setInt2(readInt32(bytes, offset)); offset += 4;
+        setInt3(readInt32(bytes, offset)); offset += 4;
+        setInt4(readInt32(bytes, offset)); offset += 4;
+        setInt5(readInt32(bytes, offset)); offset += 4;
+        setInt6(readInt32(bytes, offset)); offset += 4;
+        setInt7(readInt32(bytes, offset)); offset += 4;
+        setInt8(readInt32(bytes, offset)); offset += 4;
+        setInt9(readInt32(bytes, offset)); offset += 4;
+        setInt10(readInt32(bytes, offset)); offset += 4;
+        setInt11(readInt32(bytes, offset)); offset += 4;
 
         return offset;
     }

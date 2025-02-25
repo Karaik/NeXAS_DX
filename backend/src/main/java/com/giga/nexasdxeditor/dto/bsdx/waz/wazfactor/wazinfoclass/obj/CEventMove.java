@@ -1,6 +1,5 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazInfoObject;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
 import lombok.Data;
 
@@ -47,18 +46,17 @@ public class CEventMove extends WazInfoObject {
     @Override
     public int readInfo(byte[] bytes, int offset) {
 
-        offset += super.readInfo(bytes, offset);
+        offset = super.readInfo(bytes, offset);
 
         WazInfoCollection wazInfoCollection1 = new WazInfoCollection();
-        offset += wazInfoCollection1.readCollection(bytes, offset);
+        offset = wazInfoCollection1.readCollection(bytes, offset);
         wazInfoCollectionList.add(wazInfoCollection1);
 
         WazInfoCollection wazInfoCollection2 = new WazInfoCollection();
-        offset += wazInfoCollection2.readCollection(bytes, offset);
+        offset = wazInfoCollection2.readCollection(bytes, offset);
         wazInfoCollectionList.add(wazInfoCollection2);
 
-        setInt1(readInt32(bytes, offset));
-        offset += 4;
+        setInt1(readInt32(bytes, offset)); offset += 4;
 
         return offset;
     }

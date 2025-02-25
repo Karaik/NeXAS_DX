@@ -1,6 +1,5 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazInfoObject;
 import lombok.Data;
 
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
@@ -11,7 +10,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * @Description SpmCallingInfo
  * CEventSprite__Read
  * 通常描画
- *  1.该阶段中的各动作使用哪个spm图层，以及帧数关系
+ *  该阶段中的各动作使用哪个spm图层，以及帧数关系
  */
 @Data
 public class CEventSprite extends WazInfoObject {
@@ -34,14 +33,11 @@ public class CEventSprite extends WazInfoObject {
     @Override
     public int readInfo(byte[] bytes, int offset) {
 
-        offset += super.readInfo(bytes, offset);
+        offset = super.readInfo(bytes, offset);
 
-        setSpmFileSequence(readInt32(bytes, offset));
-        offset += 4;
-        setActionGroupNumber(readInt32(bytes, offset));
-        offset += 4;
-        setActionNumber(readInt32(bytes, offset));
-        offset += 4;
+        setSpmFileSequence(readInt32(bytes, offset)); offset += 4;
+        setActionGroupNumber(readInt32(bytes, offset)); offset += 4;
+        setActionNumber(readInt32(bytes, offset)); offset += 4;
 
         return offset;
     }

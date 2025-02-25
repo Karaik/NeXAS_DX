@@ -251,11 +251,11 @@ class NexasDxEditorApplicationTests {
         Resource[] resources = resolver.getResources("classpath*:/game/bsdx/waz/*.waz");
 
         String path = null;
-        List<List<Waz>> allWazList = new ArrayList<>();
+        List<Waz> allWazList = new ArrayList<>();
         for (Resource resource : resources) {
             path = resource.getFile().getPath();
             ResponseDTO parse = binServiceImpl.parse(path, "Shift-jis");
-            List<Waz> wazList = (List<Waz>) parse.getData();
+            Waz wazList = (Waz) parse.getData();
             allWazList.add(wazList);
         }
         log.info("allWazList.size ===  {} ", allWazList.size());

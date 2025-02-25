@@ -1,6 +1,5 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazInfoObject;
 import lombok.Data;
 
 import static com.giga.nexasdxeditor.util.ParserUtil.*;
@@ -52,7 +51,7 @@ public class CEventHit extends WazInfoObject {
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
-        offset += super.readInfo(bytes, offset);
+        offset = super.readInfo(bytes, offset);
 
         short1 = readInt16(bytes, offset); offset += 2;
         short2 = readInt16(bytes, offset); offset += 2;

@@ -1,6 +1,5 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazInfoObject;
 import lombok.Data;
 
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
@@ -24,21 +23,15 @@ public class CEventSlipHosei extends WazInfoObject {
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
-        offset += super.readInfo(bytes, offset);
+        offset = super.readInfo(bytes, offset);
 
-        setLong1(readInt64(bytes, offset));
-        offset += 8;
-        setLong2(readInt64(bytes, offset));
-        offset += 8;
+        setLong1(readInt64(bytes, offset)); offset += 8;
+        setLong2(readInt64(bytes, offset)); offset += 8;
 
-        setInt1(readInt32(bytes, offset));
-        offset += 4;
-        setInt2(readInt32(bytes, offset));
-        offset += 4;
-        setInt3(readInt32(bytes, offset));
-        offset += 4;
-        setInt4(readInt32(bytes, offset));
-        offset += 4;
+        setInt1(readInt32(bytes, offset)); offset += 4;
+        setInt2(readInt32(bytes, offset)); offset += 4;
+        setInt3(readInt32(bytes, offset)); offset += 4;
+        setInt4(readInt32(bytes, offset)); offset += 4;
 
         return offset;
     }

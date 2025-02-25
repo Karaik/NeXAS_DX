@@ -32,6 +32,13 @@ public class ParserUtil {
     /**
      * 以16位的小端有符号整型方式读取short
      */
+    public static byte readInt8(byte[] bytes, int start) {
+        return bytes[start];
+    }
+
+    /**
+     * 以16位的小端有符号整型方式读取short
+     */
     public static short readInt16(byte[] bytes, int start) {
         return ByteUtil.bytesToShort(bytes, start, ByteOrder.LITTLE_ENDIAN);
     }
