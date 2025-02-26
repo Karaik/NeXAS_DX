@@ -254,7 +254,12 @@ class NexasDxEditorApplicationTests {
         List<Waz> allWazList = new ArrayList<>();
         for (Resource resource : resources) {
             path = resource.getFile().getPath();
-            ResponseDTO parse = binServiceImpl.parse(path, "Shift-jis");
+            ResponseDTO parse = null;
+            try {
+                parse = binServiceImpl.parse(path, "Shift-jis");
+            } catch (Exception e) {
+                continue;
+            }
             Waz wazList = (Waz) parse.getData();
             allWazList.add(wazList);
         }

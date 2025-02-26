@@ -73,6 +73,7 @@ public class WazParser {
         } catch (Exception e) {
             log.info("filename === {}", fileName);
             log.info("error === {}", e.getMessage());
+            throw e;
         }
         return waz;
     }
@@ -93,6 +94,7 @@ public class WazParser {
                     wazInfoObjectList.add(eventObject);
                 } catch (Exception e) {
                     log.info("error === i={}", i);
+                    throw e;
                 }
             }
 
@@ -105,6 +107,7 @@ public class WazParser {
                     wazInfoUnknownList.add(wazInfoUnknown);
                 } catch (Exception e) {
                     log.info("error === i={}", i);
+                    throw e;
                 }
             }
 
