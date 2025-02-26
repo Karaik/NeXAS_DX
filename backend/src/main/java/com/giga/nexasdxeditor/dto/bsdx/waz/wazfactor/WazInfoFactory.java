@@ -86,7 +86,7 @@ public class WazInfoFactory {
             case 0x45 -> new CEventVal(); // 69
             case 0x46 -> new CEventVal(); // 70
             case 0x47 -> new CEventChange(); // 71
-            case 0xFF -> new WazInfoUnknown(); //
+            case 0xFF -> new WazInfoUnknown();
             default -> throw new IllegalArgumentException("Invalid event type");
         };
     }

@@ -67,6 +67,14 @@ public class WazParser {
                     phaseInfoList.add(wazPhase);
                 }
 
+                int countSuffix = readInt32(bytes, offset); offset += 4;
+                Waz.WazSuffix wazSuffix = new Waz.WazSuffix();
+                wazSuffix.setCount(countSuffix);
+                for (int i = 0; i < countSuffix; i++) {
+                    wazSuffix.setInt1(readInt32(bytes, offset)); offset += 4;
+                    wazSuffix.setInt2(readInt32(bytes, offset)); offset += 4;
+                }
+
                 wazBlockList.add(wazBlock);
             }
 

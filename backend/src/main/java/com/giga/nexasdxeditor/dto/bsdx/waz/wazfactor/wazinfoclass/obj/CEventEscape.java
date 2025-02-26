@@ -57,6 +57,7 @@ public class CEventEscape extends WazInfoObject {
 
             int flag = readInt32(bytes, offset); offset += 4;
             unit.setFlag(flag);
+            // todo CEventTerm
             if (flag != 0) {
                 unit.setData(readInt32(bytes, offset)); offset += 4;
             } else {

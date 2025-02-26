@@ -17,8 +17,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 @Data
 public class CEventSe extends WazInfoObject {
 
-    private Integer int1;
-    private Integer result;
+    private Integer count;
 
     private List<byte[]> byteDataList;
 
@@ -30,18 +29,16 @@ public class CEventSe extends WazInfoObject {
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
-        int result = readInt32(bytes, offset); offset += 4;
-        setResult(result);
-        if (result > 0) {
+        int count = readInt32(bytes, offset);
+        setCount(count); offset += 4;
+        if (count > 0) {
             List<byte[]> byteDataList = getByteDataList();
-            int counter = result;
             do {
                 // 读取16字节
                 byte[] byteData = Arrays.copyOfRange(bytes, offset, offset + 16); offset += 16;
                 byteDataList.add(byteData);
-                --counter;
-            } while (counter > 0);
+                --count;
+            } while (count > 0);
         }
 
         return offset;

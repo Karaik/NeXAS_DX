@@ -67,7 +67,7 @@ public class Waz {
 
     @Data
     public static class WazSuffix {
-        private Integer flag;
+        private Integer count;
         private Integer int1;
         private Integer int2;
     }

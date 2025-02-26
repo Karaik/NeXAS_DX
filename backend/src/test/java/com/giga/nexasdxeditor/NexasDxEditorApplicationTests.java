@@ -365,43 +365,6 @@ class NexasDxEditorApplicationTests {
         binServiceImpl.generate(path1, jaMek, "GBK");
     }
 
-    @Test
-    void test1() {
-        String text = "機動力上昇し、長時間にわたって移動速度を上げる。攻撃距離に影響なし、効果時間は長いし、長時間作戦に対してはとても有利な技です。";
-        try {
-            // 使用Shift-JIS编码将字符串转换为字节数组
-            byte[] bytes = text.getBytes(Charset.forName("Shift-JIS"));
-            // 转换为十六进制字符串
-            StringBuilder hexBuilder = new StringBuilder();
-            for (byte b : bytes) {
-                hexBuilder.append(String.format("%02X ", b)); // 大写十六进制，带空格分隔
-            }
-            log.info(hexBuilder.toString().trim());
-        } catch (Exception e) {
-            System.err.println("编码转换失败: " + e.getMessage());
-        }
-    }
-
-    private String getPacName() throws IOException {
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        Resource[] resourcesArray = resolver.getResources("classpath*:*.pac");
-        Resource resource = resourcesArray[0];
-        String filename = StrUtil.removeSuffix(resource.getFilename(), ".pac");
-        return filename;
-    }
-    // 将Resource转换为MultipartFile
-    private MultipartFile convertToMultipartFile(Resource resource) throws IOException {
-        // 读取文件内容
-        byte[] content = Files.readAllBytes(resource.getFile().toPath());
-
-        // 使用MockMultipartFile包装文件
-        return new MockMultipartFile(
-                resource.getFilename(),      // 文件名
-                resource.getFilename(),      // 原始文件名
-                "application/octet-stream",  // 文件类型
-                content                      // 文件内容
-        );
-    }
 
 }
 
