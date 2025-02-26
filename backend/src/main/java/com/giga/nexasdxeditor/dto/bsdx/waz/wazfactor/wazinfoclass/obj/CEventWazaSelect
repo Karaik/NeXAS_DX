@@ -1,6 +1,0 @@
-unsigned int __thiscall CEventWazaSelect::Write(int *this, int a2)
-{
-  sub_6354F0(this[1], a2);
-  File::write(a2, this + 2, 4u);
-  return File::write(a2, this + 3, 4u);
-}
