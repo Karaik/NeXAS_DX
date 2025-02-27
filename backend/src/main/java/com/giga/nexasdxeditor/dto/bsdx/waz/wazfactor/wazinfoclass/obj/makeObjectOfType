@@ -1,0 +1,253 @@
+_DWORD *__cdecl makeObjectOfType(int a1)
+{
+  _DWORD *memory; // eax
+  _DWORD *result; // eax
+  _DWORD *v3; // eax
+  _DWORD *v4; // eax
+  _DWORD *v5; // eax
+  _DWORD *v6; // eax
+  _DWORD *v7; // eax
+  _DWORD *v8; // eax
+  _DWORD *v9; // eax
+  _DWORD *v10; // eax
+  _DWORD *v11; // eax
+  _DWORD *v12; // eax
+  _DWORD *v13; // eax
+  _DWORD *v14; // eax
+  _DWORD *v15; // eax
+  _DWORD *v16; // eax
+  _DWORD *v17; // eax
+  _DWORD *v18; // eax
+  _DWORD *v19; // eax
+  _DWORD *v20; // eax
+  _DWORD *v21; // eax
+  _DWORD *v22; // eax
+  _DWORD *v23; // eax
+  _DWORD *v24; // eax
+  _DWORD *v25; // eax
+  _DWORD *v26; // eax
+  _DWORD *v27; // eax
+  _DWORD *v28; // eax
+  _DWORD *v29; // eax
+  _DWORD *v30; // eax
+  _DWORD *v31; // eax
+  _DWORD *v32; // eax
+  _DWORD *v33; // eax
+  _DWORD *v34; // eax
+
+  switch ( a1 )
+  {
+    case 0:
+      memory = allocate_memory(0xCu);
+      if ( !memory )
+        goto LABEL_74;
+      return CEventVal(memory);
+    case 1:
+      memory = allocate_memory(0xCu);
+      if ( !memory )
+        goto LABEL_74;
+      return CEventVal(memory);
+    case 2:
+      v3 = allocate_memory(0xCu);
+      if ( v3 )
+        return CEventValRandom(v3);
+      goto LABEL_74;
+    case 3:
+      v3 = allocate_memory(0xCu);
+      if ( !v3 )
+        goto LABEL_74;
+      return CEventValRandom(v3);
+    case 4:
+      v4 = allocate_memory(0x10u);
+      if ( !v4 )
+        goto LABEL_74;
+      return CEventWazaSelect(v4);
+    case 5:
+      v5 = allocate_memory(0xCu);
+      if ( !v5 )
+        goto LABEL_74;
+      return CEventTerm(v5, 0, 0, 20, 1, 0);
+    case 6:
+      v6 = allocate_memory(0xCu);
+      if ( !v6 )
+        goto LABEL_74;
+      return CEventTerm(v6, 0, 0, 4, 2, 0);
+    case 7:
+      v7 = allocate_memory(0x14u);
+      if ( !v7 )
+        goto LABEL_74;
+      return CEventMove(v7, 0, 0);
+    case 8:
+      v8 = allocate_memory(0x18u);
+      if ( !v8 )
+        goto LABEL_74;
+      return CEventHeight(v8);
+    case 9:
+      v9 = allocate_memory(0xCu);
+      if ( v9 )
+        goto LABEL_21;
+      goto LABEL_74;
+    case 0xA:
+      v9 = allocate_memory(0xCu);
+      if ( !v9 )
+        goto LABEL_74;
+LABEL_21:
+      result = CEventTerm(v9, 0, 0, 18, 3, 0);
+      break;
+    case 0xB:
+      v10 = allocate_memory(0xCu);
+      if ( !v10 )
+        goto LABEL_74;
+      result = CEventTerm(v10, 0, 0, 23, 0, 0);
+      break;
+    case 0xC:
+      v11 = allocate_memory(0x28u);
+      if ( !v11 )
+        goto LABEL_74;
+      result = CEventSlipHosei(v11, 0, 0);
+      break;
+    case 0xD:
+      v12 = allocate_memory(0x14u);
+      if ( !v12 )
+        goto LABEL_74;
+      result = CEventSprite(v12);
+      break;
+    case 0xE:
+      v13 = allocate_memory(0x1Cu);
+      if ( !v13 )
+        goto LABEL_74;
+      result = CEventSpriteYure(v13);
+      break;
+    case 0xF:
+      v14 = allocate_memory(0x34u);
+      if ( !v14 )
+        goto LABEL_74;
+      result = CEventSpriteAttr(v14);
+      break;
+    case 0x10:
+      v15 = allocate_memory(0xECu);
+      if ( !v15 )
+        goto LABEL_74;
+      result = CEventHit(v15);
+      break;
+    case 0x11:
+      v16 = allocate_memory(0x30u);
+      if ( !v16 )
+        goto LABEL_74;
+      result = CEventEscape(v16);
+      break;
+    case 0x12:
+      v17 = allocate_memory(0x24u);
+      if ( !v17 )
+        goto LABEL_74;
+      result = CEventCpuButton(v17);
+      break;
+    case 0x13:
+      v18 = allocate_memory(0xE8u);
+      if ( !v18 )
+        goto LABEL_74;
+      result = CEventEffect(v18);
+      break;
+    case 0x14:
+      v19 = allocate_memory(0x18u);
+      if ( !v19 )
+        goto LABEL_74;
+      result = CEventBlink(v19);
+      break;
+    case 0x15:
+      v20 = allocate_memory(0x10u);
+      if ( !v20 )
+        goto LABEL_74;
+      result = CEventCharge(v20);
+      break;
+    case 0x16:
+      v21 = allocate_memory(0x40u);
+      if ( !v21 )
+        goto LABEL_74;
+      result = CEventTouch(v21, 0, 0);
+      break;
+    case 0x17:
+      v22 = allocate_memory(0x20u);
+      if ( !v22 )
+        goto LABEL_74;
+      result = CEventSe(v22);
+      break;
+    case 0x18:
+      v23 = allocate_memory(0x2Cu);
+      if ( !v23 )
+        goto LABEL_74;
+      result = CEventVoice(v23);
+      break;
+    case 0x19:
+      v24 = allocate_memory(0x1Cu);
+      if ( !v24 )
+        goto LABEL_74;
+      result = CEventScreenYure(v24);
+      break;
+    case 0x1A:
+      v25 = allocate_memory(0x2Cu);
+      if ( !v25 )
+        goto LABEL_74;
+      result = CEventScreenAttr(v25);
+      break;
+    case 0x1B:
+      v26 = allocate_memory(0x1Cu);
+      if ( !v26 )
+        goto LABEL_74;
+      result = CEventScreenEffect(v26);
+      break;
+    case 0x1C:
+      v27 = allocate_memory(0x34u);
+      if ( !v27 )
+        goto LABEL_74;
+      result = CEventScreenLine(v27);
+      break;
+    case 0x1D:
+      v28 = allocate_memory(0x3Cu);
+      if ( !v28 )
+        goto LABEL_74;
+      result = CEventRadialLine(v28);
+      break;
+    case 0x1E:
+      v29 = allocate_memory(0x24u);
+      if ( !v29 )
+        goto LABEL_74;
+      result = CEventBlur(v29);
+      break;
+    case 0x1F:
+      v30 = allocate_memory(0x20u);
+      if ( !v30 )
+        goto LABEL_74;
+      result = CEventCamera(v30);
+      break;
+    case 0x20:
+      v31 = allocate_memory(0xCu);
+      if ( !v31 )
+        goto LABEL_74;
+      result = CEventTerm(v31, 100, 0, 21, 0, 0);
+      break;
+    case 0x21:
+      v32 = allocate_memory(0x84u);
+      if ( !v32 )
+        goto LABEL_74;
+      result = CEventNokezori(v32);
+      break;
+    case 0x22:
+      v33 = allocate_memory(0xCu);
+      if ( !v33 )
+        goto LABEL_74;
+      result = CEventChange(v33);
+      break;
+    case 0x23:
+      v34 = allocate_memory(0xE0u);
+      if ( !v34 )
+        goto LABEL_74;
+      result = CEventStatus(v34);
+      break;
+    default:
+LABEL_74:
+      result = 0;
+      break;
+  }
+  return result;
+}
