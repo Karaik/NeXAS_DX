@@ -1,5 +1,7 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory;
+import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazaBlockTypeEntry;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -26,7 +28,7 @@ public class CEventCamera extends WazInfoObject {
     @Data
     public static class CEventCameraCollectionUnit {
         private Integer flag;
-        private Integer data;
+        private WazInfoObject data;
     }
 
     @Override
@@ -35,16 +37,20 @@ public class CEventCamera extends WazInfoObject {
 
         setShort1(readInt16(bytes, offset)); offset += 2;
 
+        WazaBlockTypeEntry wazaBlockTypeEntry = null;
         for (int i = 0; i < 5; i++) {
             CEventCameraCollectionUnit unit = new CEventCameraCollectionUnit();
 
             int flag = readInt32(bytes, offset); offset += 4;
             unit.setFlag(flag);
             if (flag != 0) {
-                // TODO
-                unit.setData(readInt32(bytes, offset)); offset += 4;
-            } else {
-                unit.setData(null);
+                if (unit.getData() == null) {
+                    // TODO *v6 = makeObjectOfType(dword_7F1F7C[2 * v5]);
+                    wazaBlockTypeEntry = WazInfoFactory.WAZA_BLOCK_TYPE_ENTRIES[2 * i];
+                }
+                WazInfoObject ceventObjectByType = WazInfoFactory.createCEventObjectByType(wazaBlockTypeEntry.getType());
+                offset = ceventObjectByType.readInfo(bytes, offset);
+                unit.setData(ceventObjectByType);
             }
             ceventCameraCollection.add(unit);
         }
