@@ -1,20 +1,64 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory.createCEventObjectByType;
 import static com.giga.nexasdxeditor.util.ParserUtil.*;
 
 /**
  * @Author 这位同学(Karaik)
  * @Date 2025/2/23
  * CEventHit__Read
- * 攻撃力：
- * 攻撃力：無し
- * 開始位置
- * 終了位置
  */
 @Data
 public class CEventHit extends WazInfoObject {
+
+    @Data
+    @AllArgsConstructor
+    public static class CEventHitType {
+        private Integer type;
+        private String description;
+    }
+
+    public static final CEventHitType[] CEVENT_HIT_TYPES = {
+            new CEventHitType(0xFFFFFFFF, "攻撃グループ"),
+            new CEventHitType(0xFFFFFFFF, "攻撃グループ2"),
+            new CEventHitType(0xFFFFFFFF, "ヒットカウンタ初期化"),
+            new CEventHitType(0xFFFFFFFF, "フラグ"),
+            new CEventHitType(0xFFFFFFFF, "ヒット数"),
+            new CEventHitType(0xFFFFFFFF, "ヒット間隔"),
+            new CEventHitType(0x20, "攻撃力"),
+            new CEventHitType(0xFFFFFFFF, "攻撃力最低値"),
+            new CEventHitType(0xFFFFFFFF, "攻撃力溜め反映率"),
+            new CEventHitType(0xFFFFFFFF, "装甲攻撃力"),
+            new CEventHitType(0xFFFFFFFF, "基底コンボ補正値"),
+            new CEventHitType(0xFFFFFFFF, "攻撃力補正：技のみ"),
+            new CEventHitType(0xFFFFFFFF, "攻撃力補正"),
+            new CEventHitType(0xFFFFFFFF, "攻撃力補正：技終了時"),
+            new CEventHitType(0xFFFFFFFF, "自分停止時間"),
+            new CEventHitType(0xFFFFFFFF, "消滅時間"),
+            new CEventHitType(0x4, "ヒットエフェクト"),
+            new CEventHitType(0x21, "のけぞり（地上→地上）"),
+            new CEventHitType(0x21, "のけぞり（空中）"),
+            new CEventHitType(0x21, "のけぞり（空中→地上）"),
+            new CEventHitType(0x21, "のけぞり（ダウン）"),
+            new CEventHitType(0xFFFFFFFF, "ヒットストップ"),
+            new CEventHitType(0xFFFFFFFF, "ヒットストップ（自機）"),
+            new CEventHitType(0xFFFFFFFF, "スロー反映率"),
+            new CEventHitType(0xFFFFFFFF, "画面：拡大縮小時間"),
+            new CEventHitType(0x2, "画面：拡大縮小"),
+            new CEventHitType(0xFFFFFFFF, "画面：振動時間"),
+            new CEventHitType(0x19, "画面：振動"),
+            new CEventHitType(0x17, "ヒットＳＥ"),
+            new CEventHitType(0xFFFFFFFF, "鉄ヒットＳＥ"),
+            new CEventHitType(0xFFFFFFFF, "ダメージ色時間"),
+            new CEventHitType(0xFFFFFFFF, "キャンセルフラグ"),
+            new CEventHitType(0x23, "メカステータス増減値")
+    };
 
     private Short short1;
     private Short short2;
@@ -42,12 +86,13 @@ public class CEventHit extends WazInfoObject {
     private Integer int22;
     private Integer int23;
 
-    private Integer flag1;
-    private Integer flag2;
-    private Integer flag3;
-    private Integer maybeInt1;
-    private Integer maybeInt2;
-    private Integer maybeInt3;
+    private List<CEventHitUnit> ceventHitUnitList = new ArrayList<>();
+
+    @Data
+    public static class CEventHitUnit {
+        private Integer buffer;
+        private WazInfoObject data;
+    }
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
@@ -79,23 +124,27 @@ public class CEventHit extends WazInfoObject {
         int22 = readInt32(bytes, offset); offset += 4;
         int23 = readInt32(bytes, offset); offset += 4;
 
-        // TODO 这里的逻辑也调用了数个虚函数，极有可能出错
+        ceventHitUnitList.clear();
+
         for (int i = 0; i < 33; i++) {
             if (i < 17 || i > 20) {
-                flag1 = readInt32(bytes, offset); offset += 4;
-                if (flag1 == 0) {
-                    continue;
-                }
-                maybeInt1 = readInt32(bytes, offset); offset += 4;
-            } else {
-                flag2 = readInt32(bytes, offset); offset += 4;
-                if (flag2 != 0) {
-                    maybeInt2 = readInt32(bytes, offset); offset += 4;
-                } else {
-                    flag3 = readInt32(bytes, offset); offset += 4;
-                    if (flag3 != 0) {
-                        maybeInt3 = readInt32(bytes, offset); offset += 4;
+                int buffer = readInt32(bytes, offset); offset += 4;
+                CEventHitUnit unit = new CEventHitUnit();
+                unit.setBuffer(buffer);
+
+                if (buffer != 0) {
+                    int typeId = CEVENT_HIT_TYPES[i].getType();
+                    WazInfoObject obj = createCEventObjectByType(typeId);
+                    if (obj != null) {
+                        offset = obj.readInfo(bytes, offset);
+                        unit.setData(obj);
                     }
+                }
+                ceventHitUnitList.add(unit);
+            } else {
+                // 特殊处理：释放对象（模拟 C++ 逻辑）
+                if (ceventHitUnitList.get(i) != null) {
+                    ceventHitUnitList.set(i, null);
                 }
             }
         }

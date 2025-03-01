@@ -9,17 +9,6 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * @Date 2025/2/23
  * @Description 逆向时该虚函数调用下的字符串信息，一并记录
  * CEventSpriteAttr__Read
- * 角度指定
- * 左回転
- * 右回転
- * 下
- * 上
- * 左
- * 右
- * ランダム
- * %s : %4d (周期 : %4d)
- * %s : %4d
- * ⇒ %4d (周期 : %4d)
  */
 @Data
 public class CEventSpriteAttr extends WazInfoObject {

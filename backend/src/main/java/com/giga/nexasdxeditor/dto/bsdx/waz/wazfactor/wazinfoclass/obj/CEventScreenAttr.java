@@ -1,6 +1,7 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -15,6 +16,24 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  */
 @Data
 public class CEventScreenAttr extends WazInfoObject {
+
+    @Data
+    @AllArgsConstructor
+    public static class CEventScreenAttrType {
+        private Integer type;
+        private String description;
+    }
+
+    public static final CEventScreenAttrType[] CEVENT_SCREEN_ATTR_TYPES = {
+            new CEventScreenAttrType(0xFFFFFFFF, "持続カウンタ"),
+            new CEventScreenAttrType(0xFFFFFFFF, "タイプ"),
+            new CEventScreenAttrType(0xFFFFFFFF, "速度1"),
+            new CEventScreenAttrType(0xFFFFFFFF, "速度2"),
+            new CEventScreenAttrType(0x9, "方向"),
+            new CEventScreenAttrType(0xFFFFFFFF, "スピード"),
+            new CEventScreenAttrType(0xFFFFFFFF, "炎"),
+            new CEventScreenAttrType(0xFFFFFFFF, "爆発")
+    };
 
     private Integer int1;
     private Integer int2;

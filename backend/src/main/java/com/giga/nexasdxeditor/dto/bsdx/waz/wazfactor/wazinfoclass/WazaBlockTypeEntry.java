@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
@@ -8,17 +9,11 @@ import lombok.Data;
  * 逆向所得，存储类型的数组
  */
 @Data
+@AllArgsConstructor
 public class WazaBlockTypeEntry {
 
     private Integer type;
     private Integer address;
     private String description;
-
-    // 构造函数
-    public WazaBlockTypeEntry(Integer type, Integer address, String description) {
-        this.type = type;
-        this.address = address;
-        this.description = description;
-    }
 
 }

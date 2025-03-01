@@ -1,6 +1,7 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -16,17 +17,25 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 @Data
 public class CEventChange extends WazInfoObject {
 
+    @Data
+    @AllArgsConstructor
+    public static class CEventChangeType {
+        private Integer type;
+        private String description;
+    }
+
+    public static final CEventChangeType[] CEVENT_CHANGE_ENTRIES = {
+            // .rdata:007F2048
+            new CEventChangeType(0x0, "消費する熱チャージ量"),
+            new CEventChangeType(0x0, "蓄積する溜め")
+    };
+
     private Integer flag;
 
     private List<WazInfoCollection> wazInfoCollectionList1;
     private List<WazInfoCollection> wazInfoCollectionList2;
 
     private Integer int1;
-
-    public CEventChange() {
-        wazInfoCollectionList1 = new ArrayList<>();
-        wazInfoCollectionList2 = new ArrayList<>();
-    }
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
@@ -46,18 +55,22 @@ public class CEventChange extends WazInfoObject {
 
             int counter = 0;
             do {
-                WazInfoCollection wazInfoCollection1 = new WazInfoCollection();
-                offset = wazInfoCollection1.readCollection(bytes, offset);
-                wazInfoCollectionList1.add(wazInfoCollection1);
+                List<WazInfoCollection> wazInfoCollectionList1 = new ArrayList<>();
+                WazInfoCollection wazInfoCollection = new WazInfoCollection();
+                offset = wazInfoCollection.readCollection(bytes, offset);
+                wazInfoCollectionList1.add(wazInfoCollection);
+                setWazInfoCollectionList1(wazInfoCollectionList1);
 
                 counter++;
             } while (counter < flag);
 
         }
 
+        List<WazInfoCollection> wazInfoCollectionList2 = new ArrayList<>();
         WazInfoCollection wazInfoCollection2 = new WazInfoCollection();
         offset = wazInfoCollection2.readCollection(bytes, offset);
         wazInfoCollectionList2.add(wazInfoCollection2);
+        setWazInfoCollectionList2(wazInfoCollectionList2);
 
         setInt1(readInt32(bytes, offset)); offset += 4;
 

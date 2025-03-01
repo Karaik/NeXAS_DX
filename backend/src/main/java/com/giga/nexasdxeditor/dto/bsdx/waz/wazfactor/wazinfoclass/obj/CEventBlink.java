@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import static com.giga.nexasdxeditor.util.ParserUtil.*;
@@ -11,6 +12,19 @@ import static com.giga.nexasdxeditor.util.ParserUtil.*;
  */
 @Data
 public class CEventBlink extends WazInfoObject {
+
+    @Data
+    @AllArgsConstructor
+    public static class CEventBlinkType {
+        private String description;
+        private String value;
+    }
+
+    public static final CEventBlinkType[] CEVENT_BLINK_ENTRIES = {
+            new CEventBlinkType("BASIC", "%3d(%3d,%3d)"),
+            new CEventBlinkType("WITH_SPACE", "%3d(%3d,%3d) "),
+            new CEventBlinkType("WITH_ARROW", "⇒ %3d(%3d,%3d)")
+    };
 
     private Integer int1;
     private Integer int2;

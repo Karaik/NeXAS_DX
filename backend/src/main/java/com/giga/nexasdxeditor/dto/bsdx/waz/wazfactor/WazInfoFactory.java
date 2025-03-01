@@ -33,8 +33,8 @@ public class WazInfoFactory {
             new WazaBlockTypeEntry(0x03, 0xD0B010, "ﾍﾞｸﾄﾙ：方向補正"), //16
             new WazaBlockTypeEntry(0x03, 0xD0B010, "ﾍﾞｸﾄﾙ：方向増分"), //17
             new WazaBlockTypeEntry(0x03, 0xD0B010, "ﾍﾞｸﾄﾙ：速度"), //18
-            new WazaBlockTypeEntry(0x08, 0xD0B010, "ﾍﾞｸﾄﾙ：ジャンプ力"), //19
-            new WazaBlockTypeEntry(0x02, 0xD0B010, "ﾍﾞｸﾄﾙ：追尾ジャンプ力"), //20
+            new WazaBlockTypeEntry(0x03, 0xD0B010, "ﾍﾞｸﾄﾙ：ジャンプ力"), //19
+            new WazaBlockTypeEntry(0x08, 0xD0B010, "ﾍﾞｸﾄﾙ：追尾ジャンプ力"), //20
             new WazaBlockTypeEntry(0x02, 0xD0B010, "ﾍﾞｸﾄﾙ：重力"), //21
             new WazaBlockTypeEntry(0x02, 0xD0B010, "ﾍﾞｸﾄﾙ：最低高度"), //22
             new WazaBlockTypeEntry(0x02, 0xD0B010, "ﾍﾞｸﾄﾙ：慣性"), //23
@@ -46,8 +46,8 @@ public class WazInfoFactory {
             new WazaBlockTypeEntry(0x00, 0xAA6400, "ﾍﾞｸﾄﾙ補正率：浮遊"), //29
             new WazaBlockTypeEntry(0x00, 0xAA6400, "ﾍﾞｸﾄﾙ補正率：ｻｰﾁﾀﾞｯｼｭ"), //30
             new WazaBlockTypeEntry(0x00, 0xAA6400, "ﾍﾞｸﾄﾙ補正率：慣性"), //31
-            new WazaBlockTypeEntry(0x0C, 0xAA6400, "ﾍﾞｸﾄﾙ補正率：押し戻し"), //32
-            new WazaBlockTypeEntry(0x00, 0xAA6400, "技後の慣性補正"), //33
+            new WazaBlockTypeEntry(0x00, 0xAA6400, "ﾍﾞｸﾄﾙ補正率：押し戻し"), //32
+            new WazaBlockTypeEntry(0x0C, 0xAA6400, "技後の慣性補正"), //33
             new WazaBlockTypeEntry(0x00, 0xDCDCFF, "耐久力"), //34
             new WazaBlockTypeEntry(0x00, 0xC86432, "汎用変数"), //35
             new WazaBlockTypeEntry(0x00, 0xE0E0E0, "装甲"), //36
@@ -123,9 +123,10 @@ public class WazInfoFactory {
             case 0x1E -> new CEventBlur(); // 30
             case 0x1F -> new CEventCamera(); // 31
             case 0x20 -> new CEventTerm(); // 32
-//            case 0x21 -> new CEventNokezori(); // 33
+            case 0x21 -> new CEventNokezori(); // 33
             case 0x22 -> new CEventChange(); // 34
             case 0x23 -> new CEventStatus(); // 35
+            case 0xFFFFFFFF -> new CEventTerm(); // ????
             default -> throw new IllegalArgumentException("Invalid event type");
         };
     }
@@ -164,8 +165,8 @@ public class WazInfoFactory {
             case 0x1D -> new CEventVal(); // 29
             case 0x1E -> new CEventVal(); // 30
             case 0x1F -> new CEventVal(); // 31
-            case 0x20 -> new CEventSlipHosei(); // 32
-            case 0x21 -> new CEventVal(); // 33
+            case 0x20 -> new CEventVal(); // 32
+            case 0x21 -> new CEventSlipHosei(); // 33
             case 0x22 -> new CEventVal(); // 34
             case 0x23 -> new CEventVal(); // 35
             case 0x24 -> new CEventVal(); // 36

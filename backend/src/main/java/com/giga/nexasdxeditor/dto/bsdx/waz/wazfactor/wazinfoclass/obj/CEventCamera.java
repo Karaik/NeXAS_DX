@@ -2,6 +2,7 @@ package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazaBlockTypeEntry;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -18,16 +19,28 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 @Data
 public class CEventCamera extends WazInfoObject {
 
-    private Short short1;
-    private List<CEventCameraCollectionUnit> ceventCameraCollection;
-
-    public CEventCamera() {
-        this.ceventCameraCollection = new ArrayList<>();
+    @Data
+    @AllArgsConstructor
+    public static class CEventCameraType {
+        private Integer type;
+        private String description;
     }
 
+    public static final CEventCameraType[] CEVENT_CAMERA_ENTRIES = {
+            // 根据 dword_7F1F7C 数组逆向数据定义
+            new CEventCameraType(0x5, "位置"),
+            new CEventCameraType(0x9, "方向"),
+            new CEventCameraType(0x0, "距離"),
+            new CEventCameraType(0x0, "高さ"),
+            new CEventCameraType(0xFFFFFFFF, "フラグ")
+    };
+
+    private Short short1;
+    private List<CEventCameraUnit> ceventCameraUnitList;
+
     @Data
-    public static class CEventCameraCollectionUnit {
-        private Integer flag;
+    public static class CEventCameraUnit {
+        private Integer buffer;
         private WazInfoObject data;
     }
 
@@ -37,23 +50,26 @@ public class CEventCamera extends WazInfoObject {
 
         setShort1(readInt16(bytes, offset)); offset += 2;
 
-        WazaBlockTypeEntry wazaBlockTypeEntry = null;
-        for (int i = 0; i < 5; i++) {
-            CEventCameraCollectionUnit unit = new CEventCameraCollectionUnit();
+        List<CEventCameraUnit> ceventCameraUnitList = new ArrayList<>();
 
-            int flag = readInt32(bytes, offset); offset += 4;
-            unit.setFlag(flag);
-            if (flag != 0) {
-                if (unit.getData() == null) {
-                    // TODO *v6 = makeObjectOfType(dword_7F1F7C[2 * v5]);
-                    wazaBlockTypeEntry = WazInfoFactory.WAZA_BLOCK_TYPE_ENTRIES[2 * i];
+        for (int i = 0; i < 5; i++) {
+            int buffer = readInt32(bytes, offset); offset += 4;
+
+            CEventCameraUnit unit = new CEventCameraUnit();
+            unit.setBuffer(buffer);
+
+            if (buffer != 0) {
+                int typeId = CEVENT_CAMERA_ENTRIES[i].getType();
+                WazInfoObject obj = WazInfoFactory.createCEventObjectByType(typeId);
+                if (obj != null) {
+                    offset = obj.readInfo(bytes, offset);
+                    unit.setData(obj);
                 }
-                WazInfoObject ceventObjectByType = WazInfoFactory.createCEventObjectByType(wazaBlockTypeEntry.getType());
-                offset = ceventObjectByType.readInfo(bytes, offset);
-                unit.setData(ceventObjectByType);
             }
-            ceventCameraCollection.add(unit);
+            ceventCameraUnitList.add(unit);
         }
+
+        setCeventCameraUnitList(ceventCameraUnitList);
 
         return offset;
     }

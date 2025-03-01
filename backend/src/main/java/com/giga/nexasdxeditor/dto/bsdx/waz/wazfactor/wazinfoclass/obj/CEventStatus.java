@@ -1,11 +1,13 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory.createCEventObjectByType;
 import static com.giga.nexasdxeditor.util.ParserUtil.*;
 
 /**
@@ -17,7 +19,54 @@ import static com.giga.nexasdxeditor.util.ParserUtil.*;
 @Data
 public class CEventStatus extends WazInfoObject {
 
+    @Data
+    @AllArgsConstructor
+    public static class CEventStatusType {
+        private Integer type;
+        private String name;
+    }
+
+    public static final CEventStatusType[] CEVENT_STATUS_TYPES = {
+            new CEventStatusType(0xFFFFFFFF, "追加タイプ"),
+            new CEventStatusType(0xFFFFFFFF, "対象タイプ"),
+            new CEventStatusType(0xFFFFFFFF, "最大HP"),
+            new CEventStatusType(0xFFFFFFFF, "ブースター数"),
+            new CEventStatusType(0xFFFFFFFF, "FCゲージ数"),
+            new CEventStatusType(0xFFFFFFFF, "打撃攻撃力"),
+            new CEventStatusType(0xFFFFFFFF, "射撃攻撃力"),
+            new CEventStatusType(0xFFFFFFFF, "打撃防御力"),
+            new CEventStatusType(0xFFFFFFFF, "射撃防御力"),
+            new CEventStatusType(0xFFFFFFFF, "移動速度：歩行"),
+            new CEventStatusType(0xFFFFFFFF, "移動速度：ダッシュ"),
+            new CEventStatusType(0xFFFFFFFF, "移動速度：ブーストダッシュ"),
+            new CEventStatusType(0xFFFFFFFF, "移動速度：サーチダッシュ"),
+            new CEventStatusType(0xFFFFFFFF, "攻撃速度：打撃"),
+            new CEventStatusType(0xFFFFFFFF, "攻撃速度：射撃"),
+            new CEventStatusType(0xFFFFFFFF, "熱冷却速度"),
+            new CEventStatusType(0xFFFFFFFF, "根性値"),
+            new CEventStatusType(0xFFFFFFFF, "データタイプ"),
+            new CEventStatusType(0xFFFFFFFF, "終了タイプ"),
+            new CEventStatusType(0xFFFFFFFF, "終了カウント"),
+            new CEventStatusType(0xFFFFFFFF, "開始時間"),
+            new CEventStatusType(0xFFFFFFFF, "実行間隔"),
+            new CEventStatusType(0xFFFFFFFF, "優先順位"),
+            new CEventStatusType(0xFFFFFFFF, "重複タイプ"),
+            new CEventStatusType(0x4, "エフェクト")
+    };
+
     private byte[] byteData1;
+
+//    private Integer isPersistent;      // 持久性标志 (对应C++ this+46 1字节)
+//    private Integer effectType;        // エフェクト类型 (对应C++ this+47)
+//    private Integer priority;          // 優先順位 (对应C++ this+48)
+//    private Integer overlapType;       // 重複タイプ (对应C++ this+49)
+//    private Integer startTime;         // 開始時間 (对应C++ this+50)
+//    private Integer executeInterval;   // 実行間隔 (对应C++ this+51)
+//    private Integer terminationType;   // 終了タイプ (对应C++ this+52)
+//    private Integer terminationCount;  // 終了カウント (对应C++ this+53)
+//    private Integer dataType;          // データタイプ (对应C++ this+54)
+//    private Integer enduranceValue;    // 根性値 (对应C++ this+55)
+
     private byte[] byteData2;
     private byte byte1;
     private Integer int1;
@@ -30,16 +79,16 @@ public class CEventStatus extends WazInfoObject {
     private Integer int8;
     private Integer int9;
 
-    private List<CEventStatusCollectionUnit> ceventStatusCollection; // 不确定是否全为int，因为调用了虚函数的read
+    private List<CEventStatusUnit> ceventStatusUnitList;
 
     public CEventStatus() {
-        this.ceventStatusCollection = new ArrayList<>();
+        ceventStatusUnitList = new ArrayList<>();
     }
 
     @Data
-    public static class CEventStatusCollectionUnit {
-        private Integer flag;
-        private Integer data;
+    public static class CEventStatusUnit {
+        private Integer buffer;
+        private WazInfoObject data;
     }
 
     @Override
@@ -63,18 +112,22 @@ public class CEventStatus extends WazInfoObject {
         setInt8(readInt32(bytes, offset)); offset += 4;
         setInt9(readInt32(bytes, offset)); offset += 4;
 
-        for (int i = 0; i < 25; i++) {
-            CEventStatusCollectionUnit unit = new CEventStatusCollectionUnit();
+        ceventStatusUnitList.clear();
 
-            int flag = readInt32(bytes, offset); offset += 4;
-            unit.setFlag(flag);
-            if (flag != 0) {
-                // TODO 极有可能出错
-                unit.setData(readInt32(bytes, offset)); offset += 4;
-            } else {
-                unit.setData(null);
+        for (int i = 0; i < 25; i++) {
+            int buffer = readInt32(bytes, offset); offset += 4;
+            CEventStatusUnit unit = new CEventStatusUnit();
+            unit.setBuffer(buffer);
+
+            if (buffer != 0) {
+                int typeId = CEVENT_STATUS_TYPES[i].getType();
+                WazInfoObject obj = createCEventObjectByType(typeId);
+                if (obj != null) {
+                    offset = obj.readInfo(bytes, offset);
+                    unit.setData(obj);
+                }
             }
-            ceventStatusCollection.add(unit);
+            ceventStatusUnitList.add(unit);
         }
 
         return offset;

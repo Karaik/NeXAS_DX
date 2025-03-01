@@ -1,11 +1,13 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory.createCEventObjectByType;
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
@@ -15,6 +17,24 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  */
 @Data
 public class CEventRadialLine extends WazInfoObject {
+
+    @Data
+    @AllArgsConstructor
+    public static class CEventRadialLineType {
+        private Integer type;
+        private String description;
+    }
+
+    public static final CEventRadialLineType[] CEVENT_RADIAL_LINE_TYPES = {
+            new CEventRadialLineType(0xFFFFFFFF, "フェード描画"),
+            new CEventRadialLineType(0xFFFFFFFF, "フラッシュ描画"),
+            new CEventRadialLineType(0xFFFFFFFF, "フェード色指定描画"),
+            new CEventRadialLineType(0xFFFFFFFF, "フラッシュ色指定描画"),
+            new CEventRadialLineType(0xFFFFFFFF, "ネガティブ描画"),
+            new CEventRadialLineType(0xFFFFFFFF, "アルファ塗りつぶし描画"),
+            new CEventRadialLineType(0xFFFFFFFF, "加算塗りつぶし描画"),
+            new CEventRadialLineType(0xFFFFFFFF, "減算塗りつぶし描画")
+    };
 
     private Integer int1;
     private Integer int2;
@@ -30,16 +50,16 @@ public class CEventRadialLine extends WazInfoObject {
     private Integer int12;
     private Integer int13;
 
-    private List<CEventRadialLineCollectionUnit> ceventRadialLineCollection;
+    private List<CEventRadialLineUnit> ceventRadialLineUnitList;
 
     public CEventRadialLine() {
-        this.ceventRadialLineCollection = new ArrayList<>();
+        ceventRadialLineUnitList = new ArrayList<>();
     }
 
     @Data
-    public static class CEventRadialLineCollectionUnit {
-        private Integer flag;
-        private Integer data;
+    public static class CEventRadialLineUnit {
+        private Integer buffer;
+        private WazInfoObject data;
     }
 
     @Override
@@ -60,19 +80,23 @@ public class CEventRadialLine extends WazInfoObject {
         setInt12(readInt32(bytes, offset)); offset += 4;
         setInt13(readInt32(bytes, offset)); offset += 4;
 
+        ceventRadialLineUnitList.clear();
+
         for (int i = 0; i < 13; i++) {
             if (i == 4) {
-                CEventRadialLineCollectionUnit unit = new CEventRadialLineCollectionUnit();
+                int buffer = readInt32(bytes, offset); offset += 4;
+                CEventRadialLineUnit unit = new CEventRadialLineUnit();
+                unit.setBuffer(buffer);
 
-                int flag = readInt32(bytes, offset);
-                offset += 4;
-                unit.setFlag(flag);
-                if (flag != 0) {
-                    unit.setData(readInt32(bytes, offset)); offset += 4;
-                } else {
-                    unit.setData(null);
+                if (buffer != 0) {
+                    int typeId = CEVENT_RADIAL_LINE_TYPES[4].getType();
+                    WazInfoObject obj = createCEventObjectByType(typeId);
+                    if (obj != null) {
+                        offset = obj.readInfo(bytes, offset);
+                        unit.setData(obj);
+                    }
                 }
-                ceventRadialLineCollection.add(unit);
+                ceventRadialLineUnitList.add(unit);
             }
         }
 

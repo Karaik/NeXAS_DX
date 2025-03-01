@@ -23,17 +23,15 @@ public class CEventScreenYure extends WazInfoObject {
     private Integer int3;
     private Integer int4;
 
-    public CEventScreenYure() {
-        wazInfoCollectionList = new ArrayList<>();
-    }
-
     @Override
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
+        List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
         WazInfoCollection wazInfoCollection = new WazInfoCollection();
         offset = wazInfoCollection.readCollection(bytes, offset);
         wazInfoCollectionList.add(wazInfoCollection);
+        setWazInfoCollectionList(wazInfoCollectionList);
 
         setInt1(readInt32(bytes, offset)); offset += 4;
         setInt2(readInt32(bytes, offset)); offset += 4;

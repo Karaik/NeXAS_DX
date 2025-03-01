@@ -1,11 +1,13 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory.createCEventObjectByType;
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
@@ -15,6 +17,61 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  */
 @Data
 public class CEventEffect extends WazInfoObject {
+
+    @Data
+    @AllArgsConstructor
+    public static class CEventEffectType {
+        private Integer type;
+        private String description;
+    }
+
+    public static final CEventEffectType[] CEVENT_EFFECT_TYPES = {
+            new CEventEffectType(0xFFFFFFFF, "エフェクトタイプ1"),
+            new CEventEffectType(0xFFFFFFFF, "エフェクトタイプ2"),
+            new CEventEffectType(0xFFFFFFFF, "フラグ"),
+            new CEventEffectType(0x4, "エフェクト番号"),
+            new CEventEffectType(0x2, "同時発射数"),
+            new CEventEffectType(0x2, "最大発射数"),
+            new CEventEffectType(0x2, "発射間隔"),
+            new CEventEffectType(0x5, "発射位置"),
+            new CEventEffectType(0x9, "発射位置補正：方向"),
+            new CEventEffectType(0x3, "発射位置補正：方向補正"),
+            new CEventEffectType(0x3, "発射位置補正：距離"),
+            new CEventEffectType(0x3, "発射位置補正：高さ"),
+            new CEventEffectType(0xFFFFFFFF, "発射方向：１発ごとの補正"),
+            new CEventEffectType(0x0, "発射方向：同時発射補正"),
+            new CEventEffectType(0x2, "発射方向：全体補正"),
+            new CEventEffectType(0x17, "発射ＳＥ"),
+            new CEventEffectType(0x2, "ｽﾌﾟﾗｲﾄ：拡大縮小"),
+            new CEventEffectType(0x2, "ｽﾌﾟﾗｲﾄ：拡大縮小X"),
+            new CEventEffectType(0x2, "ｽﾌﾟﾗｲﾄ：拡大縮小Y"),
+            new CEventEffectType(0x2, "ｽﾌﾟﾗｲﾄ：拡大縮小Y(ｽﾛｰ影響)"),
+            new CEventEffectType(0xE, "ｽﾌﾟﾗｲﾄ：振動"),
+            new CEventEffectType(0xF, "ｽﾌﾟﾗｲﾄ：属性"),
+            new CEventEffectType(0x9, "ｽﾌﾟﾗｲﾄ：方向"),
+            new CEventEffectType(0x3, "ｽﾌﾟﾗｲﾄ：方向補正"),
+            new CEventEffectType(0x3, "ｽﾌﾟﾗｲﾄ：方向増分"),
+            new CEventEffectType(0x5, "位置"),
+            new CEventEffectType(0x2, "位置：分散率"),
+            new CEventEffectType(0x7, "座標移動"),
+            new CEventEffectType(0x9, "ﾍﾞｸﾄﾙ：方向"),
+            new CEventEffectType(0x3, "ﾍﾞｸﾄﾙ：方向補正"),
+            new CEventEffectType(0x3, "ﾍﾞｸﾄﾙ：方向増分"),
+            new CEventEffectType(0x3, "ﾍﾞｸﾄﾙ：速度"),
+            new CEventEffectType(0x3, "ﾍﾞｸﾄﾙ：高さ"),
+            new CEventEffectType(0x2, "ﾍﾞｸﾄﾙ：重力"),
+            new CEventEffectType(0x2, "ﾍﾞｸﾄﾙ：最低高度"),
+            new CEventEffectType(0x2, "ﾍﾞｸﾄﾙ：慣性"),
+            new CEventEffectType(0x0, "汎用変数"),
+            new CEventEffectType(0x0, "溜め攻撃力"),
+            new CEventEffectType(0x0, "影の濃さ"),
+            new CEventEffectType(0x2, "優先順位補正"),
+            new CEventEffectType(0x2, "耐久力"),
+            new CEventEffectType(0xFFFFFFFF, "記憶ＯＢＪの最大数"),
+            new CEventEffectType(0xFFFFFFFF, "指定OBJ数以下なら生成"),
+            new CEventEffectType(0xFFFFFFFF, "指定画面範囲内なら生成"),
+            new CEventEffectType(0xFFFFFFFF, "指定画面範囲外なら削除")
+    };
 
     private Integer int1;
     private Integer int2;
@@ -28,16 +85,16 @@ public class CEventEffect extends WazInfoObject {
     private Integer int10;
     private Integer int11;
 
-    private List<CEventEffectCollectionUnit> ceventEffectCollection;
+    private List<CEventEffectUnit> ceventEffectUnitList;
 
     public CEventEffect() {
-        this.ceventEffectCollection = new ArrayList<>();
+        ceventEffectUnitList = new ArrayList<>();
     }
 
     @Data
-    public static class CEventEffectCollectionUnit {
-        private Integer flag;
-        private Integer data;
+    public static class CEventEffectUnit {
+        private Integer buffer;       // 原始 buffer 值
+        private WazInfoObject data;    // 反序列化后的对象
     }
 
     @Override
@@ -56,17 +113,22 @@ public class CEventEffect extends WazInfoObject {
         setInt10(readInt32(bytes, offset)); offset += 4;
         setInt11(readInt32(bytes, offset)); offset += 4;
 
-        for (int i = 0; i < 45; i++) {
-            CEventEffectCollectionUnit unit = new CEventEffectCollectionUnit();
+        ceventEffectUnitList.clear();
 
-            int flag = readInt32(bytes, offset); offset += 4;
-            unit.setFlag(flag);
-            if (flag != 0) {
-                unit.setData(readInt32(bytes, offset)); offset += 4;
-            } else {
-                unit.setData(null);
+        for (int i = 0; i < 45; i++) {
+            int buffer = readInt32(bytes, offset); offset += 4;
+            CEventEffectUnit unit = new CEventEffectUnit();
+            unit.setBuffer(buffer);
+
+            if (buffer != 0) {
+                int typeId = CEVENT_EFFECT_TYPES[i].getType();
+                WazInfoObject obj = createCEventObjectByType(typeId);
+                if (obj != null) {
+                    offset = obj.readInfo(bytes, offset);
+                    unit.setData(obj);
+                }
             }
-            ceventEffectCollection.add(unit);
+            ceventEffectUnitList.add(unit);
         }
 
         return offset;

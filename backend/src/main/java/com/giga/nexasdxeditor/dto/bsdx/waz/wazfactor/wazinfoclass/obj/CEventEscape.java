@@ -1,11 +1,12 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory.createCEventObjectByType;
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
@@ -16,6 +17,19 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 @Data
 public class CEventEscape extends WazInfoObject {
 
+    @Data
+    @AllArgsConstructor
+    public static class CEventEscapeType {
+        private Integer type;
+        private String description;
+    }
+
+    public static final CEventEscapeType[] CEVENT_ESCAPE_TYPES = {
+            new CEventEscapeType(0xFFFFFFFF, "タイプ"),
+            new CEventEscapeType(0x3, "最大増分(1=0.01)"),
+            new CEventEscapeType(0x2, "標的高度補正")
+    };
+
     private Integer int1;
     private Integer int2;
     private Integer int3;
@@ -24,18 +38,17 @@ public class CEventEscape extends WazInfoObject {
     private Integer int6;
     private Integer int7;
     private Integer int8;
-    private Integer int9;
 
-    private List<CEventEscapeCollectionUnit> ceventEscapeCollection;
+    private List<CEventEscapeUnit> ceventEscapeUnitList;
 
     public CEventEscape() {
-        this.ceventEscapeCollection = new ArrayList<>();
+        ceventEscapeUnitList = new ArrayList<>();
     }
 
     @Data
-    public static class CEventEscapeCollectionUnit {
-        private Integer flag;
-        private Integer data;
+    public static class CEventEscapeUnit {
+        private Integer buffer;
+        private WazInfoObject data;
     }
 
     @Override
@@ -50,23 +63,34 @@ public class CEventEscape extends WazInfoObject {
         setInt6(readInt32(bytes, offset)); offset += 4;
         setInt7(readInt32(bytes, offset)); offset += 4;
         setInt8(readInt32(bytes, offset)); offset += 4;
-        setInt9(readInt32(bytes, offset)); offset += 4;
+
+        ceventEscapeUnitList.clear();
 
         for (int i = 0; i < 10; i++) {
-            CEventEscapeCollectionUnit unit = new CEventEscapeCollectionUnit();
+            CEventEscapeUnit unit = new CEventEscapeUnit();
 
-            int flag = readInt32(bytes, offset); offset += 4;
-            unit.setFlag(flag);
-            // todo CEventTerm
-            if (flag != 0) {
-                unit.setData(readInt32(bytes, offset)); offset += 4;
-            } else {
+            if (i == 2 || i == 8) {
+                int buffer = readInt32(bytes, offset); offset += 4;
+                unit.setBuffer(buffer);
+
+                if (buffer != 0) {
+                    // todo CEventTerm
+                    int typeId = CEVENT_ESCAPE_TYPES[i == 2 ? 0 : 2].getType();
+                    WazInfoObject obj = createCEventObjectByType(typeId);
+                    if (obj != null) {
+                        offset = obj.readInfo(bytes, offset);
+                        unit.setData(obj);
+                    }
+                }
+
+            }  else {
+                unit.setBuffer(null);
                 unit.setData(null);
             }
-            ceventEscapeCollection.add(unit);
+
+            ceventEscapeUnitList.add(unit);
         }
 
         return offset;
     }
 }
-

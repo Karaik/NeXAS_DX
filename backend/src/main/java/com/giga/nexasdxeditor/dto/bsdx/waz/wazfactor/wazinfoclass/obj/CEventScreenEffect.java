@@ -1,11 +1,13 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory.createCEventObjectByType;
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
@@ -16,21 +18,36 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 @Data
 public class CEventScreenEffect extends WazInfoObject {
 
+    @Data
+    @AllArgsConstructor
+    public static class CEventScreenEffectType {
+        private Integer type;
+        private String description;
+    }
+
+    public static final CEventScreenEffectType[] CEVENT_SCREEN_EFFECT_TYPES = {
+            new CEventScreenEffectType(0xFFFFFFFF, "持続カウンタ"),
+            new CEventScreenEffectType(0xFFFFFFFF, "変化フレーム数"),
+            new CEventScreenEffectType(0xFFFFFFFF, "数"),
+            new CEventScreenEffectType(0x9, "角度"),
+            new CEventScreenEffectType(0xFFFFFFFF, "速度")
+    };
+
     private Integer int1;
     private Integer int2;
     private Integer int3;
     private Integer int4;
 
-    private List<CEventScreenEffectCollectionUnit> ceventScreenEffectCollection;
+    private List<CEventScreenEffectUnit> ceventScreenEffectUnitList;
 
     public CEventScreenEffect() {
-        this.ceventScreenEffectCollection = new ArrayList<>();
+        ceventScreenEffectUnitList = new ArrayList<>();
     }
 
     @Data
-    public static class CEventScreenEffectCollectionUnit {
-        private Integer flag;
-        private Integer data;
+    public static class CEventScreenEffectUnit {
+        private Integer buffer;
+        private WazInfoObject data;
     }
 
     @Override
@@ -42,18 +59,23 @@ public class CEventScreenEffect extends WazInfoObject {
         setInt3(readInt32(bytes, offset)); offset += 4;
         setInt4(readInt32(bytes, offset)); offset += 4;
 
+        ceventScreenEffectUnitList.clear();
+
         for (int i = 0; i < 5; i++) {
             if (i == 4) {
-                CEventScreenEffectCollectionUnit unit = new CEventScreenEffectCollectionUnit();
+                int buffer = readInt32(bytes, offset); offset += 4;
+                CEventScreenEffectUnit unit = new CEventScreenEffectUnit();
+                unit.setBuffer(buffer);
 
-                int flag = readInt32(bytes, offset); offset += 4;
-                unit.setFlag(flag);
-                if (flag != 0) {
-                    unit.setData(readInt32(bytes, offset)); offset += 4;
-                } else {
-                    unit.setData(null);
+                if (buffer != 0) {
+                    int typeId = CEVENT_SCREEN_EFFECT_TYPES[i].getType();
+                    WazInfoObject obj = createCEventObjectByType(typeId);
+                    if (obj != null) {
+                        offset = obj.readInfo(bytes, offset);
+                        unit.setData(obj);
+                    }
                 }
-                ceventScreenEffectCollection.add(unit);
+                ceventScreenEffectUnitList.add(unit);
             }
         }
 

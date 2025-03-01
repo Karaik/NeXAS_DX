@@ -27,12 +27,12 @@ public class WazParser {
 
     public static Waz parseWaz(byte[] bytes, String fileName, String charset) {
 
-        Integer spmSequence = SpmSequenceConst.MEK_SPM_SEQUENCE.get(fileName);
-        if (spmSequence == null) {
-            return new Waz();
-        }
+//        Integer spmSequence = SpmSequenceConst.MEK_SPM_SEQUENCE.get(fileName);
+//        if (spmSequence == null) {
+//            return new Waz();
+//        }
 
-        Waz waz = new Waz(SpmSequenceConst.MEK_SPM_SEQUENCE.get(fileName));
+        Waz waz = new Waz();
         List<Waz.WazBlock> wazBlockList = waz.getWazBlockList();
         try {
 
