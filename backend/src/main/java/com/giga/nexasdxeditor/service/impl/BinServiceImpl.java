@@ -30,7 +30,7 @@ public class BinServiceImpl implements BinService {
             binFile = MekParser.parseMek(mekFile, charset);
         } else if ("waz".equalsIgnoreCase(fileExtension)) {
             byte[] wazFile = Files.readAllBytes(Paths.get(path));
-            binFile = WazParser.parseWaz(wazFile, getFileName(path), "Shift-jis");
+            binFile = WazParser.parseWaz(wazFile, getFileName(path), charset);
         } else {
             throw new BusinessException(500, "文件上传错误！");
         }

@@ -2,22 +2,22 @@ package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
- * @Date 2025/2/23
- * CEventVal__Read(read_wazSpmFrameAnd4Unk)
- * タイプ
- * 優先順位
+ * @Date 2025/2/28
+ * CEventWazaSelect__Read
  */
 @Data
-public class CEventVal extends WazInfoObject {
+public class CEventWazaSelect extends WazInfoObject {
 
     private Integer int1;
     private Integer int2;
-    private Integer int3;
-    private Integer int4;
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
@@ -25,9 +25,8 @@ public class CEventVal extends WazInfoObject {
 
         setInt1(readInt32(bytes, offset)); offset += 4;
         setInt2(readInt32(bytes, offset)); offset += 4;
-        setInt3(readInt32(bytes, offset)); offset += 4;
-        setInt4(readInt32(bytes, offset)); offset += 4;
 
         return offset;
     }
 }
+

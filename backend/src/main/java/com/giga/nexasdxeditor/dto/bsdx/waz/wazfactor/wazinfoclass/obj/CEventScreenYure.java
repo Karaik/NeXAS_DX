@@ -10,12 +10,11 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
- * @Date 2025/2/22
- * @Description
- * CEventSpriteYure__Read
+ * @Date 2025/2/26
+ * CEventScreenYure__Read
  */
 @Data
-public class CEventSpriteYure extends WazInfoObject {
+public class CEventScreenYure extends WazInfoObject {
 
     private List<WazInfoCollection> wazInfoCollectionList;
 
@@ -26,7 +25,6 @@ public class CEventSpriteYure extends WazInfoObject {
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
-
         offset = super.readInfo(bytes, offset);
 
         List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
@@ -43,3 +41,4 @@ public class CEventSpriteYure extends WazInfoObject {
         return offset;
     }
 }
+

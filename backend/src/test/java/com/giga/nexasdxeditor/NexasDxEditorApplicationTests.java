@@ -251,11 +251,16 @@ class NexasDxEditorApplicationTests {
         Resource[] resources = resolver.getResources("classpath*:/game/bsdx/waz/*.waz");
 
         String path = null;
-        List<List<Waz>> allWazList = new ArrayList<>();
+        List<Waz> allWazList = new ArrayList<>();
         for (Resource resource : resources) {
             path = resource.getFile().getPath();
-            ResponseDTO parse = binServiceImpl.parse(path, "Shift-jis");
-            List<Waz> wazList = (List<Waz>) parse.getData();
+            ResponseDTO parse = null;
+            try {
+                parse = binServiceImpl.parse(path, "Shift-jis");
+            } catch (Exception e) {
+                continue;
+            }
+            Waz wazList = (Waz) parse.getData();
             allWazList.add(wazList);
         }
         log.info("allWazList.size ===  {} ", allWazList.size());
@@ -286,7 +291,7 @@ class NexasDxEditorApplicationTests {
     void testCreateTestWazDat() throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         // 获取resources目录下的文件
-        Resource[] resources = resolver.getResources("classpath*:/test/*.waz");
+        Resource[] resources = resolver.getResources("classpath*:/Update3/*.waz");
 
         if (resources.length > 0) {
             byte[] firstFileContent = FileUtil.readBytes(resources[0].getFile());
@@ -331,7 +336,7 @@ class NexasDxEditorApplicationTests {
     @Test
     void testPac() throws Exception {
         ResponseDTO responseDTO = pacServiceImpl.pac(
-                "D:\\Code\\java\\NeXAS_DX\\backend\\src\\main\\resources\\"+"test");
+                "D:\\Code\\java\\NeXAS_DX\\backend\\src\\main\\resources\\"+"Update3");
         log.info("\npack output: \n{}", responseDTO);
     }
 
@@ -360,43 +365,6 @@ class NexasDxEditorApplicationTests {
         binServiceImpl.generate(path1, jaMek, "GBK");
     }
 
-    @Test
-    void test1() {
-        String text = "機動力上昇し、長時間にわたって移動速度を上げる。攻撃距離に影響なし、効果時間は長いし、長時間作戦に対してはとても有利な技です。";
-        try {
-            // 使用Shift-JIS编码将字符串转换为字节数组
-            byte[] bytes = text.getBytes(Charset.forName("Shift-JIS"));
-            // 转换为十六进制字符串
-            StringBuilder hexBuilder = new StringBuilder();
-            for (byte b : bytes) {
-                hexBuilder.append(String.format("%02X ", b)); // 大写十六进制，带空格分隔
-            }
-            log.info(hexBuilder.toString().trim());
-        } catch (Exception e) {
-            System.err.println("编码转换失败: " + e.getMessage());
-        }
-    }
-
-    private String getPacName() throws IOException {
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        Resource[] resourcesArray = resolver.getResources("classpath*:*.pac");
-        Resource resource = resourcesArray[0];
-        String filename = StrUtil.removeSuffix(resource.getFilename(), ".pac");
-        return filename;
-    }
-    // 将Resource转换为MultipartFile
-    private MultipartFile convertToMultipartFile(Resource resource) throws IOException {
-        // 读取文件内容
-        byte[] content = Files.readAllBytes(resource.getFile().toPath());
-
-        // 使用MockMultipartFile包装文件
-        return new MockMultipartFile(
-                resource.getFilename(),      // 文件名
-                resource.getFilename(),      // 原始文件名
-                "application/octet-stream",  // 文件类型
-                content                      // 文件内容
-        );
-    }
 
 }
 

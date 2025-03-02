@@ -1,5 +1,0 @@
-int __thiscall CEventTouch::Read(int this, int a2)
-{
-  read_spm_frame(a2);
-  return File::read(a2, (this + 8), 0x38u);
-}

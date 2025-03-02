@@ -1,8 +1,0 @@
-int __thiscall CEventBlink::Read(int this, int a2)
-{
-  read_spm_frame(a2);
-  File::read(a2, (this + 8), 4u);
-  File::read(a2, (this + 12), 4u);
-  File::read(a2, (this + 16), 4u);
-  return File::read(a2, (this + 20), 2u);
-}

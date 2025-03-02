@@ -31,39 +31,29 @@ public class WazInfoCollection {
 
     public int readCollection(byte[] bytes, int offset) {
 
-        setInt1(readInt32(bytes, offset));
-        offset += 4;
+        setInt1(readInt32(bytes, offset)); offset += 4;
 
-        int count1 = readInt32(bytes, offset);
-        offset += 4;
+        int count1 = readInt32(bytes, offset); offset += 4;
         for (int i = 0; i < count1; i++) {
-            intList1.add(readInt32(bytes, offset));
-            offset += 4;
+            intList1.add(readInt32(bytes, offset)); offset += 4;
         }
 
-        int count2 = readInt32(bytes, offset);
-        offset += 4;
+        int count2 = readInt32(bytes, offset); offset += 4;
         for (int i = 0; i < count2; i++) {
-            intList2.add(readInt32(bytes, offset));
-            offset += 4;
+            intList2.add(readInt32(bytes, offset)); offset += 4;
         }
 
-        int count3 = readInt32(bytes, offset);
-        offset += 4;
+        int count3 = readInt32(bytes, offset); offset += 4;
         for (int i = 0; i < count3; i++) {
-            intList3.add(readInt32(bytes, offset));
-            offset += 4;
+            intList3.add(readInt32(bytes, offset)); offset += 4;
         }
 
-        int count4 = readInt32(bytes, offset);
-        offset += 4;
+        int count4 = readInt32(bytes, offset); offset += 4;
         for (int i = 0; i < count4; i++) {
-            intList4.add(readInt32(bytes, offset));
-            offset += 4;
+            intList4.add(readInt32(bytes, offset)); offset += 4;
         }
 
-        setInt2(readInt32(bytes, offset));
-        offset += 4;
+        setInt2(readInt32(bytes, offset)); offset += 4;
         return offset;
     }
 }

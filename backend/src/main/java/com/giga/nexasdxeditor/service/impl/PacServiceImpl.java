@@ -51,7 +51,7 @@ public class PacServiceImpl implements PacService {
                     .filter(Files::isRegularFile) // 只获取文件（排除目录）
                     .map(Path::getFileName)
                     .map(Path::toString)
-                    .collect(Collectors.toList());
+                    .toList();
 
             // 将文件名作为key，文件路径作为value存入Map
             for (String name : fileNames) {

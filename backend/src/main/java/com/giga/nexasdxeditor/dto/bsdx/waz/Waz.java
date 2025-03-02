@@ -1,6 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazInfoObject;
+import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazUnit;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -14,48 +14,62 @@ import java.util.List;
 @Data
 public class Waz {
 
-    private Integer spmSequence;
+    public Integer spmSequence; // 仅记录用
 
-    private String skillNameKanji;
+    private List<WazBlock> wazBlockList;
 
-    private String skillNameEnglish;
+    private WazSuffix wazSuffix;
 
-    private List<WazPhase> phasesInfo;
-
-    /**
-     * 该技能的阶段数
-     */
-    private Integer phaseQuantity;
-
-    private byte[] data;
-
+    public Waz() {
+        this.wazBlockList = new ArrayList<>();
+    }
     public Waz(Integer spmSequence) {
         this.spmSequence = spmSequence;
-        this.phasesInfo = new ArrayList<>();
+        this.wazBlockList = new ArrayList<>();
     }
 
-    /**
-     * 技能的阶段
-     * 逆向得知，每个阶段信息内，有72个最小单元，每个单元大小为3*4+5*4字节，
-     * 其中单元数由读到的第一个整数决定
-     */
     @Data
-    public static class WazPhase {
-
+    public static class WazBlock {
         /**
-         * 逆向所得，size=72
+         * 该技能的阶段数
          */
-        private List<List<WazInfoObject>> wazInfoObjectCollection;
+        public Integer phaseQuantity; // 仅记录用
 
+        private String skillNameJapanese;
 
-        public WazPhase () {
-            this.wazInfoObjectCollection = new ArrayList<>();
+        private String skillNameEnglish;
+
+        private List<WazPhase> phasesInfo;
+
+        public WazBlock() {
+            this.phasesInfo = new ArrayList<>();
         }
 
+        /**
+         * 技能的阶段
+         * 逆向得知，每个阶段信息内，有72个最小单元，每个单元大小为3*4+5*4字节，
+         * 其中单元数由读到的第一个整数决定
+         */
+        @Data
+        public static class WazPhase {
 
+            /**
+             * 逆向所得，size=72
+             */
+            private List<WazUnit> wazUnitCollection;
+
+            public WazPhase () {
+                this.wazUnitCollection = new ArrayList<>();
+            }
+
+        }
     }
 
-
-
+    @Data
+    public static class WazSuffix {
+        private Integer count;
+        private Integer int1;
+        private Integer int2;
+    }
 
 }

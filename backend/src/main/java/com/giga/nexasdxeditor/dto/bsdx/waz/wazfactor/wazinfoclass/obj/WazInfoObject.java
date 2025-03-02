@@ -1,4 +1,4 @@
-package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass;
+package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import lombok.Data;
 
@@ -24,12 +24,14 @@ public class WazInfoObject {
 
     public int readInfo(byte[] bytes, int offset) {
 
-        setStartFrame(readInt32(bytes, offset));
-        offset += 4;
-        setEndFrame(readInt32(bytes, offset));
-        offset += 4;
+        setStartFrame(readInt32(bytes, offset)); offset += 4;
+        setEndFrame(readInt32(bytes, offset)); offset += 4;
 
-        return 8; // +8
+        return offset; // +8
+    }
+
+    public void writeInfo(byte[] bytes) {
+        // TODO
     }
 
 }
