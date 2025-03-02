@@ -65,7 +65,7 @@ public class CEventEffect extends WazInfoObject {
             new CEventEffectType(0x0, "汎用変数"),
             new CEventEffectType(0x0, "溜め攻撃力"),
             new CEventEffectType(0x0, "影の濃さ"),
-            new CEventEffectType(0x2, "優先順位補正"),
+            new CEventEffectType(0x0, "優先順位補正"),
             new CEventEffectType(0x2, "耐久力"),
             new CEventEffectType(0xFFFFFFFF, "記憶ＯＢＪの最大数"),
             new CEventEffectType(0xFFFFFFFF, "指定OBJ数以下なら生成"),
@@ -87,14 +87,10 @@ public class CEventEffect extends WazInfoObject {
 
     private List<CEventEffectUnit> ceventEffectUnitList;
 
-    public CEventEffect() {
-        ceventEffectUnitList = new ArrayList<>();
-    }
-
     @Data
     public static class CEventEffectUnit {
-        private Integer buffer;       // 原始 buffer 值
-        private WazInfoObject data;    // 反序列化后的对象
+        private Integer buffer;
+        private WazInfoObject data;
     }
 
     @Override
@@ -113,7 +109,7 @@ public class CEventEffect extends WazInfoObject {
         setInt10(readInt32(bytes, offset)); offset += 4;
         setInt11(readInt32(bytes, offset)); offset += 4;
 
-        ceventEffectUnitList.clear();
+        List<CEventEffectUnit> ceventEffectUnitList = new ArrayList<>();
 
         for (int i = 0; i < 45; i++) {
             int buffer = readInt32(bytes, offset); offset += 4;
@@ -130,6 +126,8 @@ public class CEventEffect extends WazInfoObject {
             }
             ceventEffectUnitList.add(unit);
         }
+
+        setCeventEffectUnitList(ceventEffectUnitList);
 
         return offset;
     }

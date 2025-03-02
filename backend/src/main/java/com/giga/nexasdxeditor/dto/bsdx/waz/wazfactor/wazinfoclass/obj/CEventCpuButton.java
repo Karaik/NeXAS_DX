@@ -106,21 +106,24 @@ public class CEventCpuButton extends WazInfoObject {
         List<CEventCpuButtonUnit> ceventCpuButtonUnitList = new ArrayList<>();
 
         for (int i = 0; i < 8; i++) {
+            CEventCpuButtonUnit unit = new CEventCpuButtonUnit();
             if (i == 0) {
                 int buffer = readInt32(bytes, offset); offset += 4;
-                CEventCpuButtonUnit unit = new CEventCpuButtonUnit();
                 unit.setBuffer(buffer);
 
                 if (buffer != 0) {
-                    // todo CEventTerm
-                    WazInfoObject obj = createCEventObjectByType(0xFFFFFFFF);
+                    WazInfoObject obj = createCEventObjectByType(CEVENT_CPU_BUTTON_ENTRIES[i].getType());
                     if (obj != null) {
                         offset = obj.readInfo(bytes, offset);
                         unit.setData(obj);
                     }
                 }
-                ceventCpuButtonUnitList.add(unit);
+
+            } else {
+                unit.setBuffer(null);
+                unit.setData(null);
             }
+            ceventCpuButtonUnitList.add(unit);
         }
 
         setCeventCpuButtonUnitList(ceventCpuButtonUnitList);

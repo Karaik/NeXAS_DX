@@ -7,7 +7,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 /**
  * @Author 这位同学(Karaik)
  * @Date 2025/2/23
- * @Description 逆向时该虚函数调用下的字符串信息，一并记录
+ * @Description
  * CEventSpriteAttr__Read
  */
 @Data

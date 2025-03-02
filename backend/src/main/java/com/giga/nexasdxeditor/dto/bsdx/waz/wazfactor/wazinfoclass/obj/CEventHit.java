@@ -86,7 +86,7 @@ public class CEventHit extends WazInfoObject {
     private Integer int22;
     private Integer int23;
 
-    private List<CEventHitUnit> ceventHitUnitList = new ArrayList<>();
+    private List<CEventHitUnit> ceventHitUnitList;
 
     @Data
     public static class CEventHitUnit {
@@ -124,30 +124,28 @@ public class CEventHit extends WazInfoObject {
         int22 = readInt32(bytes, offset); offset += 4;
         int23 = readInt32(bytes, offset); offset += 4;
 
-        ceventHitUnitList.clear();
+        List<CEventHitUnit> ceventHitUnitList = new ArrayList<>();
 
+        // TODO 原逻辑部分位置意义不明，做了逻辑整合和优化，所以极有可能出错
         for (int i = 0; i < 33; i++) {
-            if (i < 17 || i > 20) {
-                int buffer = readInt32(bytes, offset); offset += 4;
-                CEventHitUnit unit = new CEventHitUnit();
-                unit.setBuffer(buffer);
+            CEventHitUnit unit = new CEventHitUnit();
+            int buffer = readInt32(bytes, offset); offset += 4;
+            unit.setBuffer(buffer);
 
-                if (buffer != 0) {
-                    int typeId = CEVENT_HIT_TYPES[i].getType();
-                    WazInfoObject obj = createCEventObjectByType(typeId);
-                    if (obj != null) {
-                        offset = obj.readInfo(bytes, offset);
-                        unit.setData(obj);
-                    }
-                }
-                ceventHitUnitList.add(unit);
-            } else {
-                // 特殊处理：释放对象（模拟 C++ 逻辑）
-                if (ceventHitUnitList.get(i) != null) {
-                    ceventHitUnitList.set(i, null);
-                }
+            if (buffer != 0) {
+                int typeId = CEVENT_HIT_TYPES[i].getType();
+                WazInfoObject obj = createCEventObjectByType(typeId);
+
+                offset = obj.readInfo(bytes, offset);
+                unit.setData(obj);
+
             }
+
+            ceventHitUnitList.add(unit);
+
         }
+
+        setCeventHitUnitList(ceventHitUnitList);
 
         return offset;
     }

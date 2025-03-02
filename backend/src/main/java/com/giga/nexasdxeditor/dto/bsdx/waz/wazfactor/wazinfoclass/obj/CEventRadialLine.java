@@ -48,13 +48,8 @@ public class CEventRadialLine extends WazInfoObject {
     private Integer int10;
     private Integer int11;
     private Integer int12;
-    private Integer int13;
 
     private List<CEventRadialLineUnit> ceventRadialLineUnitList;
-
-    public CEventRadialLine() {
-        ceventRadialLineUnitList = new ArrayList<>();
-    }
 
     @Data
     public static class CEventRadialLineUnit {
@@ -78,9 +73,8 @@ public class CEventRadialLine extends WazInfoObject {
         setInt10(readInt32(bytes, offset)); offset += 4;
         setInt11(readInt32(bytes, offset)); offset += 4;
         setInt12(readInt32(bytes, offset)); offset += 4;
-        setInt13(readInt32(bytes, offset)); offset += 4;
 
-        ceventRadialLineUnitList.clear();
+        List<CEventRadialLineUnit> ceventRadialLineUnitList = new ArrayList<>();
 
         for (int i = 0; i < 13; i++) {
             if (i == 4) {
@@ -89,8 +83,7 @@ public class CEventRadialLine extends WazInfoObject {
                 unit.setBuffer(buffer);
 
                 if (buffer != 0) {
-                    int typeId = CEVENT_RADIAL_LINE_TYPES[4].getType();
-                    WazInfoObject obj = createCEventObjectByType(typeId);
+                    WazInfoObject obj = createCEventObjectByType(5);
                     if (obj != null) {
                         offset = obj.readInfo(bytes, offset);
                         unit.setData(obj);
@@ -99,6 +92,8 @@ public class CEventRadialLine extends WazInfoObject {
                 ceventRadialLineUnitList.add(unit);
             }
         }
+
+        setCeventRadialLineUnitList(ceventRadialLineUnitList);
 
         return offset;
     }

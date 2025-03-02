@@ -44,7 +44,6 @@ public class CEventScreenAttr extends WazInfoObject {
     private Integer int7;
     private Integer int8;
     private Integer int9;
-    private Integer int10;
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
@@ -59,7 +58,6 @@ public class CEventScreenAttr extends WazInfoObject {
         setInt7(readInt32(bytes, offset)); offset += 4;
         setInt8(readInt32(bytes, offset)); offset += 4;
         setInt9(readInt32(bytes, offset)); offset += 4;
-        setInt10(readInt32(bytes, offset)); offset += 4;
 
         return offset;
     }

@@ -3,6 +3,7 @@ package com.giga.nexasdxeditor.util;
 
 import cn.hutool.core.util.ByteUtil;
 
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
@@ -57,6 +58,15 @@ public class ParserUtil {
     public static long readInt64(byte[] bytes, int start) {
         // 小端字节序
         return ByteUtil.bytesToLong(bytes, start, ByteOrder.LITTLE_ENDIAN);
+    }
+
+    /**
+     * 以小端字节序读取双精度浮点数
+     */
+    public static double readDouble(byte[] bytes, int start) {
+        ByteBuffer buffer = ByteBuffer.wrap(bytes, start, 8)
+                .order(ByteOrder.LITTLE_ENDIAN);
+        return buffer.getDouble();
     }
 
     /**

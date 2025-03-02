@@ -29,8 +29,6 @@ public class CEventTerm extends WazInfoObject {
         wazInfoCollectionList.add(wazInfoCollection);
         setWazInfoCollectionList(wazInfoCollectionList);
 
-        setWazInfoCollectionList(wazInfoCollectionList);
-
         return offset;
     }
 }

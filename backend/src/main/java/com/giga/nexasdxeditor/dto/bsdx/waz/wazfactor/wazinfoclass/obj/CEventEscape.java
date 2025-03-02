@@ -41,10 +41,6 @@ public class CEventEscape extends WazInfoObject {
 
     private List<CEventEscapeUnit> ceventEscapeUnitList;
 
-    public CEventEscape() {
-        ceventEscapeUnitList = new ArrayList<>();
-    }
-
     @Data
     public static class CEventEscapeUnit {
         private Integer buffer;
@@ -64,7 +60,7 @@ public class CEventEscape extends WazInfoObject {
         setInt7(readInt32(bytes, offset)); offset += 4;
         setInt8(readInt32(bytes, offset)); offset += 4;
 
-        ceventEscapeUnitList.clear();
+        List<CEventEscapeUnit> ceventEscapeUnitList = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             CEventEscapeUnit unit = new CEventEscapeUnit();
@@ -74,8 +70,7 @@ public class CEventEscape extends WazInfoObject {
                 unit.setBuffer(buffer);
 
                 if (buffer != 0) {
-                    // todo CEventTerm
-                    int typeId = CEVENT_ESCAPE_TYPES[i == 2 ? 0 : 2].getType();
+                    int typeId = 9;
                     WazInfoObject obj = createCEventObjectByType(typeId);
                     if (obj != null) {
                         offset = obj.readInfo(bytes, offset);
@@ -90,6 +85,8 @@ public class CEventEscape extends WazInfoObject {
 
             ceventEscapeUnitList.add(unit);
         }
+
+        setCeventEscapeUnitList(ceventEscapeUnitList);
 
         return offset;
     }
