@@ -268,6 +268,42 @@ class NexasDxEditorApplicationTests {
 
     }
 
+    @Test
+    void testGenerateWazJsonFiles() throws IOException {
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource[] resources = resolver.getResources("classpath*:/game/bsdx/waz/*.waz");
+
+        List<Waz> allWazList = new ArrayList<>();
+        List<String> baseNames = new ArrayList<>(); // 存储文件名（不含扩展名）
+
+        for (Resource resource : resources) {
+            String path = resource.getFile().getPath();
+            String fileName = resource.getFilename(); // 获取文件名，如 "example.waz"
+            String baseName = fileName.substring(0, fileName.lastIndexOf('.')); // 去除扩展名
+            baseNames.add(baseName);
+
+            try {
+                ResponseDTO parse = binServiceImpl.parse(path, "Shift-jis");
+                Waz waz = (Waz) parse.getData();
+                allWazList.add(waz);
+            } catch (Exception e) {
+                continue;
+            }
+        }
+
+        log.info("allWazList.size ===  {} ", allWazList.size());
+
+        // 输出JSON文件到指定目录
+        String outputDir = "C:\\Users\\30250\\Desktop\\allWazJson";
+        FileUtil.mkdir(outputDir); // 创建目录（如果不存在）
+
+        for (int i = 0; i < allWazList.size(); i++) {
+            Waz waz = allWazList.get(i);
+            String jsonStr = JSONUtil.toJsonStr(waz);
+            String filePath = FileUtil.file(outputDir, baseNames.get(i) + ".json").getAbsolutePath();
+            FileUtil.writeUtf8String(jsonStr, filePath);
+        }
+    }
     
 
     @Test

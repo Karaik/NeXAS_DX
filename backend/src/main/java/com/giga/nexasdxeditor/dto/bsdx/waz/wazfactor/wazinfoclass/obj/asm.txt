@@ -1,0 +1,1752 @@
+.rdata:007F1DEC ; const CWorkObject::`vftable'
+.rdata:007F1DEC ??_7CWorkObject@@6B@ dd offset au_re__free_58
+.rdata:007F1DEC                                         ; DATA XREF: sub_63AD50+2↑o
+.rdata:007F1DEC                                         ; sub_63AD60↑o ...
+.rdata:007F1DF0                 dd offset sub_5E68B0
+.rdata:007F1DF4                 dd offset nullsub_1
+.rdata:007F1DF8                 dd offset nullsub_1
+.rdata:007F1DFC                 dd offset sub_5E68C0
+.rdata:007F1E00                 dd offset sub_63AD90
+.rdata:007F1E04                 dd offset sub_5E68D0
+.rdata:007F1E08                 dd offset sub_5E68E0
+.rdata:007F1E0C                 dd offset sub_63AD70
+.rdata:007F1E10                 dd offset nullsub_1
+.rdata:007F1E14 aI_73           db '残像タイプ',0            ; DATA XREF: .rdata:007F1E44↓o
+.rdata:007F1E1F                 align 10h
+.rdata:007F1E20 asc_7F1E20      db '発射間隔',0             ; DATA XREF: .rdata:007F1E4C↓o
+.rdata:007F1E29                 align 4
+.rdata:007F1E2C aA_32           db 'アニメ時間',0            ; DATA XREF: .rdata:007F1E54↓o
+.rdata:007F1E37                 align 4
+.rdata:007F1E38 asc_7F1E38      db 'フラグ',0              ; DATA XREF: .rdata:007F1E5C↓o
+.rdata:007F1E3F                 align 10h
+.rdata:007F1E40                 dd 0FFFFFFFFh
+.rdata:007F1E44                 dd offset aI_73         ; "残像タイプ"
+.rdata:007F1E48                 dd 0FFFFFFFFh
+.rdata:007F1E4C                 dd offset asc_7F1E20    ; "発射間隔"
+.rdata:007F1E50                 dd 0FFFFFFFFh
+.rdata:007F1E54                 dd offset aA_32         ; "アニメ時間"
+.rdata:007F1E58                 dd 0FFFFFFFFh
+.rdata:007F1E5C                 dd offset asc_7F1E38    ; "フラグ"
+.rdata:007F1E60 asc_7F1E60      db '加算属性',0             ; DATA XREF: sub_7D6F00+2A↑o
+.rdata:007F1E69                 align 4
+.rdata:007F1E6C asc_7F1E6C      db 'ノーマル',0             ; DATA XREF: sub_7D6F00+17↑o
+.rdata:007F1E75                 align 4
+.rdata:007F1E78 aOE_0           db '親オブジェクトの拡大率反映',0    ; DATA XREF: sub_7D6F70+2A↑o
+.rdata:007F1E93                 align 4
+.rdata:007F1E94 aOE             db '親オブジェクトの属性反映',0     ; DATA XREF: sub_7D6F70+17↑o
+.rdata:007F1EAD                 align 10h
+.rdata:007F1EB0 ; const char aS3dA3d[]
+.rdata:007F1EB0 aS3dA3d         db '%s (周期:%3d)(ｱﾆﾒ長:%3d)',0
+.rdata:007F1EB0                                         ; DATA XREF: sub_63B060+40↑o
+.rdata:007F1EC9                 align 4
+.rdata:007F1ECC
+.rdata:007F1ECC ; class CEventBlink: CEventObject;   (#classinformer)
+.rdata:007F1ECC                 dd offset ??_R4CEventBlink@@6B@ ; const CEventBlink::`RTTI Complete Object Locator'
+.rdata:007F1ED0 ; const CEventBlink::`vftable'
+.rdata:007F1ED0 ??_7CEventBlink@@6B@ dd offset sub_641C90
+.rdata:007F1ED0                                         ; DATA XREF: CEventBlink+30↑o
+.rdata:007F1ED0                                         ; sub_63B000+36↑o
+.rdata:007F1ED4                 dd offset nullsub_1
+.rdata:007F1ED8                 dd offset sub_63ADC0
+.rdata:007F1EDC                 dd offset sub_6353E0
+.rdata:007F1EE0                 dd offset CEventBlink__Init
+.rdata:007F1EE4                 dd offset CEventBlink__Write
+.rdata:007F1EE8                 dd offset CEventBlink__Read
+.rdata:007F1EEC                 dd offset nullsub_11
+.rdata:007F1EF0                 dd offset sub_63B060
+.rdata:007F1EF4                 dd offset nullsub_1
+.rdata:007F1EF8 ; const char a3d3d3d[]
+.rdata:007F1EF8 a3d3d3d         db '%3d(%3d,%3d)',0     ; DATA XREF: sub_63B320+63↑o
+.rdata:007F1F05                 align 4
+.rdata:007F1F08 ; const char a3d3d3d_0[13]
+.rdata:007F1F08 a3d3d3d_0       db '%3d(%3d,%3d) '      ; DATA XREF: sub_63B320+8F↑o
+.rdata:007F1F15 a3d3d3d_2       db '⇒ %3d(%3d,%3d)',0
+.rdata:007F1F25                 db    0
+.rdata:007F1F26                 db    0
+.rdata:007F1F27                 db    0
+.rdata:007F1F28
+.rdata:007F1F28 ; class CEventBlur: CEventObject;   (#classinformer)
+.rdata:007F1F28                 dd offset ??_R4CEventBlur@@6B@ ; const CEventBlur::`RTTI Complete Object Locator'
+.rdata:007F1F2C ; const CEventBlur::`vftable'
+.rdata:007F1F2C ??_7CEventBlur@@6B@ dd offset sub_641C90
+.rdata:007F1F2C                                         ; DATA XREF: CEventBlur+30↑o
+.rdata:007F1F2C                                         ; sub_63B570+36↑o
+.rdata:007F1F30                 dd offset nullsub_1
+.rdata:007F1F34                 dd offset sub_63B100
+.rdata:007F1F38                 dd offset sub_6353E0
+.rdata:007F1F3C                 dd offset sub_63B220
+.rdata:007F1F40                 dd offset CEventBlur__Write
+.rdata:007F1F44                 dd offset CEventBlur__Read
+.rdata:007F1F48                 dd offset nullsub_11
+.rdata:007F1F4C                 dd offset sub_63B320
+.rdata:007F1F50                 dd offset nullsub_1
+.rdata:007F1F54 asc_7F1F54      db '位置',0               ; DATA XREF: .rdata:007F1F80↓o
+.rdata:007F1F59                 align 4
+.rdata:007F1F5C asc_7F1F5C      db '方向',0               ; DATA XREF: .rdata:007F1F88↓o
+.rdata:007F1F61                 align 4
+.rdata:007F1F64 asc_7F1F64      db '距離',0               ; DATA XREF: .rdata:007F1F90↓o
+.rdata:007F1F69                 align 4
+.rdata:007F1F6C asc_7F1F6C      db '高さ',0               ; DATA XREF: .rdata:007F1F98↓o
+.rdata:007F1F71                 align 4
+.rdata:007F1F74 asc_7F1F74      db 'フラグ',0              ; DATA XREF: .rdata:007F1FA0↓o
+.rdata:007F1F7B                 align 4
+.rdata:007F1F7C ; int dword_7F1F7C[]
+.rdata:007F1F7C dword_7F1F7C    dd 5                    ; DATA XREF: CEventCamera__Read+46↑r
+.rdata:007F1F7C                                         ; sub_63B760+7C↑o ...
+.rdata:007F1F80                 dd offset asc_7F1F54    ; "位置"
+.rdata:007F1F84                 dd 9
+.rdata:007F1F88                 dd offset asc_7F1F5C    ; "方向"
+.rdata:007F1F8C                 dd 0
+.rdata:007F1F90                 dd offset asc_7F1F64    ; "距離"
+.rdata:007F1F94                 dd 0
+.rdata:007F1F98                 dd offset asc_7F1F6C    ; "高さ"
+.rdata:007F1F9C                 dd 0FFFFFFFFh
+.rdata:007F1FA0                 dd offset asc_7F1F74    ; "フラグ"
+.rdata:007F1FA4 ; const char aS_20[3]
+.rdata:007F1FA4 aS_20           db '%s',0               ; DATA XREF: sub_63B760+B2↑o
+.rdata:007F1FA4                                         ; sub_63B9B0+73↑o
+.rdata:007F1FA7                 align 4
+.rdata:007F1FA8 ; const char aSS_1[]
+.rdata:007F1FA8 aSS_1           db '%s:%s',0            ; DATA XREF: sub_63B9B0+BD↑o
+.rdata:007F1FAE                 align 10h
+.rdata:007F1FB0 ; const char aSS_2[]
+.rdata:007F1FB0 aSS_2           db '%s:(距離)%s',0        ; DATA XREF: sub_63B9B0+107↑o
+.rdata:007F1FBC ; const char aSS_3[]
+.rdata:007F1FBC aSS_3           db '%s:(高度)%s',0        ; DATA XREF: sub_63B9B0+151↑o
+.rdata:007F1FC8
+.rdata:007F1FC8 ; class CEventCamera: CEventObject;   (#classinformer)
+.rdata:007F1FC8                 dd offset ??_R4CEventCamera@@6B@ ; const CEventCamera::`RTTI Complete Object Locator'
+.rdata:007F1FCC ; const CEventCamera::`vftable'
+.rdata:007F1FCC ??_7CEventCamera@@6B@ dd offset sub_641C90
+.rdata:007F1FCC                                         ; DATA XREF: CEventCamera+30↑o
+.rdata:007F1FCC                                         ; sub_63B950+36↑o
+.rdata:007F1FD0                 dd offset nullsub_1
+.rdata:007F1FD4                 dd offset sub_63B5D0
+.rdata:007F1FD8                 dd offset sub_6353E0
+.rdata:007F1FDC                 dd offset sub_63B760
+.rdata:007F1FE0                 dd offset CEventCamera__Write
+.rdata:007F1FE4                 dd offset CEventCamera__Read
+.rdata:007F1FE8                 dd offset nullsub_11
+.rdata:007F1FEC                 dd offset sub_63B9B0
+.rdata:007F1FF0                 dd offset sub_63B710
+.rdata:007F1FF4
+.rdata:007F1FF4 ; class CEventChange: CEventObject;   (#classinformer)
+.rdata:007F1FF4                 dd offset ??_R4CEventChange@@6B@ ; const CEventChange::`RTTI Complete Object Locator'
+.rdata:007F1FF8 ; const CEventChange::`vftable'
+.rdata:007F1FF8 ??_7CEventChange@@6B@ dd offset sub_641C90
+.rdata:007F1FF8                                         ; DATA XREF: CEventChange+30↑o
+.rdata:007F1FF8                                         ; sub_63BDF0+36↑o
+.rdata:007F1FFC                 dd offset nullsub_1
+.rdata:007F2000                 dd offset sub_63BB70
+.rdata:007F2004                 dd offset sub_6353E0
+.rdata:007F2008                 dd offset sub_63BC00
+.rdata:007F200C                 dd offset CEventChange__Write
+.rdata:007F2010                 dd offset CEventChange__Read
+.rdata:007F2014                 dd offset sub_63BBF0
+.rdata:007F2018                 dd offset sub_635450
+.rdata:007F201C                 dd offset nullsub_1
+.rdata:007F2020 asc_7F2020      db '消費する熱チャージ量',0       ; DATA XREF: .rdata:007F204C↓o
+.rdata:007F2035                 align 4
+.rdata:007F2038 asc_7F2038      db '蓄積する溜め',0           ; DATA XREF: .rdata:007F2054↓o
+.rdata:007F2045                 align 4
+.rdata:007F2048 ; int dword_7F2048[]
+.rdata:007F2048 dword_7F2048    dd 0                    ; DATA XREF: CEventCharge__Read+39↑r
+.rdata:007F2048                                         ; sub_63BFB0+74↑o ...
+.rdata:007F204C                 dd offset asc_7F2020    ; "消費する熱チャージ量"
+.rdata:007F2050                 dd 0
+.rdata:007F2054                 dd offset asc_7F2038    ; "蓄積する溜め"
+.rdata:007F2058 ; const char aSS_4[]
+.rdata:007F2058 aSS_4           db '熱量:%s  溜め:%s',0     ; DATA XREF: sub_63BFB0+B0↑o
+.rdata:007F2058                                         ; sub_63C200+9A↑o
+.rdata:007F2069                 align 4
+.rdata:007F206C
+.rdata:007F206C ; class CEventCharge: CEventObject;   (#classinformer)
+.rdata:007F206C                 dd offset ??_R4CEventCharge@@6B@ ; const CEventCharge::`RTTI Complete Object Locator'
+.rdata:007F2070 ; const CEventCharge::`vftable'
+.rdata:007F2070 ??_7CEventCharge@@6B@ dd offset sub_641C90
+.rdata:007F2070                                         ; DATA XREF: CEventCharge+30↑o
+.rdata:007F2070                                         ; sub_63C1A0+36↑o
+.rdata:007F2074                 dd offset nullsub_1
+.rdata:007F2078                 dd offset sub_63BE50
+.rdata:007F207C                 dd offset sub_6353E0
+.rdata:007F2080                 dd offset sub_63BFB0
+.rdata:007F2084                 dd offset CEventCharge__Write
+.rdata:007F2088                 dd offset CEventCharge__Read
+.rdata:007F208C                 dd offset nullsub_11
+.rdata:007F2090                 dd offset sub_63C200
+.rdata:007F2094                 dd offset sub_63BF70
+.rdata:007F2098 aI_74           db 'タイプ',0              ; DATA XREF: .rdata:007F20BC↓o
+.rdata:007F209F                 align 10h
+.rdata:007F20A0 asc_7F20A0      db '回数',0               ; DATA XREF: .rdata:007F20C4↓o
+.rdata:007F20A5                 align 4
+.rdata:007F20A8 asc_7F20A8      db '開始値',0              ; DATA XREF: .rdata:007F20CC↓o
+.rdata:007F20AF                 align 10h
+.rdata:007F20B0 asc_7F20B0      db '終了値',0              ; DATA XREF: .rdata:007F20D4↓o
+.rdata:007F20B7                 align 4
+.rdata:007F20B8                 dd 0FFFFFFFFh
+.rdata:007F20BC                 dd offset aI_74         ; "タイプ"
+.rdata:007F20C0                 dd 0FFFFFFFFh
+.rdata:007F20C4                 dd offset asc_7F20A0    ; "回数"
+.rdata:007F20C8                 dd 0FFFFFFFFh
+.rdata:007F20CC                 dd offset asc_7F20A8    ; "開始値"
+.rdata:007F20D0                 dd 0FFFFFFFFh
+.rdata:007F20D4                 dd offset asc_7F20B0    ; "終了値"
+.rdata:007F20D8 asc_7F20D8      db '通常',0               ; DATA XREF: sub_63C570:loc_63C5C8↑o
+.rdata:007F20DD                 align 10h
+.rdata:007F20E0 asc_7F20E0      db '加速',0               ; DATA XREF: sub_63C570:loc_63C5CF↑o
+.rdata:007F20E5                 align 4
+.rdata:007F20E8 asc_7F20E8      db '減速',0               ; DATA XREF: sub_63C570:loc_63C5D6↑o
+.rdata:007F20ED                 align 10h
+.rdata:007F20F0 asc_7F20F0      db 'ループ',0              ; DATA XREF: sub_63C570:loc_63C5DD↑o
+.rdata:007F20F7                 align 4
+.rdata:007F20F8 asc_7F20F8      db '往復',0               ; DATA XREF: sub_63C570:loc_63C5E4↑o
+.rdata:007F20FD                 align 10h
+.rdata:007F2100 ; const CHAR aDDD[]
+.rdata:007F2100 aDDD            db ' 回数:%d  開始:%d 開始:%d',0
+.rdata:007F2100                                         ; DATA XREF: sub_63C570+90↑o
+.rdata:007F211A                 align 4
+.rdata:007F211C
+.rdata:007F211C ; class CEventCounter: CEventObject;   (#classinformer)
+.rdata:007F211C                 dd offset ??_R4CEventCounter@@6B@ ; const CEventCounter::`RTTI Complete Object Locator'
+.rdata:007F2120 ; const CEventCounter::`vftable'
+.rdata:007F2120 ??_7CEventCounter@@6B@ dd offset sub_641C90
+.rdata:007F2120                                         ; DATA XREF: sub_63C4F0+24↑o
+.rdata:007F2124                 dd offset nullsub_1
+.rdata:007F2128                 dd offset sub_63C330
+.rdata:007F212C                 dd offset sub_6353E0
+.rdata:007F2130                 dd offset sub_63C3B0
+.rdata:007F2134                 dd offset CEventCounter__Write
+.rdata:007F2138                 dd offset CEventCounter__Read
+.rdata:007F213C                 dd offset nullsub_11
+.rdata:007F2140                 dd offset sub_63C570
+.rdata:007F2144                 dd offset nullsub_1
+.rdata:007F2148 aE_17           db 'チェック方向',0           ; DATA XREF: .rdata:007F21EC↓o
+.rdata:007F2155                 align 4
+.rdata:007F2158 aE_18           db 'チェック方向補正',0         ; DATA XREF: .rdata:007F21F4↓o
+.rdata:007F2169                 align 4
+.rdata:007F216C aE_19           db 'チェック範囲',0           ; DATA XREF: .rdata:007F21FC↓o
+.rdata:007F2179                 align 4
+.rdata:007F217C aE_20           db 'チェック範囲（高さ）',0       ; DATA XREF: .rdata:007F2204↓o
+.rdata:007F2191                 align 4
+.rdata:007F2194 aE_21           db 'チェック高度補正',0         ; DATA XREF: .rdata:007F220C↓o
+.rdata:007F21A5                 align 4
+.rdata:007F21A8 aE_22           db 'チェック回数',0           ; DATA XREF: .rdata:007F2214↓o
+.rdata:007F21B5                 align 4
+.rdata:007F21B8 aN_70           db 'ボタン入力（範囲内）',0       ; DATA XREF: .rdata:007F221C↓o
+.rdata:007F21CD                 align 10h
+.rdata:007F21D0 aN_71           db 'ボタン入力（範囲外）',0       ; DATA XREF: .rdata:007F2224↓o
+.rdata:007F21E5                 align 4
+.rdata:007F21E8                 dd 9
+.rdata:007F21EC                 dd offset aE_17         ; "チェック方向"
+.rdata:007F21F0                 dd 0FFFFFFFFh
+.rdata:007F21F4                 dd offset aE_18         ; "チェック方向補正"
+.rdata:007F21F8                 dd 0FFFFFFFFh
+.rdata:007F21FC                 dd offset aE_19         ; "チェック範囲"
+.rdata:007F2200                 dd 0FFFFFFFFh
+.rdata:007F2204                 dd offset aE_20         ; "チェック範囲（高さ）"
+.rdata:007F2208                 dd 0FFFFFFFFh
+.rdata:007F220C                 dd offset aE_21         ; "チェック高度補正"
+.rdata:007F2210                 dd 0FFFFFFFFh
+.rdata:007F2214                 dd offset aE_22         ; "チェック回数"
+.rdata:007F2218                 dd 0FFFFFFFFh
+.rdata:007F221C                 dd offset aN_70         ; "ボタン入力（範囲内）"
+.rdata:007F2220                 dd 0FFFFFFFFh
+.rdata:007F2224                 dd offset aN_71         ; "ボタン入力（範囲外）"
+.rdata:007F2228 asc_7F2228      db '押(',0               ; DATA XREF: sub_63CA30+32↑o
+.rdata:007F222C aBtn            db '攻撃BTN',0            ; DATA XREF: sub_63CA30+52↑o
+.rdata:007F2234 aBtn_0          db ' ﾌﾞｰｽﾄBTN',0        ; DATA XREF: sub_63CA30+66↑o
+.rdata:007F223E                 align 10h
+.rdata:007F2240 asc_7F2240      db ') 離(',0             ; DATA XREF: sub_63CA30+74↑o
+.rdata:007F2246                 align 4
+.rdata:007F2248 aBtn_1          db '攻撃BTN',0            ; DATA XREF: sub_63CA30+88↑o
+.rdata:007F2250 aBtn_2          db ' ﾌﾞｰｽﾄBTN',0        ; DATA XREF: sub_63CA30+9C↑o
+.rdata:007F225A                 align 4
+.rdata:007F225C asc_7F225C      db ')',0                ; DATA XREF: sub_63CA30+AA↑o
+.rdata:007F225E                 align 10h
+.rdata:007F2260
+.rdata:007F2260 ; class CEventCpuButton: CEventObject;   (#classinformer)
+.rdata:007F2260                 dd offset ??_R4CEventCpuButton@@6B@ ; const CEventCpuButton::`RTTI Complete Object Locator'
+.rdata:007F2264 ; const CEventCpuButton::`vftable'
+.rdata:007F2264 ??_7CEventCpuButton@@6B@ dd offset sub_641C90
+.rdata:007F2264                                         ; DATA XREF: CEventCpuButton+30↑o
+.rdata:007F2264                                         ; sub_63C9D0+36↑o
+.rdata:007F2268                 dd offset nullsub_1
+.rdata:007F226C                 dd offset sub_63C660
+.rdata:007F2270                 dd offset sub_6353E0
+.rdata:007F2274                 dd offset sub_63C7F0
+.rdata:007F2278                 dd offset CEventCpuButton__Write
+.rdata:007F227C                 dd offset CEventCpuButton__Read
+.rdata:007F2280                 dd offset nullsub_11
+.rdata:007F2284                 dd offset sub_63CA30
+.rdata:007F2288                 dd offset nullsub_1
+.rdata:007F228C                 align 10h
+.rdata:007F2290 aEEI1           db 'エフェクトタイプ1',0        ; DATA XREF: .rdata:007F2584↓o
+.rdata:007F22A2                 align 4
+.rdata:007F22A4 aEEI2           db 'エフェクトタイプ2',0        ; DATA XREF: .rdata:007F258C↓o
+.rdata:007F22B6                 align 4
+.rdata:007F22B8 asc_7F22B8      db 'フラグ',0              ; DATA XREF: .rdata:007F2594↓o
+.rdata:007F22BF                 align 10h
+.rdata:007F22C0 aEE_3           db 'エフェクト番号',0          ; DATA XREF: .rdata:007F259C↓o
+.rdata:007F22CF                 align 10h
+.rdata:007F22D0 asc_7F22D0      db '同時発射数',0            ; DATA XREF: .rdata:007F25A4↓o
+.rdata:007F22DB                 align 4
+.rdata:007F22DC asc_7F22DC      db '最大発射数',0            ; DATA XREF: .rdata:007F25AC↓o
+.rdata:007F22E7                 align 4
+.rdata:007F22E8 asc_7F22E8      db '発射間隔',0             ; DATA XREF: .rdata:007F25B4↓o
+.rdata:007F22F1                 align 4
+.rdata:007F22F4 asc_7F22F4      db '発射位置',0             ; DATA XREF: .rdata:007F25BC↓o
+.rdata:007F22FD                 align 10h
+.rdata:007F2300 asc_7F2300      db '発射位置補正：方向',0        ; DATA XREF: .rdata:007F25C4↓o
+.rdata:007F2313                 align 4
+.rdata:007F2314 asc_7F2314      db '発射位置補正：方向補正',0      ; DATA XREF: .rdata:007F25CC↓o
+.rdata:007F232B                 align 4
+.rdata:007F232C asc_7F232C      db '発射位置補正：距離',0        ; DATA XREF: .rdata:007F25D4↓o
+.rdata:007F233F                 align 10h
+.rdata:007F2340 asc_7F2340      db '発射位置補正：高さ',0        ; DATA XREF: .rdata:007F25DC↓o
+.rdata:007F2353                 align 4
+.rdata:007F2354 a1_4            db '発射方向：１発ごとの補正',0     ; DATA XREF: .rdata:007F25E4↓o
+.rdata:007F236D                 align 10h
+.rdata:007F2370 asc_7F2370      db '発射方向：同時発射補正',0      ; DATA XREF: .rdata:007F25EC↓o
+.rdata:007F2387                 align 4
+.rdata:007F2388 asc_7F2388      db '発射方向：全体補正',0        ; DATA XREF: .rdata:007F25F4↓o
+.rdata:007F239B                 align 4
+.rdata:007F239C aSe_1           db '発射ＳＥ',0             ; DATA XREF: .rdata:007F25FC↓o
+.rdata:007F23A5                 align 4
+.rdata:007F23A8 aI_75           db 'ｽﾌﾟﾗｲﾄ：拡大縮小',0      ; DATA XREF: .rdata:007F2604↓o
+.rdata:007F23B9                 align 4
+.rdata:007F23BC aIX_0           db 'ｽﾌﾟﾗｲﾄ：拡大縮小X',0     ; DATA XREF: .rdata:007F260C↓o
+.rdata:007F23CE                 align 10h
+.rdata:007F23D0 aIY_1           db 'ｽﾌﾟﾗｲﾄ：拡大縮小Y',0     ; DATA XREF: .rdata:007F2614↓o
+.rdata:007F23E2                 align 4
+.rdata:007F23E4 aIY_2           db 'ｽﾌﾟﾗｲﾄ：拡大縮小Y(ｽﾛｰ影響)',0
+.rdata:007F23E4                                         ; DATA XREF: .rdata:007F261C↓o
+.rdata:007F23FF                 align 10h
+.rdata:007F2400 aI_76           db 'ｽﾌﾟﾗｲﾄ：振動',0        ; DATA XREF: .rdata:007F2624↓o
+.rdata:007F240D                 align 10h
+.rdata:007F2410 aI_77           db 'ｽﾌﾟﾗｲﾄ：属性',0        ; DATA XREF: .rdata:007F262C↓o
+.rdata:007F241D                 align 10h
+.rdata:007F2420 aI_78           db 'ｽﾌﾟﾗｲﾄ：方向',0        ; DATA XREF: .rdata:007F2634↓o
+.rdata:007F242D                 align 10h
+.rdata:007F2430 aI_79           db 'ｽﾌﾟﾗｲﾄ：方向補正',0      ; DATA XREF: .rdata:007F263C↓o
+.rdata:007F2441                 align 4
+.rdata:007F2444 aI_80           db 'ｽﾌﾟﾗｲﾄ：方向増分',0      ; DATA XREF: .rdata:007F2644↓o
+.rdata:007F2455                 align 4
+.rdata:007F2458 asc_7F2458      db '位置',0               ; DATA XREF: .rdata:007F264C↓o
+.rdata:007F245D                 align 10h
+.rdata:007F2460 asc_7F2460      db '位置：分散率',0           ; DATA XREF: .rdata:007F2654↓o
+.rdata:007F246D                 align 10h
+.rdata:007F2470 asc_7F2470      db '座標移動',0             ; DATA XREF: .rdata:007F265C↓o
+.rdata:007F2479                 align 4
+.rdata:007F247C asc_7F247C      db 'ﾍﾞｸﾄﾙ：方向',0         ; DATA XREF: .rdata:007F2664↓o
+.rdata:007F2488 asc_7F2488      db 'ﾍﾞｸﾄﾙ：方向補正',0       ; DATA XREF: .rdata:007F266C↓o
+.rdata:007F2498 asc_7F2498      db 'ﾍﾞｸﾄﾙ：方向増分',0       ; DATA XREF: .rdata:007F2674↓o
+.rdata:007F24A8 asc_7F24A8      db 'ﾍﾞｸﾄﾙ：速度',0         ; DATA XREF: .rdata:007F267C↓o
+.rdata:007F24B4 asc_7F24B4      db 'ﾍﾞｸﾄﾙ：高さ',0         ; DATA XREF: .rdata:007F2684↓o
+.rdata:007F24C0 asc_7F24C0      db 'ﾍﾞｸﾄﾙ：重力',0         ; DATA XREF: .rdata:007F268C↓o
+.rdata:007F24CC asc_7F24CC      db 'ﾍﾞｸﾄﾙ：最低高度',0       ; DATA XREF: .rdata:007F2694↓o
+.rdata:007F24DC asc_7F24DC      db 'ﾍﾞｸﾄﾙ：慣性',0         ; DATA XREF: .rdata:007F269C↓o
+.rdata:007F24E8 asc_7F24E8      db '汎用変数',0             ; DATA XREF: .rdata:007F26A4↓o
+.rdata:007F24F1                 align 4
+.rdata:007F24F4 asc_7F24F4      db '溜め攻撃力',0            ; DATA XREF: .rdata:007F26AC↓o
+.rdata:007F24FF                 align 10h
+.rdata:007F2500 asc_7F2500      db '影の濃さ',0             ; DATA XREF: .rdata:007F26B4↓o
+.rdata:007F2509                 align 4
+.rdata:007F250C asc_7F250C      db '優先順位補正',0           ; DATA XREF: .rdata:007F26BC↓o
+.rdata:007F2519                 align 4
+.rdata:007F251C asc_7F251C      db '耐久力',0              ; DATA XREF: .rdata:007F26C4↓o
+.rdata:007F2523                 align 4
+.rdata:007F2524 aObj_0          db '記憶ＯＢＪの最大数',0        ; DATA XREF: .rdata:007F26CC↓o
+.rdata:007F2537                 align 4
+.rdata:007F2538 aObj_1          db '指定OBJ数以下なら生成',0     ; DATA XREF: .rdata:007F26D4↓o
+.rdata:007F254E                 align 10h
+.rdata:007F2550 asc_7F2550      db '指定画面範囲内なら生成',0      ; DATA XREF: .rdata:007F26DC↓o
+.rdata:007F2567                 align 4
+.rdata:007F2568 asc_7F2568      db '指定画面範囲外なら削除',0      ; DATA XREF: .rdata:007F26E4↓o
+.rdata:007F257F                 align 10h
+.rdata:007F2580 ; int CEventEffect_Types[]
+.rdata:007F2580 CEventEffect_Types dd 0FFFFFFFFh        ; DATA XREF: CEventEffect__Read+E9↑r
+.rdata:007F2580                                         ; CEventEffect__Init+75↑o ...
+.rdata:007F2584                 dd offset aEEI1         ; "エフェクトタイプ1"
+.rdata:007F2588                 dd 0FFFFFFFFh
+.rdata:007F258C                 dd offset aEEI2         ; "エフェクトタイプ2"
+.rdata:007F2590                 dd 0FFFFFFFFh
+.rdata:007F2594                 dd offset asc_7F22B8    ; "フラグ"
+.rdata:007F2598                 dd 4
+.rdata:007F259C                 dd offset aEE_3         ; "エフェクト番号"
+.rdata:007F25A0                 dd 2
+.rdata:007F25A4                 dd offset asc_7F22D0    ; "同時発射数"
+.rdata:007F25A8                 dd 2
+.rdata:007F25AC                 dd offset asc_7F22DC    ; "最大発射数"
+.rdata:007F25B0                 dd 2
+.rdata:007F25B4                 dd offset asc_7F22E8    ; "発射間隔"
+.rdata:007F25B8                 dd 5
+.rdata:007F25BC                 dd offset asc_7F22F4    ; "発射位置"
+.rdata:007F25C0                 dd 9
+.rdata:007F25C4                 dd offset asc_7F2300    ; "発射位置補正：方向"
+.rdata:007F25C8                 dd 3
+.rdata:007F25CC                 dd offset asc_7F2314    ; "発射位置補正：方向補正"
+.rdata:007F25D0                 dd 3
+.rdata:007F25D4                 dd offset asc_7F232C    ; "発射位置補正：距離"
+.rdata:007F25D8                 dd 3
+.rdata:007F25DC                 dd offset asc_7F2340    ; "発射位置補正：高さ"
+.rdata:007F25E0                 dd 0FFFFFFFFh
+.rdata:007F25E4                 dd offset a1_4          ; "発射方向：１発ごとの補正"
+.rdata:007F25E8                 dd 0
+.rdata:007F25EC                 dd offset asc_7F2370    ; "発射方向：同時発射補正"
+.rdata:007F25F0                 dd 2
+.rdata:007F25F4                 dd offset asc_7F2388    ; "発射方向：全体補正"
+.rdata:007F25F8                 dd 17h
+.rdata:007F25FC                 dd offset aSe_1         ; "発射ＳＥ"
+.rdata:007F2600                 dd 2
+.rdata:007F2604                 dd offset aI_75         ; "ｽﾌﾟﾗｲﾄ：拡大縮小"
+.rdata:007F2608                 dd 2
+.rdata:007F260C                 dd offset aIX_0         ; "ｽﾌﾟﾗｲﾄ：拡大縮小X"
+.rdata:007F2610                 dd 2
+.rdata:007F2614                 dd offset aIY_1         ; "ｽﾌﾟﾗｲﾄ：拡大縮小Y"
+.rdata:007F2618                 dd 2
+.rdata:007F261C                 dd offset aIY_2         ; "ｽﾌﾟﾗｲﾄ：拡大縮小Y(ｽﾛｰ影響)"
+.rdata:007F2620                 dd 0Eh
+.rdata:007F2624                 dd offset aI_76         ; "ｽﾌﾟﾗｲﾄ：振動"
+.rdata:007F2628                 dd 0Fh
+.rdata:007F262C                 dd offset aI_77         ; "ｽﾌﾟﾗｲﾄ：属性"
+.rdata:007F2630                 dd 9
+.rdata:007F2634                 dd offset aI_78         ; "ｽﾌﾟﾗｲﾄ：方向"
+.rdata:007F2638                 dd 3
+.rdata:007F263C                 dd offset aI_79         ; "ｽﾌﾟﾗｲﾄ：方向補正"
+.rdata:007F2640                 dd 3
+.rdata:007F2644                 dd offset aI_80         ; "ｽﾌﾟﾗｲﾄ：方向増分"
+.rdata:007F2648                 dd 5
+.rdata:007F264C                 dd offset asc_7F2458    ; "位置"
+.rdata:007F2650                 dd 2
+.rdata:007F2654                 dd offset asc_7F2460    ; "位置：分散率"
+.rdata:007F2658                 dd 7
+.rdata:007F265C                 dd offset asc_7F2470    ; "座標移動"
+.rdata:007F2660                 dd 9
+.rdata:007F2664                 dd offset asc_7F247C    ; "ﾍﾞｸﾄﾙ：方向"
+.rdata:007F2668                 dd 3
+.rdata:007F266C                 dd offset asc_7F2488    ; "ﾍﾞｸﾄﾙ：方向補正"
+.rdata:007F2670                 dd 3
+.rdata:007F2674                 dd offset asc_7F2498    ; "ﾍﾞｸﾄﾙ：方向増分"
+.rdata:007F2678                 dd 3
+.rdata:007F267C                 dd offset asc_7F24A8    ; "ﾍﾞｸﾄﾙ：速度"
+.rdata:007F2680                 dd 3
+.rdata:007F2684                 dd offset asc_7F24B4    ; "ﾍﾞｸﾄﾙ：高さ"
+.rdata:007F2688                 dd 2
+.rdata:007F268C                 dd offset asc_7F24C0    ; "ﾍﾞｸﾄﾙ：重力"
+.rdata:007F2690                 dd 2
+.rdata:007F2694                 dd offset asc_7F24CC    ; "ﾍﾞｸﾄﾙ：最低高度"
+.rdata:007F2698                 dd 2
+.rdata:007F269C                 dd offset asc_7F24DC    ; "ﾍﾞｸﾄﾙ：慣性"
+.rdata:007F26A0                 dd 0
+.rdata:007F26A4                 dd offset asc_7F24E8    ; "汎用変数"
+.rdata:007F26A8                 dd 0
+.rdata:007F26AC                 dd offset asc_7F24F4    ; "溜め攻撃力"
+.rdata:007F26B0                 dd 0
+.rdata:007F26B4                 dd offset asc_7F2500    ; "影の濃さ"
+.rdata:007F26B8                 dd 0
+.rdata:007F26BC                 dd offset asc_7F250C    ; "優先順位補正"
+.rdata:007F26C0                 dd 2
+.rdata:007F26C4                 dd offset asc_7F251C    ; "耐久力"
+.rdata:007F26C8                 dd 0FFFFFFFFh
+.rdata:007F26CC                 dd offset aObj_0        ; "記憶ＯＢＪの最大数"
+.rdata:007F26D0                 dd 0FFFFFFFFh
+.rdata:007F26D4                 dd offset aObj_1        ; "指定OBJ数以下なら生成"
+.rdata:007F26D8                 dd 0FFFFFFFFh
+.rdata:007F26DC                 dd offset asc_7F2550    ; "指定画面範囲内なら生成"
+.rdata:007F26E0                 dd 0FFFFFFFFh
+.rdata:007F26E4                 dd offset asc_7F2568    ; "指定画面範囲外なら削除"
+.rdata:007F26E8 aError_2        db 'ERROR:技グループ数',0     ; DATA XREF: CEventEffect__Init+B0↑o
+.rdata:007F26E8                                         ; sub_63DBF0+5E↑o
+.rdata:007F26FB                 align 4
+.rdata:007F26FC aError_3        db 'ERROR:技数',0         ; DATA XREF: sub_63DBF0+9E↑o
+.rdata:007F2707                 align 4
+.rdata:007F2708 asc_7F2708      db ' ： ',0              ; DATA XREF: sub_63DBF0+121↑o
+.rdata:007F270D                 align 10h
+.rdata:007F2710
+.rdata:007F2710 ; class CEventEffect: CEventObject;   (#classinformer)
+.rdata:007F2710                 dd offset ??_R4CEventEffect@@6B@ ; const CEventEffect::`RTTI Complete Object Locator'
+.rdata:007F2714 ; const CEventEffect::`vftable'
+.rdata:007F2714 ??_7CEventEffect@@6B@ dd offset sub_641C90
+.rdata:007F2714                                         ; DATA XREF: CEventEffect+30↑o
+.rdata:007F2714                                         ; sub_63DB90+36↑o
+.rdata:007F2718                 dd offset nullsub_1
+.rdata:007F271C                 dd offset sub_63D550
+.rdata:007F2720                 dd offset sub_6353E0
+.rdata:007F2724                 dd offset CEventEffect__Init
+.rdata:007F2728                 dd offset CEventEffect__Write
+.rdata:007F272C                 dd offset CEventEffect__Read
+.rdata:007F2730                 dd offset sub_63D7F0
+.rdata:007F2734                 dd offset sub_63DBF0
+.rdata:007F2738                 dd offset sub_63D830
+.rdata:007F273C                 align 10h
+.rdata:007F2740 aI_81           db 'タイプ',0              ; DATA XREF: .rdata:007F27E4↓o
+.rdata:007F2747                 align 4
+.rdata:007F2748 asc_7F2748      db '優先順位',0             ; DATA XREF: .rdata:007F27EC↓o
+.rdata:007F2751                 align 4
+.rdata:007F2754 aE_23           db 'チェック方向',0           ; DATA XREF: .rdata:007F27F4↓o
+.rdata:007F2761                 align 4
+.rdata:007F2764 aE_24           db 'チェック方向補正',0         ; DATA XREF: .rdata:007F27FC↓o
+.rdata:007F2775                 align 4
+.rdata:007F2778 aE_25           db 'チェック範囲',0           ; DATA XREF: .rdata:007F2804↓o
+.rdata:007F2785                 align 4
+.rdata:007F2788 aE_26           db 'チェック範囲（高さ）',0       ; DATA XREF: .rdata:007F280C↓o
+.rdata:007F279D                 align 10h
+.rdata:007F27A0 aE_27           db 'チェック高度補正',0         ; DATA XREF: .rdata:007F2814↓o
+.rdata:007F27B1                 align 4
+.rdata:007F27B4 aE_28           db 'チェック回数',0           ; DATA XREF: .rdata:007F281C↓o
+.rdata:007F27C1                 align 4
+.rdata:007F27C4 asc_7F27C4      db '回避方向',0             ; DATA XREF: .rdata:007F2824↓o
+.rdata:007F27CD                 align 10h
+.rdata:007F27D0 asc_7F27D0      db '回避方向補正',0           ; DATA XREF: .rdata:007F282C↓o
+.rdata:007F27DD                 align 10h
+.rdata:007F27E0                 dd 0FFFFFFFFh
+.rdata:007F27E4                 dd offset aI_81         ; "タイプ"
+.rdata:007F27E8                 dd 0FFFFFFFFh
+.rdata:007F27EC                 dd offset asc_7F2748    ; "優先順位"
+.rdata:007F27F0                 dd 9
+.rdata:007F27F4                 dd offset aE_23         ; "チェック方向"
+.rdata:007F27F8                 dd 0FFFFFFFFh
+.rdata:007F27FC                 dd offset aE_24         ; "チェック方向補正"
+.rdata:007F2800                 dd 0FFFFFFFFh
+.rdata:007F2804                 dd offset aE_25         ; "チェック範囲"
+.rdata:007F2808                 dd 0FFFFFFFFh
+.rdata:007F280C                 dd offset aE_26         ; "チェック範囲（高さ）"
+.rdata:007F2810                 dd 0FFFFFFFFh
+.rdata:007F2814                 dd offset aE_27         ; "チェック高度補正"
+.rdata:007F2818                 dd 0FFFFFFFFh
+.rdata:007F281C                 dd offset aE_28         ; "チェック回数"
+.rdata:007F2820                 dd 9
+.rdata:007F2824                 dd offset asc_7F27C4    ; "回避方向"
+.rdata:007F2828                 dd 0FFFFFFFFh
+.rdata:007F282C                 dd offset asc_7F27D0    ; "回避方向補正"
+.rdata:007F2830 asc_7F2830      db '短打撃',0              ; DATA XREF: sub_63E250+44↑o
+.rdata:007F2837                 align 4
+.rdata:007F2838 asc_7F2838      db ' 突進',0              ; DATA XREF: sub_63E250+58↑o
+.rdata:007F283E                 align 10h
+.rdata:007F2840 asc_7F2840      db ' 単射撃',0             ; DATA XREF: sub_63E250+6C↑o
+.rdata:007F2848 asc_7F2848      db ' 連射撃',0             ; DATA XREF: sub_63E250+80↑o
+.rdata:007F2850
+.rdata:007F2850 ; class CEventEscape: CEventObject;   (#classinformer)
+.rdata:007F2850                 dd offset ??_R4CEventEscape@@6B@ ; const CEventEscape::`RTTI Complete Object Locator'
+.rdata:007F2854 ; const CEventEscape::`vftable'
+.rdata:007F2854 ??_7CEventEscape@@6B@ dd offset sub_641C90
+.rdata:007F2854                                         ; DATA XREF: CEventEscape+30↑o
+.rdata:007F2854                                         ; sub_63EE90+36↑o
+.rdata:007F2858                 dd offset nullsub_1
+.rdata:007F285C                 dd offset sub_63DDE0
+.rdata:007F2860                 dd offset sub_6353E0
+.rdata:007F2864                 dd offset CEventEscape__Init
+.rdata:007F2868                 dd offset CEventEscape__Write
+.rdata:007F286C                 dd offset CEventEscape__Read
+.rdata:007F2870                 dd offset nullsub_11
+.rdata:007F2874                 dd offset sub_63E250
+.rdata:007F2878                 dd offset nullsub_1
+.rdata:007F287C aI_82           db 'タイプ',0              ; DATA XREF: .rdata:007F28AC↓o
+.rdata:007F2883                 align 4
+.rdata:007F2884 a1001           db '最大増分(1=0.01)',0     ; DATA XREF: .rdata:007F28B4↓o
+.rdata:007F2895                 align 4
+.rdata:007F2898 asc_7F2898      db '標的高度補正',0           ; DATA XREF: .rdata:007F28BC↓o
+.rdata:007F28A5                 align 4
+.rdata:007F28A8 ; int CEventHeight_Types[]
+.rdata:007F28A8 CEventHeight_Types dd 0FFFFFFFFh        ; DATA XREF: CEventHeight__Read+46↑r
+.rdata:007F28A8                                         ; CEventHeight__Init+7A↑o ...
+.rdata:007F28AC                 dd offset aI_82         ; "タイプ"
+.rdata:007F28B0                 dd 3
+.rdata:007F28B4                 dd offset a1001         ; "最大増分(1=0.01)"
+.rdata:007F28B8                 dd 2
+.rdata:007F28BC                 dd offset asc_7F2898    ; "標的高度補正"
+.rdata:007F28C0 ; const char aS_21[]
+.rdata:007F28C0 aS_21           db '増分:%s',0            ; DATA XREF: CEventHeight__Init+B0↑o
+.rdata:007F28C0                                         ; sub_63F320+70↑o
+.rdata:007F28C8 ; const char aSS_5[]
+.rdata:007F28C8 aSS_5           db '%s 補正:%s',0         ; DATA XREF: sub_63F320+BA↑o
+.rdata:007F28D3                 align 4
+.rdata:007F28D4
+.rdata:007F28D4 ; class CEventHeight: CEventObject;   (#classinformer)
+.rdata:007F28D4                 dd offset ??_R4CEventHeight@@6B@ ; const CEventHeight::`RTTI Complete Object Locator'
+.rdata:007F28D8 ; const CEventHeight::`vftable'
+.rdata:007F28D8 ??_7CEventHeight@@6B@ dd offset sub_641C90
+.rdata:007F28D8                                         ; DATA XREF: CEventHeight+30↑o
+.rdata:007F28D8                                         ; sub_63F2C0+36↑o
+.rdata:007F28DC                 dd offset nullsub_1
+.rdata:007F28E0                 dd offset sub_63EF50
+.rdata:007F28E4                 dd offset sub_6353E0
+.rdata:007F28E8                 dd offset CEventHeight__Init
+.rdata:007F28EC                 dd offset CEventHeight__Write
+.rdata:007F28F0                 dd offset CEventHeight__Read
+.rdata:007F28F4                 dd offset nullsub_11
+.rdata:007F28F8                 dd offset sub_63F320
+.rdata:007F28FC                 dd offset sub_63F090
+.rdata:007F2900 asc_7F2900      db '攻撃グループ',0           ; DATA XREF: .rdata:007F2B3C↓o
+.rdata:007F290D                 align 10h
+.rdata:007F2910 a2_2            db '攻撃グループ2',0          ; DATA XREF: .rdata:007F2B44↓o
+.rdata:007F291E                 align 10h
+.rdata:007F2920 aUn_3           db 'ヒットカウンタ初期化',0       ; DATA XREF: .rdata:007F2B4C↓o
+.rdata:007F2935                 align 4
+.rdata:007F2938 asc_7F2938      db 'フラグ',0              ; DATA XREF: .rdata:007F2B54↓o
+.rdata:007F293F                 align 10h
+.rdata:007F2940 asc_7F2940      db 'ヒット数',0             ; DATA XREF: .rdata:007F2B5C↓o
+.rdata:007F2949                 align 4
+.rdata:007F294C asc_7F294C      db 'ヒット間隔',0            ; DATA XREF: .rdata:007F2B64↓o
+.rdata:007F2957                 align 4
+.rdata:007F2958 asc_7F2958      db '攻撃力',0              ; DATA XREF: .rdata:007F2B6C↓o
+.rdata:007F295F                 align 10h
+.rdata:007F2960 asc_7F2960      db '攻撃力最低値',0           ; DATA XREF: .rdata:007F2B74↓o
+.rdata:007F296D                 align 10h
+.rdata:007F2970 asc_7F2970      db '攻撃力溜め反映率',0         ; DATA XREF: .rdata:007F2B7C↓o
+.rdata:007F2981                 align 4
+.rdata:007F2984 asc_7F2984      db '装甲攻撃力',0            ; DATA XREF: .rdata:007F2B84↓o
+.rdata:007F298F                 align 10h
+.rdata:007F2990 aN_72           db '基底コンボ補正値',0         ; DATA XREF: .rdata:007F2B8C↓o
+.rdata:007F29A1                 align 4
+.rdata:007F29A4 asc_7F29A4      db '攻撃力補正：技のみ',0        ; DATA XREF: .rdata:007F2B94↓o
+.rdata:007F29B7                 align 4
+.rdata:007F29B8 asc_7F29B8      db '攻撃力補正',0            ; DATA XREF: .rdata:007F2B9C↓o
+.rdata:007F29C3                 align 4
+.rdata:007F29C4 asc_7F29C4      db '攻撃力補正：技終了時',0       ; DATA XREF: .rdata:007F2BA4↓o
+.rdata:007F29D9                 align 4
+.rdata:007F29DC asc_7F29DC      db '自分停止時間',0           ; DATA XREF: .rdata:007F2BAC↓o
+.rdata:007F29E9                 align 4
+.rdata:007F29EC asc_7F29EC      db '消滅時間',0             ; DATA XREF: .rdata:007F2BB4↓o
+.rdata:007F29F5                 align 4
+.rdata:007F29F8 aEE_4           db 'ヒットエフェクト',0         ; DATA XREF: .rdata:007F2BBC↓o
+.rdata:007F2A09                 align 4
+.rdata:007F2A0C asc_7F2A0C      db 'のけぞり（地上→地上）',0      ; DATA XREF: .rdata:007F2BC4↓o
+.rdata:007F2A23                 db    0
+.rdata:007F2A24 asc_7F2A24      db 'のけぞり（空中）',0         ; DATA XREF: .rdata:007F2BCC↓o
+.rdata:007F2A35                 db    0
+.rdata:007F2A36                 db    0
+.rdata:007F2A37                 db    0
+.rdata:007F2A38 asc_7F2A38      db 'のけぞり（空中→地上）',0      ; DATA XREF: .rdata:007F2BD4↓o
+.rdata:007F2A4F                 db    0
+.rdata:007F2A50 aUn_9           db 'のけぞり（ダウン）',0        ; DATA XREF: .rdata:007F2BDC↓o
+.rdata:007F2A63                 db    0
+.rdata:007F2A64 asc_7F2A64      db 'ヒットストップ',0          ; DATA XREF: .rdata:007F2BE4↓o
+.rdata:007F2A73                 db    0
+.rdata:007F2A74 asc_7F2A74      db 'ヒットストップ（自機）',0      ; DATA XREF: .rdata:007F2BEC↓o
+.rdata:007F2A8B                 db    0
+.rdata:007F2A8C asc_7F2A8C      db 'スロー反映率',0           ; DATA XREF: .rdata:007F2BF4↓o
+.rdata:007F2A99                 db    0
+.rdata:007F2A9A                 db    0
+.rdata:007F2A9B                 db    0
+.rdata:007F2A9C asc_7F2A9C      db '画面：拡大縮小時間',0        ; DATA XREF: .rdata:007F2BFC↓o
+.rdata:007F2AAF                 db    0
+.rdata:007F2AB0 asc_7F2AB0      db '画面：拡大縮小',0          ; DATA XREF: .rdata:007F2C04↓o
+.rdata:007F2ABF                 db    0
+.rdata:007F2AC0 asc_7F2AC0      db '画面：振動時間',0          ; DATA XREF: .rdata:007F2C0C↓o
+.rdata:007F2ACF                 db    0
+.rdata:007F2AD0 asc_7F2AD0      db '画面：振動',0            ; DATA XREF: .rdata:007F2C14↓o
+.rdata:007F2ADB                 db    0
+.rdata:007F2ADC aSe_2           db 'ヒットＳＥ',0            ; DATA XREF: .rdata:007F2C1C↓o
+.rdata:007F2AE7                 db    0
+.rdata:007F2AE8 aSe_3           db '鉄ヒットＳＥ',0           ; DATA XREF: .rdata:007F2C24↓o
+.rdata:007F2AF5                 db    0
+.rdata:007F2AF6                 db    0
+.rdata:007F2AF7                 db    0
+.rdata:007F2AF8 asc_7F2AF8      db 'ダメージ色時間',0          ; DATA XREF: .rdata:007F2C2C↓o
+.rdata:007F2B07                 db    0
+.rdata:007F2B08 aN_77           db 'キャンセルフラグ',0         ; DATA XREF: .rdata:007F2C34↓o
+.rdata:007F2B19                 db    0
+.rdata:007F2B1A                 db    0
+.rdata:007F2B1B                 db    0
+.rdata:007F2B1C asc_7F2B1C      db 'メカステータス増減値',0       ; DATA XREF: .rdata:007F2C3C↓o
+.rdata:007F2B31                 db    0
+.rdata:007F2B32                 db    0
+.rdata:007F2B33                 db    0
+.rdata:007F2B34                 db    0
+.rdata:007F2B35                 db    0
+.rdata:007F2B36                 db    0
+.rdata:007F2B37                 db    0
+.rdata:007F2B38 ; int CEventHit_types[]
+.rdata:007F2B38 CEventHit_types dd 0FFFFFFFFh           ; DATA XREF: CEventHit__Read+184↑r
+.rdata:007F2B38                                         ; CEventHit__Read+1DB↑r ...
+.rdata:007F2B3C                 dd offset asc_7F2900    ; "攻撃グループ"
+.rdata:007F2B40                 dd 0FFFFFFFFh
+.rdata:007F2B44                 dd offset a2_2          ; "攻撃グループ2"
+.rdata:007F2B48                 dd 0FFFFFFFFh
+.rdata:007F2B4C                 dd offset aUn_3         ; "ヒットカウンタ初期化"
+.rdata:007F2B50                 dd 0FFFFFFFFh
+.rdata:007F2B54                 dd offset asc_7F2938    ; "フラグ"
+.rdata:007F2B58                 dd 0FFFFFFFFh
+.rdata:007F2B5C                 dd offset asc_7F2940    ; "ヒット数"
+.rdata:007F2B60                 dd 0FFFFFFFFh
+.rdata:007F2B64                 dd offset asc_7F294C    ; "ヒット間隔"
+.rdata:007F2B68                 dd 20h
+.rdata:007F2B6C                 dd offset asc_7F2958    ; "攻撃力"
+.rdata:007F2B70                 dd 0FFFFFFFFh
+.rdata:007F2B74                 dd offset asc_7F2960    ; "攻撃力最低値"
+.rdata:007F2B78                 dd 0FFFFFFFFh
+.rdata:007F2B7C                 dd offset asc_7F2970    ; "攻撃力溜め反映率"
+.rdata:007F2B80                 dd 0FFFFFFFFh
+.rdata:007F2B84                 dd offset asc_7F2984    ; "装甲攻撃力"
+.rdata:007F2B88                 dd 0FFFFFFFFh
+.rdata:007F2B8C                 dd offset aN_72         ; "基底コンボ補正値"
+.rdata:007F2B90                 dd 0FFFFFFFFh
+.rdata:007F2B94                 dd offset asc_7F29A4    ; "攻撃力補正：技のみ"
+.rdata:007F2B98                 dd 0FFFFFFFFh
+.rdata:007F2B9C                 dd offset asc_7F29B8    ; "攻撃力補正"
+.rdata:007F2BA0                 dd 0FFFFFFFFh
+.rdata:007F2BA4                 dd offset asc_7F29C4    ; "攻撃力補正：技終了時"
+.rdata:007F2BA8                 dd 0FFFFFFFFh
+.rdata:007F2BAC                 dd offset asc_7F29DC    ; "自分停止時間"
+.rdata:007F2BB0                 dd 0FFFFFFFFh
+.rdata:007F2BB4                 dd offset asc_7F29EC    ; "消滅時間"
+.rdata:007F2BB8                 dd 4
+.rdata:007F2BBC                 dd offset aEE_4         ; "ヒットエフェクト"
+.rdata:007F2BC0                 dd 21h
+.rdata:007F2BC4                 dd offset asc_7F2A0C    ; "のけぞり（地上→地上）"
+.rdata:007F2BC8                 dd 21h
+.rdata:007F2BCC                 dd offset asc_7F2A24    ; "のけぞり（空中）"
+.rdata:007F2BD0                 dd 21h
+.rdata:007F2BD4                 dd offset asc_7F2A38    ; "のけぞり（空中→地上）"
+.rdata:007F2BD8                 dd 21h
+.rdata:007F2BDC                 dd offset aUn_9         ; "のけぞり（ダウン）"
+.rdata:007F2BE0                 dd 0FFFFFFFFh
+.rdata:007F2BE4                 dd offset asc_7F2A64    ; "ヒットストップ"
+.rdata:007F2BE8                 dd 0FFFFFFFFh
+.rdata:007F2BEC                 dd offset asc_7F2A74    ; "ヒットストップ（自機）"
+.rdata:007F2BF0                 dd 0FFFFFFFFh
+.rdata:007F2BF4                 dd offset asc_7F2A8C    ; "スロー反映率"
+.rdata:007F2BF8                 dd 0FFFFFFFFh
+.rdata:007F2BFC                 dd offset asc_7F2A9C    ; "画面：拡大縮小時間"
+.rdata:007F2C00                 dd 2
+.rdata:007F2C04                 dd offset asc_7F2AB0    ; "画面：拡大縮小"
+.rdata:007F2C08                 dd 0FFFFFFFFh
+.rdata:007F2C0C                 dd offset asc_7F2AC0    ; "画面：振動時間"
+.rdata:007F2C10                 dd 19h
+.rdata:007F2C14                 dd offset asc_7F2AD0    ; "画面：振動"
+.rdata:007F2C18                 dd 17h
+.rdata:007F2C1C                 dd offset aSe_2         ; "ヒットＳＥ"
+.rdata:007F2C20                 dd 0FFFFFFFFh
+.rdata:007F2C24                 dd offset aSe_3         ; "鉄ヒットＳＥ"
+.rdata:007F2C28                 dd 0FFFFFFFFh
+.rdata:007F2C2C                 dd offset asc_7F2AF8    ; "ダメージ色時間"
+.rdata:007F2C30                 dd 0FFFFFFFFh
+.rdata:007F2C34                 dd offset aN_77         ; "キャンセルフラグ"
+.rdata:007F2C38                 dd 23h
+.rdata:007F2C3C                 dd offset asc_7F2B1C    ; "メカステータス増減値"
+.rdata:007F2C40 asc_7F2C40      db '攻撃力：',0             ; DATA XREF: sub_63F8F0+144↑o
+.rdata:007F2C40                                         ; sub_63FC40+4C↑o
+.rdata:007F2C49                 align 4
+.rdata:007F2C4C asc_7F2C4C      db '攻撃力：無し',0           ; DATA XREF: sub_63FC40+AA↑o
+.rdata:007F2C59                 align 4
+.rdata:007F2C5C
+.rdata:007F2C5C ; class CEventHit: CEventObject;   (#classinformer)
+.rdata:007F2C5C                 dd offset ??_R4CEventHit@@6B@ ; const CEventHit::`RTTI Complete Object Locator'
+.rdata:007F2C60 ; const CEventHit::`vftable'
+.rdata:007F2C60 ??_7CEventHit@@6B@ dd offset sub_641C90 ; DATA XREF: CEventHit+30↑o
+.rdata:007F2C60                                         ; sub_63FFA0+36↑o
+.rdata:007F2C64                 dd offset nullsub_1
+.rdata:007F2C68                 dd offset sub_63F440
+.rdata:007F2C6C                 dd offset sub_6353E0
+.rdata:007F2C70                 dd offset sub_63F8F0
+.rdata:007F2C74                 dd offset CEventHit__Write
+.rdata:007F2C78                 dd offset CEventHit__Read
+.rdata:007F2C7C                 dd offset sub_63F840
+.rdata:007F2C80                 dd offset sub_63FC40
+.rdata:007F2C84                 dd offset sub_63F8B0
+.rdata:007F2C88 asc_7F2C88      db '開始位置',0             ; DATA XREF: .rdata:007F2CB0↓o
+.rdata:007F2C91                 align 4
+.rdata:007F2C94 asc_7F2C94      db '終了位置',0             ; DATA XREF: .rdata:007F2CB8↓o
+.rdata:007F2C9D                 align 10h
+.rdata:007F2CA0 CEventMove_Types db '移動タイプ',0           ; DATA XREF: .rdata:007F2CC0↓o
+.rdata:007F2CAB                 align 4
+.rdata:007F2CAC                 dd 0FFFFFFFFh
+.rdata:007F2CB0                 dd offset asc_7F2C88    ; "開始位置"
+.rdata:007F2CB4                 dd 0FFFFFFFFh
+.rdata:007F2CB8                 dd offset asc_7F2C94    ; "終了位置"
+.rdata:007F2CBC                 dd 0FFFFFFFFh
+.rdata:007F2CC0                 dd offset CEventMove_Types ; "移動タイプ"
+.rdata:007F2CC4
+.rdata:007F2CC4 ; class CEventMove: CEventObject;   (#classinformer)
+.rdata:007F2CC4                 dd offset ??_R4CEventMove@@6B@ ; const CEventMove::`RTTI Complete Object Locator'
+.rdata:007F2CC8 ; const CEventMove::`vftable'
+.rdata:007F2CC8 ??_7CEventMove@@6B@ dd offset sub_641C90
+.rdata:007F2CC8                                         ; DATA XREF: CEventMove+36↑o
+.rdata:007F2CCC                 dd offset nullsub_1
+.rdata:007F2CD0                 dd offset sub_640040
+.rdata:007F2CD4                 dd offset sub_6353E0
+.rdata:007F2CD8                 dd offset sub_640110
+.rdata:007F2CDC                 dd offset CEventMove__Write
+.rdata:007F2CE0                 dd offset CEventMove__Read
+.rdata:007F2CE4                 dd offset nullsub_11
+.rdata:007F2CE8                 dd offset sub_640240
+.rdata:007F2CEC                 dd offset nullsub_1
+.rdata:007F2CF0 aI_84           db '処理タイプ',0            ; DATA XREF: .rdata:007F2E04↓o
+.rdata:007F2CFB                 align 4
+.rdata:007F2CFC asc_7F2CFC      db 'フラグ',0              ; DATA XREF: .rdata:007F2E0C↓o
+.rdata:007F2D03                 align 4
+.rdata:007F2D04 asc_7F2D04      db '停止時間',0             ; DATA XREF: .rdata:007F2E14↓o
+.rdata:007F2D0D                 align 10h
+.rdata:007F2D10 asc_7F2D10      db 'ﾋｯﾄﾊﾞｯｸ',0          ; DATA XREF: .rdata:007F2E1C↓o
+.rdata:007F2D18 asc_7F2D18      db 'ﾋｯﾄﾊﾞｯｸ(のけぞり時)',0   ; DATA XREF: .rdata:007F2E24↓o
+.rdata:007F2D2C asc_7F2D2C      db 'ﾋｯﾄﾊﾞｯｸ:自機補正',0     ; DATA XREF: .rdata:007F2E2C↓o
+.rdata:007F2D3D                 align 10h
+.rdata:007F2D40 asc_7F2D40      db 'ﾋｯﾄﾊﾞｯｸ:自機補正(のけぞり時)',0
+.rdata:007F2D40                                         ; DATA XREF: .rdata:007F2E34↓o
+.rdata:007F2D5D                 align 10h
+.rdata:007F2D60 aUn_4           db 'ダウン時間',0            ; DATA XREF: .rdata:007F2E3C↓o
+.rdata:007F2D6B                 align 4
+.rdata:007F2D6C asc_7F2D6C      db 'のけぞり方向',0           ; DATA XREF: .rdata:007F2E44↓o
+.rdata:007F2D79                 align 4
+.rdata:007F2D7C aI_85           db 'のけぞり速度タイプ',0        ; DATA XREF: .rdata:007F2E4C↓o
+.rdata:007F2D8F                 align 10h
+.rdata:007F2D90 asc_7F2D90      db 'のけぞり速度',0           ; DATA XREF: .rdata:007F2E54↓o
+.rdata:007F2D9D                 align 10h
+.rdata:007F2DA0 asc_7F2DA0      db '速度減速率',0            ; DATA XREF: .rdata:007F2E5C↓o
+.rdata:007F2DAB                 align 4
+.rdata:007F2DAC aI_86           db '吹き飛び規模タイプ',0        ; DATA XREF: .rdata:007F2E64↓o
+.rdata:007F2DBF                 align 10h
+.rdata:007F2DC0 asc_7F2DC0      db '吹き飛び規模',0           ; DATA XREF: .rdata:007F2E6C↓o
+.rdata:007F2DCD                 align 10h
+.rdata:007F2DD0 asc_7F2DD0      db '吹き飛び重力',0           ; DATA XREF: .rdata:007F2E74↓o
+.rdata:007F2DDD                 align 10h
+.rdata:007F2DE0 aUnLv           db 'バウンドLv',0           ; DATA XREF: .rdata:007F2E7C↓o
+.rdata:007F2DEB                 align 4
+.rdata:007F2DEC aUn_5           db 'バウンド速度',0           ; DATA XREF: .rdata:007F2E84↓o
+.rdata:007F2DF9                 align 10h
+.rdata:007F2E00 ; int CEventNokezori_Types[]
+.rdata:007F2E00 CEventNokezori_Types dd 0FFFFFFFFh      ; DATA XREF: CEventNokezori__Read+F2↑r
+.rdata:007F2E00                                         ; sub_6407E0+CB↑o ...
+.rdata:007F2E04                 dd offset aI_84         ; "処理タイプ"
+.rdata:007F2E08                 dd 0FFFFFFFFh
+.rdata:007F2E0C                 dd offset asc_7F2CFC    ; "フラグ"
+.rdata:007F2E10                 dd 0FFFFFFFFh
+.rdata:007F2E14                 dd offset asc_7F2D04    ; "停止時間"
+.rdata:007F2E18                 dd 0FFFFFFFFh
+.rdata:007F2E1C                 dd offset asc_7F2D10    ; "ﾋｯﾄﾊﾞｯｸ"
+.rdata:007F2E20                 dd 0FFFFFFFFh
+.rdata:007F2E24                 dd offset asc_7F2D18    ; "ﾋｯﾄﾊﾞｯｸ(のけぞり時)"
+.rdata:007F2E28                 dd 0FFFFFFFFh
+.rdata:007F2E2C                 dd offset asc_7F2D2C    ; "ﾋｯﾄﾊﾞｯｸ:自機補正"
+.rdata:007F2E30                 dd 0FFFFFFFFh
+.rdata:007F2E34                 dd offset asc_7F2D40    ; "ﾋｯﾄﾊﾞｯｸ:自機補正(のけぞり時)"
+.rdata:007F2E38                 dd 0FFFFFFFFh
+.rdata:007F2E3C                 dd offset aUn_4         ; "ダウン時間"
+.rdata:007F2E40                 dd 9
+.rdata:007F2E44                 dd offset asc_7F2D6C    ; "のけぞり方向"
+.rdata:007F2E48                 dd 0Bh
+.rdata:007F2E4C                 dd offset aI_85         ; "のけぞり速度タイプ"
+.rdata:007F2E50                 dd 0FFFFFFFFh
+.rdata:007F2E54                 dd offset asc_7F2D90    ; "のけぞり速度"
+.rdata:007F2E58                 dd 0FFFFFFFFh
+.rdata:007F2E5C                 dd offset asc_7F2DA0    ; "速度減速率"
+.rdata:007F2E60                 dd 0Bh
+.rdata:007F2E64                 dd offset aI_86         ; "吹き飛び規模タイプ"
+.rdata:007F2E68                 dd 0FFFFFFFFh
+.rdata:007F2E6C                 dd offset asc_7F2DC0    ; "吹き飛び規模"
+.rdata:007F2E70                 dd 0FFFFFFFFh
+.rdata:007F2E74                 dd offset asc_7F2DD0    ; "吹き飛び重力"
+.rdata:007F2E78                 dd 0FFFFFFFFh
+.rdata:007F2E7C                 dd offset aUnLv         ; "バウンドLv"
+.rdata:007F2E80                 dd 0FFFFFFFFh
+.rdata:007F2E84                 dd offset aUn_5         ; "バウンド速度"
+.rdata:007F2E88 asc_7F2E88      db '指定：',0              ; DATA XREF: sub_6407E0+111↑o
+.rdata:007F2E88                                         ; sub_640910+50↑o
+.rdata:007F2E8F                 align 10h
+.rdata:007F2E90 asc_7F2E90      db '同じ：地上→地上',0         ; DATA XREF: sub_640910:loc_6409AC↑o
+.rdata:007F2EA1                 db    0
+.rdata:007F2EA2                 db    0
+.rdata:007F2EA3                 db    0
+.rdata:007F2EA4 asc_7F2EA4      db '同じ：空中',0            ; DATA XREF: sub_640910:loc_6409B3↑o
+.rdata:007F2EAF                 align 10h
+.rdata:007F2EB0 asc_7F2EB0      db '同じ：空中→地上',0         ; DATA XREF: sub_640910:loc_6409BA↑o
+.rdata:007F2EC1                 db    0
+.rdata:007F2EC2                 db    0
+.rdata:007F2EC3                 db    0
+.rdata:007F2EC4 aUn_0           db '同じ：ダウン',0           ; DATA XREF: sub_640910:loc_6409C1↑o
+.rdata:007F2ED1                 align 4
+.rdata:007F2ED4 asc_7F2ED4      db 'なし',0               ; DATA XREF: sub_640910:loc_6409C8↑o
+.rdata:007F2ED9                 align 4
+.rdata:007F2EDC
+.rdata:007F2EDC ; class CEventNokezori: CEventObject;   (#classinformer)
+.rdata:007F2EDC                 dd offset ??_R4CEventNokezori@@6B@ ; const CEventNokezori::`RTTI Complete Object Locator'
+.rdata:007F2EE0 ; const CEventNokezori::`vftable'
+.rdata:007F2EE0 ??_7CEventNokezori@@6B@ dd offset sub_641C90
+.rdata:007F2EE0                                         ; DATA XREF: CEventNokezori+30↑o
+.rdata:007F2EE0                                         ; sub_640C10+36↑o
+.rdata:007F2EE4                 dd offset nullsub_1
+.rdata:007F2EE8                 dd offset sub_640520
+.rdata:007F2EEC                 dd offset sub_6353E0
+.rdata:007F2EF0                 dd offset sub_6407E0
+.rdata:007F2EF4                 dd offset CEventNokezori__Write
+.rdata:007F2EF8                 dd offset CEventNokezori__Read
+.rdata:007F2EFC                 dd offset nullsub_11
+.rdata:007F2F00                 dd offset sub_640910
+.rdata:007F2F04                 dd offset sub_6407A0
+.rdata:007F2F08 aUn_6           db '持続カウンタ',0           ; DATA XREF: .rdata:007F2F84↓o
+.rdata:007F2F15                 align 4
+.rdata:007F2F18 asc_7F2F18      db 'フレーム数',0            ; DATA XREF: .rdata:007F2F8C↓o
+.rdata:007F2F23                 align 4
+.rdata:007F2F24 asc_7F2F24      db 'フレーム速度',0           ; DATA XREF: .rdata:007F2F94↓o
+.rdata:007F2F31                 align 4
+.rdata:007F2F34 asc_7F2F34      db '数',0                ; DATA XREF: .rdata:007F2F9C↓o
+.rdata:007F2F37                 align 4
+.rdata:007F2F38 asc_7F2F38      db '座標',0               ; DATA XREF: .rdata:007F2FA4↓o
+.rdata:007F2F3D                 align 10h
+.rdata:007F2F40 asc_7F2F40      db '距離',0               ; DATA XREF: .rdata:007F2FAC↓o
+.rdata:007F2F45                 align 4
+.rdata:007F2F48 asc_7F2F48      db '長さ',0               ; DATA XREF: .rdata:007F2FB4↓o
+.rdata:007F2F4D                 align 10h
+.rdata:007F2F50 asc_7F2F50      db '太さ',0               ; DATA XREF: .rdata:007F2FBC↓o
+.rdata:007F2F55                 align 4
+.rdata:007F2F58 asc_7F2F58      db '輝度',0               ; DATA XREF: .rdata:007F2FC4↓o
+.rdata:007F2F5D                 align 10h
+.rdata:007F2F60 aE_29           db 'フェード時間',0           ; DATA XREF: .rdata:007F2FCC↓o
+.rdata:007F2F6D                 align 10h
+.rdata:007F2F70 aR_4            db '色R',0               ; DATA XREF: .rdata:007F2FD4↓o
+.rdata:007F2F74 aG_11           db '色G',0               ; DATA XREF: .rdata:007F2FDC↓o
+.rdata:007F2F78 aB_5            db '色B',0               ; DATA XREF: .rdata:007F2FE4↓o
+.rdata:007F2F7C                 align 10h
+.rdata:007F2F80                 dd 0FFFFFFFFh
+.rdata:007F2F84                 dd offset aUn_6         ; "持続カウンタ"
+.rdata:007F2F88                 dd 0FFFFFFFFh
+.rdata:007F2F8C                 dd offset asc_7F2F18    ; "フレーム数"
+.rdata:007F2F90                 dd 0FFFFFFFFh
+.rdata:007F2F94                 dd offset asc_7F2F24    ; "フレーム速度"
+.rdata:007F2F98                 dd 0FFFFFFFFh
+.rdata:007F2F9C                 dd offset asc_7F2F34    ; "数"
+.rdata:007F2FA0                 dd 5
+.rdata:007F2FA4                 dd offset asc_7F2F38    ; "座標"
+.rdata:007F2FA8                 dd 0FFFFFFFFh
+.rdata:007F2FAC                 dd offset asc_7F2F40    ; "距離"
+.rdata:007F2FB0                 dd 0FFFFFFFFh
+.rdata:007F2FB4                 dd offset asc_7F2F48    ; "長さ"
+.rdata:007F2FB8                 dd 0FFFFFFFFh
+.rdata:007F2FBC                 dd offset asc_7F2F50    ; "太さ"
+.rdata:007F2FC0                 dd 0FFFFFFFFh
+.rdata:007F2FC4                 dd offset asc_7F2F58    ; "輝度"
+.rdata:007F2FC8                 dd 0FFFFFFFFh
+.rdata:007F2FCC                 dd offset aE_29         ; "フェード時間"
+.rdata:007F2FD0                 dd 0FFFFFFFFh
+.rdata:007F2FD4                 dd offset aR_4          ; "色R"
+.rdata:007F2FD8                 dd 0FFFFFFFFh
+.rdata:007F2FDC                 dd offset aG_11         ; "色G"
+.rdata:007F2FE0                 dd 0FFFFFFFFh
+.rdata:007F2FE4                 dd offset aB_5          ; "色B"
+.rdata:007F2FE8 ; const CHAR aDS[]
+.rdata:007F2FE8 aDS             db '時間 %d 座標 %s',0      ; DATA XREF: sub_641100+6F↑o
+.rdata:007F2FF8
+.rdata:007F2FF8 ; class CEventRadialLine: CEventObject;   (#classinformer)
+.rdata:007F2FF8                 dd offset ??_R4CEventRadialLine@@6B@ ; const CEventRadialLine::`RTTI Complete Object Locator'
+.rdata:007F2FFC ; const CEventRadialLine::`vftable'
+.rdata:007F2FFC ??_7CEventRadialLine@@6B@ dd offset sub_641C90
+.rdata:007F2FFC                                         ; DATA XREF: CEventRadialLine+30↑o
+.rdata:007F2FFC                                         ; sub_6410A0+36↑o
+.rdata:007F3000                 dd offset nullsub_1
+.rdata:007F3004                 dd offset sub_640C70
+.rdata:007F3008                 dd offset sub_6353E0
+.rdata:007F300C                 dd offset CEventRadialLine__Init
+.rdata:007F3010                 dd offset CEventRadialLine__Write
+.rdata:007F3014                 dd offset CEventRadialLine__Read
+.rdata:007F3018                 dd offset nullsub_11
+.rdata:007F301C                 dd offset sub_641100
+.rdata:007F3020                 dd offset nullsub_1
+.rdata:007F3024                 dd 0
+.rdata:007F3028 aE_16           db 'フェード描画',0           ; DATA XREF: sub_641530+69↑o
+.rdata:007F3028                                         ; sub_641530+97↑o ...
+.rdata:007F3035                 db 73h dup(0)
+.rdata:007F30A8 ; char byte_7F30A8[]
+.rdata:007F30A8 byte_7F30A8     db 1                    ; DATA XREF: sub_641530+61↑r
+.rdata:007F30A9 ; char byte_7F30A9[]
+.rdata:007F30A9 byte_7F30A9     db 0                    ; DATA XREF: sub_641530+59↑r
+.rdata:007F30AA                 db 'フラッシュ描画',0
+.rdata:007F30B9                 db 71h dup(0), 1, 0
+.rdata:007F312C aE_31           db 'フェード色指定描画',0
+.rdata:007F313F                 db 6Eh dup(0), 1
+.rdata:007F31AE                 db 'フラッシュ色指定描画'
+.rdata:007F31C2                 db 6Dh dup(0), 1
+.rdata:007F3230 aI_102          db 'ネガティブ描画'
+.rdata:007F323E                 db 74h dup(0)
+.rdata:007F32B2 aAA_1           db 'アルファ塗りつぶし描画',0
+.rdata:007F32C9                 db 69h dup(0), 2 dup(1)
+.rdata:007F3334                 db '加算塗りつぶし描画',0
+.rdata:007F3347                 db 6Dh dup(0), 2 dup(1)
+.rdata:007F33B6                 db '減算塗りつぶし描画',0
+.rdata:007F33C9                 db 6Dh dup(0), 2 dup(1)
+.rdata:007F3438 ; const char aS_22[3]
+.rdata:007F3438 aS_22           db '%s',0               ; DATA XREF: sub_641530+74↑o
+.rdata:007F343B                 align 4
+.rdata:007F343C ; const char aS4d_1[]
+.rdata:007F343C aS4d_1          db '%s : %4d',0         ; DATA XREF: sub_641530+A2↑o
+.rdata:007F3445                 align 4
+.rdata:007F3448 ; const char aS4d_2[9]
+.rdata:007F3448 aS4d_2          db '%s : %4d '          ; DATA XREF: sub_641530+C4↑o
+.rdata:007F3451 a4d_5           db '⇒ %4d',0
+.rdata:007F3458 ; const char aS3d3d3d[]
+.rdata:007F3458 aS3d3d3d        db '%s : (%3d:%3d:%3d)',0
+.rdata:007F3458                                         ; DATA XREF: sub_641530+F7↑o
+.rdata:007F346B                 align 4
+.rdata:007F346C ; const char aS3d3d3d_0[19]
+.rdata:007F346C aS3d3d3d_0      db '%s : (%3d:%3d:%3d) '
+.rdata:007F346C                                         ; DATA XREF: sub_641530+12A↑o
+.rdata:007F347F a3d3d3d_3       db '⇒ (%3d:%3d:%3d)',0
+.rdata:007F3490 aMap_1          db '(MAP)',0            ; DATA XREF: sub_641530+161↑o
+.rdata:007F3496                 align 4
+.rdata:007F3498
+.rdata:007F3498 ; class CEventScreenAttr: CEventObject;   (#classinformer)
+.rdata:007F3498                 dd offset ??_R4CEventScreenAttr@@6B@ ; const CEventScreenAttr::`RTTI Complete Object Locator'
+.rdata:007F349C ; const CEventScreenAttr::`vftable'
+.rdata:007F349C ??_7CEventScreenAttr@@6B@ dd offset sub_641C90
+.rdata:007F349C                                         ; DATA XREF: CEventScreenAttr+30↑o
+.rdata:007F349C                                         ; sub_6414D0+36↑o
+.rdata:007F34A0                 dd offset nullsub_1
+.rdata:007F34A4                 dd offset sub_6411E0
+.rdata:007F34A8                 dd offset sub_6353E0
+.rdata:007F34AC                 dd offset sub_6413C0
+.rdata:007F34B0                 dd offset CEventScreenAttr__Write
+.rdata:007F34B4                 dd offset CEventScreenAttr__Read
+.rdata:007F34B8                 dd offset nullsub_11
+.rdata:007F34BC                 dd offset sub_641530
+.rdata:007F34C0                 dd offset nullsub_1
+.rdata:007F34C4 aUn_7           db '持続カウンタ',0           ; DATA XREF: .rdata:007F34F8↓o
+.rdata:007F34D1                 align 4
+.rdata:007F34D4 aI_87           db 'タイプ',0              ; DATA XREF: .rdata:007F3500↓o
+.rdata:007F34DB                 align 4
+.rdata:007F34DC a1_5            db '速度1',0              ; DATA XREF: .rdata:007F3508↓o
+.rdata:007F34E2                 align 4
+.rdata:007F34E4 a2_3            db '速度2',0              ; DATA XREF: .rdata:007F3510↓o
+.rdata:007F34EA                 align 4
+.rdata:007F34EC asc_7F34EC      db '方向',0               ; DATA XREF: .rdata:007F3518↓o
+.rdata:007F34F1                 align 4
+.rdata:007F34F4                 dd 0FFFFFFFFh
+.rdata:007F34F8                 dd offset aUn_7         ; "持続カウンタ"
+.rdata:007F34FC                 dd 0FFFFFFFFh
+.rdata:007F3500                 dd offset aI_87         ; "タイプ"
+.rdata:007F3504                 dd 0FFFFFFFFh
+.rdata:007F3508                 dd offset a1_5          ; "速度1"
+.rdata:007F350C                 dd 0FFFFFFFFh
+.rdata:007F3510                 dd offset a2_3          ; "速度2"
+.rdata:007F3514                 dd 9
+.rdata:007F3518                 dd offset asc_7F34EC    ; "方向"
+.rdata:007F351C asc_7F351C      db 'スピード',0             ; DATA XREF: sub_641A20+3E↑o
+.rdata:007F3525                 align 4
+.rdata:007F3528 asc_7F3528      db '炎',0                ; DATA XREF: sub_641A20+69↑o
+.rdata:007F352B                 align 4
+.rdata:007F352C asc_7F352C      db '爆発',0               ; DATA XREF: sub_641A20+96↑o
+.rdata:007F3531                 align 4
+.rdata:007F3534 ; const CHAR aSD_0[]
+.rdata:007F3534 aSD_0           db '  角度:%s  速度:%d',0   ; DATA XREF: sub_641A20+1DD↑o
+.rdata:007F3547                 align 4
+.rdata:007F3548 ; const CHAR aS1D2D[]
+.rdata:007F3548 aS1D2D          db '  角度:%s  速度1:%d  速度2:%d',0
+.rdata:007F3548                                         ; DATA XREF: sub_641A20+160↑o
+.rdata:007F3566                 align 4
+.rdata:007F3568 ; const CHAR aD_57[]
+.rdata:007F3568 aD_57           db '  速度:%d',0          ; DATA XREF: sub_641A20+10E↑o
+.rdata:007F3572                 align 4
+.rdata:007F3574
+.rdata:007F3574 ; class CEventScreenEffect: CEventObject;   (#classinformer)
+.rdata:007F3574                 dd offset ??_R4CEventScreenEffect@@6B@ ; const CEventScreenEffect::`RTTI Complete Object Locator'
+.rdata:007F3578 ; const CEventScreenEffect::`vftable'
+.rdata:007F3578 ??_7CEventScreenEffect@@6B@ dd offset sub_641C90
+.rdata:007F3578                                         ; DATA XREF: CEventScreenEffect+30↑o
+.rdata:007F3578                                         ; sub_6419C0+36↑o
+.rdata:007F357C                 dd offset nullsub_1
+.rdata:007F3580                 dd offset sub_6416C0
+.rdata:007F3584                 dd offset sub_6353E0
+.rdata:007F3588                 dd offset sub_641810
+.rdata:007F358C                 dd offset CEventScreenEffect__Write
+.rdata:007F3590                 dd offset CEventScreenEffect__Read
+.rdata:007F3594                 dd offset nullsub_11
+.rdata:007F3598                 dd offset sub_641A20
+.rdata:007F359C                 dd offset nullsub_1
+.rdata:007F35A0 aUn_8           db '持続カウンタ',0           ; DATA XREF: .rdata:007F35FC↓o
+.rdata:007F35AD                 align 10h
+.rdata:007F35B0 asc_7F35B0      db '変化フレーム数',0          ; DATA XREF: .rdata:007F3604↓o
+.rdata:007F35BF                 align 10h
+.rdata:007F35C0 asc_7F35C0      db '数',0                ; DATA XREF: .rdata:007F360C↓o
+.rdata:007F35C3                 align 4
+.rdata:007F35C4 asc_7F35C4      db '角度',0               ; DATA XREF: .rdata:007F3614↓o
+.rdata:007F35C9                 align 4
+.rdata:007F35CC asc_7F35CC      db '速度',0               ; DATA XREF: .rdata:007F361C↓o
+.rdata:007F35D1                 align 4
+.rdata:007F35D4 asc_7F35D4      db '長さ',0               ; DATA XREF: .rdata:007F3624↓o
+.rdata:007F35D9                 align 4
+.rdata:007F35DC asc_7F35DC      db '太さ',0               ; DATA XREF: .rdata:007F362C↓o
+.rdata:007F35E1                 align 4
+.rdata:007F35E4 asc_7F35E4      db '輝度',0               ; DATA XREF: .rdata:007F3634↓o
+.rdata:007F35E9                 align 4
+.rdata:007F35EC aR_5            db '色R',0               ; DATA XREF: .rdata:007F363C↓o
+.rdata:007F35F0 aG_12           db '色G',0               ; DATA XREF: .rdata:007F3644↓o
+.rdata:007F35F4 aB_6            db '色B',0               ; DATA XREF: .rdata:007F364C↓o
+.rdata:007F35F8                 dd 0FFFFFFFFh
+.rdata:007F35FC                 dd offset aUn_8         ; "持続カウンタ"
+.rdata:007F3600                 dd 0FFFFFFFFh
+.rdata:007F3604                 dd offset asc_7F35B0    ; "変化フレーム数"
+.rdata:007F3608                 dd 0FFFFFFFFh
+.rdata:007F360C                 dd offset asc_7F35C0    ; "数"
+.rdata:007F3610                 dd 9
+.rdata:007F3614                 dd offset asc_7F35C4    ; "角度"
+.rdata:007F3618                 dd 0FFFFFFFFh
+.rdata:007F361C                 dd offset asc_7F35CC    ; "速度"
+.rdata:007F3620                 dd 0FFFFFFFFh
+.rdata:007F3624                 dd offset asc_7F35D4    ; "長さ"
+.rdata:007F3628                 dd 0FFFFFFFFh
+.rdata:007F362C                 dd offset asc_7F35DC    ; "太さ"
+.rdata:007F3630                 dd 0FFFFFFFFh
+.rdata:007F3634                 dd offset asc_7F35E4    ; "輝度"
+.rdata:007F3638                 dd 0FFFFFFFFh
+.rdata:007F363C                 dd offset aR_5          ; "色R"
+.rdata:007F3640                 dd 0FFFFFFFFh
+.rdata:007F3644                 dd offset aG_12         ; "色G"
+.rdata:007F3648                 dd 0FFFFFFFFh
+.rdata:007F364C                 dd offset aB_6          ; "色B"
+.rdata:007F3650 ; const CHAR aSD_1[]
+.rdata:007F3650 aSD_1           db '  角度:%s  速度:%d',0   ; DATA XREF: sub_642100+6F↑o
+.rdata:007F3663                 align 4
+.rdata:007F3664
+.rdata:007F3664 ; class CEventScreenLine: CEventObject;   (#classinformer)
+.rdata:007F3664                 dd offset ??_R4CEventScreenLine@@6B@ ; const CEventScreenLine::`RTTI Complete Object Locator'
+.rdata:007F3668 ; const CEventScreenLine::`vftable'
+.rdata:007F3668 ??_7CEventScreenLine@@6B@ dd offset sub_641C90
+.rdata:007F3668                                         ; DATA XREF: CEventScreenLine+30↑o
+.rdata:007F3668                                         ; sub_6420A0+36↑o
+.rdata:007F366C                 dd offset nullsub_1
+.rdata:007F3670                 dd offset sub_641CB0
+.rdata:007F3674                 dd offset sub_6353E0
+.rdata:007F3678                 dd offset sub_641EA0
+.rdata:007F367C                 dd offset CEventScreenLine__Write
+.rdata:007F3680                 dd offset CEventScreenLine__Read
+.rdata:007F3684                 dd offset nullsub_11
+.rdata:007F3688                 dd offset sub_642100
+.rdata:007F368C                 dd offset nullsub_1
+.rdata:007F3690 dword_7F3690    dd 0                    ; DATA XREF: .data:00863B84↓o
+.rdata:007F3694 asc_7F3694      db '角度指定',0             ; DATA XREF: .data:00863B80↓o
+.rdata:007F369D                 db    0
+.rdata:007F369E                 db    0
+.rdata:007F369F                 db    0
+.rdata:007F36A0 asc_7F36A0      db '左回転',0              ; DATA XREF: .data:00863B7C↓o
+.rdata:007F36A7                 db    0
+.rdata:007F36A8 asc_7F36A8      db '右回転',0              ; DATA XREF: .data:00863B78↓o
+.rdata:007F36AF                 db    0
+.rdata:007F36B0 asc_7F36B0      db '下',0                ; DATA XREF: .data:00863B74↓o
+.rdata:007F36B3                 db    0
+.rdata:007F36B4 asc_7F36B4      db '上',0                ; DATA XREF: .data:00863B70↓o
+.rdata:007F36B7                 db    0
+.rdata:007F36B8 asc_7F36B8      db '左',0                ; DATA XREF: .data:00863B6C↓o
+.rdata:007F36BB                 db    0
+.rdata:007F36BC asc_7F36BC      db '右',0                ; DATA XREF: .data:00863B68↓o
+.rdata:007F36BF                 db    0
+.rdata:007F36C0 aN_54           db 'ランダム',0             ; DATA XREF: .data:off_863B64↓o
+.rdata:007F36C9                 align 4
+.rdata:007F36CC ; const char aS4d4d[]
+.rdata:007F36CC aS4d4d          db '%s : %4d (周期 : %4d)',0
+.rdata:007F36CC                                         ; DATA XREF: sub_642460+6A↑o
+.rdata:007F36E2                 align 4
+.rdata:007F36E4 ; const char aS4d_3[9]
+.rdata:007F36E4 aS4d_3          db '%s : %4d '          ; DATA XREF: sub_642460+95↑o
+.rdata:007F36ED a4d4d_1         db '⇒ %4d (周期 : %4d)',0
+.rdata:007F3701                 db    0
+.rdata:007F3702                 db    0
+.rdata:007F3703                 db    0
+.rdata:007F3704
+.rdata:007F3704 ; class CEventScreenYure: CEventObject;   (#classinformer)
+.rdata:007F3704                 dd offset ??_R4CEventScreenYure@@6B@ ; const CEventScreenYure::`RTTI Complete Object Locator'
+.rdata:007F3708 ; const CEventScreenYure::`vftable'
+.rdata:007F3708 ??_7CEventScreenYure@@6B@ dd offset sub_641C90
+.rdata:007F3708                                         ; DATA XREF: CEventScreenYure+30↑o
+.rdata:007F3708                                         ; sub_642710+36↑o
+.rdata:007F370C                 dd offset nullsub_1
+.rdata:007F3710                 dd offset sub_6421E0
+.rdata:007F3714                 dd offset sub_6353E0
+.rdata:007F3718                 dd offset sub_6422E0
+.rdata:007F371C                 dd offset CEventScreenYure__Write
+.rdata:007F3720                 dd offset CEventScreenYure__Read
+.rdata:007F3724                 dd offset nullsub_11
+.rdata:007F3728                 dd offset sub_642460
+.rdata:007F372C                 dd offset nullsub_1
+.rdata:007F3730 a3dS            db '[%3d%%] %s',0       ; DATA XREF: sub_642A50+D0↑o
+.rdata:007F373B                 align 4
+.rdata:007F373C a3dS_0          db '[%3d%%] %s',0       ; DATA XREF: sub_642A50+150↑o
+.rdata:007F3747                 align 4
+.rdata:007F3748 ; const char a3dS_1[]
+.rdata:007F3748 a3dS_1          db '複：[%3d%%] %s',0     ; DATA XREF: sub_642A50+1CD↑o
+.rdata:007F3757                 align 4
+.rdata:007F3758 ; const char asc_7F3758[]
+.rdata:007F3758 asc_7F3758      db '指定なし',0             ; DATA XREF: sub_642A50+200↑o
+.rdata:007F3761                 align 4
+.rdata:007F3764 aBadAllocation  db 'bad allocation',0   ; DATA XREF: .data:off_863BA8↓o
+.rdata:007F3773                 align 4
+.rdata:007F3774
+.rdata:007F3774 ; struct boost::exception:   [MI] (#classinformer)
+.rdata:007F3774                 dd offset ??_R4?$error_info_injector@Vbad_alloc@std@@@exception_detail@boost@@6B@_0 ; const boost::exception_detail::error_info_injector<std::bad_alloc>::`RTTI Complete Object Locator'
+.rdata:007F3778 ; const boost::exception_detail::error_info_injector<class std::bad_alloc>::`vftable'
+.rdata:007F3778 ??_7?$error_info_injector@Vbad_alloc@std@@@exception_detail@boost@@6B@_0 dd offset sub_6432D0
+.rdata:007F3778                                         ; DATA XREF: sub_643240+75↑o
+.rdata:007F3778                                         ; sub_643460-177↑o ...
+.rdata:007F377C
+.rdata:007F377C ; struct struct boost::exception_detail::error_info_injector<std::bad_alloc>: std::bad_alloc, std::exception, boost::exception;  [MI] (#classinformer)
+.rdata:007F377C                 dd offset ??_R4?$error_info_injector@Vbad_alloc@std@@@exception_detail@boost@@6B@ ; const boost::exception_detail::error_info_injector<std::bad_alloc>::`RTTI Complete Object Locator'
+.rdata:007F3780 ; const boost::exception_detail::error_info_injector<class std::bad_alloc>::`vftable'
+.rdata:007F3780 ??_7?$error_info_injector@Vbad_alloc@std@@@exception_detail@boost@@6B@ dd offset sub_6433C0
+.rdata:007F3780                                         ; DATA XREF: sub_643240+6F↑o
+.rdata:007F3780                                         ; sub_643460-17D↑o ...
+.rdata:007F3784                 dd offset ?what@exception@@UBEPBDXZ ; exception::what(void)
+.rdata:007F3788
+.rdata:007F3788 ; class boost::exception_detail::clone_base:   [MI] (#classinformer)
+.rdata:007F3788                 dd offset ??_R4?$clone_impl@U?$error_info_injector@Vbad_alloc@std@@@exception_detail@boost@@@exception_detail@boost@@6B@_1 ; const boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<std::bad_alloc>>::`RTTI Complete Object Locator'
+.rdata:007F378C ; const boost::exception_detail::clone_impl<struct boost::exception_detail::error_info_injector<class std::bad_alloc>>::`vftable'
+.rdata:007F378C ??_7?$clone_impl@U?$error_info_injector@Vbad_alloc@std@@@exception_detail@boost@@@exception_detail@boost@@6B@_1 dd offset sub_6435B0
+.rdata:007F378C                                         ; DATA XREF: sub_643460+4A↑o
+.rdata:007F378C                                         ; sub_643530+21↑o ...
+.rdata:007F3790                 dd offset sub_643650
+.rdata:007F3794                 dd offset sub_643510
+.rdata:007F3798
+.rdata:007F3798 ; class boost::exception: boost::exception_detail::clone_base;  [MI] (#classinformer)
+.rdata:007F3798                 dd offset ??_R4?$clone_impl@U?$error_info_injector@Vbad_alloc@std@@@exception_detail@boost@@@exception_detail@boost@@6B@_0 ; const boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<std::bad_alloc>>::`RTTI Complete Object Locator'
+.rdata:007F379C ; const boost::exception_detail::clone_impl<struct boost::exception_detail::error_info_injector<class std::bad_alloc>>::`vftable'
+.rdata:007F379C ??_7?$clone_impl@U?$error_info_injector@Vbad_alloc@std@@@exception_detail@boost@@@exception_detail@boost@@6B@_0 dd offset sub_643520
+.rdata:007F379C                                         ; DATA XREF: sub_643460+43↑o
+.rdata:007F379C                                         ; sub_643530+1A↑o ...
+.rdata:007F37A0
+.rdata:007F37A0 ; class boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<std::bad_alloc> >: struct boost::exception_detail::error_info_injector<std::bad_alloc>, std::bad_alloc, std::exception, boost::exception, boost::exception_detail::clone_base;  [MI] (#classinformer)
+.rdata:007F37A0                 dd offset ??_R4?$clone_impl@U?$error_info_injector@Vbad_alloc@std@@@exception_detail@boost@@@exception_detail@boost@@6B@ ; const boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<std::bad_alloc>>::`RTTI Complete Object Locator'
+.rdata:007F37A4 ; const boost::exception_detail::clone_impl<struct boost::exception_detail::error_info_injector<class std::bad_alloc>>::`vftable'
+.rdata:007F37A4 ??_7?$clone_impl@U?$error_info_injector@Vbad_alloc@std@@@exception_detail@boost@@@exception_detail@boost@@6B@ dd offset sub_643560
+.rdata:007F37A4                                         ; DATA XREF: sub_643460+3D↑o
+.rdata:007F37A4                                         ; sub_643530+14↑o ...
+.rdata:007F37A8                 dd offset ?what@exception@@UBEPBDXZ ; exception::what(void)
+.rdata:007F37AC
+.rdata:007F37AC ; class CEventSe: CEventObject;   (#classinformer)
+.rdata:007F37AC                 dd offset ??_R4CEventSe@@6B@ ; const CEventSe::`RTTI Complete Object Locator'
+.rdata:007F37B0 ; const CEventSe::`vftable'
+.rdata:007F37B0 ??_7CEventSe@@6B@ dd offset sub_643E60  ; DATA XREF: sub_642CD0+2D↑o
+.rdata:007F37B0                                         ; CEventSe+2D↑o
+.rdata:007F37B4                 dd offset nullsub_1
+.rdata:007F37B8                 dd offset sub_6429F0
+.rdata:007F37BC                 dd offset sub_6353E0
+.rdata:007F37C0                 dd offset sub_642DA0
+.rdata:007F37C4                 dd offset CEventSe__Write
+.rdata:007F37C8                 dd offset CEventSe__Read
+.rdata:007F37CC                 dd offset sub_6428C0
+.rdata:007F37D0                 dd offset sub_642CB0
+.rdata:007F37D4                 dd offset nullsub_1
+.rdata:007F37D8 asc_7F37D8      db '最低速度',0             ; DATA XREF: .rdata:007F382C↓o
+.rdata:007F37E1                 align 4
+.rdata:007F37E4 asc_7F37E4      db '最高速度',0             ; DATA XREF: .rdata:007F3834↓o
+.rdata:007F37ED                 align 10h
+.rdata:007F37F0 asc_7F37F0      db '最低上昇量',0            ; DATA XREF: .rdata:007F383C↓o
+.rdata:007F37FB                 align 4
+.rdata:007F37FC asc_7F37FC      db '最高上昇量',0            ; DATA XREF: .rdata:007F3844↓o
+.rdata:007F3807                 align 4
+.rdata:007F3808 asc_7F3808      db '最低重力増分',0           ; DATA XREF: .rdata:007F384C↓o
+.rdata:007F3815                 align 4
+.rdata:007F3818 asc_7F3818      db '最高重力増分',0           ; DATA XREF: .rdata:007F3854↓o
+.rdata:007F3825                 align 4
+.rdata:007F3828                 dd 0FFFFFFFFh
+.rdata:007F382C                 dd offset asc_7F37D8    ; "最低速度"
+.rdata:007F3830                 dd 0FFFFFFFFh
+.rdata:007F3834                 dd offset asc_7F37E4    ; "最高速度"
+.rdata:007F3838                 dd 0FFFFFFFFh
+.rdata:007F383C                 dd offset asc_7F37F0    ; "最低上昇量"
+.rdata:007F3840                 dd 0FFFFFFFFh
+.rdata:007F3844                 dd offset asc_7F37FC    ; "最高上昇量"
+.rdata:007F3848                 dd 0FFFFFFFFh
+.rdata:007F384C                 dd offset asc_7F3808    ; "最低重力増分"
+.rdata:007F3850                 dd 0FFFFFFFFh
+.rdata:007F3854                 dd offset asc_7F3818    ; "最高重力増分"
+.rdata:007F3858
+.rdata:007F3858 ; class CEventSlipHosei: CEventObject;   (#classinformer)
+.rdata:007F3858                 dd offset ??_R4CEventSlipHosei@@6B@ ; const CEventSlipHosei::`RTTI Complete Object Locator'
+.rdata:007F385C ; const CEventSlipHosei::`vftable'
+.rdata:007F385C ??_7CEventSlipHosei@@6B@ dd offset sub_641C90
+.rdata:007F385C                                         ; DATA XREF: CEventSlipHosei+36↑o
+.rdata:007F3860                 dd offset nullsub_1
+.rdata:007F3864                 dd offset sub_643E90
+.rdata:007F3868                 dd offset sub_6353E0
+.rdata:007F386C                 dd offset CEventSlipHosei__Init
+.rdata:007F3870                 dd offset CEventSlipHosei__Write
+.rdata:007F3874                 dd offset CEventSlipHosei__Read
+.rdata:007F3878                 dd offset nullsub_11
+.rdata:007F387C                 dd offset sub_644140
+.rdata:007F3880                 dd offset nullsub_1
+.rdata:007F3884 aErrorCmekaCpar db 'ERROR:CMeka,CPartsじゃないのに自動指定を使った',0
+.rdata:007F38B3                 align 4
+.rdata:007F38B4
+.rdata:007F38B4 ; class CEventSprite: CEventObject;   (#classinformer)
+.rdata:007F38B4                 dd offset ??_R4CEventSprite@@6B@ ; const CEventSprite::`RTTI Complete Object Locator'
+.rdata:007F38B8 ; const CEventSprite::`vftable'
+.rdata:007F38B8 ??_7CEventSprite@@6B@ dd offset sub_641C90
+.rdata:007F38B8                                         ; DATA XREF: CEventSprite+36↑o
+.rdata:007F38B8                                         ; sub_644440+3C↑o ...
+.rdata:007F38BC                 dd offset nullsub_1
+.rdata:007F38C0                 dd offset sub_644160
+.rdata:007F38C4                 dd offset sub_6353E0
+.rdata:007F38C8                 dd offset sub_644270
+.rdata:007F38CC                 dd offset CEventSprite__Write
+.rdata:007F38D0                 dd offset CEventSprite__Read
+.rdata:007F38D4                 dd offset sub_644200
+.rdata:007F38D8                 dd offset sub_635450
+.rdata:007F38DC                 dd offset nullsub_1
+.rdata:007F38E0 asc_7F38E0      db '通常描画',0             ; DATA XREF: sub_6448F0+66↑o
+.rdata:007F38E0                                         ; sub_6448F0+9D↑o ...
+.rdata:007F38E9                 db 77h dup(0)
+.rdata:007F3960 byte_7F3960     db 1                    ; DATA XREF: sub_6448F0+5E↑r
+.rdata:007F3961 byte_7F3961     db 0                    ; DATA XREF: sub_6448F0+52↑r
+.rdata:007F3962                 db '塗りつぶし描画',0
+.rdata:007F3971                 db 72h dup(0), 1
+.rdata:007F39E4 aN_79           db 'モノトーン描画（未実装）',0
+.rdata:007F39FD                 db 67h dup(0), 1, 0
+.rdata:007F3A66 aI_83           db 'フィルム描画',0
+.rdata:007F3A73                 db 74h dup(0), 1
+.rdata:007F3AE8                 db 'メッシュ描画（未実装）',0
+.rdata:007F3AFF                 db 69h dup(0), 1, 0
+.rdata:007F3B6A aE_32           db 'フェード描画',0
+.rdata:007F3B77                 db 73h dup(0), 1, 0
+.rdata:007F3BEC                 db 'フラッシュ描画',0
+.rdata:007F3BFB                 db 71h dup(0), 1, 0
+.rdata:007F3C6E                 db '半透明描画',0
+.rdata:007F3C79                 db 77h dup(0)
+.rdata:007F3CF0 aAAN            db 'アルファブレンド描画',0
+.rdata:007F3D05                 db 6Bh dup(0), 1, 0
+.rdata:007F3D72                 db '加算描画',0
+.rdata:007F3D7B                 db 77h dup(0), 1, 0
+.rdata:007F3DF4                 db '減算描画',0
+.rdata:007F3DFD                 db 77h dup(0), 1, 0
+.rdata:007F3E76 aE_33           db 'フェード色指定描画',0
+.rdata:007F3E89                 db 6Eh dup(0), 1
+.rdata:007F3EF8                 db 'フラッシュ色指定描画',0
+.rdata:007F3F0D                 db 6Ch dup(0), 1
+.rdata:007F3F7A aN_78           db 'モノトーン色指定描画（未実装）',0
+.rdata:007F3F99                 db 62h dup(0), 1
+.rdata:007F3FFC                 db '加算色指定描画',0
+.rdata:007F400B                 db 72h dup(0), 1
+.rdata:007F407E                 db '減算色指定描画（未実装）',0
+.rdata:007F4097                 db 68h dup(0), 1
+.rdata:007F4100 aI_101          db 'ネガティブ描画（未実装）',0
+.rdata:007F4119                 db 69h dup(0)
+.rdata:007F4182                 db 'ぼかし描画（未実装）',0
+.rdata:007F4197                 db 6Bh dup(0), 1, 0
+.rdata:007F4204                 db 'マスク描画',0
+.rdata:007F420F                 db 75h dup(0), 1, 83h dup(0)
+.rdata:007F4308 ; const char aS_23[3]
+.rdata:007F4308 aS_23           db '%s',0               ; DATA XREF: sub_6448F0+71↑o
+.rdata:007F430B                 align 4
+.rdata:007F430C ; const char aS4d_4[]
+.rdata:007F430C aS4d_4          db '%s : %4d',0         ; DATA XREF: sub_6448F0+A7↑o
+.rdata:007F4315                 align 4
+.rdata:007F4318 ; const char aS4d_5[9]
+.rdata:007F4318 aS4d_5          db '%s : %4d '          ; DATA XREF: sub_6448F0+D2↑o
+.rdata:007F4321 a4d_4           db '⇒ %4d',0
+.rdata:007F4328 ; const char aS3d3d3d_1[]
+.rdata:007F4328 aS3d3d3d_1      db '%s : (%3d:%3d:%3d)',0
+.rdata:007F4328                                         ; DATA XREF: sub_6448F0+10D↑o
+.rdata:007F433B                 align 4
+.rdata:007F433C ; const char aS3d3d3d_2[19]
+.rdata:007F433C aS3d3d3d_2      db '%s : (%3d:%3d:%3d) '
+.rdata:007F433C                                         ; DATA XREF: sub_6448F0+149↑o
+.rdata:007F434F a3d3d3d_1       db '⇒ (%3d:%3d:%3d)',0
+.rdata:007F4360
+.rdata:007F4360 ; class CEventSpriteAttr: CEventObject;   (#classinformer)
+.rdata:007F4360                 dd offset ??_R4CEventSpriteAttr@@6B@ ; const CEventSpriteAttr::`RTTI Complete Object Locator'
+.rdata:007F4364 ; const CEventSpriteAttr::`vftable'
+.rdata:007F4364 ??_7CEventSpriteAttr@@6B@ dd offset sub_641C90
+.rdata:007F4364                                         ; DATA XREF: CEventSpriteAttr+30↑o
+.rdata:007F4364                                         ; sub_644890+36↑o
+.rdata:007F4368                 dd offset nullsub_1
+.rdata:007F436C                 dd offset sub_644560
+.rdata:007F4370                 dd offset sub_6353E0
+.rdata:007F4374                 dd offset sub_644770
+.rdata:007F4378                 dd offset CEventSpriteAttr__Write
+.rdata:007F437C                 dd offset CEventSpriteAttr__Read
+.rdata:007F4380                 dd offset nullsub_11
+.rdata:007F4384                 dd offset sub_6448F0
+.rdata:007F4388                 dd offset nullsub_1
+.rdata:007F438C dword_7F438C    dd 0                    ; DATA XREF: .data:00863D08↓o
+.rdata:007F4390 asc_7F4390      db '角度指定',0             ; DATA XREF: .data:00863D04↓o
+.rdata:007F4399                 align 4
+.rdata:007F439C asc_7F439C      db '左回転',0              ; DATA XREF: .data:00863D00↓o
+.rdata:007F43A3                 align 4
+.rdata:007F43A4 asc_7F43A4      db '右回転',0              ; DATA XREF: .data:00863CFC↓o
+.rdata:007F43AB                 align 4
+.rdata:007F43AC asc_7F43AC      db '下',0                ; DATA XREF: .data:00863CF8↓o
+.rdata:007F43AF                 align 10h
+.rdata:007F43B0 asc_7F43B0      db '上',0                ; DATA XREF: .data:00863CF4↓o
+.rdata:007F43B3                 align 4
+.rdata:007F43B4 asc_7F43B4      db '左',0                ; DATA XREF: .data:00863CF0↓o
+.rdata:007F43B7                 align 4
+.rdata:007F43B8 asc_7F43B8      db '右',0                ; DATA XREF: .data:00863CEC↓o
+.rdata:007F43BB                 align 4
+.rdata:007F43BC aN_55           db 'ランダム',0             ; DATA XREF: .data:off_863CE8↓o
+.rdata:007F43C5                 align 4
+.rdata:007F43C8 ; const char aS4d4d_0[]
+.rdata:007F43C8 aS4d4d_0        db '%s : %4d (周期 : %4d)',0
+.rdata:007F43C8                                         ; DATA XREF: sub_644C80+6A↑o
+.rdata:007F43DE                 align 10h
+.rdata:007F43E0 ; const char aS4d_6[9]
+.rdata:007F43E0 aS4d_6          db '%s : %4d '          ; DATA XREF: sub_644C80+95↑o
+.rdata:007F43E9 a4d4d_0         db '⇒ %4d (周期 : %4d)',0
+.rdata:007F43FD                 db    0
+.rdata:007F43FE                 db    0
+.rdata:007F43FF                 db    0
+.rdata:007F4400
+.rdata:007F4400 ; class CEventSpriteYure: CEventObject;   (#classinformer)
+.rdata:007F4400                 dd offset ??_R4CEventSpriteYure@@6B@ ; const CEventSpriteYure::`RTTI Complete Object Locator'
+.rdata:007F4404 ; const CEventSpriteYure::`vftable'
+.rdata:007F4404 ??_7CEventSpriteYure@@6B@ dd offset sub_641C90
+.rdata:007F4404                                         ; DATA XREF: CEventSpriteYure+30↑o
+.rdata:007F4404                                         ; sub_644F20+36↑o
+.rdata:007F4408                 dd offset nullsub_1
+.rdata:007F440C                 dd offset sub_644A90
+.rdata:007F4410                 dd offset sub_6353E0
+.rdata:007F4414                 dd offset CEventSpriteYure__Init
+.rdata:007F4418                 dd offset CEventSpriteYure__Write
+.rdata:007F441C                 dd offset CEventSpriteYure__Read
+.rdata:007F4420                 dd offset nullsub_11
+.rdata:007F4424                 dd offset sub_644C80
+.rdata:007F4428                 dd offset nullsub_1
+.rdata:007F442C                 align 10h
+.rdata:007F4430 aI_88           db '追加タイプ',0            ; DATA XREF: .rdata:007F459C↓o
+.rdata:007F443B unk_7F443B      db    0                 ; DATA XREF: sub_645700+33↑o
+.rdata:007F443C aI_97           db '対象タイプ',0            ; DATA XREF: .rdata:007F45A4↓o
+.rdata:007F4447                 db    0
+.rdata:007F4448 aHp_1           db '最大HP',0             ; DATA XREF: .rdata:007F45AC↓o
+.rdata:007F444F                 db    0
+.rdata:007F4450 asc_7F4450      db 'ブースター数',0           ; DATA XREF: .rdata:007F45B4↓o
+.rdata:007F445D                 db    0
+.rdata:007F445E                 db    0
+.rdata:007F445F                 db    0
+.rdata:007F4460 aFc_2           db 'FCゲージ数',0           ; DATA XREF: .rdata:007F45BC↓o
+.rdata:007F446B                 db    0
+.rdata:007F446C asc_7F446C      db '打撃攻撃力',0            ; DATA XREF: .rdata:007F45C4↓o
+.rdata:007F4477                 db    0
+.rdata:007F4478 asc_7F4478      db '射撃攻撃力',0            ; DATA XREF: .rdata:007F45CC↓o
+.rdata:007F4483                 db    0
+.rdata:007F4484 asc_7F4484      db '打撃防御力',0            ; DATA XREF: .rdata:007F45D4↓o
+.rdata:007F448F                 db    0
+.rdata:007F4490 asc_7F4490      db '射撃防御力',0            ; DATA XREF: .rdata:007F45DC↓o
+.rdata:007F449B                 db    0
+.rdata:007F449C asc_7F449C      db '移動速度：歩行',0          ; DATA XREF: .rdata:007F45E4↓o
+.rdata:007F44AB                 db    0
+.rdata:007F44AC asc_7F44AC      db '移動速度：ダッシュ',0        ; DATA XREF: .rdata:007F45EC↓o
+.rdata:007F44BF                 db    0
+.rdata:007F44C0 asc_7F44C0      db '移動速度：ブーストダッシュ',0    ; DATA XREF: .rdata:007F45F4↓o
+.rdata:007F44DB                 db    0
+.rdata:007F44DC asc_7F44DC      db '移動速度：サーチダッシュ',0     ; DATA XREF: .rdata:007F45FC↓o
+.rdata:007F44F5                 db    0
+.rdata:007F44F6                 db    0
+.rdata:007F44F7                 db    0
+.rdata:007F44F8 asc_7F44F8      db '攻撃速度：打撃',0          ; DATA XREF: .rdata:007F4604↓o
+.rdata:007F4507                 db    0
+.rdata:007F4508 asc_7F4508      db '攻撃速度：射撃',0          ; DATA XREF: .rdata:007F460C↓o
+.rdata:007F4517                 db    0
+.rdata:007F4518 asc_7F4518      db '熱冷却速度',0            ; DATA XREF: .rdata:007F4614↓o
+.rdata:007F4523                 db    0
+.rdata:007F4524 asc_7F4524      db '根性値',0              ; DATA XREF: .rdata:007F461C↓o
+.rdata:007F452B                 db    0
+.rdata:007F452C aI_98           db 'データタイプ',0           ; DATA XREF: .rdata:007F4624↓o
+.rdata:007F4539                 db    0
+.rdata:007F453A                 db    0
+.rdata:007F453B                 db    0
+.rdata:007F453C aI_99           db '終了タイプ',0            ; DATA XREF: .rdata:007F462C↓o
+.rdata:007F4547                 db    0
+.rdata:007F4548 aUn_10          db '終了カウント',0           ; DATA XREF: .rdata:007F4634↓o
+.rdata:007F4555                 db    0
+.rdata:007F4556                 db    0
+.rdata:007F4557                 db    0
+.rdata:007F4558 asc_7F4558      db '開始時間',0             ; DATA XREF: .rdata:007F463C↓o
+.rdata:007F4561                 db    0
+.rdata:007F4562                 db    0
+.rdata:007F4563                 db    0
+.rdata:007F4564 asc_7F4564      db '実行間隔',0             ; DATA XREF: .rdata:007F4644↓o
+.rdata:007F456D                 db    0
+.rdata:007F456E                 db    0
+.rdata:007F456F                 db    0
+.rdata:007F4570 asc_7F4570      db '優先順位',0             ; DATA XREF: .rdata:007F464C↓o
+.rdata:007F4579                 db    0
+.rdata:007F457A                 db    0
+.rdata:007F457B                 db    0
+.rdata:007F457C aI_100          db '重複タイプ',0            ; DATA XREF: .rdata:007F4654↓o
+.rdata:007F4587                 db    0
+.rdata:007F4588 aEE_5           db 'エフェクト',0            ; DATA XREF: .rdata:007F465C↓o
+.rdata:007F4593                 db    0
+.rdata:007F4594                 db    0
+.rdata:007F4595                 db    0
+.rdata:007F4596                 db    0
+.rdata:007F4597                 db    0
+.rdata:007F4598 ; int CEventStatus_Types[]
+.rdata:007F4598 CEventStatus_Types dd 0FFFFFFFFh        ; DATA XREF: CEventStatus__Read+F3↑r
+.rdata:007F4598                                         ; sub_645400+12B↑o ...
+.rdata:007F459C                 dd offset aI_88         ; "追加タイプ"
+.rdata:007F45A0                 dd 0FFFFFFFFh
+.rdata:007F45A4                 dd offset aI_97         ; "対象タイプ"
+.rdata:007F45A8                 dd 0FFFFFFFFh
+.rdata:007F45AC                 dd offset aHp_1         ; "最大HP"
+.rdata:007F45B0                 dd 0FFFFFFFFh
+.rdata:007F45B4                 dd offset asc_7F4450    ; "ブースター数"
+.rdata:007F45B8                 dd 0FFFFFFFFh
+.rdata:007F45BC                 dd offset aFc_2         ; "FCゲージ数"
+.rdata:007F45C0                 dd 0FFFFFFFFh
+.rdata:007F45C4                 dd offset asc_7F446C    ; "打撃攻撃力"
+.rdata:007F45C8                 dd 0FFFFFFFFh
+.rdata:007F45CC                 dd offset asc_7F4478    ; "射撃攻撃力"
+.rdata:007F45D0                 dd 0FFFFFFFFh
+.rdata:007F45D4                 dd offset asc_7F4484    ; "打撃防御力"
+.rdata:007F45D8                 dd 0FFFFFFFFh
+.rdata:007F45DC                 dd offset asc_7F4490    ; "射撃防御力"
+.rdata:007F45E0                 dd 0FFFFFFFFh
+.rdata:007F45E4                 dd offset asc_7F449C    ; "移動速度：歩行"
+.rdata:007F45E8                 dd 0FFFFFFFFh
+.rdata:007F45EC                 dd offset asc_7F44AC    ; "移動速度：ダッシュ"
+.rdata:007F45F0                 dd 0FFFFFFFFh
+.rdata:007F45F4                 dd offset asc_7F44C0    ; "移動速度：ブーストダッシュ"
+.rdata:007F45F8                 dd 0FFFFFFFFh
+.rdata:007F45FC                 dd offset asc_7F44DC    ; "移動速度：サーチダッシュ"
+.rdata:007F4600                 dd 0FFFFFFFFh
+.rdata:007F4604                 dd offset asc_7F44F8    ; "攻撃速度：打撃"
+.rdata:007F4608                 dd 0FFFFFFFFh
+.rdata:007F460C                 dd offset asc_7F4508    ; "攻撃速度：射撃"
+.rdata:007F4610                 dd 0FFFFFFFFh
+.rdata:007F4614                 dd offset asc_7F4518    ; "熱冷却速度"
+.rdata:007F4618                 dd 0FFFFFFFFh
+.rdata:007F461C                 dd offset asc_7F4524    ; "根性値"
+.rdata:007F4620                 dd 0FFFFFFFFh
+.rdata:007F4624                 dd offset aI_98         ; "データタイプ"
+.rdata:007F4628                 dd 0FFFFFFFFh
+.rdata:007F462C                 dd offset aI_99         ; "終了タイプ"
+.rdata:007F4630                 dd 0FFFFFFFFh
+.rdata:007F4634                 dd offset aUn_10        ; "終了カウント"
+.rdata:007F4638                 dd 0FFFFFFFFh
+.rdata:007F463C                 dd offset asc_7F4558    ; "開始時間"
+.rdata:007F4640                 dd 0FFFFFFFFh
+.rdata:007F4644                 dd offset asc_7F4564    ; "実行間隔"
+.rdata:007F4648                 dd 0FFFFFFFFh
+.rdata:007F464C                 dd offset asc_7F4570    ; "優先順位"
+.rdata:007F4650                 dd 0FFFFFFFFh
+.rdata:007F4654                 dd offset aI_100        ; "重複タイプ"
+.rdata:007F4658                 dd 4
+.rdata:007F465C                 dd offset aEE_5         ; "エフェクト"
+.rdata:007F4660 asc_7F4660      db '未設定',0              ; DATA XREF: sub_645400+171↑o
+.rdata:007F4660                                         ; sub_645700+66↑o
+.rdata:007F4667                 align 4
+.rdata:007F4668 asc_7F4668      db '上書き',0              ; DATA XREF: sub_645700+6F↑o
+.rdata:007F466F                 align 10h
+.rdata:007F4670 asc_7F4670      db '上書き不可',0            ; DATA XREF: sub_645700+78↑o
+.rdata:007F467B                 align 4
+.rdata:007F467C asc_7F467C      db '重複登録可能',0           ; DATA XREF: sub_645700+81↑o
+.rdata:007F4689                 align 4
+.rdata:007F468C asc_7F468C      db ' ',0                ; DATA XREF: sub_645700+9C↑o
+.rdata:007F468E                 align 10h
+.rdata:007F4690 aHp_0           db '最大ＨＰ',0             ; DATA XREF: sub_645700:loc_6457B4↑o
+.rdata:007F4699                 align 4
+.rdata:007F469C asc_7F469C      db 'ブースター',0            ; DATA XREF: sub_645700:loc_6457BB↑o
+.rdata:007F46A7                 align 4
+.rdata:007F46A8 aFc_1           db 'ＦＣゲージ',0            ; DATA XREF: sub_645700:loc_6457C2↑o
+.rdata:007F46B3                 align 4
+.rdata:007F46B4 asc_7F46B4      db '打撃攻撃',0             ; DATA XREF: sub_645700:loc_6457C9↑o
+.rdata:007F46BD                 align 10h
+.rdata:007F46C0 asc_7F46C0      db '射撃攻撃',0             ; DATA XREF: sub_645700:loc_6457D0↑o
+.rdata:007F46C9                 align 4
+.rdata:007F46CC asc_7F46CC      db '打撃防御',0             ; DATA XREF: sub_645700:loc_6457D7↑o
+.rdata:007F46D5                 align 4
+.rdata:007F46D8 asc_7F46D8      db '射撃防御',0             ; DATA XREF: sub_645700:loc_6457DE↑o
+.rdata:007F46E1                 align 4
+.rdata:007F46E4 asc_7F46E4      db '歩行',0               ; DATA XREF: sub_645700:loc_6457E5↑o
+.rdata:007F46E9                 align 4
+.rdata:007F46EC asc_7F46EC      db 'ダッシュ',0             ; DATA XREF: sub_645700:loc_6457EC↑o
+.rdata:007F46F5                 align 4
+.rdata:007F46F8 asc_7F46F8      db 'ブーストダッシュ',0         ; DATA XREF: sub_645700:loc_6457F3↑o
+.rdata:007F4709                 align 4
+.rdata:007F470C asc_7F470C      db 'サーチダッシュ',0          ; DATA XREF: sub_645700:loc_6457FA↑o
+.rdata:007F471B                 align 4
+.rdata:007F471C asc_7F471C      db '打撃速度',0             ; DATA XREF: sub_645700:loc_645801↑o
+.rdata:007F4725                 align 4
+.rdata:007F4728 asc_7F4728      db '射撃速度',0             ; DATA XREF: sub_645700:loc_645808↑o
+.rdata:007F4731                 align 4
+.rdata:007F4734 asc_7F4734      db '熱減少量',0             ; DATA XREF: sub_645700:loc_64580F↑o
+.rdata:007F473D                 align 10h
+.rdata:007F4740 asc_7F4740      db '根性値',0              ; DATA XREF: sub_645700:loc_645816↑o
+.rdata:007F4747                 align 4
+.rdata:007F4748 asc_7F4748      db ' ',0                ; DATA XREF: sub_645700+124↑o
+.rdata:007F474A                 align 4
+.rdata:007F474C
+.rdata:007F474C ; class CEventStatus: CEventObject;   (#classinformer)
+.rdata:007F474C                 dd offset ??_R4CEventStatus@@6B@ ; const CEventStatus::`RTTI Complete Object Locator'
+.rdata:007F4750 ; const CEventStatus::`vftable'
+.rdata:007F4750 ??_7CEventStatus@@6B@ dd offset sub_641C90
+.rdata:007F4750                                         ; DATA XREF: CEventStatus+30↑o
+.rdata:007F4754                 dd offset nullsub_1
+.rdata:007F4758                 dd offset sub_644F80
+.rdata:007F475C                 dd offset sub_6353E0
+.rdata:007F4760                 dd offset sub_645400
+.rdata:007F4764                 dd offset CEventStatus__Write
+.rdata:007F4768                 dd offset CEventStatus__Read
+.rdata:007F476C                 dd offset sub_645260
+.rdata:007F4770                 dd offset sub_645700
+.rdata:007F4774                 dd offset sub_6452A0
+.rdata:007F4778
+.rdata:007F4778 ; class CEventTerm: CEventObject;   (#classinformer)
+.rdata:007F4778                 dd offset ??_R4CEventTerm@@6B@ ; const CEventTerm::`RTTI Complete Object Locator'
+.rdata:007F477C ; const CEventTerm::`vftable'
+.rdata:007F477C ??_7CEventTerm@@6B@ dd offset sub_641C90
+.rdata:007F477C                                         ; DATA XREF: CEventTerm+45↑o
+.rdata:007F4780                 dd offset nullsub_1
+.rdata:007F4784                 dd offset sub_6458E0
+.rdata:007F4788                 dd offset sub_6353E0
+.rdata:007F478C                 dd offset sub_645970
+.rdata:007F4790                 dd offset CEventTerm__Write
+.rdata:007F4794                 dd offset CEventTerm__Read
+.rdata:007F4798                 dd offset sub_645960
+.rdata:007F479C                 dd offset sub_645A50
+.rdata:007F47A0                 dd offset nullsub_1
+.rdata:007F47A4                 align 8
+.rdata:007F47A8 asc_7F47A8      db '水平：メカ（敵）',0         ; DATA XREF: .rdata:007F4894↓o
+.rdata:007F47B9                 align 4
+.rdata:007F47BC asc_7F47BC      db '水平：メカ（味方）',0        ; DATA XREF: .rdata:007F489C↓o
+.rdata:007F47CF                 align 10h
+.rdata:007F47D0 asc_7F47D0      db '水平：弾（敵）',0          ; DATA XREF: .rdata:007F48A4↓o
+.rdata:007F47DF                 align 10h
+.rdata:007F47E0 asc_7F47E0      db '水平：弾（味方）',0         ; DATA XREF: .rdata:007F48AC↓o
+.rdata:007F47F1                 align 4
+.rdata:007F47F4 aObj_2          db '水平：マップOBJ',0        ; DATA XREF: .rdata:007F48B4↓o
+.rdata:007F4804 asc_7F4804      db '進禁（メカ）',0           ; DATA XREF: .rdata:007F48BC↓o
+.rdata:007F4811                 align 4
+.rdata:007F4814 asc_7F4814      db '進禁（弾）',0            ; DATA XREF: .rdata:007F48C4↓o
+.rdata:007F481F                 align 10h
+.rdata:007F4820 asc_7F4820      db '進禁（穴）',0            ; DATA XREF: .rdata:007F48CC↓o
+.rdata:007F482B                 align 4
+.rdata:007F482C asc_7F482C      db '画面端',0              ; DATA XREF: .rdata:007F48D4↓o
+.rdata:007F4833                 align 4
+.rdata:007F4834 asc_7F4834      db '垂直：メカ（敵）',0         ; DATA XREF: .rdata:007F48DC↓o
+.rdata:007F4845                 align 4
+.rdata:007F4848 asc_7F4848      db '垂直：メカ（味方）',0        ; DATA XREF: .rdata:007F48E4↓o
+.rdata:007F485B                 align 4
+.rdata:007F485C asc_7F485C      db '垂直：弾（敵）',0          ; DATA XREF: .rdata:007F48EC↓o
+.rdata:007F486B                 align 4
+.rdata:007F486C asc_7F486C      db '垂直：弾（味方）',0         ; DATA XREF: .rdata:007F48F4↓o
+.rdata:007F487D                 align 10h
+.rdata:007F4880 asc_7F4880      db '垂直：障害物',0           ; DATA XREF: .rdata:007F48FC↓o
+.rdata:007F488D                 align 10h
+.rdata:007F4890                 dd 0FFFFFFFFh
+.rdata:007F4894                 dd offset asc_7F47A8    ; "水平：メカ（敵）"
+.rdata:007F4898                 dd 0FFFFFFFFh
+.rdata:007F489C                 dd offset asc_7F47BC    ; "水平：メカ（味方）"
+.rdata:007F48A0                 dd 0FFFFFFFFh
+.rdata:007F48A4                 dd offset asc_7F47D0    ; "水平：弾（敵）"
+.rdata:007F48A8                 dd 0FFFFFFFFh
+.rdata:007F48AC                 dd offset asc_7F47E0    ; "水平：弾（味方）"
+.rdata:007F48B0                 dd 0FFFFFFFFh
+.rdata:007F48B4                 dd offset aObj_2        ; "水平：マップOBJ"
+.rdata:007F48B8                 dd 0FFFFFFFFh
+.rdata:007F48BC                 dd offset asc_7F4804    ; "進禁（メカ）"
+.rdata:007F48C0                 dd 0FFFFFFFFh
+.rdata:007F48C4                 dd offset asc_7F4814    ; "進禁（弾）"
+.rdata:007F48C8                 dd 0FFFFFFFFh
+.rdata:007F48CC                 dd offset asc_7F4820    ; "進禁（穴）"
+.rdata:007F48D0                 dd 0FFFFFFFFh
+.rdata:007F48D4                 dd offset asc_7F482C    ; "画面端"
+.rdata:007F48D8                 dd 0FFFFFFFFh
+.rdata:007F48DC                 dd offset asc_7F4834    ; "垂直：メカ（敵）"
+.rdata:007F48E0                 dd 0FFFFFFFFh
+.rdata:007F48E4                 dd offset asc_7F4848    ; "垂直：メカ（味方）"
+.rdata:007F48E8                 dd 0FFFFFFFFh
+.rdata:007F48EC                 dd offset asc_7F485C    ; "垂直：弾（敵）"
+.rdata:007F48F0                 dd 0FFFFFFFFh
+.rdata:007F48F4                 dd offset asc_7F486C    ; "垂直：弾（味方）"
+.rdata:007F48F8                 dd 0FFFFFFFFh
+.rdata:007F48FC                 dd offset asc_7F4880    ; "垂直：障害物"
+.rdata:007F4900
+.rdata:007F4900 ; class CEventTouch: CEventObject;   (#classinformer)
+.rdata:007F4900                 dd offset ??_R4CEventTouch@@6B@ ; const CEventTouch::`RTTI Complete Object Locator'
+.rdata:007F4904 ; const CEventTouch::`vftable'
+.rdata:007F4904 ??_7CEventTouch@@6B@ dd offset sub_641C90
+.rdata:007F4904                                         ; DATA XREF: CEventTouch+36↑o
+.rdata:007F4908                 dd offset nullsub_1
+.rdata:007F490C                 dd offset sub_645CA0
+.rdata:007F4910                 dd offset sub_6353E0
+.rdata:007F4914                 dd offset sub_645D20
+.rdata:007F4918                 dd offset CEventTouch__Write
+.rdata:007F491C                 dd offset CEventTouch__Read
+.rdata:007F4920                 dd offset nullsub_11
+.rdata:007F4924                 dd offset sub_645EC0
+.rdata:007F4928                 dd offset nullsub_1
+.rdata:007F492C
+.rdata:007F492C ; class CEventVal: CEventObject;   (#classinformer)
+.rdata:007F492C                 dd offset ??_R4CEventVal@@6B@ ; const CEventVal::`RTTI Complete Object Locator'
+.rdata:007F4930 ; const CEventVal::`vftable'
+.rdata:007F4930 ??_7CEventVal@@6B@ dd offset sub_641C90 ; DATA XREF: CEventVal+30↑o
+.rdata:007F4930                                         ; sub_646140+36↑o
+.rdata:007F4934                 dd offset nullsub_1
+.rdata:007F4938                 dd offset sub_6460B0
+.rdata:007F493C                 dd offset sub_6353E0
+.rdata:007F4940                 dd offset CEventVal__Init
+.rdata:007F4944                 dd offset CEventVal__Write
+.rdata:007F4948                 dd offset CEventVal__Read
+.rdata:007F494C                 dd offset nullsub_11
+.rdata:007F4950                 dd offset sub_6461A0
+.rdata:007F4954                 dd offset nullsub_1
+.rdata:007F4958
+.rdata:007F4958 ; class CEventValRandom: CEventObject;   (#classinformer)
+.rdata:007F4958                 dd offset ??_R4CEventValRandom@@6B@ ; const CEventValRandom::`RTTI Complete Object Locator'
+.rdata:007F495C ; const CEventValRandom::`vftable'
+.rdata:007F495C ??_7CEventValRandom@@6B@ dd offset sub_641C90
+.rdata:007F495C                                         ; DATA XREF: CEventValRandom+30↑o
+.rdata:007F495C                                         ; sub_6464A0+36↑o
+.rdata:007F4960                 dd offset nullsub_1
+.rdata:007F4964                 dd offset sub_646410
+.rdata:007F4968                 dd offset sub_6353E0
+.rdata:007F496C                 dd offset sub_646280
+.rdata:007F4970                 dd offset CEventValRandom__Write
+.rdata:007F4974                 dd offset CEventValRandom__Read
+.rdata:007F4978                 dd offset nullsub_11
+.rdata:007F497C                 dd offset sub_646500
+.rdata:007F4980                 dd offset nullsub_1
+.rdata:007F4984 aI_89           db 'タイプ',0              ; DATA XREF: .rdata:007F499C↓o
+.rdata:007F498B                 align 4
+.rdata:007F498C asc_7F498C      db '優先順位',0             ; DATA XREF: .rdata:007F49A4↓o
+.rdata:007F4995                 align 4
+.rdata:007F4998                 dd 0FFFFFFFFh
+.rdata:007F499C                 dd offset aI_89         ; "タイプ"
+.rdata:007F49A0                 dd 0FFFFFFFFh
+.rdata:007F49A4                 dd offset asc_7F498C    ; "優先順位"
+.rdata:007F49A8 aError_4        db 'ERROR',0            ; DATA XREF: sub_6468E0+94↑o
+.rdata:007F49AE                 align 10h
+.rdata:007F49B0 ; const char a3dS_2[]
+.rdata:007F49B0 a3dS_2          db '[%3d%%] %s',0       ; DATA XREF: sub_6468E0+155↑o
+.rdata:007F49BB                 align 4
+.rdata:007F49BC aError_5        db 'ERROR',0            ; DATA XREF: sub_6468E0+234↑o
+.rdata:007F49C2                 align 4
+.rdata:007F49C4 ; const char a3dS_3[]
+.rdata:007F49C4 a3dS_3          db '[%3d%%] %s',0       ; DATA XREF: sub_6468E0+2D4↑o
+.rdata:007F49CF                 align 10h
+.rdata:007F49D0 a3dS_4          db '複：[%3d%%] %s',0     ; DATA XREF: sub_6468E0+360↑o
+.rdata:007F49DF                 align 10h
+.rdata:007F49E0 aBadAllocation_0 db 'bad allocation',0  ; DATA XREF: .data:off_863DB8↓o
+.rdata:007F49EF                 align 10h
+.rdata:007F49F0
+.rdata:007F49F0 ; class CEventVoice: CEventObject;   (#classinformer)
+.rdata:007F49F0                 dd offset ??_R4CEventVoice@@6B@ ; const CEventVoice::`RTTI Complete Object Locator'
+.rdata:007F49F4 ; const CEventVoice::`vftable'
+.rdata:007F49F4 ??_7CEventVoice@@6B@ dd offset sub_6475A0
+.rdata:007F49F4                                         ; DATA XREF: sub_646C70+2D↑o
+.rdata:007F49F4                                         ; CEventVoice+2D↑o
+.rdata:007F49F8                 dd offset nullsub_1
+.rdata:007F49FC                 dd offset sub_646790
+.rdata:007F4A00                 dd offset sub_6353E0
+.rdata:007F4A04                 dd offset sub_646D40
+.rdata:007F4A08                 dd offset CEventVoice__Write
+.rdata:007F4A0C                 dd offset CEventVoice__Read
+.rdata:007F4A10                 dd offset sub_6467F0
+.rdata:007F4A14                 dd offset sub_646C50
+.rdata:007F4A18                 dd offset nullsub_1
+.rdata:007F4A1C asc_7F4A1C      db ' ： ',0              ; DATA XREF: sub_6478B0+7E↑o
+.rdata:007F4A21                 align 4
+.rdata:007F4A24
+.rdata:007F4A24 ; class CEventWazaSelect: CEventObject;   (#classinformer)
+.rdata:007F4A24                 dd offset ??_R4CEventWazaSelect@@6B@ ; const CEventWazaSelect::`RTTI Complete Object Locator'
+.rdata:007F4A28 ; const CEventWazaSelect::`vftable'
+.rdata:007F4A28 ??_7CEventWazaSelect@@6B@ dd offset sub_641C90
+.rdata:007F4A28                                         ; DATA XREF: CEventWazaSelect+30↑o
+.rdata:007F4A28                                         ; sub_647800+36↑o ...
+.rdata:007F4A2C                 dd offset nullsub_1
+.rdata:007F4A30                 dd offset sub_6475F0
+.rdata:007F4A34                 dd offset sub_6353E0
+.rdata:007F4A38                 dd offset sub_647690
+.rdata:007F4A3C                 dd offset CEventWazaSelect__Write
+.rdata:007F4A40                 dd offset CEventWazaSelect__Read
+.rdata:007F4A44                 dd offset sub_647670
+.rdata:007F4A48                 dd offset sub_6478B0
+.rdata:007F4A4C                 dd offset nullsub_1
+.rdata:007F4A50
+.rdata:007F4A50 ; class CWorkAngle: CWorkObject;   (#classinformer)
