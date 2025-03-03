@@ -91,7 +91,9 @@ public class CEventHit extends WazInfoObject {
 
     @Data
     public static class CEventHitUnit {
+        private Integer ceventHitUnitQuantity;
         private Integer buffer;
+        private String description;
         private WazInfoObject data;
     }
 
@@ -132,6 +134,8 @@ public class CEventHit extends WazInfoObject {
         for (int i = 0; i < 33; i++) {
             CEventHitUnit unit = new CEventHitUnit();
             int buffer = readInt32(bytes, offset); offset += 4;
+            unit.setDescription(CEVENT_HIT_TYPES[i].getDescription());
+            unit.setCeventHitUnitQuantity(i);
             unit.setBuffer(buffer);
 
             if (buffer != 0) {
@@ -140,10 +144,8 @@ public class CEventHit extends WazInfoObject {
 
                 offset = obj.readInfo(bytes, offset);
                 unit.setData(obj);
-
+                this.ceventHitUnitList.add(unit);
             }
-
-            this.ceventHitUnitList.add(unit);
 
         }
 
