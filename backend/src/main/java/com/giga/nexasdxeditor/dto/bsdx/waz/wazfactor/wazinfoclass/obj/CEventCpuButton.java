@@ -82,7 +82,7 @@ public class CEventCpuButton extends WazInfoObject {
     private Short short1;
     private Short short2;
 
-    private List<CEventCpuButtonUnit> ceventCpuButtonUnitList;
+    private List<CEventCpuButtonUnit> ceventCpuButtonUnitList = new ArrayList<>();
 
     @Data
     public static class CEventCpuButtonUnit {
@@ -94,16 +94,16 @@ public class CEventCpuButton extends WazInfoObject {
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
-        setInt2(readInt32(bytes, offset)); offset += 4;
-        setInt3(readInt32(bytes, offset)); offset += 4;
-        setInt4(readInt32(bytes, offset)); offset += 4;
-        setInt5(readInt32(bytes, offset)); offset += 4;
+        this.int1 = readInt32(bytes, offset); offset += 4;
+        this.int2 = readInt32(bytes, offset); offset += 4;
+        this.int3 = readInt32(bytes, offset); offset += 4;
+        this.int4 = readInt32(bytes, offset); offset += 4;
+        this.int5 = readInt32(bytes, offset); offset += 4;
 
-        setShort1(readInt16(bytes, offset)); offset += 2;
-        setShort2(readInt16(bytes, offset)); offset += 2;
+        this.short1 = readInt16(bytes, offset); offset += 2;
+        this.short2 = readInt16(bytes, offset); offset += 2;
 
-        List<CEventCpuButtonUnit> ceventCpuButtonUnitList = new ArrayList<>();
+        this.ceventCpuButtonUnitList.clear();
 
         for (int i = 0; i < 8; i++) {
             CEventCpuButtonUnit unit = new CEventCpuButtonUnit();
@@ -125,8 +125,6 @@ public class CEventCpuButton extends WazInfoObject {
             }
             ceventCpuButtonUnitList.add(unit);
         }
-
-        setCeventCpuButtonUnitList(ceventCpuButtonUnitList);
 
         return offset;
     }

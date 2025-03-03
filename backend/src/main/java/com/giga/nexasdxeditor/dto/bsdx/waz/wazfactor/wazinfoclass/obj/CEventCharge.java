@@ -38,7 +38,7 @@ public class CEventCharge extends WazInfoObject {
             new CEventChargeType(0xFFFFFFFF, "往復")
     };
 
-    private List<CEventChargeUnit> ceventChargeUnitList;
+    private List<CEventChargeUnit> ceventChargeUnitList = new ArrayList<>();
 
     @Data
     public static class CEventChargeUnit {
@@ -50,7 +50,7 @@ public class CEventCharge extends WazInfoObject {
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
-        List<CEventChargeUnit> ceventChargeUnitList = new ArrayList<>();
+        this.ceventChargeUnitList.clear();
 
         for (int i = 0; i < 2; i++) {
             int buffer = readInt32(bytes, offset); offset += 4;
@@ -69,8 +69,6 @@ public class CEventCharge extends WazInfoObject {
             }
             ceventChargeUnitList.add(unit);
         }
-
-        setCeventChargeUnitList(ceventChargeUnitList);
 
         return offset;
     }

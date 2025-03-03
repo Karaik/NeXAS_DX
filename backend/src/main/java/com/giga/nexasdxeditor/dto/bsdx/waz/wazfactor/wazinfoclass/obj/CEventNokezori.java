@@ -66,32 +66,30 @@ public class CEventNokezori extends WazInfoObject {
     private Integer int12;
     private Integer int13;
 
-    private List<CEventNokezoriUnit> ceventNokezoriUnitList;
-
-    public CEventNokezori() {
-        ceventNokezoriUnitList = new ArrayList<>();
-    }
+    private List<CEventNokezoriUnit> ceventNokezoriUnitList = new ArrayList<>();
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
-        int1 = readInt32(bytes, offset); offset += 4;
-        short1 = readInt16(bytes, offset); offset += 2;
-        int2 = readInt32(bytes, offset); offset += 4;
-        int3 = readInt32(bytes, offset); offset += 4;
-        int4 = readInt32(bytes, offset); offset += 4;
-        int5 = readInt32(bytes, offset); offset += 4;
-        int6 = readInt32(bytes, offset); offset += 4;
-        int7 = readInt32(bytes, offset); offset += 4;
-        int8 = readInt32(bytes, offset); offset += 4;
-        int9 = readInt32(bytes, offset); offset += 4;
-        int10 = readInt32(bytes, offset); offset += 4;
-        int11 = readInt32(bytes, offset); offset += 4;
-        int12 = readInt32(bytes, offset); offset += 4;
-        int13 = readInt32(bytes, offset); offset += 4;
+        this.int1 = readInt32(bytes, offset); offset += 4;
 
-        ceventNokezoriUnitList.clear();
+        this.short1 = readInt16(bytes, offset); offset += 2;
+
+        this.int2 = readInt32(bytes, offset); offset += 4;
+        this.int3 = readInt32(bytes, offset); offset += 4;
+        this.int4 = readInt32(bytes, offset); offset += 4;
+        this.int5 = readInt32(bytes, offset); offset += 4;
+        this.int6 = readInt32(bytes, offset); offset += 4;
+        this.int7 = readInt32(bytes, offset); offset += 4;
+        this.int8 = readInt32(bytes, offset); offset += 4;
+        this.int9 = readInt32(bytes, offset); offset += 4;
+        this.int10 = readInt32(bytes, offset); offset += 4;
+        this.int11 = readInt32(bytes, offset); offset += 4;
+        this.int12 = readInt32(bytes, offset); offset += 4;
+        this.int13 = readInt32(bytes, offset); offset += 4;
+
+        this.ceventNokezoriUnitList.clear();
 
         for (int i = 0; i < 17; i++) {
             int buffer = readInt32(bytes, offset); offset += 4;
@@ -109,7 +107,7 @@ public class CEventNokezori extends WazInfoObject {
                 }
             }
 
-            ceventNokezoriUnitList.add(unit);
+            this.ceventNokezoriUnitList.add(unit);
         }
 
         return offset;

@@ -19,7 +19,7 @@ public class CEventSe extends WazInfoObject {
 
     private Integer count;
 
-    private List<byte[]> byteDataList;
+    private List<byte[]> byteDataList = new ArrayList<>();
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
@@ -28,14 +28,13 @@ public class CEventSe extends WazInfoObject {
         int count = readInt32(bytes, offset);
         setCount(count); offset += 4;
         if (count > 0) {
-            List<byte[]> byteDataList = new ArrayList<>();
+            this.byteDataList.clear();
             do {
                 // 读取16字节
                 byte[] byteData = Arrays.copyOfRange(bytes, offset, offset + 16); offset += 16;
-                byteDataList.add(byteData);
+                this.byteDataList.add(byteData);
                 --count;
             } while (count > 0);
-            setByteDataList(byteDataList);
         }
 
         return offset;

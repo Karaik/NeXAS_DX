@@ -36,7 +36,7 @@ public class CEventCamera extends WazInfoObject {
     };
 
     private Short short1;
-    private List<CEventCameraUnit> ceventCameraUnitList;
+    private List<CEventCameraUnit> ceventCameraUnitList = new ArrayList<>();
 
     @Data
     public static class CEventCameraUnit {
@@ -50,7 +50,7 @@ public class CEventCamera extends WazInfoObject {
 
         setShort1(readInt16(bytes, offset)); offset += 2;
 
-        List<CEventCameraUnit> ceventCameraUnitList = new ArrayList<>();
+        ceventCameraUnitList.clear();
 
         for (int i = 0; i < 5; i++) {
             int buffer = readInt32(bytes, offset); offset += 4;

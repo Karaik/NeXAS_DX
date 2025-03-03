@@ -62,6 +62,7 @@ public class CEventHit extends WazInfoObject {
 
     private Short short1;
     private Short short2;
+
     private Integer int1;
     private Integer int2;
     private Integer int3;
@@ -86,7 +87,7 @@ public class CEventHit extends WazInfoObject {
     private Integer int22;
     private Integer int23;
 
-    private List<CEventHitUnit> ceventHitUnitList;
+    private List<CEventHitUnit> ceventHitUnitList = new ArrayList<>();
 
     @Data
     public static class CEventHitUnit {
@@ -98,33 +99,34 @@ public class CEventHit extends WazInfoObject {
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
-        short1 = readInt16(bytes, offset); offset += 2;
-        short2 = readInt16(bytes, offset); offset += 2;
-        int1 = readInt32(bytes, offset); offset += 4;
-        int2 = readInt32(bytes, offset); offset += 4;
-        int3 = readInt32(bytes, offset); offset += 4;
-        int4 = readInt32(bytes, offset); offset += 4;
-        int5 = readInt32(bytes, offset); offset += 4;
-        int6 = readInt32(bytes, offset); offset += 4;
-        int7 = readInt32(bytes, offset); offset += 4;
-        int8 = readInt32(bytes, offset); offset += 4;
-        int9 = readInt32(bytes, offset); offset += 4;
-        int10 = readInt32(bytes, offset); offset += 4;
-        int11 = readInt32(bytes, offset); offset += 4;
-        int12 = readInt32(bytes, offset); offset += 4;
-        int13 = readInt32(bytes, offset); offset += 4;
-        int14 = readInt32(bytes, offset); offset += 4;
-        int15 = readInt32(bytes, offset); offset += 4;
-        int16 = readInt32(bytes, offset); offset += 4;
-        int17 = readInt32(bytes, offset); offset += 4;
-        int18 = readInt32(bytes, offset); offset += 4;
-        int19 = readInt32(bytes, offset); offset += 4;
-        int20 = readInt32(bytes, offset); offset += 4;
-        int21 = readInt32(bytes, offset); offset += 4;
-        int22 = readInt32(bytes, offset); offset += 4;
-        int23 = readInt32(bytes, offset); offset += 4;
+        this.short1 = readInt16(bytes, offset); offset += 2;
+        this.short2 = readInt16(bytes, offset); offset += 2;
 
-        List<CEventHitUnit> ceventHitUnitList = new ArrayList<>();
+        this.int1 = readInt32(bytes, offset); offset += 4;
+        this.int2 = readInt32(bytes, offset); offset += 4;
+        this.int3 = readInt32(bytes, offset); offset += 4;
+        this.int4 = readInt32(bytes, offset); offset += 4;
+        this.int5 = readInt32(bytes, offset); offset += 4;
+        this.int6 = readInt32(bytes, offset); offset += 4;
+        this.int7 = readInt32(bytes, offset); offset += 4;
+        this.int8 = readInt32(bytes, offset); offset += 4;
+        this.int9 = readInt32(bytes, offset); offset += 4;
+        this.int10 = readInt32(bytes, offset); offset += 4;
+        this.int11 = readInt32(bytes, offset); offset += 4;
+        this.int12 = readInt32(bytes, offset); offset += 4;
+        this.int13 = readInt32(bytes, offset); offset += 4;
+        this.int14 = readInt32(bytes, offset); offset += 4;
+        this.int15 = readInt32(bytes, offset); offset += 4;
+        this.int16 = readInt32(bytes, offset); offset += 4;
+        this.int17 = readInt32(bytes, offset); offset += 4;
+        this.int18 = readInt32(bytes, offset); offset += 4;
+        this.int19 = readInt32(bytes, offset); offset += 4;
+        this.int20 = readInt32(bytes, offset); offset += 4;
+        this.int21 = readInt32(bytes, offset); offset += 4;
+        this.int22 = readInt32(bytes, offset); offset += 4;
+        this.int23 = readInt32(bytes, offset); offset += 4;
+
+        this.ceventHitUnitList.clear();
 
         // TODO 原逻辑部分位置意义不明，做了逻辑整合和优化，所以极有可能出错
         for (int i = 0; i < 33; i++) {
@@ -141,11 +143,10 @@ public class CEventHit extends WazInfoObject {
 
             }
 
-            ceventHitUnitList.add(unit);
+            this.ceventHitUnitList.add(unit);
 
         }
 
-        setCeventHitUnitList(ceventHitUnitList);
 
         return offset;
     }

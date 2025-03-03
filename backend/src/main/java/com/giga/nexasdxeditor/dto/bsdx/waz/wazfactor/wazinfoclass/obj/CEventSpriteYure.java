@@ -17,7 +17,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 @Data
 public class CEventSpriteYure extends WazInfoObject {
 
-    private List<WazInfoCollection> wazInfoCollectionList;
+    private List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
 
     private Integer int1;
     private Integer int2;
@@ -29,16 +29,15 @@ public class CEventSpriteYure extends WazInfoObject {
 
         offset = super.readInfo(bytes, offset);
 
-        List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
+        this.wazInfoCollectionList.clear();
         WazInfoCollection wazInfoCollection = new WazInfoCollection();
         offset = wazInfoCollection.readCollection(bytes, offset);
-        wazInfoCollectionList.add(wazInfoCollection);
-        setWazInfoCollectionList(wazInfoCollectionList);
+        this.wazInfoCollectionList.add(wazInfoCollection);
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
-        setInt2(readInt32(bytes, offset)); offset += 4;
-        setInt3(readInt32(bytes, offset)); offset += 4;
-        setInt4(readInt32(bytes, offset)); offset += 4;
+        this.int1 = readInt32(bytes, offset); offset += 4;
+        this.int2 = readInt32(bytes, offset); offset += 4;
+        this.int3 = readInt32(bytes, offset); offset += 4;
+        this.int4 = readInt32(bytes, offset); offset += 4;
 
         return offset;
     }

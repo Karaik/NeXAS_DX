@@ -38,11 +38,7 @@ public class CEventScreenEffect extends WazInfoObject {
     private Integer int3;
     private Integer int4;
 
-    private List<CEventScreenEffectUnit> ceventScreenEffectUnitList;
-
-    public CEventScreenEffect() {
-        ceventScreenEffectUnitList = new ArrayList<>();
-    }
+    private List<CEventScreenEffectUnit> ceventScreenEffectUnitList = new ArrayList<>();
 
     @Data
     public static class CEventScreenEffectUnit {
@@ -54,12 +50,12 @@ public class CEventScreenEffect extends WazInfoObject {
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
-        setInt2(readInt32(bytes, offset)); offset += 4;
-        setInt3(readInt32(bytes, offset)); offset += 4;
-        setInt4(readInt32(bytes, offset)); offset += 4;
+        this.int1 = readInt32(bytes, offset); offset += 4;
+        this.int2 = readInt32(bytes, offset); offset += 4;
+        this.int3 = readInt32(bytes, offset); offset += 4;
+        this.int4 = readInt32(bytes, offset); offset += 4;
 
-        ceventScreenEffectUnitList.clear();
+        this.ceventScreenEffectUnitList.clear();
 
         for (int i = 0; i < 5; i++) {
             if (i == 4) {
@@ -75,7 +71,7 @@ public class CEventScreenEffect extends WazInfoObject {
                         unit.setData(obj);
                     }
                 }
-                ceventScreenEffectUnitList.add(unit);
+                this.ceventScreenEffectUnitList.add(unit);
             }
         }
 

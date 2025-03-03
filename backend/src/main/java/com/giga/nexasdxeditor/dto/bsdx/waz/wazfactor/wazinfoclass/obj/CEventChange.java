@@ -32,8 +32,8 @@ public class CEventChange extends WazInfoObject {
 
     private Integer flag;
 
-    private List<WazInfoCollection> wazInfoCollectionList1;
-    private List<WazInfoCollection> wazInfoCollectionList2;
+    private List<WazInfoCollection> wazInfoCollectionList1 = new ArrayList<>();
+    private List<WazInfoCollection> wazInfoCollectionList2 = new ArrayList<>();
 
     private Integer int1;
 
@@ -48,29 +48,27 @@ public class CEventChange extends WazInfoObject {
 
     private int innerRead(byte[] bytes, int offset) {
 
-        int flag = readInt32(bytes, offset); offset += 4;
-        setFlag(flag);
+        this.flag = readInt32(bytes, offset); offset += 4;
+
+        this.wazInfoCollectionList1.clear();
+        this.wazInfoCollectionList2.clear();
 
         if (flag > 0) {
 
             int counter = 0;
             do {
-                List<WazInfoCollection> wazInfoCollectionList1 = new ArrayList<>();
                 WazInfoCollection wazInfoCollection = new WazInfoCollection();
                 offset = wazInfoCollection.readCollection(bytes, offset);
-                wazInfoCollectionList1.add(wazInfoCollection);
-                setWazInfoCollectionList1(wazInfoCollectionList1);
+                this.wazInfoCollectionList1.add(wazInfoCollection);
 
                 counter++;
             } while (counter < flag);
 
         }
 
-        List<WazInfoCollection> wazInfoCollectionList2 = new ArrayList<>();
         WazInfoCollection wazInfoCollection2 = new WazInfoCollection();
         offset = wazInfoCollection2.readCollection(bytes, offset);
-        wazInfoCollectionList2.add(wazInfoCollection2);
-        setWazInfoCollectionList2(wazInfoCollectionList2);
+        this.wazInfoCollectionList2.add(wazInfoCollection2);
 
         setInt1(readInt32(bytes, offset)); offset += 4;
 

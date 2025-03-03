@@ -79,11 +79,7 @@ public class CEventStatus extends WazInfoObject {
     private Integer int8;
     private Integer int9;
 
-    private List<CEventStatusUnit> ceventStatusUnitList;
-
-    public CEventStatus() {
-        ceventStatusUnitList = new ArrayList<>();
-    }
+    private List<CEventStatusUnit> ceventStatusUnitList = new ArrayList<>();
 
     @Data
     public static class CEventStatusUnit {
@@ -100,19 +96,19 @@ public class CEventStatus extends WazInfoObject {
         // 读取0x3Cu字节
         byteData2 = Arrays.copyOfRange(bytes, offset, offset + 60); offset += 60;
 
-        setByte1(readInt8(bytes, offset)); offset += 1;
+        this.byte1 = readInt8(bytes, offset); offset += 1;
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
-        setInt2(readInt32(bytes, offset)); offset += 4;
-        setInt3(readInt32(bytes, offset)); offset += 4;
-        setInt4(readInt32(bytes, offset)); offset += 4;
-        setInt5(readInt32(bytes, offset)); offset += 4;
-        setInt6(readInt32(bytes, offset)); offset += 4;
-        setInt7(readInt32(bytes, offset)); offset += 4;
-        setInt8(readInt32(bytes, offset)); offset += 4;
-        setInt9(readInt32(bytes, offset)); offset += 4;
+        this.int1 = readInt32(bytes, offset); offset += 4;
+        this.int2 = readInt32(bytes, offset); offset += 4;
+        this.int3 = readInt32(bytes, offset); offset += 4;
+        this.int4 = readInt32(bytes, offset); offset += 4;
+        this.int5 = readInt32(bytes, offset); offset += 4;
+        this.int6 = readInt32(bytes, offset); offset += 4;
+        this.int7 = readInt32(bytes, offset); offset += 4;
+        this.int8 = readInt32(bytes, offset); offset += 4;
+        this.int9 = readInt32(bytes, offset); offset += 4;
 
-        ceventStatusUnitList.clear();
+        this.ceventStatusUnitList.clear();
 
         for (int i = 0; i < 25; i++) {
             int buffer = readInt32(bytes, offset); offset += 4;
@@ -127,7 +123,7 @@ public class CEventStatus extends WazInfoObject {
                     unit.setData(obj);
                 }
             }
-            ceventStatusUnitList.add(unit);
+            this.ceventStatusUnitList.add(unit);
         }
 
         return offset;

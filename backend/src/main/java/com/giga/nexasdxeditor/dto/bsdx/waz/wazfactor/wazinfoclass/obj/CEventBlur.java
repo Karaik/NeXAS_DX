@@ -46,12 +46,16 @@ public class CEventBlur extends WazInfoObject {
     private Integer int5;
     private Integer int6;
 
+    public CEventBlur() {
+        wazInfoCollectionList = new ArrayList<>();
+    }
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
         List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
+
         WazInfoCollection wazInfoCollection = new WazInfoCollection();
         offset = wazInfoCollection.readCollection(bytes, offset);
         wazInfoCollectionList.add(wazInfoCollection);

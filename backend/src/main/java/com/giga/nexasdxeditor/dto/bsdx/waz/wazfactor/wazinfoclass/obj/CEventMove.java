@@ -48,8 +48,8 @@ public class CEventMove extends WazInfoObject {
             new CEventMoveType(0xFFFFFFFF, "バウンド速度")
     };
 
-    private List<WazInfoCollection> wazInfoCollectionList1;
-    private List<WazInfoCollection> wazInfoCollectionList2;
+    private List<WazInfoCollection> wazInfoCollectionList1 = new ArrayList<>();
+    private List<WazInfoCollection> wazInfoCollectionList2 = new ArrayList<>();
 
     private Integer int1;
 
@@ -58,19 +58,18 @@ public class CEventMove extends WazInfoObject {
 
         offset = super.readInfo(bytes, offset);
 
-        List<WazInfoCollection> wazInfoCollectionList1 = new ArrayList<>();
+        this.wazInfoCollectionList1.clear();
+        this.wazInfoCollectionList2.clear();
+
         WazInfoCollection wazInfoCollection1 = new WazInfoCollection();
         offset = wazInfoCollection1.readCollection(bytes, offset);
-        wazInfoCollectionList1.add(wazInfoCollection1);
-        setWazInfoCollectionList1(wazInfoCollectionList1);
+        this.wazInfoCollectionList1.add(wazInfoCollection1);
 
-        List<WazInfoCollection> wazInfoCollectionList2 = new ArrayList<>();
         WazInfoCollection wazInfoCollection2 = new WazInfoCollection();
         offset = wazInfoCollection2.readCollection(bytes, offset);
-        wazInfoCollectionList2.add(wazInfoCollection2);
-        setWazInfoCollectionList2(wazInfoCollectionList2);
+        this.wazInfoCollectionList2.add(wazInfoCollection2);
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
+        this.int1 = readInt32(bytes, offset); offset += 4;
 
         return offset;
     }

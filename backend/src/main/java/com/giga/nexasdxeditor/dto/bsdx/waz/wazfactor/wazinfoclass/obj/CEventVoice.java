@@ -21,30 +21,25 @@ public class CEventVoice extends WazInfoObject {
     private Integer int3;
     private Integer result;
 
-    private List<byte[]> byteDataList;
-
-    public CEventVoice() {
-        byteDataList = new ArrayList<>();
-    }
+    private List<byte[]> byteDataList = new ArrayList<>();
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
-        setInt2(readInt32(bytes, offset)); offset += 4;
-        setInt3(readInt32(bytes, offset)); offset += 4;
+        this.int1 = readInt32(bytes, offset); offset += 4;
+        this.int2 = readInt32(bytes, offset); offset += 4;
+        this.int3 = readInt32(bytes, offset); offset += 4;
 
-        int result = readInt32(bytes, offset); offset += 4;
-        setResult(result);
+        this.result = readInt32(bytes, offset); offset += 4;
 
         if (result > 0) {
-            List<byte[]> byteDataList = getByteDataList();
+            this.byteDataList.clear();
             int counter = result;
             do {
                 // 读取0xCu字节
                 byte[] buffer = Arrays.copyOfRange(bytes, offset, offset + 12); offset += 12;
-                byteDataList.add(buffer);
+                this.byteDataList.add(buffer);
                 --counter;
             } while (counter > 0);
         }

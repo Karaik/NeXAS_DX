@@ -14,17 +14,14 @@ import java.util.List;
 @Data
 public class Waz {
 
-    public Integer spmSequence; // 仅记录用
+    public String fileName; // 仅记录用
 
-    private List<WazBlock> wazBlockList;
-
-    private WazSuffix wazSuffix;
+    private List<WazBlock> wazBlockList = new ArrayList<>();
 
     public Waz() {
-        this.wazBlockList = new ArrayList<>();
     }
-    public Waz(Integer spmSequence) {
-        this.spmSequence = spmSequence;
+    public Waz(String fileName) {
+        this.fileName = fileName;
         this.wazBlockList = new ArrayList<>();
     }
 
@@ -39,11 +36,9 @@ public class Waz {
 
         private String skillNameEnglish;
 
-        private List<WazPhase> phasesInfo;
+        private List<WazPhase> phasesInfo = new ArrayList<>();
 
-        public WazBlock() {
-            this.phasesInfo = new ArrayList<>();
-        }
+        private WazSuffix wazSuffix;
 
         /**
          * 技能的阶段
@@ -56,20 +51,17 @@ public class Waz {
             /**
              * 逆向所得，size=72
              */
-            private List<WazUnit> wazUnitCollection;
-
-            public WazPhase () {
-                this.wazUnitCollection = new ArrayList<>();
-            }
+            private List<WazUnit> wazUnitCollection = new ArrayList<>();
 
         }
-    }
 
-    @Data
-    public static class WazSuffix {
-        private Integer count;
-        private Integer int1;
-        private Integer int2;
+        @Data
+        public static class WazSuffix {
+            private Integer count;
+            private Integer int1;
+            private Integer int2;
+        }
+
     }
 
 }

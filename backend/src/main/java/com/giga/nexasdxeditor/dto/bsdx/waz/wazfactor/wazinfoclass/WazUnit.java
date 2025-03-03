@@ -15,12 +15,22 @@ import java.util.List;
 @Data
 public class WazUnit {
 
+    public Integer unitQuantity;
+    public String unitDescription; // 记录用
+
     private List<WazInfoObject> wazInfoObjectList;
     private List<WazInfoUnknown> wazInfoUnknownList;
 
     public WazUnit() {
-        wazInfoObjectList = new ArrayList<>();
-        wazInfoUnknownList = new ArrayList<>();
+        this.wazInfoObjectList = new ArrayList<>();
+        this.wazInfoUnknownList = new ArrayList<>();
+    }
+
+    public WazUnit(Integer unitQuantity, String unitDescription) {
+        this.unitQuantity = unitQuantity;
+        this.unitDescription = unitDescription;
+        this.wazInfoObjectList = new ArrayList<>();
+        this.wazInfoUnknownList = new ArrayList<>();
     }
 
 }

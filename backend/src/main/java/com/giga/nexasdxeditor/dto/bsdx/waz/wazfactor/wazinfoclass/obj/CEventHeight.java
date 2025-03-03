@@ -34,11 +34,7 @@ public class CEventHeight extends WazInfoObject {
 
     private Integer int1;
 
-    private List<CEventHeightUnit> ceventHeightUnitList;
-
-    public CEventHeight() {
-        ceventHeightUnitList = new ArrayList<>();
-    }
+    private List<CEventHeightUnit> ceventHeightUnitList = new ArrayList<>();
 
     @Data
     public static class CEventHeightUnit {
@@ -51,9 +47,9 @@ public class CEventHeight extends WazInfoObject {
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
+        this.int1 = readInt32(bytes, offset); offset += 4;
 
-        ceventHeightUnitList.clear();
+        this.ceventHeightUnitList.clear();
 
         for (int i = 0; i < 3; i++) {
             int buffer = readInt32(bytes, offset); offset += 4;
@@ -68,7 +64,7 @@ public class CEventHeight extends WazInfoObject {
                     unit.setData(obj);
                 }
             }
-            ceventHeightUnitList.add(unit);
+            this.ceventHeightUnitList.add(unit);
         }
 
         return offset;

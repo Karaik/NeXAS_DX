@@ -47,11 +47,7 @@ public class CEventScreenLine extends WazInfoObject {
     private Integer int9;
     private Integer int10;
 
-    private List<CEventScreenLineUnit> ceventScreenLineUnitList;
-
-    public CEventScreenLine() {
-        ceventScreenLineUnitList = new ArrayList<>();
-    }
+    private List<CEventScreenLineUnit> ceventScreenLineUnitList = new ArrayList<>();
 
     @Data
     public static class CEventScreenLineUnit {
@@ -63,18 +59,18 @@ public class CEventScreenLine extends WazInfoObject {
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
-        setInt2(readInt32(bytes, offset)); offset += 4;
-        setInt3(readInt32(bytes, offset)); offset += 4;
-        setInt4(readInt32(bytes, offset)); offset += 4;
-        setInt5(readInt32(bytes, offset)); offset += 4;
-        setInt6(readInt32(bytes, offset)); offset += 4;
-        setInt7(readInt32(bytes, offset)); offset += 4;
-        setInt8(readInt32(bytes, offset)); offset += 4;
-        setInt9(readInt32(bytes, offset)); offset += 4;
-        setInt10(readInt32(bytes, offset)); offset += 4;
+        this.int1 = readInt32(bytes, offset); offset += 4;
+        this.int2 = readInt32(bytes, offset); offset += 4;
+        this.int3 = readInt32(bytes, offset); offset += 4;
+        this.int4 = readInt32(bytes, offset); offset += 4;
+        this.int5 = readInt32(bytes, offset); offset += 4;
+        this.int6 = readInt32(bytes, offset); offset += 4;
+        this.int7 = readInt32(bytes, offset); offset += 4;
+        this.int8 = readInt32(bytes, offset); offset += 4;
+        this.int9 = readInt32(bytes, offset); offset += 4;
+        this.int10 = readInt32(bytes, offset); offset += 4;
 
-        ceventScreenLineUnitList.clear();
+        this.ceventScreenLineUnitList.clear();
 
         for (int i = 0; i < 11; i++) {
             if (i == 3) { // 仅在索引3时处理
@@ -93,7 +89,7 @@ public class CEventScreenLine extends WazInfoObject {
                         unit.setData(obj);
                     }
                 }
-                ceventScreenLineUnitList.add(unit);
+                this.ceventScreenLineUnitList.add(unit);
             }
         }
 

@@ -12,6 +12,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 @Data
 public class WazInfoObject {
 
+    public Integer offset;
     /**
      * 第几帧开始
      */
@@ -24,8 +25,10 @@ public class WazInfoObject {
 
     public int readInfo(byte[] bytes, int offset) {
 
-        setStartFrame(readInt32(bytes, offset)); offset += 4;
-        setEndFrame(readInt32(bytes, offset)); offset += 4;
+        this.offset = offset;
+
+        this.startFrame = readInt32(bytes, offset); offset += 4;
+        this.endFrame = readInt32(bytes, offset); offset += 4;
 
         return offset; // +8
     }

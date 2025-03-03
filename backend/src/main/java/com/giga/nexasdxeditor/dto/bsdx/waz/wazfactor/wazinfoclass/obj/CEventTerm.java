@@ -17,17 +17,16 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 @Data
 public class CEventTerm extends WazInfoObject {
 
-    private List<WazInfoCollection> wazInfoCollectionList;
+    private List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
-        List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
+        this.wazInfoCollectionList.clear();
         WazInfoCollection wazInfoCollection = new WazInfoCollection();
         offset = wazInfoCollection.readCollection(bytes, offset);
-        wazInfoCollectionList.add(wazInfoCollection);
-        setWazInfoCollectionList(wazInfoCollectionList);
+        this.wazInfoCollectionList.add(wazInfoCollection);
 
         return offset;
     }

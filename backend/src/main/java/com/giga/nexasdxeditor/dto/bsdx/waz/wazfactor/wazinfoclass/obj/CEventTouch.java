@@ -19,7 +19,7 @@ public class CEventTouch extends WazInfoObject {
         offset = super.readInfo(bytes, offset);
 
         // 读取0x38u字节
-        byteData1 = Arrays.copyOfRange(bytes, offset, offset + 56); offset += 56;
+        this.byteData1 = Arrays.copyOfRange(bytes, offset, offset + 56); offset += 56;
 
         return offset;
     }

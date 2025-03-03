@@ -35,9 +35,9 @@ public class CEventSprite extends WazInfoObject {
 
         offset = super.readInfo(bytes, offset);
 
-        setSpmFileSequence(readInt32(bytes, offset)); offset += 4;
-        setActionGroupNumber(readInt32(bytes, offset)); offset += 4;
-        setActionNumber(readInt32(bytes, offset)); offset += 4;
+        this.spmFileSequence = readInt32(bytes, offset); offset += 4;
+        this.actionGroupNumber = readInt32(bytes, offset); offset += 4;
+        this.actionNumber = readInt32(bytes, offset); offset += 4;
 
         return offset;
     }

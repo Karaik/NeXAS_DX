@@ -48,15 +48,15 @@ public class CEventCounter extends WazInfoObject {
         offset = super.readInfo(bytes, offset);
 
         // 读取0x1Cu字节
-        byteData1 = Arrays.copyOfRange(bytes, offset, offset + 28);
+        this.byteData1 = Arrays.copyOfRange(bytes, offset, offset + 28);
 
-        checkDirection = readInt32(bytes, offset); offset += 4;
-        directionCorrection = readInt32(bytes, offset); offset += 4;
-        checkRange = readInt32(bytes, offset); offset += 4;
-        heightRange = readInt32(bytes, offset); offset += 4;
-        heightCorrection = readInt32(bytes, offset); offset += 4;
-        checkCount = readInt32(bytes, offset); offset += 4;
-        buttonInsideRange = readInt32(bytes, offset); offset += 4;
+        this.checkDirection = readInt32(bytes, offset); offset += 4;
+        this.directionCorrection = readInt32(bytes, offset); offset += 4;
+        this.checkRange = readInt32(bytes, offset); offset += 4;
+        this.heightRange = readInt32(bytes, offset); offset += 4;
+        this.heightCorrection = readInt32(bytes, offset); offset += 4;
+        this.checkCount = readInt32(bytes, offset); offset += 4;
+        this.buttonInsideRange = readInt32(bytes, offset); offset += 4;
 
         return offset;
     }

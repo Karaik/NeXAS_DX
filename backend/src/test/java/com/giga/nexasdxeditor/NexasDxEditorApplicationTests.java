@@ -251,7 +251,7 @@ class NexasDxEditorApplicationTests {
         Resource[] resources = resolver.getResources("classpath*:/game/bsdx/waz/*.waz");
 
         String path = null;
-        List<Waz> allWazList = new ArrayList<>();
+        List<Waz> allWaz = new ArrayList<>();
         for (Resource resource : resources) {
             path = resource.getFile().getPath();
             ResponseDTO parse = null;
@@ -260,10 +260,10 @@ class NexasDxEditorApplicationTests {
             } catch (Exception e) {
                 continue;
             }
-            Waz wazList = (Waz) parse.getData();
-            allWazList.add(wazList);
+            Waz waz = (Waz) parse.getData();
+            allWaz.add(waz);
         }
-        log.info("allWazList.size ===  {} ", allWazList.size());
+        log.info("allWaz.size ===  {} ", allWaz.size());
 
 
     }

@@ -32,7 +32,7 @@ public class WazParser {
 //            return new Waz();
 //        }
 
-        Waz waz = new Waz();
+        Waz waz = new Waz(fileName);
         List<Waz.WazBlock> wazBlockList = waz.getWazBlockList();
         try {
 
@@ -68,12 +68,13 @@ public class WazParser {
                 }
 
                 int countSuffix = readInt32(bytes, offset); offset += 4;
-                Waz.WazSuffix wazSuffix = new Waz.WazSuffix();
+                Waz.WazBlock.WazSuffix wazSuffix = new Waz.WazBlock.WazSuffix();
                 wazSuffix.setCount(countSuffix);
                 for (int i = 0; i < countSuffix; i++) {
                     wazSuffix.setInt1(readInt32(bytes, offset)); offset += 4;
                     wazSuffix.setInt2(readInt32(bytes, offset)); offset += 4;
                 }
+                wazBlock.setWazSuffix(wazSuffix);
 
                 wazBlockList.add(wazBlock);
             }
@@ -91,7 +92,7 @@ public class WazParser {
         List<WazUnit> wazUnitCollection = wazPhase.getWazUnitCollection();
 
         for (int i = 0; i < 72; i++) { // 逆向得知循环72次
-            WazUnit wazUnit = new WazUnit();
+            WazUnit wazUnit = new WazUnit(i, WazInfoFactory.WAZA_BLOCK_TYPE_ENTRIES[i].getDescription());
 
             List<WazInfoObject> wazInfoObjectList = wazUnit.getWazInfoObjectList();
             int count1 = readInt32(bytes, offset); offset += 4;
@@ -119,7 +120,9 @@ public class WazParser {
                 }
             }
 
-            wazUnitCollection.add(wazUnit);
+            if (!wazInfoObjectList.isEmpty() || !wazInfoUnknownList.isEmpty()) {
+                wazUnitCollection.add(wazUnit);
+            }
         }
 
         return offset;

@@ -49,7 +49,7 @@ public class CEventRadialLine extends WazInfoObject {
     private Integer int11;
     private Integer int12;
 
-    private List<CEventRadialLineUnit> ceventRadialLineUnitList;
+    private List<CEventRadialLineUnit> ceventRadialLineUnitList = new ArrayList<>();
 
     @Data
     public static class CEventRadialLineUnit {
@@ -61,20 +61,20 @@ public class CEventRadialLine extends WazInfoObject {
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
-        setInt2(readInt32(bytes, offset)); offset += 4;
-        setInt3(readInt32(bytes, offset)); offset += 4;
-        setInt4(readInt32(bytes, offset)); offset += 4;
-        setInt5(readInt32(bytes, offset)); offset += 4;
-        setInt6(readInt32(bytes, offset)); offset += 4;
-        setInt7(readInt32(bytes, offset)); offset += 4;
-        setInt8(readInt32(bytes, offset)); offset += 4;
-        setInt9(readInt32(bytes, offset)); offset += 4;
-        setInt10(readInt32(bytes, offset)); offset += 4;
-        setInt11(readInt32(bytes, offset)); offset += 4;
-        setInt12(readInt32(bytes, offset)); offset += 4;
+        this.int1 = readInt32(bytes, offset); offset += 4;
+        this.int2 = readInt32(bytes, offset); offset += 4;
+        this.int3 = readInt32(bytes, offset); offset += 4;
+        this.int4 = readInt32(bytes, offset); offset += 4;
+        this.int5 = readInt32(bytes, offset); offset += 4;
+        this.int6 = readInt32(bytes, offset); offset += 4;
+        this.int7 = readInt32(bytes, offset); offset += 4;
+        this.int8 = readInt32(bytes, offset); offset += 4;
+        this.int9 = readInt32(bytes, offset); offset += 4;
+        this.int10 = readInt32(bytes, offset); offset += 4;
+        this.int11 = readInt32(bytes, offset); offset += 4;
+        this.int12 = readInt32(bytes, offset); offset += 4;
 
-        List<CEventRadialLineUnit> ceventRadialLineUnitList = new ArrayList<>();
+        this.ceventRadialLineUnitList.clear();
 
         for (int i = 0; i < 13; i++) {
             if (i == 4) {
@@ -92,8 +92,6 @@ public class CEventRadialLine extends WazInfoObject {
                 ceventRadialLineUnitList.add(unit);
             }
         }
-
-        setCeventRadialLineUnitList(ceventRadialLineUnitList);
 
         return offset;
     }

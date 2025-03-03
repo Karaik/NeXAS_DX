@@ -24,13 +24,13 @@ public class CEventSlipHosei extends WazInfoObject {
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
-        setLong1(readDouble(bytes, offset)); offset += 8;
-        setLong2(readDouble(bytes, offset)); offset += 8;
+        this.long1 = readDouble(bytes, offset); offset += 8;
+        this.long2 = readDouble(bytes, offset); offset += 8;
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
-        setInt2(readInt32(bytes, offset)); offset += 4;
-        setInt3(readInt32(bytes, offset)); offset += 4;
-        setInt4(readInt32(bytes, offset)); offset += 4;
+        this.int1 = readInt32(bytes, offset); offset += 4;
+        this.int2 = readInt32(bytes, offset); offset += 4;
+        this.int3 = readInt32(bytes, offset); offset += 4;
+        this.int4 = readInt32(bytes, offset); offset += 4;
 
         return offset;
     }
