@@ -16,14 +16,22 @@ public class CEventBlink extends WazInfoObject {
     @Data
     @AllArgsConstructor
     public static class CEventBlinkType {
+        private Integer type;
         private String description;
-        private String value;
     }
 
     public static final CEventBlinkType[] CEVENT_BLINK_ENTRIES = {
-            new CEventBlinkType("BASIC", "%3d(%3d,%3d)"),
-            new CEventBlinkType("WITH_SPACE", "%3d(%3d,%3d) "),
-            new CEventBlinkType("WITH_ARROW", "⇒ %3d(%3d,%3d)")
+            new CEventBlinkType(0xFFFFFFFF, "残像タイプ"),
+            new CEventBlinkType(0xFFFFFFFF, "発射間隔"),
+            new CEventBlinkType(0xFFFFFFFF, "アニメ時間"),
+            new CEventBlinkType(0xFFFFFFFF, "フラグ"),
+
+            // todo unsure
+            new CEventBlinkType(0xFFFFFFFF, "加算属性"),
+            new CEventBlinkType(0xFFFFFFFF, "ノーマル"),
+            new CEventBlinkType(0xFFFFFFFF, "親オブジェクトの拡大率反映"),
+            new CEventBlinkType(0xFFFFFFFF, "親オブジェクトの属性反映"),
+            new CEventBlinkType(0xFFFFFFFF, "%s (周期:%3d)(ｱﾆﾒ長:%3d)")
     };
 
     private Integer int1;

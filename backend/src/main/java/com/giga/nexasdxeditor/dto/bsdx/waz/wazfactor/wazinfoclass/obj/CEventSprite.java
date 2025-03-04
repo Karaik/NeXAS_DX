@@ -9,8 +9,8 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * @Date 2025/2/22
  * @Description SpmCallingInfo
  * CEventSprite__Read
- * 通常描画
  *  该阶段中的各动作使用哪个spm图层，以及帧数关系
+ *  ERROR:CMeka,CPartsじゃないのに自動指定を使った
  */
 @Data
 public class CEventSprite extends WazInfoObject {

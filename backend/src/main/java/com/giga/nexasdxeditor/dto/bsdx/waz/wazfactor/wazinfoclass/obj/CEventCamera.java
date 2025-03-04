@@ -27,7 +27,6 @@ public class CEventCamera extends WazInfoObject {
     }
 
     public static final CEventCameraType[] CEVENT_CAMERA_ENTRIES = {
-            // 根据 dword_7F1F7C 数组逆向数据定义
             new CEventCameraType(0x5, "位置"),
             new CEventCameraType(0x9, "方向"),
             new CEventCameraType(0x0, "距離"),
@@ -40,6 +39,8 @@ public class CEventCamera extends WazInfoObject {
 
     @Data
     public static class CEventCameraUnit {
+        private Integer ceventCameraUnitQuantity;
+        private String description;
         private Integer buffer;
         private WazInfoObject data;
     }
@@ -50,12 +51,14 @@ public class CEventCamera extends WazInfoObject {
 
         setShort1(readInt16(bytes, offset)); offset += 2;
 
-        ceventCameraUnitList.clear();
+        this.ceventCameraUnitList.clear();
 
         for (int i = 0; i < 5; i++) {
             int buffer = readInt32(bytes, offset); offset += 4;
 
             CEventCameraUnit unit = new CEventCameraUnit();
+            unit.setCeventCameraUnitQuantity(i);
+            unit.setDescription(CEVENT_CAMERA_ENTRIES[i].getDescription());
             unit.setBuffer(buffer);
 
             if (buffer != 0) {
@@ -65,11 +68,10 @@ public class CEventCamera extends WazInfoObject {
                     offset = obj.readInfo(bytes, offset);
                     unit.setData(obj);
                 }
+                ceventCameraUnitList.add(unit);
             }
-            ceventCameraUnitList.add(unit);
         }
 
-        setCeventCameraUnitList(ceventCameraUnitList);
 
         return offset;
     }

@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import static com.giga.nexasdxeditor.util.ParserUtil.*;
@@ -8,10 +9,26 @@ import static com.giga.nexasdxeditor.util.ParserUtil.*;
  * @Author 这位同学(Karaik)
  * @Date 2025/2/23
  * CEventSlipHosei__Read
- * ERROR:CMeka,CPartsじゃないのに自動指定を使った aErrorCmekaCpar
  */
 @Data
 public class CEventSlipHosei extends WazInfoObject {
+
+    @Data
+    @AllArgsConstructor
+    public static class CEventSlipHoseiType {
+        private Integer type;
+        private String description;
+    }
+
+    public static final CEventSlipHoseiType[] CEVENT_SLIP_HOSEI_TYPES = {
+            new CEventSlipHoseiType(0xFFFFFFFF, "最低速度"),
+            new CEventSlipHoseiType(0xFFFFFFFF, "最高速度"),
+            new CEventSlipHoseiType(0xFFFFFFFF, "最低上昇量"),
+            new CEventSlipHoseiType(0xFFFFFFFF, "最高上昇量"),
+            new CEventSlipHoseiType(0xFFFFFFFF, "最低重力増分"),
+            new CEventSlipHoseiType(0xFFFFFFFF, "最高重力増分")
+    };
+
 
     private Double long1;
     private Double long2;

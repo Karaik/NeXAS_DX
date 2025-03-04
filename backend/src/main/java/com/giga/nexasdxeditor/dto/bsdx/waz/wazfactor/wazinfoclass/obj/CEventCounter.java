@@ -23,40 +23,26 @@ public class CEventCounter extends WazInfoObject {
     }
 
     public static final CEventCounterType[] CEVENT_COUNTER_ENTRIES = {
-            new CEventCounterType(0x9, "チェック方向"),
-            new CEventCounterType(0xFFFFFFFF, "チェック方向補正"),
-            new CEventCounterType(0xFFFFFFFF, "チェック範囲"),
-            new CEventCounterType(0xFFFFFFFF, "チェック範囲（高さ）"),
-            new CEventCounterType(0xFFFFFFFF, "チェック高度補正"),
-            new CEventCounterType(0xFFFFFFFF, "チェック回数"),
-            new CEventCounterType(0xFFFFFFFF, "ボタン入力（範囲内）"),
-            new CEventCounterType(0xFFFFFFFF, "ボタン入力（範囲外）")
+            // 根据 .rdata:007F20B8 数组逆向数据定义
+            new CEventCounterType(0xFFFFFFFF, "タイプ"),
+            new CEventCounterType(0xFFFFFFFF, "回数"),
+            new CEventCounterType(0xFFFFFFFF, "開始値"),
+            new CEventCounterType(0xFFFFFFFF, "終了値"),
+            new CEventCounterType(0xFFFFFFFF, "通常"),
+            new CEventCounterType(0xFFFFFFFF, "加速"),
+            new CEventCounterType(0xFFFFFFFF, "減速"),
+            new CEventCounterType(0xFFFFFFFF, "ループ"),
+            new CEventCounterType(0xFFFFFFFF, "往復")
     };
 
     private byte[] byteData1;
-
-    private Integer checkDirection;       // チェック方向 (4 字节)
-    private Integer directionCorrection;  // チェック方向補正 (4 字节)
-    private Integer checkRange;           // チェック範囲 (4 字节)
-    private Integer heightRange;          // チェック範囲（高さ） (4 字节)
-    private Integer heightCorrection;     // チェック高度補正 (4 字节)
-    private Integer checkCount;           // チェック回数 (4 字节)
-    private Integer buttonInsideRange;    // ボタン入力（範囲内） (4 字节)
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
 
         // 读取0x1Cu字节
-        this.byteData1 = Arrays.copyOfRange(bytes, offset, offset + 28);
-
-        this.checkDirection = readInt32(bytes, offset); offset += 4;
-        this.directionCorrection = readInt32(bytes, offset); offset += 4;
-        this.checkRange = readInt32(bytes, offset); offset += 4;
-        this.heightRange = readInt32(bytes, offset); offset += 4;
-        this.heightCorrection = readInt32(bytes, offset); offset += 4;
-        this.checkCount = readInt32(bytes, offset); offset += 4;
-        this.buttonInsideRange = readInt32(bytes, offset); offset += 4;
+        this.byteData1 = Arrays.copyOfRange(bytes, offset, offset + 28); offset += 28;
 
         return offset;
     }

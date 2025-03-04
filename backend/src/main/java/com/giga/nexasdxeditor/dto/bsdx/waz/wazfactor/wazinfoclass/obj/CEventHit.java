@@ -146,9 +146,7 @@ public class CEventHit extends WazInfoObject {
                 unit.setData(obj);
                 this.ceventHitUnitList.add(unit);
             }
-
         }
-
 
         return offset;
     }

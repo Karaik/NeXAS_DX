@@ -25,14 +25,14 @@ public class CEventScreenAttr extends WazInfoObject {
     }
 
     public static final CEventScreenAttrType[] CEVENT_SCREEN_ATTR_TYPES = {
-            new CEventScreenAttrType(0xFFFFFFFF, "持続カウンタ"),
-            new CEventScreenAttrType(0xFFFFFFFF, "タイプ"),
-            new CEventScreenAttrType(0xFFFFFFFF, "速度1"),
-            new CEventScreenAttrType(0xFFFFFFFF, "速度2"),
-            new CEventScreenAttrType(0x9, "方向"),
-            new CEventScreenAttrType(0xFFFFFFFF, "スピード"),
-            new CEventScreenAttrType(0xFFFFFFFF, "炎"),
-            new CEventScreenAttrType(0xFFFFFFFF, "爆発")
+            new CEventScreenAttrType(0xFFFFFFFF, "フェード描画"),
+            new CEventScreenAttrType(0xFFFFFFFF, "フラッシュ描画"),
+            new CEventScreenAttrType(0xFFFFFFFF, "フェード色指定描画"),
+            new CEventScreenAttrType(0xFFFFFFFF, "フラッシュ色指定描画"),
+            new CEventScreenAttrType(0xFFFFFFFF, "ネガティブ描画"),
+            new CEventScreenAttrType(0xFFFFFFFF, "アルファ塗りつぶし描画"),
+            new CEventScreenAttrType(0xFFFFFFFF, "加算塗りつぶし描画"),
+            new CEventScreenAttrType(0xFFFFFFFF, "減算塗りつぶし描画")
     };
 
     private Integer int1;

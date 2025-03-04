@@ -294,7 +294,7 @@ class NexasDxEditorApplicationTests {
         log.info("allWazList.size ===  {} ", allWazList.size());
 
         // 输出JSON文件到指定目录
-        String outputDir = "C:\\Users\\30250\\Desktop\\allWazJson";
+        String outputDir = "D:\\A\\json";
         FileUtil.mkdir(outputDir); // 创建目录（如果不存在）
 
         for (int i = 0; i < allWazList.size(); i++) {
@@ -302,6 +302,7 @@ class NexasDxEditorApplicationTests {
             String jsonStr = JSONUtil.toJsonStr(waz);
             String filePath = FileUtil.file(outputDir, baseNames.get(i) + ".json").getAbsolutePath();
             FileUtil.writeUtf8String(jsonStr, filePath);
+            log.info("transfer === {} ", baseNames.get(i));
         }
     }
     

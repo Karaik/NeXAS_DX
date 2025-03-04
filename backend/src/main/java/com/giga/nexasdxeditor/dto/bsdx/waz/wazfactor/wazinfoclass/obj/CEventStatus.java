@@ -23,7 +23,7 @@ public class CEventStatus extends WazInfoObject {
     @AllArgsConstructor
     public static class CEventStatusType {
         private Integer type;
-        private String name;
+        private String description;
     }
 
     public static final CEventStatusType[] CEVENT_STATUS_TYPES = {
@@ -50,23 +50,17 @@ public class CEventStatus extends WazInfoObject {
             new CEventStatusType(0xFFFFFFFF, "開始時間"),
             new CEventStatusType(0xFFFFFFFF, "実行間隔"),
             new CEventStatusType(0xFFFFFFFF, "優先順位"),
-            new CEventStatusType(0xFFFFFFFF, "重複タイプ"),
-            new CEventStatusType(0x4, "エフェクト")
+            new CEventStatusType(0x4, "重複タイプ"),
+            new CEventStatusType(0xFFFFFFFF, "エフェクト")
+    };
+
+    public static final String[] CEVENT_STATUS_FORMATS = {
+            "%s : %4d (周期 : %4d)",
+            "%s : %4d ",
+            "⇒ %4d (周期 : %4d)"
     };
 
     private byte[] byteData1;
-
-//    private Integer isPersistent;      // 持久性标志 (对应C++ this+46 1字节)
-//    private Integer effectType;        // エフェクト类型 (对应C++ this+47)
-//    private Integer priority;          // 優先順位 (对应C++ this+48)
-//    private Integer overlapType;       // 重複タイプ (对应C++ this+49)
-//    private Integer startTime;         // 開始時間 (对应C++ this+50)
-//    private Integer executeInterval;   // 実行間隔 (对应C++ this+51)
-//    private Integer terminationType;   // 終了タイプ (对应C++ this+52)
-//    private Integer terminationCount;  // 終了カウント (对应C++ this+53)
-//    private Integer dataType;          // データタイプ (对应C++ this+54)
-//    private Integer enduranceValue;    // 根性値 (对应C++ this+55)
-
     private byte[] byteData2;
     private byte byte1;
     private Integer int1;
@@ -83,7 +77,9 @@ public class CEventStatus extends WazInfoObject {
 
     @Data
     public static class CEventStatusUnit {
+        private Integer ceventStatusUnitQuantity;
         private Integer buffer;
+        private String description;
         private WazInfoObject data;
     }
 
@@ -113,6 +109,8 @@ public class CEventStatus extends WazInfoObject {
         for (int i = 0; i < 25; i++) {
             int buffer = readInt32(bytes, offset); offset += 4;
             CEventStatusUnit unit = new CEventStatusUnit();
+            unit.setCeventStatusUnitQuantity(i);
+            unit.setDescription(CEVENT_STATUS_TYPES[i].getDescription());
             unit.setBuffer(buffer);
 
             if (buffer != 0) {
@@ -122,8 +120,8 @@ public class CEventStatus extends WazInfoObject {
                     offset = obj.readInfo(bytes, offset);
                     unit.setData(obj);
                 }
+                this.ceventStatusUnitList.add(unit);
             }
-            this.ceventStatusUnitList.add(unit);
         }
 
         return offset;

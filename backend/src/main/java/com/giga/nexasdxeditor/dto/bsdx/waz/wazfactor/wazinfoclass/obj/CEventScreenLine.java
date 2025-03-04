@@ -22,18 +22,21 @@ public class CEventScreenLine extends WazInfoObject {
     @AllArgsConstructor
     public static class CEventScreenLineType {
         private Integer type;
-        private String name;
+        private String description;
     }
 
     public static final CEventScreenLineType[] CEVENT_SCREEN_LINE_TYPES = {
-            new CEventScreenLineType(0xFFFFFFFF, "角度指定"),
-            new CEventScreenLineType(0xFFFFFFFF, "左回転"),
-            new CEventScreenLineType(0xFFFFFFFF, "右回転"),
-            new CEventScreenLineType(0x9, "下"),
-            new CEventScreenLineType(0xFFFFFFFF, "上"),
-            new CEventScreenLineType(0xFFFFFFFF, "左"),
-            new CEventScreenLineType(0xFFFFFFFF, "右"),
-            new CEventScreenLineType(0xFFFFFFFF, "ランダム")
+            new CEventScreenLineType(0xFFFFFFFF, "持続カウンタ"),
+            new CEventScreenLineType(0xFFFFFFFF, "変化フレーム数"),
+            new CEventScreenLineType(0xFFFFFFFF, "数"),
+            new CEventScreenLineType(0x9, "角度"),
+            new CEventScreenLineType(0xFFFFFFFF, "速度"),
+            new CEventScreenLineType(0xFFFFFFFF, "長さ"),
+            new CEventScreenLineType(0xFFFFFFFF, "太さ"),
+            new CEventScreenLineType(0xFFFFFFFF, "輝度"),
+            new CEventScreenLineType(0xFFFFFFFF, "色R"),
+            new CEventScreenLineType(0xFFFFFFFF, "色G"),
+            new CEventScreenLineType(0xFFFFFFFF, "色B")
     };
 
     private Integer int1;
@@ -51,7 +54,9 @@ public class CEventScreenLine extends WazInfoObject {
 
     @Data
     public static class CEventScreenLineUnit {
+        private Integer ceventScreenLineUnitQuantity;
         private Integer buffer;
+        private String description;
         private WazInfoObject data;
     }
 
@@ -73,23 +78,25 @@ public class CEventScreenLine extends WazInfoObject {
         this.ceventScreenLineUnitList.clear();
 
         for (int i = 0; i < 11; i++) {
-            if (i == 3) { // 仅在索引3时处理
+            if (i == 3) {
                 int buffer = readInt32(bytes, offset); offset += 4;
 
                 CEventScreenLineUnit unit = new CEventScreenLineUnit();
+                unit.setCeventScreenLineUnitQuantity(i);
+                unit.setDescription(CEVENT_SCREEN_LINE_TYPES[i].getDescription());
                 unit.setBuffer(buffer);
 
                 if (buffer != 0) {
-                    // 根据类型ID创建对象（假设i=3对应静态数组的第3项）
-                    int typeId = CEVENT_SCREEN_LINE_TYPES[3].getType();
+//                    int typeId = CEVENT_SCREEN_LINE_TYPES[3].getType();
+                    int typeId = CEVENT_SCREEN_LINE_TYPES[i].getType();
                     WazInfoObject obj = createCEventObjectByType(typeId);
 
                     if (obj != null) {
                         offset = obj.readInfo(bytes, offset);
                         unit.setData(obj);
                     }
+                    this.ceventScreenLineUnitList.add(unit);
                 }
-                this.ceventScreenLineUnitList.add(unit);
             }
         }
 

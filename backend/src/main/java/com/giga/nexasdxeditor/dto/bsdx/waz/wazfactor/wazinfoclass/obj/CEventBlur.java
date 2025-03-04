@@ -20,21 +20,16 @@ public class CEventBlur extends WazInfoObject {
     @Data
     @AllArgsConstructor
     public static class CEventBlurType {
+        private Integer type;
         private String description;
-        private String value;
     }
 
     public static final CEventBlurType[] CEVENT_BLUR_ENTRIES = {
-            new CEventBlurType("POSITION", "位置"),
-            new CEventBlurType("DIRECTION", "方向"),
-            new CEventBlurType("DISTANCE", "距離"),
-            new CEventBlurType("HEIGHT", "高さ"),
-            new CEventBlurType("FLAG", "フラグ"),
 
-            new CEventBlurType("FORMAT_S", "%s"),
-            new CEventBlurType("FORMAT_SS", "%s:%s"),
-            new CEventBlurType("FORMAT_DISTANCE", "%s:(距離)%s"),
-            new CEventBlurType("FORMAT_HEIGHT", "%s:(高度)%s")
+            // todo unsure
+            new CEventBlurType(0xFFFFFFFF, "%3d(%3d,%3d)"),
+            new CEventBlurType(0xFFFFFFFF, "%3d(%3d,%3d)"),
+            new CEventBlurType(0xFFFFFFFF, "⇒ %3d(%3d,%3d)"),
     };
 
     private List<WazInfoCollection> wazInfoCollectionList;

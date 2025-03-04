@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Arrays;
@@ -11,6 +12,30 @@ import java.util.Arrays;
  */
 @Data
 public class CEventTouch extends WazInfoObject {
+
+    @Data
+    @AllArgsConstructor
+    public static class CEventTouchType {
+        private Integer type;
+        private String description;
+    }
+
+    public static final CEventTouchType[] CEVENT_TOUCH_TYPES = {
+            new CEventTouchType(0xFFFFFFFF, "水平：メカ（敵）"),
+            new CEventTouchType(0xFFFFFFFF, "水平：メカ（味方）"),
+            new CEventTouchType(0xFFFFFFFF, "水平：弾（敵）"),
+            new CEventTouchType(0xFFFFFFFF, "水平：弾（味方）"),
+            new CEventTouchType(0xFFFFFFFF, "水平：マップOBJ"),
+            new CEventTouchType(0xFFFFFFFF, "進禁（メカ）"),
+            new CEventTouchType(0xFFFFFFFF, "進禁（弾）"),
+            new CEventTouchType(0xFFFFFFFF, "進禁（穴）"),
+            new CEventTouchType(0xFFFFFFFF, "画面端"),
+            new CEventTouchType(0xFFFFFFFF, "垂直：メカ（敵）"),
+            new CEventTouchType(0xFFFFFFFF, "垂直：メカ（味方）"),
+            new CEventTouchType(0xFFFFFFFF, "垂直：弾（敵）"),
+            new CEventTouchType(0xFFFFFFFF, "垂直：弾（味方）"),
+            new CEventTouchType(0xFFFFFFFF, "垂直：障害物")
+    };
 
     private byte[] byteData1;
 

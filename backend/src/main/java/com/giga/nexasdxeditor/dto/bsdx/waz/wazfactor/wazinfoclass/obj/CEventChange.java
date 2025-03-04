@@ -24,12 +24,6 @@ public class CEventChange extends WazInfoObject {
         private String description;
     }
 
-    public static final CEventChangeType[] CEVENT_CHANGE_ENTRIES = {
-            // .rdata:007F2048
-            new CEventChangeType(0x0, "消費する熱チャージ量"),
-            new CEventChangeType(0x0, "蓄積する溜め")
-    };
-
     private Integer flag;
 
     private List<WazInfoCollection> wazInfoCollectionList1 = new ArrayList<>();
@@ -70,7 +64,7 @@ public class CEventChange extends WazInfoObject {
         offset = wazInfoCollection2.readCollection(bytes, offset);
         this.wazInfoCollectionList2.add(wazInfoCollection2);
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
+        this.int1 = readInt32(bytes, offset); offset += 4;
 
         return offset;
     }

@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -15,6 +16,26 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  */
 @Data
 public class CEventVoice extends WazInfoObject {
+
+    @Data
+    @AllArgsConstructor
+    public static class CEventVoiceType {
+        private Integer type;
+        private String description;
+    }
+
+    public static final CEventVoiceType[] CEVENT_VOICE_TYPES = {
+            new CEventVoiceType(0xFFFFFFFF, "タイプ"),
+            new CEventVoiceType(0xFFFFFFFF, "優先順位")
+    };
+
+    public static final String[] CEVENT_VOICE_FORMATS = {
+            "ERROR",
+            "[%3d%%] %s",
+            "[%3d%%] %s",
+            "複：[%3d%%] %s",
+            "bad allocation"
+    };
 
     private Integer int1;
     private Integer int2;

@@ -1,6 +1,7 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -15,6 +16,24 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  */
 @Data
 public class CEventScreenYure extends WazInfoObject {
+
+    @Data
+    @AllArgsConstructor
+    public static class CEventScreenYureType {
+        private String description;
+    }
+
+    public static final CEventScreenYureType[] CEVENT_SCREEN_YURE_TYPES = {
+            new CEventScreenYureType("角度指定"),
+            new CEventScreenYureType("左回転"),
+            new CEventScreenYureType("右回転"),
+            new CEventScreenYureType("下"),
+            new CEventScreenYureType("上"),
+            new CEventScreenYureType("左"),
+            new CEventScreenYureType("右"),
+            new CEventScreenYureType("ランダム")
+    };
+
 
     private List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
 

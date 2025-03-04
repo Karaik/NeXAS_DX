@@ -15,7 +15,7 @@ import java.util.List;
 @Data
 public class WazUnit {
 
-    public Integer unitQuantity;
+    public Integer unitQuantity; // 记录用
     public String unitDescription; // 记录用
 
     private List<WazInfoObject> wazInfoObjectList;

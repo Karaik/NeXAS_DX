@@ -25,12 +25,6 @@ public class CEventNokezori extends WazInfoObject {
         private String description;
     }
 
-    @Data
-    public static class CEventNokezoriUnit {
-        private Integer buffer;
-        private WazInfoObject data;
-    }
-
     public static final CEventNokezoriType[] CEVENT_NOKEZORI_ENTRIES = {
             new CEventNokezoriType(0xFFFFFFFF, "処理タイプ"),
             new CEventNokezoriType(0xFFFFFFFF, "フラグ"),
@@ -48,7 +42,15 @@ public class CEventNokezori extends WazInfoObject {
             new CEventNokezoriType(0xFFFFFFFF, "吹き飛び規模"),
             new CEventNokezoriType(0xFFFFFFFF, "吹き飛び重力"),
             new CEventNokezoriType(0xFFFFFFFF, "バウンドLv"),
-            new CEventNokezoriType(0xFFFFFFFF, "バウンド速度")
+            new CEventNokezoriType(0xFFFFFFFF, "バウンド速度"),
+
+            // todo???
+            new CEventNokezoriType(0xFFFFFFFF, "指定："),
+            new CEventNokezoriType(0xFFFFFFFF, "同じ：地上→地上"),
+            new CEventNokezoriType(0xFFFFFFFF, "同じ：空中"),
+            new CEventNokezoriType(0xFFFFFFFF, "同じ：空中→地上"),
+            new CEventNokezoriType(0xFFFFFFFF, "同じ：ダウン"),
+            new CEventNokezoriType(0xFFFFFFFF, "なし")
     };
 
     private Integer int1;
@@ -67,6 +69,14 @@ public class CEventNokezori extends WazInfoObject {
     private Integer int13;
 
     private List<CEventNokezoriUnit> ceventNokezoriUnitList = new ArrayList<>();
+
+    @Data
+    public static class CEventNokezoriUnit {
+        private Integer ceventHitUnitQuantity;
+        private Integer buffer;
+        private String description;
+        private WazInfoObject data;
+    }
 
     @Override
     public int readInfo(byte[] bytes, int offset) {
@@ -95,6 +105,8 @@ public class CEventNokezori extends WazInfoObject {
             int buffer = readInt32(bytes, offset); offset += 4;
 
             CEventNokezoriUnit unit = new CEventNokezoriUnit();
+            unit.setCeventHitUnitQuantity(i);
+            unit.setDescription(CEVENT_NOKEZORI_ENTRIES[i].getDescription());
             unit.setBuffer(buffer);
 
             if (buffer != 0) {
@@ -105,9 +117,8 @@ public class CEventNokezori extends WazInfoObject {
                     offset = obj.readInfo(bytes, offset);
                     unit.setData(obj);
                 }
+                this.ceventNokezoriUnitList.add(unit);
             }
-
-            this.ceventNokezoriUnitList.add(unit);
         }
 
         return offset;

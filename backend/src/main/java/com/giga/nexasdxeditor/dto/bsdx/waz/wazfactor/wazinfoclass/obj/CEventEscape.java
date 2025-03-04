@@ -26,8 +26,19 @@ public class CEventEscape extends WazInfoObject {
 
     public static final CEventEscapeType[] CEVENT_ESCAPE_TYPES = {
             new CEventEscapeType(0xFFFFFFFF, "タイプ"),
-            new CEventEscapeType(0x3, "最大増分(1=0.01)"),
-            new CEventEscapeType(0x2, "標的高度補正")
+            new CEventEscapeType(0xFFFFFFFF, "優先順位"),
+            new CEventEscapeType(0x9, "チェック方向"),
+            new CEventEscapeType(0xFFFFFFFF, "チェック方向補正"),
+            new CEventEscapeType(0xFFFFFFFF, "チェック範囲"),
+            new CEventEscapeType(0xFFFFFFFF, "チェック範囲（高さ）"),
+            new CEventEscapeType(0xFFFFFFFF, "チェック高度補正"),
+            new CEventEscapeType(0xFFFFFFFF, "チェック回数"),
+            new CEventEscapeType(0x9, "回避方向"),
+            new CEventEscapeType(0xFFFFFFFF, "回避方向補正"),
+            new CEventEscapeType(0xFFFFFFFF, "短打撃"),
+            new CEventEscapeType(0xFFFFFFFF, "突進"),
+            new CEventEscapeType(0xFFFFFFFF, "単射撃"),
+            new CEventEscapeType(0xFFFFFFFF, "連射撃")
     };
 
     private Integer int1;
@@ -43,6 +54,8 @@ public class CEventEscape extends WazInfoObject {
 
     @Data
     public static class CEventEscapeUnit {
+        private Integer ceventEscapeUnitQuantity;
+        private String description;
         private Integer buffer;
         private WazInfoObject data;
     }
@@ -60,33 +73,29 @@ public class CEventEscape extends WazInfoObject {
         this.int7 = readInt32(bytes, offset); offset += 4;
         this.int8 = readInt32(bytes, offset); offset += 4;
 
-        List<CEventEscapeUnit> ceventEscapeUnitList = new ArrayList<>();
+        this.ceventEscapeUnitList.clear();
 
         for (int i = 0; i < 10; i++) {
             CEventEscapeUnit unit = new CEventEscapeUnit();
 
             if (i == 2 || i == 8) {
                 int buffer = readInt32(bytes, offset); offset += 4;
+                unit.setCeventEscapeUnitQuantity(i);
+                unit.setDescription(CEVENT_ESCAPE_TYPES[i].getDescription());
                 unit.setBuffer(buffer);
 
                 if (buffer != 0) {
-                    int typeId = 9;
+//                    int typeId = 9;
+                    int typeId = CEVENT_ESCAPE_TYPES[i].getType();
                     WazInfoObject obj = createCEventObjectByType(typeId);
                     if (obj != null) {
                         offset = obj.readInfo(bytes, offset);
                         unit.setData(obj);
                     }
                 }
-
-            }  else {
-                unit.setBuffer(null);
-                unit.setData(null);
+                this.ceventEscapeUnitList.add(unit);
             }
-
-            ceventEscapeUnitList.add(unit);
         }
-
-        setCeventEscapeUnitList(ceventEscapeUnitList);
 
         return offset;
     }

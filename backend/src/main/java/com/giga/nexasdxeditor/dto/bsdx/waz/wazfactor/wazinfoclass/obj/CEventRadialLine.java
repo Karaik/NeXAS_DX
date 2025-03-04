@@ -26,14 +26,19 @@ public class CEventRadialLine extends WazInfoObject {
     }
 
     public static final CEventRadialLineType[] CEVENT_RADIAL_LINE_TYPES = {
-            new CEventRadialLineType(0xFFFFFFFF, "フェード描画"),
-            new CEventRadialLineType(0xFFFFFFFF, "フラッシュ描画"),
-            new CEventRadialLineType(0xFFFFFFFF, "フェード色指定描画"),
-            new CEventRadialLineType(0xFFFFFFFF, "フラッシュ色指定描画"),
-            new CEventRadialLineType(0xFFFFFFFF, "ネガティブ描画"),
-            new CEventRadialLineType(0xFFFFFFFF, "アルファ塗りつぶし描画"),
-            new CEventRadialLineType(0xFFFFFFFF, "加算塗りつぶし描画"),
-            new CEventRadialLineType(0xFFFFFFFF, "減算塗りつぶし描画")
+            new CEventRadialLineType(0xFFFFFFFF, "持続カウンタ"),
+            new CEventRadialLineType(0xFFFFFFFF, "フレーム数"),
+            new CEventRadialLineType(0xFFFFFFFF, "フレーム速度"),
+            new CEventRadialLineType(0xFFFFFFFF, "数"),
+            new CEventRadialLineType(5, "座標"),
+            new CEventRadialLineType(0xFFFFFFFF, "距離"),
+            new CEventRadialLineType(0xFFFFFFFF, "長さ"),
+            new CEventRadialLineType(0xFFFFFFFF, "太さ"),
+            new CEventRadialLineType(0xFFFFFFFF, "輝度"),
+            new CEventRadialLineType(0xFFFFFFFF, "フェード時間"),
+            new CEventRadialLineType(0xFFFFFFFF, "色R"),
+            new CEventRadialLineType(0xFFFFFFFF, "色G"),
+            new CEventRadialLineType(0xFFFFFFFF, "色B")
     };
 
     private Integer int1;
@@ -53,7 +58,9 @@ public class CEventRadialLine extends WazInfoObject {
 
     @Data
     public static class CEventRadialLineUnit {
+        private Integer ceventRadialLineUnitQuantity;
         private Integer buffer;
+        private String description;
         private WazInfoObject data;
     }
 
@@ -80,16 +87,20 @@ public class CEventRadialLine extends WazInfoObject {
             if (i == 4) {
                 int buffer = readInt32(bytes, offset); offset += 4;
                 CEventRadialLineUnit unit = new CEventRadialLineUnit();
+                unit.setCeventRadialLineUnitQuantity(i);
+                unit.setDescription(CEVENT_RADIAL_LINE_TYPES[i].getDescription());
                 unit.setBuffer(buffer);
 
                 if (buffer != 0) {
-                    WazInfoObject obj = createCEventObjectByType(5);
+                    int typeId = CEVENT_RADIAL_LINE_TYPES[i].getType();
+                    WazInfoObject obj = createCEventObjectByType(typeId);
+//                    WazInfoObject obj = createCEventObjectByType(5);
                     if (obj != null) {
                         offset = obj.readInfo(bytes, offset);
                         unit.setData(obj);
                     }
                 }
-                ceventRadialLineUnitList.add(unit);
+                this.ceventRadialLineUnitList.add(unit);
             }
         }
 

@@ -27,10 +27,10 @@ public class CEventScreenEffect extends WazInfoObject {
 
     public static final CEventScreenEffectType[] CEVENT_SCREEN_EFFECT_TYPES = {
             new CEventScreenEffectType(0xFFFFFFFF, "持続カウンタ"),
-            new CEventScreenEffectType(0xFFFFFFFF, "変化フレーム数"),
-            new CEventScreenEffectType(0xFFFFFFFF, "数"),
-            new CEventScreenEffectType(0x9, "角度"),
-            new CEventScreenEffectType(0xFFFFFFFF, "速度")
+            new CEventScreenEffectType(0xFFFFFFFF, "タイプ"),
+            new CEventScreenEffectType(0xFFFFFFFF, "速度1"),
+            new CEventScreenEffectType(0xFFFFFFFF, "速度2"),
+            new CEventScreenEffectType(0x9, "方向")
     };
 
     private Integer int1;
@@ -42,7 +42,9 @@ public class CEventScreenEffect extends WazInfoObject {
 
     @Data
     public static class CEventScreenEffectUnit {
+        private Integer ceventScreenEffectUnitQuantity;
         private Integer buffer;
+        private String description;
         private WazInfoObject data;
     }
 
@@ -61,6 +63,8 @@ public class CEventScreenEffect extends WazInfoObject {
             if (i == 4) {
                 int buffer = readInt32(bytes, offset); offset += 4;
                 CEventScreenEffectUnit unit = new CEventScreenEffectUnit();
+                unit.setCeventScreenEffectUnitQuantity(i);
+                unit.setDescription(CEVENT_SCREEN_EFFECT_TYPES[i].getDescription());
                 unit.setBuffer(buffer);
 
                 if (buffer != 0) {
@@ -70,8 +74,8 @@ public class CEventScreenEffect extends WazInfoObject {
                         offset = obj.readInfo(bytes, offset);
                         unit.setData(obj);
                     }
+                    this.ceventScreenEffectUnitList.add(unit);
                 }
-                this.ceventScreenEffectUnitList.add(unit);
             }
         }
 

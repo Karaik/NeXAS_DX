@@ -19,6 +19,10 @@ public class CEventWazaSelect extends WazInfoObject {
     private Integer int1;
     private Integer int2;
 
+    public static final String[] CEVENT_WAZA_SELECT_FORMATS = {
+            " ： "
+    };
+
     @Override
     public int readInfo(byte[] bytes, int offset) {
         offset = super.readInfo(bytes, offset);
