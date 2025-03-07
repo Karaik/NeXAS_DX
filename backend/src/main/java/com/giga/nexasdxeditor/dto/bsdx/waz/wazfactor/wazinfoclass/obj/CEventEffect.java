@@ -1,13 +1,12 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory.createCEventObjectByType;
+import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.createCEventObjectByType;
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
@@ -16,7 +15,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventEffect__Read
  */
 @Data
-public class CEventEffect extends WazInfoObject {
+public class CEventEffect extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor
@@ -92,7 +91,7 @@ public class CEventEffect extends WazInfoObject {
         private Integer ceventEffectUnitQuantity;
         private Integer buffer;
         private String description;
-        private WazInfoObject data;
+        private SkillInfoObject data;
     }
 
     @Override
@@ -122,7 +121,7 @@ public class CEventEffect extends WazInfoObject {
 
             if (buffer != 0) {
                 int typeId = CEVENT_EFFECT_TYPES[i].getType();
-                WazInfoObject obj = createCEventObjectByType(typeId);
+                SkillInfoObject obj = createCEventObjectByType(typeId);
                 if (obj != null) {
                     offset = obj.readInfo(bytes, offset);
                     unit.setData(obj);

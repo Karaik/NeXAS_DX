@@ -13,7 +13,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  *  ERROR:CMeka,CPartsじゃないのに自動指定を使った
  */
 @Data
-public class CEventSprite extends WazInfoObject {
+public class CEventSprite extends SkillInfoObject {
 
     /**
      * 机体对应spm，但多为FF FF FF FF(-1)

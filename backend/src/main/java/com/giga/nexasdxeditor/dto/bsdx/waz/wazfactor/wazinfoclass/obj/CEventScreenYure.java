@@ -15,7 +15,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventScreenYure__Read
  */
 @Data
-public class CEventScreenYure extends WazInfoObject {
+public class CEventScreenYure extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor

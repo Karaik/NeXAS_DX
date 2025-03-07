@@ -12,7 +12,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventSpriteAttr__Read
  */
 @Data
-public class CEventSpriteAttr extends WazInfoObject {
+public class CEventSpriteAttr extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor

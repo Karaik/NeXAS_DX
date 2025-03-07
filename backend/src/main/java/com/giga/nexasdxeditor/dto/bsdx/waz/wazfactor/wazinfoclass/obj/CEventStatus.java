@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory.createCEventObjectByType;
+import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.createCEventObjectByType;
 import static com.giga.nexasdxeditor.util.ParserUtil.*;
 
 /**
@@ -17,7 +17,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.*;
  * CEventStatus__Read
  */
 @Data
-public class CEventStatus extends WazInfoObject {
+public class CEventStatus extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor
@@ -80,7 +80,7 @@ public class CEventStatus extends WazInfoObject {
         private Integer ceventStatusUnitQuantity;
         private Integer buffer;
         private String description;
-        private WazInfoObject data;
+        private SkillInfoObject data;
     }
 
     @Override
@@ -115,7 +115,7 @@ public class CEventStatus extends WazInfoObject {
 
             if (buffer != 0) {
                 int typeId = CEVENT_STATUS_TYPES[i].getType();
-                WazInfoObject obj = createCEventObjectByType(typeId);
+                SkillInfoObject obj = createCEventObjectByType(typeId);
                 if (obj != null) {
                     offset = obj.readInfo(bytes, offset);
                     unit.setData(obj);

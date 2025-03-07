@@ -8,10 +8,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static com.giga.nexasdxeditor.util.GenerateUtil.calculateStringSize;
+import static com.giga.nexasdxeditor.util.GenerateUtil.putString;
 
 /**
  * @Author 这位同学(Karaik)
@@ -170,17 +172,4 @@ public class MekGenerator {
         return size;
     }
 
-    private static void putString(ByteBuffer buffer, String value, String charset) {
-        if (value != null) {
-            buffer.put(value.getBytes(Charset.forName(charset)));
-        }
-        buffer.put((byte) 0x00);
-    }
-
-    private static int calculateStringSize(String value, String charset) {
-        if (value == null) {
-            return 1; // 仅终止符
-        }
-        return value.getBytes(Charset.forName(charset)).length + 1; // 字符串长度 + 终止符
-    }
 }

@@ -15,7 +15,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventBlur__Read
  */
 @Data
-public class CEventBlur extends WazInfoObject {
+public class CEventBlur extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor

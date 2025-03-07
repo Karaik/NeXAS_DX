@@ -12,7 +12,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * 優先順位
  */
 @Data
-public class CEventVal extends WazInfoObject {
+public class CEventVal extends SkillInfoObject {
 
     private Integer int1;
     private Integer int2;

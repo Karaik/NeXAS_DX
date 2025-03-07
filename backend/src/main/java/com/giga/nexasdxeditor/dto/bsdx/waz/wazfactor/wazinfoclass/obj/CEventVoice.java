@@ -15,7 +15,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventVoice__Read
  */
 @Data
-public class CEventVoice extends WazInfoObject {
+public class CEventVoice extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor

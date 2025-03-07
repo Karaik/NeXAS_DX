@@ -11,7 +11,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.*;
  * CEventBlink__Read
  */
 @Data
-public class CEventBlink extends WazInfoObject {
+public class CEventBlink extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor

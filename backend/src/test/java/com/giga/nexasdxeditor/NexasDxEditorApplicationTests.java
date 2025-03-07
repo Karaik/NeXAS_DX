@@ -2,6 +2,7 @@ package com.giga.nexasdxeditor;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
@@ -300,12 +301,28 @@ class NexasDxEditorApplicationTests {
         for (int i = 0; i < allWazList.size(); i++) {
             Waz waz = allWazList.get(i);
             String jsonStr = JSONUtil.toJsonStr(waz);
-            String filePath = FileUtil.file(outputDir, baseNames.get(i) + ".json").getAbsolutePath();
+            String filePath = FileUtil.file(outputDir, baseNames.get(i) + ".txt").getAbsolutePath();
             FileUtil.writeUtf8String(jsonStr, filePath);
             log.info("transfer === {} ", baseNames.get(i));
         }
     }
-    
+
+    @Test
+    void parseJson2Waz() throws IOException {
+        String inputFilePath = "D:\\A\\json\\Kou.json";
+        String jsonStr1 = FileUtil.readUtf8String(new File(inputFilePath));
+        Waz bean = JSONUtil.toBean(jsonStr1, Waz.class);
+        log.info("bean");
+
+        String JsonStr2 = JSONUtil.toJsonStr(bean);
+        JSONObject jsonObject1 = JSONUtil.parseObj(bean);
+        JSONObject jsonObject2 = JSONUtil.parseObj(JsonStr2);
+        boolean isEqual = jsonObject1.equals(jsonObject2);
+        log.info("result: {}", isEqual ? "✅" : "❌");
+        log.info("over");
+
+    }
+
 
     @Test
     void testGenerate() throws IOException {

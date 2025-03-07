@@ -10,7 +10,7 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
-public class WazaBlockTypeEntry {
+public class SkillInfoTypeEntry {
 
     private Integer type;
     private Integer address;

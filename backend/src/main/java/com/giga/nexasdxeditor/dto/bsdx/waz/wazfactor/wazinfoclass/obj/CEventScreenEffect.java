@@ -1,13 +1,12 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory.createCEventObjectByType;
+import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.createCEventObjectByType;
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
@@ -16,7 +15,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventScreenEffect__Read
  */
 @Data
-public class CEventScreenEffect extends WazInfoObject {
+public class CEventScreenEffect extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor
@@ -45,7 +44,7 @@ public class CEventScreenEffect extends WazInfoObject {
         private Integer ceventScreenEffectUnitQuantity;
         private Integer buffer;
         private String description;
-        private WazInfoObject data;
+        private SkillInfoObject data;
     }
 
     @Override
@@ -69,7 +68,7 @@ public class CEventScreenEffect extends WazInfoObject {
 
                 if (buffer != 0) {
                     int typeId = CEVENT_SCREEN_EFFECT_TYPES[i].getType();
-                    WazInfoObject obj = createCEventObjectByType(typeId);
+                    SkillInfoObject obj = createCEventObjectByType(typeId);
                     if (obj != null) {
                         offset = obj.readInfo(bytes, offset);
                         unit.setData(obj);

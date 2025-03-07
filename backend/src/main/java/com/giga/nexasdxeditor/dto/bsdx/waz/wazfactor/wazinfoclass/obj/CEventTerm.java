@@ -6,8 +6,6 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
-
 /**
  * @Author 这位同学(Karaik)
  * @Date 2025/2/23
@@ -15,7 +13,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventTerm__Read
  */
 @Data
-public class CEventTerm extends WazInfoObject {
+public class CEventTerm extends SkillInfoObject {
 
     private List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
 

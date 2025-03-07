@@ -1,13 +1,12 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory.createCEventObjectByType;
+import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.createCEventObjectByType;
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
@@ -16,7 +15,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventRadialLine__Read
  */
 @Data
-public class CEventRadialLine extends WazInfoObject {
+public class CEventRadialLine extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor
@@ -61,7 +60,7 @@ public class CEventRadialLine extends WazInfoObject {
         private Integer ceventRadialLineUnitQuantity;
         private Integer buffer;
         private String description;
-        private WazInfoObject data;
+        private SkillInfoObject data;
     }
 
     @Override
@@ -93,7 +92,7 @@ public class CEventRadialLine extends WazInfoObject {
 
                 if (buffer != 0) {
                     int typeId = CEVENT_RADIAL_LINE_TYPES[i].getType();
-                    WazInfoObject obj = createCEventObjectByType(typeId);
+                    SkillInfoObject obj = createCEventObjectByType(typeId);
 //                    WazInfoObject obj = createCEventObjectByType(5);
                     if (obj != null) {
                         offset = obj.readInfo(bytes, offset);

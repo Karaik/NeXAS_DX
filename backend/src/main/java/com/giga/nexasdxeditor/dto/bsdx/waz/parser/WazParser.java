@@ -1,16 +1,14 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.parser;
 
-import com.giga.nexasdxeditor.dto.SpmSequenceConst;
 import com.giga.nexasdxeditor.dto.bsdx.waz.Waz;
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory;
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazUnit;
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.WazInfoObject;
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.WazInfoUnknown;
+import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory;
+import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.SkillUnit;
+import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.SkillInfoObject;
+import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.SkillInfoUnknown;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.giga.nexasdxeditor.util.ParserUtil.*;
@@ -20,63 +18,59 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * @Author 这位同学(Karaik)
  * @Date 2025/1/19
  * @Description WazParser
- * 根据逆向代码调整读取逻辑
+ * 逆向所得
  */
 @Slf4j
 public class WazParser {
 
     public static Waz parseWaz(byte[] bytes, String fileName, String charset) {
 
-//        Integer spmSequence = SpmSequenceConst.MEK_SPM_SEQUENCE.get(fileName);
-//        if (spmSequence == null) {
-//            return new Waz();
-//        }
-
         Waz waz = new Waz(fileName);
-        List<Waz.WazBlock> wazBlockList = waz.getWazBlockList();
+        List<Waz.Skill> wazBlockList = waz.getSkillList();
         try {
 
             int offset = 0;
             while (offset < bytes.length) {
 
-                Waz.WazBlock wazBlock = new Waz.WazBlock();
+                Waz.Skill skill = new Waz.Skill();
 
+                // 每个块开始前，都会有个flag代表“是否存在”
                 int flag = readInt32(bytes, offset); offset += 4;
                 if (flag == 0) {
-                    wazBlockList.add(wazBlock);
+                    wazBlockList.add(skill);
                     continue;
                 }
 
                 // 1.技能信息1
-                wazBlock.setSkillNameJapanese(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName(charset)));
+                skill.setSkillNameJapanese(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName(charset)));
                 offset += findNullTerminator(bytes, offset) + 1;
 
                 // 2.技能信息2
-                wazBlock.setSkillNameEnglish(new String(bytes, offset, findNullTerminator(bytes, offset), StandardCharsets.UTF_8));
+                skill.setSkillNameEnglish(new String(bytes, offset, findNullTerminator(bytes, offset), StandardCharsets.UTF_8));
                 offset += findNullTerminator(bytes, offset) + 1;
 
                 // 3.阶段数
                 int phaseQuantity = readInt32(bytes, offset); offset += 4;
-                wazBlock.setPhaseQuantity(phaseQuantity);
+                skill.setPhaseQuantity(phaseQuantity);
 
                 // 4.技能数据
-                List<Waz.WazBlock.WazPhase> phaseInfoList = wazBlock.getPhasesInfo();
+                List<Waz.Skill.SkillPhase> phaseInfoList = skill.getPhasesInfo();
                 for (int i = 0; i < phaseQuantity; i++) {
-                    Waz.WazBlock.WazPhase wazPhase = new Waz.WazBlock.WazPhase();
-                    offset = parseWazPhaseInfo(wazPhase, bytes, offset);
-                    phaseInfoList.add(wazPhase);
+                    Waz.Skill.SkillPhase skillPhase = new Waz.Skill.SkillPhase();
+                    offset = parseSkillPhaseInfo(skillPhase, bytes, offset);
+                    phaseInfoList.add(skillPhase);
                 }
 
                 int countSuffix = readInt32(bytes, offset); offset += 4;
-                Waz.WazBlock.WazSuffix wazSuffix = new Waz.WazBlock.WazSuffix();
-                wazSuffix.setCount(countSuffix);
+                Waz.Skill.SkillSuffix skillSuffix = new Waz.Skill.SkillSuffix();
+                skillSuffix.setCount(countSuffix);
                 for (int i = 0; i < countSuffix; i++) {
-                    wazSuffix.setInt1(readInt32(bytes, offset)); offset += 4;
-                    wazSuffix.setInt2(readInt32(bytes, offset)); offset += 4;
+                    skillSuffix.setInt1(readInt32(bytes, offset)); offset += 4;
+                    skillSuffix.setInt2(readInt32(bytes, offset)); offset += 4;
                 }
-                wazBlock.setWazSuffix(wazSuffix);
+                skill.setSkillSuffix(skillSuffix);
 
-                wazBlockList.add(wazBlock);
+                wazBlockList.add(skill);
             }
 
         } catch (Exception e) {
@@ -87,31 +81,31 @@ public class WazParser {
         return waz;
     }
 
-    private static int parseWazPhaseInfo(Waz.WazBlock.WazPhase wazPhase, byte[] bytes, int offset) {
+    private static int parseSkillPhaseInfo(Waz.Skill.SkillPhase skillPhase, byte[] bytes, int offset) {
         // 存放单个阶段的数据信息
-        List<WazUnit> wazUnitCollection = wazPhase.getWazUnitCollection();
+        List<SkillUnit> skillUnitCollection = skillPhase.getSkillUnitCollection();
 
         for (int i = 0; i < 72; i++) { // 逆向得知循环72次
-            WazUnit wazUnit = new WazUnit(i, WazInfoFactory.WAZA_BLOCK_TYPE_ENTRIES[i].getDescription());
+            SkillUnit skillUnit = new SkillUnit(i, SkillInfoFactory.SKILL_INFO_TYPE_ENTRIES[i].getDescription());
 
-            List<WazInfoObject> wazInfoObjectList = wazUnit.getWazInfoObjectList();
+            List<SkillInfoObject> skillInfoObjectList = skillUnit.getSkillInfoObjectList();
             int count1 = readInt32(bytes, offset); offset += 4;
             for (int j = 0; j < count1; j++) {
                 try {
-                    WazInfoObject eventObject = WazInfoFactory.createEventObject(i);
+                    SkillInfoObject eventObject = SkillInfoFactory.createEventObject(i);
                     offset = eventObject.readInfo(bytes, offset);
-                    wazInfoObjectList.add(eventObject);
+                    skillInfoObjectList.add(eventObject);
                 } catch (Exception e) {
                     log.info("error === i={}", i);
                     throw e;
                 }
             }
 
-            List<WazInfoUnknown> wazInfoUnknownList = wazUnit.getWazInfoUnknownList();
+            List<SkillInfoUnknown> wazInfoUnknownList = skillUnit.getSkillInfoUnknownList();
             int count2 = readInt32(bytes, offset); offset += 4;
             for (int j = 0; j < count2; j++) {
                 try {
-                    WazInfoUnknown wazInfoUnknown = (WazInfoUnknown) WazInfoFactory.createEventObject(0xFF);
+                    SkillInfoUnknown wazInfoUnknown = (SkillInfoUnknown) SkillInfoFactory.createEventObject(0xFF);
                     offset = wazInfoUnknown.readInfo(bytes, offset);
                     wazInfoUnknownList.add(wazInfoUnknown);
                 } catch (Exception e) {
@@ -120,8 +114,8 @@ public class WazParser {
                 }
             }
 
-            if (!wazInfoObjectList.isEmpty() || !wazInfoUnknownList.isEmpty()) {
-                wazUnitCollection.add(wazUnit);
+            if (!skillInfoObjectList.isEmpty() || !wazInfoUnknownList.isEmpty()) {
+                skillUnitCollection.add(skillUnit);
             }
         }
 

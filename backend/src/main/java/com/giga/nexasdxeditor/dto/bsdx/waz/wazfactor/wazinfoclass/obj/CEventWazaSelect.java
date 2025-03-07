@@ -2,10 +2,6 @@ package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
@@ -14,7 +10,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventWazaSelect__Read
  */
 @Data
-public class CEventWazaSelect extends WazInfoObject {
+public class CEventWazaSelect extends SkillInfoObject {
 
     private Integer int1;
     private Integer int2;

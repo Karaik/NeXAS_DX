@@ -1,11 +1,7 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
@@ -15,7 +11,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventScreenAttr__Read
  */
 @Data
-public class CEventScreenAttr extends WazInfoObject {
+public class CEventScreenAttr extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor

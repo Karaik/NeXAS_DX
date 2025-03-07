@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory.createCEventObjectByType;
+import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.createCEventObjectByType;
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
@@ -16,7 +16,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventHeight__Read
  */
 @Data
-public class CEventHeight extends WazInfoObject {
+public class CEventHeight extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor
@@ -44,7 +44,7 @@ public class CEventHeight extends WazInfoObject {
         private Integer ceventHeightUnitQuantity;
         private String description;
         private Integer buffer;
-        private WazInfoObject data;
+        private SkillInfoObject data;
     }
 
 
@@ -65,7 +65,7 @@ public class CEventHeight extends WazInfoObject {
 
             if (buffer != 0) {
                 int typeId = CEVENT_HEIGHT_TYPES[i].getType();
-                WazInfoObject obj = createCEventObjectByType(typeId);
+                SkillInfoObject obj = createCEventObjectByType(typeId);
                 if (obj != null) {
                     offset = obj.readInfo(bytes, offset);
                     unit.setData(obj);

@@ -11,7 +11,7 @@ import java.util.Arrays;
  * CEventTouch__Read
  */
 @Data
-public class CEventTouch extends WazInfoObject {
+public class CEventTouch extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor

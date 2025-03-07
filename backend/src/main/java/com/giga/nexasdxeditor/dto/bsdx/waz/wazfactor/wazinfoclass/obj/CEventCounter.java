@@ -5,15 +5,13 @@ import lombok.Data;
 
 import java.util.Arrays;
 
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
-
 /**
  * @Author 这位同学(Karaik)
  * @Date 2025/2/25
  * CEventCounter__Read
  */
 @Data
-public class CEventCounter extends WazInfoObject {
+public class CEventCounter extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor

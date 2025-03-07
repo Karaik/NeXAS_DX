@@ -10,7 +10,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * @Description WazInfoUnknown
  */
 @Data
-public class WazInfoUnknown extends WazInfoObject {
+public class SkillInfoUnknown extends SkillInfoObject {
 
     private Integer int1;
     private Integer int2;

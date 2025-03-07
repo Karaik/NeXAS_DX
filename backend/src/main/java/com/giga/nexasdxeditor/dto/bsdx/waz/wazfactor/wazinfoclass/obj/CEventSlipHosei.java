@@ -11,7 +11,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.*;
  * CEventSlipHosei__Read
  */
 @Data
-public class CEventSlipHosei extends WazInfoObject {
+public class CEventSlipHosei extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor

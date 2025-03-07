@@ -1,7 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory;
-import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.WazaBlockTypeEntry;
+import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -17,7 +16,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventCamera__Read
  */
 @Data
-public class CEventCamera extends WazInfoObject {
+public class CEventCamera extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor
@@ -42,7 +41,7 @@ public class CEventCamera extends WazInfoObject {
         private Integer ceventCameraUnitQuantity;
         private String description;
         private Integer buffer;
-        private WazInfoObject data;
+        private SkillInfoObject data;
     }
 
     @Override
@@ -63,7 +62,7 @@ public class CEventCamera extends WazInfoObject {
 
             if (buffer != 0) {
                 int typeId = CEVENT_CAMERA_ENTRIES[i].getType();
-                WazInfoObject obj = WazInfoFactory.createCEventObjectByType(typeId);
+                SkillInfoObject obj = SkillInfoFactory.createCEventObjectByType(typeId);
                 if (obj != null) {
                     offset = obj.readInfo(bytes, offset);
                     unit.setData(obj);

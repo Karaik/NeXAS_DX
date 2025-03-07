@@ -10,7 +10,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * @Description WazInfoObject
  */
 @Data
-public class WazInfoObject {
+public class SkillInfoObject {
 
     public Integer offset;
     /**

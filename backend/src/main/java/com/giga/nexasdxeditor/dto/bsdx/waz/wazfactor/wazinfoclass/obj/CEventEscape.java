@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.WazInfoFactory.createCEventObjectByType;
+import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.createCEventObjectByType;
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
@@ -15,7 +15,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * CEventEscape__Read
  */
 @Data
-public class CEventEscape extends WazInfoObject {
+public class CEventEscape extends SkillInfoObject {
 
     @Data
     @AllArgsConstructor
@@ -57,7 +57,7 @@ public class CEventEscape extends WazInfoObject {
         private Integer ceventEscapeUnitQuantity;
         private String description;
         private Integer buffer;
-        private WazInfoObject data;
+        private SkillInfoObject data;
     }
 
     @Override
@@ -87,7 +87,7 @@ public class CEventEscape extends WazInfoObject {
                 if (buffer != 0) {
 //                    int typeId = 9;
                     int typeId = CEVENT_ESCAPE_TYPES[i].getType();
-                    WazInfoObject obj = createCEventObjectByType(typeId);
+                    SkillInfoObject obj = createCEventObjectByType(typeId);
                     if (obj != null) {
                         offset = obj.readInfo(bytes, offset);
                         unit.setData(obj);
