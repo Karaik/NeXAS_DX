@@ -62,13 +62,13 @@ public class WazParser {
                 }
 
                 int countSuffix = readInt32(bytes, offset); offset += 4;
-                Waz.Skill.SkillSuffix skillSuffix = new Waz.Skill.SkillSuffix();
-                skillSuffix.setCount(countSuffix);
+                List<Waz.Skill.SkillSuffix> skillSuffixList = skill.getSkillSuffixList();
                 for (int i = 0; i < countSuffix; i++) {
+                    Waz.Skill.SkillSuffix skillSuffix = new Waz.Skill.SkillSuffix();
                     skillSuffix.setInt1(readInt32(bytes, offset)); offset += 4;
                     skillSuffix.setInt2(readInt32(bytes, offset)); offset += 4;
+                    skillSuffixList.add(skillSuffix);
                 }
-                skill.setSkillSuffix(skillSuffix);
 
                 wazBlockList.add(skill);
             }

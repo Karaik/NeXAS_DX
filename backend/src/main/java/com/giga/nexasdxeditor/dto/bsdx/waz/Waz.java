@@ -41,14 +41,14 @@ public class Waz {
 
         private List<SkillPhase> phasesInfo = new ArrayList<>();
 
-        private SkillSuffix skillSuffix;
+        private List<SkillSuffix> skillSuffixList = new ArrayList<>();
 
         public boolean isEmpty() {
             return phaseQuantity == null &&
                     skillNameJapanese == null &&
                     skillNameEnglish == null &&
                     phasesInfo.isEmpty() &&
-                    skillSuffix == null;
+                    skillSuffixList == null;
         }
 
         /**
@@ -76,7 +76,6 @@ public class Waz {
          */
         @Data
         public static class SkillSuffix {
-            private Integer count;
             private Integer int1;
             private Integer int2;
         }

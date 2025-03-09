@@ -60,9 +60,9 @@ public class WazGenerator {
             serializeSkillPhase(buffer, phase);
         }
 
-        buffer.putInt(skill.getSkillSuffix().getCount());
-        buffer.putInt(skill.getSkillSuffix().getInt1());
-        buffer.putInt(skill.getSkillSuffix().getInt2());
+//        buffer.putInt(skill.getSkillSuffix().getCount());
+//        buffer.putInt(skill.getSkillSuffix().getInt1());
+//        buffer.putInt(skill.getSkillSuffix().getInt2());
 
         return buffer.array();
     }
