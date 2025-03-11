@@ -30,11 +30,15 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
@@ -323,7 +327,6 @@ class NexasDxEditorApplicationTests {
 
     }
 
-
     @Test
     void testGenerate() throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
@@ -357,8 +360,6 @@ class NexasDxEditorApplicationTests {
         }
 
     }
-
-
 
     @Test
     void testUnpac() throws Exception {
@@ -418,7 +419,6 @@ class NexasDxEditorApplicationTests {
 
         binServiceImpl.generate(path1, jaMek, "GBK");
     }
-
 
 }
 
