@@ -2,6 +2,9 @@ package com.giga.nexasdxeditor;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,7 +104,14 @@ public class OtherTest {
      * 删除「」内的文本
      */
     private String removeQuotedText(String line) {
-        return line.replaceAll("「.*?」", "「」");
+        int startIndex = line.indexOf("「"); // 找到第一个「
+        int endIndex = line.lastIndexOf("[\\r][\\n]"); // 找到最后一个 [\r][\n]
+
+        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
+            return line.substring(0, startIndex + 1) + "」" + line.substring(endIndex);
+        }
+
+        return line;
     }
 
     /**
