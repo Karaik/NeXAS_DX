@@ -27,7 +27,7 @@ public class BinServiceImpl implements BinService {
 
         if ("mek".equalsIgnoreCase(fileExtension)) {
             byte[] mekFile = Files.readAllBytes(Paths.get(path));
-            binFile = MekParser.parseMek(mekFile, charset);
+            binFile = MekParser.parseMek(mekFile, getFileName(path), charset);
         } else if ("waz".equalsIgnoreCase(fileExtension)) {
             byte[] wazFile = Files.readAllBytes(Paths.get(path));
             binFile = WazParser.parseWaz(wazFile, getFileName(path), charset);

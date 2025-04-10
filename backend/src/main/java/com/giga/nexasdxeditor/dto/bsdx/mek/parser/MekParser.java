@@ -33,7 +33,7 @@ public class MekParser {
     // 每个武装的数据区块大小固定 共有17个数据
     public static final Integer BSDX_MEK_WEAPON_DATA_BLOCK_QUANTITY = 68 / 4;
 
-    public static Mek parseMek(byte[] bytes, String charset) {
+    public static Mek parseMek(byte[] bytes, String filename, String charset) {
 
         Mek mek = new Mek();
         try {
@@ -43,6 +43,7 @@ public class MekParser {
             if (MekChecker.checkMek(mek, bytes)) {
                 throw new BusinessException(500, "文件内部参数不正确，无法读取");
             }
+            mek.setFileName(filename);
 
             // 按MekHead分割数组
             Mek.MekHead mekHead = mek.getMekHead();
@@ -209,6 +210,8 @@ public class MekParser {
             }
 
             Mek.MekWeaponInfo mekWeaponInfo = new Mek.MekWeaponInfo();
+
+            mekWeaponInfo.setOffset(mek.getMekHead().getSequence3()+offset);
 
             mekWeaponInfo.setWeaponName(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName(charset)));
             offset += findNullTerminator(bytes, offset) + 1;

@@ -310,6 +310,9 @@ public class Mek {
     @Data
     public static class MekWeaponInfo {
 
+        // 仅用作记录
+        public int offset;
+
         private String weaponName;
         private String weaponSequence;
         private String weaponDescription;

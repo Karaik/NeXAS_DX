@@ -22,7 +22,6 @@ public class Waz {
     }
     public Waz(String fileName) {
         this.fileName = fileName;
-        this.skillList = new ArrayList<>();
     }
 
     /**
