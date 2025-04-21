@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.parser;
 
+import com.giga.nexasdxeditor.dto.Parser;
 import com.giga.nexasdxeditor.dto.bsdx.waz.Waz;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.SkillUnit;
@@ -21,9 +22,16 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * 逆向所得
  */
 @Slf4j
-public class WazParser {
+public class WazParser implements Parser<Waz> {
 
-    public static Waz parseWaz(byte[] bytes, String fileName, String charset) {
+
+    @Override
+    public String supportExtension() {
+        return "waz";
+    }
+
+    @Override
+    public Waz parse(byte[] bytes, String fileName, String charset) {
 
         Waz waz = new Waz(fileName);
         List<Waz.Skill> wazBlockList = waz.getSkillList();

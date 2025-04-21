@@ -204,6 +204,9 @@
     });
 
     const buffer = [];
+    // 行数
+    writeInt32(buffer, editedRows.length);
+    // 列数
     writeInt32(buffer, datData.columns.length);
 
     datData.columns.forEach(colType => {

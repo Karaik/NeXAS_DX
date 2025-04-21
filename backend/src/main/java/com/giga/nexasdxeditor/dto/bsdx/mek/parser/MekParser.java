@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.mek.parser;
 
+import com.giga.nexasdxeditor.dto.Parser;
 import com.giga.nexasdxeditor.dto.bsdx.mek.Mek;
 import com.giga.nexasdxeditor.dto.bsdx.mek.checker.MekChecker;
 import com.giga.nexasdxeditor.exception.BusinessException;
@@ -25,15 +26,14 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * 对逆向做出的贡献
  */
 @Slf4j
-public class MekParser {
+public class MekParser implements Parser<Mek> {
 
-    // 每个机体的数据区块大小固定 共有22个数据
-    public static final Integer BSDX_MEK_INFO_DATA_BLOCK_QUANTITY = 88 / 4;
+    @Override
+    public String supportExtension() {
+        return "mek";
+    }
 
-    // 每个武装的数据区块大小固定 共有17个数据
-    public static final Integer BSDX_MEK_WEAPON_DATA_BLOCK_QUANTITY = 68 / 4;
-
-    public static Mek parseMek(byte[] bytes, String filename, String charset) {
+    public Mek parse(byte[] bytes, String filename, String charset) {
 
         Mek mek = new Mek();
         try {

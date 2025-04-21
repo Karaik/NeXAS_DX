@@ -1,147 +1,108 @@
 package com.giga.nexasdxeditor.io;
 
-import java.io.*;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.ByteUtil;
+import cn.hutool.core.util.CharsetUtil;
+import cn.hutool.core.util.StrUtil;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-/*
-* 参考自：https://github.com/jaymarvels/BinaryReaderDotNet
-* */
+import java.nio.charset.Charset;
+
 public class BinaryReader {
 
-    private RandomAccessFile randomAccessFile;
-    private int position;
+    private final byte[] data;
+    private int position = 0;
+    private boolean littleEndian = true;
+    private Charset charset = Charset.forName("Shift-JIS");
 
-    public BinaryReader(RandomAccessFile randomAccessFile) throws IOException {
-        this.randomAccessFile = randomAccessFile;
-        this.position = 0;
+    public BinaryReader(byte[] data) {
+        this.data = data;
     }
 
-    public void rewind(int offset) throws IOException {
-        long currentPosition = randomAccessFile.getFilePointer();
-        long newPosition = currentPosition - offset;
+    public BinaryReader(byte[] data, String charsetName) {
+        this(data);
+        this.charset = CharsetUtil.charset(charsetName);
+    }
 
-        if (newPosition < 0) {
-            throw new IOException("Cannot rewind beyond the start of the stream");
+    public void setLittleEndian(boolean littleEndian) {
+        this.littleEndian = littleEndian;
+    }
+
+    public Charset getCharset() {
+        return charset;
+    }
+
+    public void setCharset(String charsetName) {
+        this.charset = CharsetUtil.charset(charsetName);
+    }
+
+    public int readInt() {
+        checkAvailable(4);
+        byte[] bytes = readBytes(4);
+        return littleEndian ? ByteUtil.bytesToInt(bytes, ByteOrder.LITTLE_ENDIAN)
+                : ByteUtil.bytesToInt(bytes, ByteOrder.BIG_ENDIAN);
+    }
+
+    public short readShort() {
+        checkAvailable(2);
+        byte[] bytes = readBytes(2);
+        return littleEndian ? ByteUtil.bytesToShort(bytes, ByteOrder.LITTLE_ENDIAN)
+                : ByteUtil.bytesToShort(bytes, ByteOrder.BIG_ENDIAN);
+    }
+
+    public long readLong() {
+        checkAvailable(8);
+        byte[] bytes = readBytes(8);
+        return littleEndian ? ByteUtil.bytesToLong(bytes, ByteOrder.LITTLE_ENDIAN)
+                : ByteUtil.bytesToLong(bytes, ByteOrder.BIG_ENDIAN);
+    }
+
+    public static double readDouble(byte[] bytes, int start) {
+        ByteBuffer buffer = ByteBuffer.wrap(bytes, start, 8)
+                .order(ByteOrder.LITTLE_ENDIAN);
+        return buffer.getDouble();
+    }
+
+    public String readNullTerminatedString() {
+        int start = position;
+        while (position < data.length && data[position] != 0) {
+            position++;
         }
-
-        // 使用 RandomAccessFile 的 seek 方法调整文件指针
-        randomAccessFile.seek(newPosition);
-        position = (int) newPosition;
+        byte[] bytes = ArrayUtil.sub(data, start, position);
+        position++; // 跳过 null
+        return StrUtil.str(bytes, charset);
     }
 
-    public void rewind(long offset) throws IOException {
-        long currentPosition = randomAccessFile.getFilePointer();
-        long newPosition = currentPosition - offset;
-
-        if (newPosition < 0) {
-            throw new IOException("Cannot rewind beyond the start of the stream");
-        }
-
-        // 使用 RandomAccessFile 的 seek 方法调整文件指针
-        randomAccessFile.seek(newPosition);
-        position = (int) newPosition;
-    }
-
-    public int readInt32() throws IOException {
-        incrementPosition(4);
-        return ByteBuffer.wrap(this.readBytes(4))
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .getInt();
-    }
-
-    public long readInt64() throws IOException {
-        incrementPosition(8);
-        return ByteBuffer.wrap(this.readBytes(8))
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .getLong();
-    }
-
-    public long readUInt32() throws IOException {
-        incrementPosition(4);
-        return this.readInt32() & 0xFFFFFFFFL;
-    }
-
-    public int readInt16() throws IOException {
-        incrementPosition(2);
-        return ByteBuffer.wrap(this.readBytes(2))
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .getShort();
-    }
-
-    public int readUInt16() throws IOException {
-        incrementPosition(2);
-        return this.readInt16() & 0xFFFF;
-    }
-
-    public short readShort() throws IOException {
-        incrementPosition(2);
-        return ByteBuffer.wrap(this.readBytes(2))
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .getShort();
-    }
-
-    public String readString() throws IOException {
-        incrementPosition(this.getStringLength());
-        return new String(this.readBytes(this.getStringLength()));
-    }
-
-    public boolean readBoolean() throws IOException {
-        incrementPosition(1);
-        return this.readBytes(1)[0] != 0;
-    }
-
-    public float readSingle() throws IOException {
-        incrementPosition(4);
-        return ByteBuffer.wrap(this.readBytes(4))
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .getFloat();
-    }
-
-    private int getStringLength() throws IOException {
-        int count = 0;
-        int shift = 0;
-        boolean more = true;
-        while (more) {
-            byte[] byteBuffer = this.readBytes(1);
-            byte b = byteBuffer[0];
-            count |= (b & 0x7F) << shift;
-            shift += 7;
-            if ((b & 0x80) == 0) {
-                more = false;
-            }
-        }
-        return count;
-    }
-
-    public byte readByte() throws IOException {
-        incrementPosition(1);
-        return ByteBuffer.wrap(this.readBytes(1))
-                .order(ByteOrder.LITTLE_ENDIAN)
-                .get();
-    }
-
-    public byte[] readBytes(int length) throws IOException {
-        byte[] bytes = new byte[length];
-        randomAccessFile.read(bytes);
-        incrementPosition(length);
+    public byte[] readBytes(int length) {
+        checkAvailable(length);
+        byte[] bytes = ArrayUtil.sub(data, position, position + length);
+        position += length;
         return bytes;
     }
 
-    private void incrementPosition(int increment) {
-        position += increment;
+    private void checkAvailable(int length) {
+        if (position + length > data.length) {
+            throw new IndexOutOfBoundsException("剩余字节不足：" + (data.length - position) + " < " + length);
+        }
+    }
+
+    public void seek(int newPosition) {
+        if (newPosition < 0 || newPosition > data.length) {
+            throw new IllegalArgumentException("无效偏移位置：" + newPosition);
+        }
+        this.position = newPosition;
     }
 
     public int getPosition() {
         return position;
     }
 
-    public void setPosition(int position) throws IOException {
-        this.position = position;
-        randomAccessFile.seek(position);
+    public boolean hasRemaining() {
+        return position < data.length;
     }
 
-    public void setPosition(long position) throws IOException {
-        this.position = (int) position;
-        randomAccessFile.seek(position);
+    public int remaining() {
+        return data.length - position;
     }
 }
