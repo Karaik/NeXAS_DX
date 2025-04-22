@@ -1,9 +1,8 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.Arrays;
 
 /**
  * @Author 这位同学(Karaik)
@@ -40,12 +39,10 @@ public class CEventTouch extends SkillInfoObject {
     private byte[] byteData1;
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
-        // 读取0x38u字节
-        this.byteData1 = Arrays.copyOfRange(bytes, offset, offset + 56); offset += 56;
-
-        return offset;
+        // 读取 0x38 字节
+        this.byteData1 = reader.readBytes(56);
     }
 }

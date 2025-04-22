@@ -6,6 +6,7 @@ import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.SkillUnit;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.SkillInfoUnknown;
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.Charset;
@@ -24,7 +25,6 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 @Slf4j
 public class WazParser implements Parser<Waz> {
 
-
     @Override
     public String supportExtension() {
         return "waz";
@@ -32,55 +32,52 @@ public class WazParser implements Parser<Waz> {
 
     @Override
     public Waz parse(byte[] bytes, String fileName, String charset) {
-
         Waz waz = new Waz(fileName);
         List<Waz.Skill> wazBlockList = waz.getSkillList();
+        BinaryReader reader = new BinaryReader(bytes, charset);
+
         try {
-
-            int offset = 0;
-            while (offset < bytes.length) {
-
+            while (reader.hasRemaining()) {
                 Waz.Skill skill = new Waz.Skill();
 
                 // 每个块开始前，都会有个flag代表“是否存在”
-                int flag = readInt32(bytes, offset); offset += 4;
+                int flag = reader.readInt();
                 if (flag == 0) {
                     wazBlockList.add(skill);
                     continue;
                 }
 
                 // 1.技能信息1
-                skill.setSkillNameJapanese(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName(charset)));
-                offset += findNullTerminator(bytes, offset) + 1;
+                skill.setSkillNameJapanese(reader.readNullTerminatedString());
 
                 // 2.技能信息2
-                skill.setSkillNameEnglish(new String(bytes, offset, findNullTerminator(bytes, offset), StandardCharsets.UTF_8));
-                offset += findNullTerminator(bytes, offset) + 1;
+                skill.setSkillNameEnglish(reader.readNullTerminatedString());
 
                 // 3.阶段数
-                int phaseQuantity = readInt32(bytes, offset); offset += 4;
+                int phaseQuantity = reader.readInt();
                 skill.setPhaseQuantity(phaseQuantity);
 
                 // 4.技能数据
                 List<Waz.Skill.SkillPhase> phaseInfoList = skill.getPhasesInfo();
                 for (int i = 0; i < phaseQuantity; i++) {
                     Waz.Skill.SkillPhase skillPhase = new Waz.Skill.SkillPhase();
-                    offset = parseSkillPhaseInfo(skillPhase, bytes, offset);
+                    parseSkillPhaseInfo(skillPhase, reader);
                     phaseInfoList.add(skillPhase);
                 }
 
-                int countSuffix = readInt32(bytes, offset); offset += 4;
+                // 解析技能后缀
+                int countSuffix = reader.readInt();
                 List<Waz.Skill.SkillSuffix> skillSuffixList = skill.getSkillSuffixList();
                 for (int i = 0; i < countSuffix; i++) {
                     Waz.Skill.SkillSuffix skillSuffix = new Waz.Skill.SkillSuffix();
-                    skillSuffix.setInt1(readInt32(bytes, offset)); offset += 4;
-                    skillSuffix.setInt2(readInt32(bytes, offset)); offset += 4;
+                    skillSuffix.setInt1(reader.readInt());
+                    skillSuffix.setInt2(reader.readInt());
                     skillSuffixList.add(skillSuffix);
                 }
 
+                // 添加技能到列表
                 wazBlockList.add(skill);
             }
-
         } catch (Exception e) {
             log.info("filename === {}", fileName);
             log.info("error === {}", e.getMessage());
@@ -89,19 +86,19 @@ public class WazParser implements Parser<Waz> {
         return waz;
     }
 
-    private static int parseSkillPhaseInfo(Waz.Skill.SkillPhase skillPhase, byte[] bytes, int offset) {
-        // 存放单个阶段的数据信息
+    // 解析技能阶段信息
+    private void parseSkillPhaseInfo(Waz.Skill.SkillPhase skillPhase, BinaryReader reader) {
         List<SkillUnit> skillUnitCollection = skillPhase.getSkillUnitCollection();
 
         for (int i = 0; i < 72; i++) { // 逆向得知循环72次
             SkillUnit skillUnit = new SkillUnit(i, SkillInfoFactory.SKILL_INFO_TYPE_ENTRIES[i].getDescription());
 
             List<SkillInfoObject> skillInfoObjectList = skillUnit.getSkillInfoObjectList();
-            int count1 = readInt32(bytes, offset); offset += 4;
+            int count1 = reader.readInt();
             for (int j = 0; j < count1; j++) {
                 try {
                     SkillInfoObject eventObject = SkillInfoFactory.createEventObject(i);
-                    offset = eventObject.readInfo(bytes, offset);
+                    eventObject.readInfo(reader);  // 使用 BinaryReader 读取信息
                     skillInfoObjectList.add(eventObject);
                 } catch (Exception e) {
                     log.info("error === i={}", i);
@@ -110,11 +107,11 @@ public class WazParser implements Parser<Waz> {
             }
 
             List<SkillInfoUnknown> wazInfoUnknownList = skillUnit.getSkillInfoUnknownList();
-            int count2 = readInt32(bytes, offset); offset += 4;
+            int count2 = reader.readInt();
             for (int j = 0; j < count2; j++) {
                 try {
                     SkillInfoUnknown wazInfoUnknown = (SkillInfoUnknown) SkillInfoFactory.createEventObject(0xFF);
-                    offset = wazInfoUnknown.readInfo(bytes, offset);
+                    wazInfoUnknown.readInfo(reader);  // 使用 BinaryReader 读取信息
                     wazInfoUnknownList.add(wazInfoUnknown);
                 } catch (Exception e) {
                     log.info("error === i={}", i);
@@ -126,9 +123,5 @@ public class WazParser implements Parser<Waz> {
                 skillUnitCollection.add(skillUnit);
             }
         }
-
-        return offset;
     }
-
-
 }

@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection;
 
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -29,31 +30,30 @@ public class WazInfoCollection {
         intList4 = new ArrayList<>();
     }
 
-    public int readCollection(byte[] bytes, int offset) {
+    public void readCollection(BinaryReader reader) {
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
+        setInt1(reader.readInt());
 
-        int count1 = readInt32(bytes, offset); offset += 4;
+        int count1 = reader.readInt();
         for (int i = 0; i < count1; i++) {
-            intList1.add(readInt32(bytes, offset)); offset += 4;
+            intList1.add(reader.readInt());
         }
 
-        int count2 = readInt32(bytes, offset); offset += 4;
+        int count2 = reader.readInt();
         for (int i = 0; i < count2; i++) {
-            intList2.add(readInt32(bytes, offset)); offset += 4;
+            intList2.add(reader.readInt());
         }
 
-        int count3 = readInt32(bytes, offset); offset += 4;
+        int count3 = reader.readInt();
         for (int i = 0; i < count3; i++) {
-            intList3.add(readInt32(bytes, offset)); offset += 4;
+            intList3.add(reader.readInt());
         }
 
-        int count4 = readInt32(bytes, offset); offset += 4;
+        int count4 = reader.readInt();
         for (int i = 0; i < count4; i++) {
-            intList4.add(readInt32(bytes, offset)); offset += 4;
+            intList4.add(reader.readInt());
         }
 
-        setInt2(readInt32(bytes, offset)); offset += 4;
-        return offset;
+        setInt2(reader.readInt());
     }
 }

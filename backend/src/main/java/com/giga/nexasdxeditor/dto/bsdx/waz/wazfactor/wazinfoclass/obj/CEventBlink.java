@@ -1,9 +1,8 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import static com.giga.nexasdxeditor.util.ParserUtil.*;
 
 /**
  * @Author 这位同学(Karaik)
@@ -40,15 +39,14 @@ public class CEventBlink extends SkillInfoObject {
     private Short short1;
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
-        this.int1 = readInt32(bytes, offset); offset += 4;
-        this.int2 = readInt32(bytes, offset); offset += 4;
-        this.int3 = readInt32(bytes, offset); offset += 4;
+        this.int1 = reader.readInt();
+        this.int2 = reader.readInt();
+        this.int3 = reader.readInt();
 
-        this.short1 = readInt16(bytes, offset); offset += 2;
-
-        return offset;
+        this.short1 = reader.readShort();
     }
+
 }

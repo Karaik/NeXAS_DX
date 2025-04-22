@@ -1,14 +1,13 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.createCEventObjectByType;
-import static com.giga.nexasdxeditor.util.ParserUtil.*;
 
 /**
  * @Author 这位同学(Karaik)
@@ -84,30 +83,30 @@ public class CEventStatus extends SkillInfoObject {
     }
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
-        // 读取0xFu字节
-        byteData1 = Arrays.copyOfRange(bytes, offset, offset + 15); offset += 15;
-        // 读取0x3Cu字节
-        byteData2 = Arrays.copyOfRange(bytes, offset, offset + 60); offset += 60;
+        // 读取 0xF 字节
+        this.byteData1 = reader.readBytes(15);
+        // 读取 0x3C 字节
+        this.byteData2 = reader.readBytes(60);
 
-        this.byte1 = readInt8(bytes, offset); offset += 1;
+        this.byte1 = reader.readByte();
 
-        this.int1 = readInt32(bytes, offset); offset += 4;
-        this.int2 = readInt32(bytes, offset); offset += 4;
-        this.int3 = readInt32(bytes, offset); offset += 4;
-        this.int4 = readInt32(bytes, offset); offset += 4;
-        this.int5 = readInt32(bytes, offset); offset += 4;
-        this.int6 = readInt32(bytes, offset); offset += 4;
-        this.int7 = readInt32(bytes, offset); offset += 4;
-        this.int8 = readInt32(bytes, offset); offset += 4;
-        this.int9 = readInt32(bytes, offset); offset += 4;
+        this.int1 = reader.readInt();
+        this.int2 = reader.readInt();
+        this.int3 = reader.readInt();
+        this.int4 = reader.readInt();
+        this.int5 = reader.readInt();
+        this.int6 = reader.readInt();
+        this.int7 = reader.readInt();
+        this.int8 = reader.readInt();
+        this.int9 = reader.readInt();
 
         this.ceventStatusUnitList.clear();
 
         for (int i = 0; i < 25; i++) {
-            int buffer = readInt32(bytes, offset); offset += 4;
+            int buffer = reader.readInt();
             CEventStatusUnit unit = new CEventStatusUnit();
             unit.setCeventStatusUnitQuantity(i);
             unit.setDescription(CEVENT_STATUS_TYPES[i].getDescription());
@@ -117,13 +116,11 @@ public class CEventStatus extends SkillInfoObject {
                 int typeId = CEVENT_STATUS_TYPES[i].getType();
                 SkillInfoObject obj = createCEventObjectByType(typeId);
                 if (obj != null) {
-                    offset = obj.readInfo(bytes, offset);
+                    obj.readInfo(reader);
                     unit.setData(obj);
                 }
                 this.ceventStatusUnitList.add(unit);
             }
         }
-
-        return offset;
     }
 }

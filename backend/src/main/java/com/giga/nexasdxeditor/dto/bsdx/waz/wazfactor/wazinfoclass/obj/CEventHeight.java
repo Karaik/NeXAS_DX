@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -7,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.createCEventObjectByType;
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -49,15 +49,15 @@ public class CEventHeight extends SkillInfoObject {
 
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
-        this.int1 = readInt32(bytes, offset); offset += 4;
+        this.int1 = reader.readInt();
 
         this.ceventHeightUnitList.clear();
 
         for (int i = 0; i < 3; i++) {
-            int buffer = readInt32(bytes, offset); offset += 4;
+            int buffer = reader.readInt();
             CEventHeightUnit unit = new CEventHeightUnit();
             unit.setCeventHeightUnitQuantity(i);
             unit.setDescription(CEVENT_HEIGHT_TYPES[i].getDescription());
@@ -67,13 +67,11 @@ public class CEventHeight extends SkillInfoObject {
                 int typeId = CEVENT_HEIGHT_TYPES[i].getType();
                 SkillInfoObject obj = createCEventObjectByType(typeId);
                 if (obj != null) {
-                    offset = obj.readInfo(bytes, offset);
+                    obj.readInfo(reader);
                     unit.setData(obj);
                 }
                 this.ceventHeightUnitList.add(unit);
             }
         }
-
-        return offset;
     }
 }

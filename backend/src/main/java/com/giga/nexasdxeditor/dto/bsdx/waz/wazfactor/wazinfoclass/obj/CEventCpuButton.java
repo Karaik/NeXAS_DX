@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -7,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.createCEventObjectByType;
-import static com.giga.nexasdxeditor.util.ParserUtil.*;
 
 /**
  * @Author 这位同学(Karaik)
@@ -55,17 +55,17 @@ public class CEventCpuButton extends SkillInfoObject {
     }
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
-        this.int1 = readInt32(bytes, offset); offset += 4;
-        this.int2 = readInt32(bytes, offset); offset += 4;
-        this.int3 = readInt32(bytes, offset); offset += 4;
-        this.int4 = readInt32(bytes, offset); offset += 4;
-        this.int5 = readInt32(bytes, offset); offset += 4;
+        this.int1 = reader.readInt();
+        this.int2 = reader.readInt();
+        this.int3 = reader.readInt();
+        this.int4 = reader.readInt();
+        this.int5 = reader.readInt();
 
-        this.short1 = readInt16(bytes, offset); offset += 2;
-        this.short2 = readInt16(bytes, offset); offset += 2;
+        this.short1 = reader.readShort();
+        this.short2 = reader.readShort();
 
         this.ceventCpuButtonUnitList.clear();
 
@@ -73,7 +73,7 @@ public class CEventCpuButton extends SkillInfoObject {
 
             if (i == 0) {
                 CEventCpuButtonUnit unit = new CEventCpuButtonUnit();
-                int buffer = readInt32(bytes, offset); offset += 4;
+                int buffer = reader.readInt();
                 unit.setCeventCpuButtonUnitQuantity(i);
                 unit.setDescription(CEVENT_CPU_BUTTON_ENTRIES[i].getDescription());
                 unit.setBuffer(buffer);
@@ -81,15 +81,12 @@ public class CEventCpuButton extends SkillInfoObject {
                 if (buffer != 0) {
                     SkillInfoObject obj = createCEventObjectByType(CEVENT_CPU_BUTTON_ENTRIES[i].getType());
                     if (obj != null) {
-                        offset = obj.readInfo(bytes, offset);
+                        obj.readInfo(reader);
                         unit.setData(obj);
                     }
                 }
                 this.ceventCpuButtonUnitList.add(unit);
             }
-
         }
-
-        return offset;
     }
 }

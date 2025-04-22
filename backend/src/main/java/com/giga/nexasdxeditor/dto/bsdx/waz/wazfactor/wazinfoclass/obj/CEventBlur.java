@@ -1,13 +1,12 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -46,23 +45,22 @@ public class CEventBlur extends SkillInfoObject {
     }
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
         List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
 
         WazInfoCollection wazInfoCollection = new WazInfoCollection();
-        offset = wazInfoCollection.readCollection(bytes, offset);
+        wazInfoCollection.readCollection(reader);
         wazInfoCollectionList.add(wazInfoCollection);
         setWazInfoCollectionList(wazInfoCollectionList);
 
-        setInt1(readInt32(bytes, offset)); offset += 4;
-        setInt2(readInt32(bytes, offset)); offset += 4;
-        setInt3(readInt32(bytes, offset)); offset += 4;
-        setInt4(readInt32(bytes, offset)); offset += 4;
-        setInt5(readInt32(bytes, offset)); offset += 4;
-        setInt6(readInt32(bytes, offset)); offset += 4;
-
-        return offset;
+        setInt1(reader.readInt());
+        setInt2(reader.readInt());
+        setInt3(reader.readInt());
+        setInt4(reader.readInt());
+        setInt5(reader.readInt());
+        setInt6(reader.readInt());
     }
+
 }

@@ -1,13 +1,12 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -51,20 +50,17 @@ public class CEventSpriteYure extends SkillInfoObject {
     private Integer int4;
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
         this.wazInfoCollectionList.clear();
         WazInfoCollection wazInfoCollection = new WazInfoCollection();
-        offset = wazInfoCollection.readCollection(bytes, offset);
+        wazInfoCollection.readCollection(reader);
         this.wazInfoCollectionList.add(wazInfoCollection);
 
-        this.int1 = readInt32(bytes, offset); offset += 4;
-        this.int2 = readInt32(bytes, offset); offset += 4;
-        this.int3 = readInt32(bytes, offset); offset += 4;
-        this.int4 = readInt32(bytes, offset); offset += 4;
-
-        return offset;
+        this.int1 = reader.readInt();
+        this.int2 = reader.readInt();
+        this.int3 = reader.readInt();
+        this.int4 = reader.readInt();
     }
 }

@@ -1,12 +1,10 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.Data;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -21,21 +19,19 @@ public class CEventSe extends SkillInfoObject {
     private List<byte[]> byteDataList = new ArrayList<>();
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
-        int count = readInt32(bytes, offset);
-        setCount(count); offset += 4;
+        int count = reader.readInt();
+        setCount(count);
+
         if (count > 0) {
             this.byteDataList.clear();
-            do {
-                // 读取16字节
-                byte[] byteData = Arrays.copyOfRange(bytes, offset, offset + 16); offset += 16;
+            while (count > 0) {
+                byte[] byteData = reader.readBytes(16); // 读取 16 字节
                 this.byteDataList.add(byteData);
-                --count;
-            } while (count > 0);
+                count--;
+            }
         }
-
-        return offset;
     }
 }

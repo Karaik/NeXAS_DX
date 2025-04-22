@@ -1,8 +1,7 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.Data;
-
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -31,14 +30,11 @@ public class CEventSprite extends SkillInfoObject {
     private Integer actionNumber;
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
-        offset = super.readInfo(bytes, offset);
-
-        this.spmFileSequence = readInt32(bytes, offset); offset += 4;
-        this.actionGroupNumber = readInt32(bytes, offset); offset += 4;
-        this.actionNumber = readInt32(bytes, offset); offset += 4;
-
-        return offset;
+        this.spmFileSequence = reader.readInt();
+        this.actionGroupNumber = reader.readInt();
+        this.actionNumber = reader.readInt();
     }
 }

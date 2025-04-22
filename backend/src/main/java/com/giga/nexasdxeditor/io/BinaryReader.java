@@ -37,6 +37,12 @@ public class BinaryReader {
         this.charset = CharsetUtil.charset(charsetName);
     }
 
+    public byte readByte() {
+        checkAvailable(1);
+        byte[] bytes = readBytes(1);
+        return bytes[0];
+    }
+
     public int readInt() {
         checkAvailable(4);
         byte[] bytes = readBytes(4);
@@ -58,8 +64,10 @@ public class BinaryReader {
                 : ByteUtil.bytesToLong(bytes, ByteOrder.BIG_ENDIAN);
     }
 
-    public static double readDouble(byte[] bytes, int start) {
-        ByteBuffer buffer = ByteBuffer.wrap(bytes, start, 8)
+    public double readDouble() {
+        checkAvailable(8);
+        byte[] bytes = readBytes(8);
+        ByteBuffer buffer = ByteBuffer.wrap(bytes)
                 .order(ByteOrder.LITTLE_ENDIAN);
         return buffer.getDouble();
     }

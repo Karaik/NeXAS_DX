@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.Data;
 
 import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
@@ -23,14 +24,12 @@ public class SkillInfoObject {
      */
     private Integer endFrame;
 
-    public int readInfo(byte[] bytes, int offset) {
+    public void readInfo(BinaryReader reader) {
 
-        this.offset = offset;
+        this.offset = reader.getPosition();
 
-        this.startFrame = readInt32(bytes, offset); offset += 4;
-        this.endFrame = readInt32(bytes, offset); offset += 4;
-
-        return offset; // +8
+        this.startFrame = reader.readInt();
+        this.endFrame = reader.readInt();
     }
 
     public void writeInfo(byte[] bytes) {

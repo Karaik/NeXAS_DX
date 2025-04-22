@@ -1,14 +1,12 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory;
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt16;
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -45,15 +43,15 @@ public class CEventCamera extends SkillInfoObject {
     }
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
-        setShort1(readInt16(bytes, offset)); offset += 2;
+        setShort1(reader.readShort());
 
         this.ceventCameraUnitList.clear();
 
         for (int i = 0; i < 5; i++) {
-            int buffer = readInt32(bytes, offset); offset += 4;
+            int buffer = reader.readInt();
 
             CEventCameraUnit unit = new CEventCameraUnit();
             unit.setCeventCameraUnitQuantity(i);
@@ -64,15 +62,13 @@ public class CEventCamera extends SkillInfoObject {
                 int typeId = CEVENT_CAMERA_ENTRIES[i].getType();
                 SkillInfoObject obj = SkillInfoFactory.createCEventObjectByType(typeId);
                 if (obj != null) {
-                    offset = obj.readInfo(bytes, offset);
+                    obj.readInfo(reader);
                     unit.setData(obj);
                 }
                 ceventCameraUnitList.add(unit);
             }
         }
-
-
-        return offset;
     }
+
 }
 

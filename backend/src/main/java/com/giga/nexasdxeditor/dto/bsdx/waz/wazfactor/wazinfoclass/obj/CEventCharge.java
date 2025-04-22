@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -7,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.createCEventObjectByType;
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -40,13 +40,13 @@ public class CEventCharge extends SkillInfoObject {
     }
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
         this.ceventChargeUnitList.clear();
 
         for (int i = 0; i < 2; i++) {
-            int buffer = readInt32(bytes, offset); offset += 4;
+            int buffer = reader.readInt();
 
             CEventChargeUnit unit = new CEventChargeUnit();
             unit.setCeventChargeUnitQuantity(i);
@@ -58,14 +58,12 @@ public class CEventCharge extends SkillInfoObject {
                 SkillInfoObject obj = createCEventObjectByType(typeId);
 
                 if (obj != null) {
-                    offset = obj.readInfo(bytes, offset);
+                    obj.readInfo(reader);
                     unit.setData(obj);
                 }
                 this.ceventChargeUnitList.add(unit);
             }
         }
-
-        return offset;
     }
 }
 

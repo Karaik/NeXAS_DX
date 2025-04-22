@@ -1,13 +1,12 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -32,17 +31,15 @@ public class CEventChange extends SkillInfoObject {
     private Integer int1;
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
-        offset = innerRead(bytes, offset);
-
-        return offset;
+        innerRead(reader);
     }
 
-    private int innerRead(byte[] bytes, int offset) {
+    private void innerRead(BinaryReader reader) {
 
-        this.flag = readInt32(bytes, offset); offset += 4;
+        this.flag = reader.readInt();
 
         this.wazInfoCollectionList1.clear();
         this.wazInfoCollectionList2.clear();
@@ -52,20 +49,17 @@ public class CEventChange extends SkillInfoObject {
             int counter = 0;
             do {
                 WazInfoCollection wazInfoCollection = new WazInfoCollection();
-                offset = wazInfoCollection.readCollection(bytes, offset);
+                wazInfoCollection.readCollection(reader);  // 使用 BinaryReader 读取数据
                 this.wazInfoCollectionList1.add(wazInfoCollection);
 
                 counter++;
             } while (counter < flag);
-
         }
 
         WazInfoCollection wazInfoCollection2 = new WazInfoCollection();
-        offset = wazInfoCollection2.readCollection(bytes, offset);
+        wazInfoCollection2.readCollection(reader);
         this.wazInfoCollectionList2.add(wazInfoCollection2);
 
-        this.int1 = readInt32(bytes, offset); offset += 4;
-
-        return offset;
+        this.int1 = reader.readInt();
     }
 }

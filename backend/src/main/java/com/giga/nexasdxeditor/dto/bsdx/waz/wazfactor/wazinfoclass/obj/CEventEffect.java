@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -7,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.createCEventObjectByType;
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -95,25 +95,25 @@ public class CEventEffect extends SkillInfoObject {
     }
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
-        this.int1 = readInt32(bytes, offset); offset += 4;
-        this.int2 = readInt32(bytes, offset); offset += 4;
-        this.int3 = readInt32(bytes, offset); offset += 4;
-        this.int4 = readInt32(bytes, offset); offset += 4;
-        this.int5 = readInt32(bytes, offset); offset += 4;
-        this.int6 = readInt32(bytes, offset); offset += 4;
-        this.int7 = readInt32(bytes, offset); offset += 4;
-        this.int8 = readInt32(bytes, offset); offset += 4;
-        this.int9 = readInt32(bytes, offset); offset += 4;
-        this.int10 = readInt32(bytes, offset); offset += 4;
-        this.int11 = readInt32(bytes, offset); offset += 4;
+        this.int1 = reader.readInt();
+        this.int2 = reader.readInt();
+        this.int3 = reader.readInt();
+        this.int4 = reader.readInt();
+        this.int5 = reader.readInt();
+        this.int6 = reader.readInt();
+        this.int7 = reader.readInt();
+        this.int8 = reader.readInt();
+        this.int9 = reader.readInt();
+        this.int10 = reader.readInt();
+        this.int11 = reader.readInt();
 
         this.ceventEffectUnitList.clear();
 
         for (int i = 0; i < 45; i++) {
-            int buffer = readInt32(bytes, offset); offset += 4;
+            int buffer = reader.readInt();
             CEventEffectUnit unit = new CEventEffectUnit();
             unit.setDescription(CEVENT_EFFECT_TYPES[i].getDescription());
             unit.setCeventEffectUnitQuantity(i);
@@ -123,15 +123,12 @@ public class CEventEffect extends SkillInfoObject {
                 int typeId = CEVENT_EFFECT_TYPES[i].getType();
                 SkillInfoObject obj = createCEventObjectByType(typeId);
                 if (obj != null) {
-                    offset = obj.readInfo(bytes, offset);
+                    obj.readInfo(reader);
                     unit.setData(obj);
                 }
                 ceventEffectUnitList.add(unit);
             }
-
         }
-
-        return offset;
     }
 }
 

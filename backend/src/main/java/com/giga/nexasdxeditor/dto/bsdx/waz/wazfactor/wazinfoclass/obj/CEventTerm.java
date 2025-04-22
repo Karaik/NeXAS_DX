@@ -1,6 +1,7 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -18,14 +19,12 @@ public class CEventTerm extends SkillInfoObject {
     private List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
 
     @Override
-    public int readInfo(byte[] bytes, int offset) {
-        offset = super.readInfo(bytes, offset);
+    public void readInfo(BinaryReader reader) {
+        super.readInfo(reader);
 
         this.wazInfoCollectionList.clear();
         WazInfoCollection wazInfoCollection = new WazInfoCollection();
-        offset = wazInfoCollection.readCollection(bytes, offset);
+        wazInfoCollection.readCollection(reader);
         this.wazInfoCollectionList.add(wazInfoCollection);
-
-        return offset;
     }
 }
