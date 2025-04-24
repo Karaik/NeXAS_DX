@@ -81,18 +81,33 @@ public class BinParser implements BsdxParser<Bin> {
             // 读取 opcodeNum
             int opcodeNum = reader.readInt();
             String opcode = BinConst.OPCODE_MNEMONIC_MAP.get(opcodeNum) == null ?
-                    "UNKNOWN" + opcodeNum :
+                    ""+opcodeNum :
                     BinConst.OPCODE_MNEMONIC_MAP.get(opcodeNum);
             // 读取 operandNum
             int operandNum = reader.readInt();
-            String operand = BinConst.OPERAND_MNEMONIC_MAP.get(operandNum) == null ?
-                    "UNKNOWN" + opcodeNum :
-                    BinConst.OPERAND_MNEMONIC_MAP.get(operandNum);
 
             // 构造 Instruction
             Bin.Instruction inst = new Bin.Instruction();
             inst.setOpcode(opcode);
-            inst.setOperand(operand);
+
+            if (BinConst.OPCODE_MNEMONIC_MAP.get(7).equals(opcode)) {
+                // CALL
+                int paramCount = operandNum >>> 16;
+                int nativeId   = operandNum & 0xFFFF;
+                String nativeFunc = BinConst.OPERAND_MNEMONIC_MAP.get(nativeId) == null ?
+                        "" + nativeId :
+                        BinConst.OPERAND_MNEMONIC_MAP.get(nativeId);
+                inst.setParamCount(paramCount);
+                inst.setNativeFunction(nativeFunc);
+            } else {
+                // 非 CALL 指令，直接用 operandNum
+                String operand = BinConst.OPERAND_MNEMONIC_MAP.get(operandNum) == null ?
+                        "" + operandNum :
+                        BinConst.OPERAND_MNEMONIC_MAP.get(operandNum);
+                inst.setParamCount(0);
+                inst.setNativeFunction(operand);
+            }
+
             instructions.add(inst);
         }
 

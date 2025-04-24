@@ -42,11 +42,13 @@ public class Bin {
     // 指令内部类
     @Data
     public static class Instruction {
-        // 仅用于记录
-        public Integer offset;
         // 操作码
         private String opcode;
         // 操作数
-        private String operand;
+//        private String operand;
+        // 形参个数
+        private Integer paramCount;
+        // 自定义函数
+        private String nativeFunction;
     }
 }
