@@ -1,6 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.mek.parser;
 
-import com.giga.nexasdxeditor.dto.Parser;
+import com.giga.nexasdxeditor.dto.bsdx.BsdxParser;
 import com.giga.nexasdxeditor.dto.bsdx.mek.Mek;
 import com.giga.nexasdxeditor.dto.bsdx.mek.checker.MekChecker;
 import com.giga.nexasdxeditor.exception.BusinessException;
@@ -26,7 +26,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * 对逆向做出的贡献
  */
 @Slf4j
-public class MekParser implements Parser<Mek> {
+public class MekParser implements BsdxParser<Mek> {
 
     @Override
     public String supportExtension() {

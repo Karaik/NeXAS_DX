@@ -2,11 +2,13 @@ package com.giga.nexasdxeditor;
 
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
+import com.giga.nexasdxeditor.dto.ResponseDTO;
 import com.giga.nexasdxeditor.dto.bsdx.dat.Dat;
-import com.giga.nexasdxeditor.dto.bsdx.dat.paser.DatParser;
+import com.giga.nexasdxeditor.service.impl.BinServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -22,6 +24,9 @@ import java.util.Map;
 @SpringBootTest
 public class TestDat {
     Logger log = LoggerFactory.getLogger(TestDat.class);
+
+    @Autowired
+    BinServiceImpl binServiceImpl;
 
     @Test
     void testDat2Excel() throws IOException {
@@ -47,8 +52,8 @@ public class TestDat {
             String sheetName = resource.getFilename().replace(".dat", "");  // 去掉扩展名作为 Sheet 名
 
             // 读取并解析 .dat 文件
-            byte[] fileBytes = Files.readAllBytes(resource.getFile().toPath());
-            Dat dat = DatParser.parseDat(fileBytes, resource.getFilename());
+            ResponseDTO resp = binServiceImpl.parse(filePath, "Shift-jis");
+            Dat dat = (Dat) resp.getData();
 
             // 准备 Excel 数据
             List<Map<String, Object>> excelData = new ArrayList<>();

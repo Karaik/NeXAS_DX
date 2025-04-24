@@ -22,7 +22,7 @@ public class ParserUtil {
     public static final byte[] SPLIT_DATA = new byte[] { (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF };
 
     // 数值
-    public static final Integer DAT_COLUM_TYPE_DATA = 0;
+    public static final Integer DAT_COLUMN_TYPE_DATA = 0;
 
     // 字符串
     public static final Integer DAT_COLUMN_TYPE_STRING = 1;

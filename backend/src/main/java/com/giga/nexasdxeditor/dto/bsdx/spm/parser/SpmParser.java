@@ -1,6 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.spm.parser;
 
-import com.giga.nexasdxeditor.dto.Parser;
+import com.giga.nexasdxeditor.dto.bsdx.BsdxParser;
 import com.giga.nexasdxeditor.dto.bsdx.spm.Spm;
 import com.giga.nexasdxeditor.io.BinaryReader;
 
@@ -12,7 +12,7 @@ import java.util.List;
  * @Date 2025/4/21
  * @Description SpmParser
  */
-public class SpmParser implements Parser<Spm> {
+public class SpmParser implements BsdxParser<Spm> {
 
     @Override
     public String supportExtension() {

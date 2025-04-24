@@ -1,6 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.parser;
 
-import com.giga.nexasdxeditor.dto.Parser;
+import com.giga.nexasdxeditor.dto.bsdx.BsdxParser;
 import com.giga.nexasdxeditor.dto.bsdx.waz.Waz;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.SkillUnit;
@@ -9,12 +9,7 @@ import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj.SkillInfoU
 import com.giga.nexasdxeditor.io.BinaryReader;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-
-import static com.giga.nexasdxeditor.util.ParserUtil.*;
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -23,7 +18,7 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * 逆向所得
  */
 @Slf4j
-public class WazParser implements Parser<Waz> {
+public class WazParser implements BsdxParser<Waz> {
 
     @Override
     public String supportExtension() {

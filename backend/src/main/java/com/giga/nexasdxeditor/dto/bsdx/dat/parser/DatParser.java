@@ -1,15 +1,13 @@
-package com.giga.nexasdxeditor.dto.bsdx.dat.paser;
+package com.giga.nexasdxeditor.dto.bsdx.dat.parser;
 
+import com.giga.nexasdxeditor.dto.bsdx.BsdxParser;
 import com.giga.nexasdxeditor.dto.bsdx.dat.Dat;
+import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.util.ParserUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.giga.nexasdxeditor.util.ParserUtil.findNullTerminator;
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -17,30 +15,34 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * @Description DatParser
  */
 @Slf4j
-public class DatParser {
+public class DatParser implements BsdxParser<Dat> {
 
-    public static Dat parseDat(byte[] bytes, String fileName) {
+    @Override
+    public String supportExtension() {
+        return "dat";
+    }
+
+    @Override
+    public Dat parse(byte[] data, String fileName, String charset) {
         Dat dat = new Dat();
         dat.setFileName(fileName);
 
+        BinaryReader reader = new BinaryReader(data);
         try {
-            int offset = 0;
 
-            // Step 1: 读取列数
-            int columnCount = readInt32(bytes, offset);
-            offset += 4;
+            // 读取列数
+            int columnCount = reader.readInt();
             dat.setColumnCount(columnCount);
             log.info("Column count == {}", columnCount);
             log.info("fileName == {}", fileName);
 
-            // Step 2: 读取每列的数据类型
+            // 读取每列的数据类型
             for (int i = 0; i < columnCount; i++) {
-                int typeFlag = readInt32(bytes, offset);
-                offset += 4;
+                int typeFlag = reader.readInt();
                 String type;
                 if (typeFlag == ParserUtil.DAT_COLUMN_TYPE_STRING) {
                     type = "String";
-                } else if (typeFlag == ParserUtil.DAT_COLUM_TYPE_DATA) {
+                } else if (typeFlag == ParserUtil.DAT_COLUMN_TYPE_DATA) {
                     type = "Integer";
                 } else if (typeFlag == ParserUtil.DAT_COLUMN_TYPE_UNKNOWN) {
                     type = "Unknown";
@@ -51,27 +53,23 @@ public class DatParser {
                 dat.addColumnType(type);
             }
 
-            // Step 3: 逐行读取数据
-            while (offset < bytes.length) {
+            while (reader.getPosition() < data.length) {
                 List<Object> row = new ArrayList<>();
                 for (String columnType : dat.getColumnTypes()) {
                     if ("String".equals(columnType)) {
-                        int stringLength = findNullTerminator(bytes, offset);
-                        String value = new String(bytes, offset, stringLength, Charset.forName("Shift-JIS")).trim();
-                        offset += stringLength + 1;
+                        String value = reader.readNullTerminatedString();
                         row.add(value);
                     } else if ("Integer".equals(columnType)) {
-                        int value = readInt32(bytes, offset);
-                        offset += 4;
+                        int value = reader.readInt();
                         row.add(value);
                     } else if ("Unknown".equals(columnType)) {
-                        int unknownValue = readInt32(bytes, offset);
-                        offset += 4;
+                        int unknownValue = reader.readInt();
                         row.add(unknownValue);
                     }
                 }
                 dat.addRow(row);
             }
+
         } catch (Exception e) {
             log.error("Failed to parse .dat file: {}", e.getMessage(), e);
             throw e;
