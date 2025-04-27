@@ -1,7 +1,10 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.io.BinaryReader;
+import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.Data;
+
+import java.io.IOException;
 
 /**
  * @Author 这位同学(Karaik)
@@ -37,4 +40,13 @@ public class CEventSprite extends SkillInfoObject {
         this.actionGroupNumber = reader.readInt();
         this.actionNumber = reader.readInt();
     }
+
+    @Override
+    public void writeInfo(BinaryWriter writer) throws IOException {
+        super.writeInfo(writer);
+        writer.writeInt(this.spmFileSequence);
+        writer.writeInt(this.actionGroupNumber);
+        writer.writeInt(this.actionNumber);
+    }
+
 }

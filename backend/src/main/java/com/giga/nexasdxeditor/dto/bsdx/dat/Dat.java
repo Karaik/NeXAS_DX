@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.dat;
 
+import com.giga.nexasdxeditor.dto.bsdx.Bsdx;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.List;
  * @Description csv
  */
 @Data
-public class Dat {
+public class Dat extends Bsdx {
 
     private String fileName;
 

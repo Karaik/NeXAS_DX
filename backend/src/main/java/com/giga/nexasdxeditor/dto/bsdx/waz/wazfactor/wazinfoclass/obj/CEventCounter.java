@@ -1,8 +1,11 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.io.BinaryReader;
+import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
+import java.io.IOException;
 
 /**
  * @Author 这位同学(Karaik)
@@ -41,4 +44,12 @@ public class CEventCounter extends SkillInfoObject {
         // 读取0x1Cu字节
         this.byteData1 = reader.readBytes(28);
     }
+
+    @Override
+    public void writeInfo(BinaryWriter writer) throws IOException {
+        super.writeInfo(writer);
+        writer.writeBytes(this.byteData1);
+    }
+
+
 }

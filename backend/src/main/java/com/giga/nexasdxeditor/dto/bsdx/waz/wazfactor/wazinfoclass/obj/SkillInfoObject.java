@@ -1,9 +1,10 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.io.BinaryReader;
+import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.Data;
 
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
+import java.io.IOException;
 
 /**
  * @Author 这位同学(Karaik)
@@ -32,8 +33,9 @@ public class SkillInfoObject {
         this.endFrame = reader.readInt();
     }
 
-    public void writeInfo(byte[] bytes) {
-        // TODO
+    public void writeInfo(BinaryWriter writer) throws IOException {
+        writer.writeInt(this.startFrame);
+        writer.writeInt(this.endFrame);
     }
 
 }

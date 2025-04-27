@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.spm;
 
+import com.giga.nexasdxeditor.dto.bsdx.Bsdx;
 import lombok.Data;
 
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.List;
  * https://github.com/koukdw/Aquarium_tools/blob/main/research/fileformats.md
  */
 @Data
-public class Spm {
+public class Spm extends Bsdx {
 
     private String spmVersion;
     private Integer numPageData;

@@ -1,7 +1,10 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
 import com.giga.nexasdxeditor.io.BinaryReader;
+import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.Data;
+
+import java.io.IOException;
 
 /**
  * @Author 这位同学(Karaik)
@@ -31,4 +34,16 @@ public class CEventValRandom extends SkillInfoObject {
         this.int5 = reader.readInt();
         this.int6 = reader.readInt();
     }
+
+    @Override
+    public void writeInfo(BinaryWriter writer) throws IOException {
+        super.writeInfo(writer);
+        writer.writeInt(this.int1);
+        writer.writeInt(this.int2);
+        writer.writeInt(this.int3);
+        writer.writeInt(this.int4);
+        writer.writeInt(this.int5);
+        writer.writeInt(this.int6);
+    }
+
 }

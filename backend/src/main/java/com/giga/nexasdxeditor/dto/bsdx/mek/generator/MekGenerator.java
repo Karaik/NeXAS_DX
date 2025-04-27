@@ -1,7 +1,9 @@
 package com.giga.nexasdxeditor.dto.bsdx.mek.generator;
 
 import cn.hutool.core.date.DateUtil;
+import com.giga.nexasdxeditor.dto.bsdx.BsdxGenerator;
 import com.giga.nexasdxeditor.dto.bsdx.mek.Mek;
+import com.giga.nexasdxeditor.dto.bsdx.waz.Waz;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,9 +22,15 @@ import static com.giga.nexasdxeditor.util.GenerateUtil.putString;
  * @Date 2025/1/19
  * @Description MekGenerator
  */
-public class MekGenerator {
+public class MekGenerator implements BsdxGenerator<Mek> {
 
-    public static void generate(String path, Mek mek, String charset) throws IOException {
+    @Override
+    public String supportExtension() {
+        return "mek";
+    }
+
+    @Override
+    public void generate(String path, Mek mek, String charset) throws IOException {
         File originalFile = new File(path);
         String parentDir = originalFile.getParent();
         String fileNameWithoutExt = originalFile.getName().replaceFirst("\\.mek$", "");

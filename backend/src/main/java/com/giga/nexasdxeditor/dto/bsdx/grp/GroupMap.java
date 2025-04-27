@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.grp;
 
+import com.giga.nexasdxeditor.dto.bsdx.Bsdx;
 import lombok.Data;
 
 /**
@@ -8,7 +9,7 @@ import lombok.Data;
  * @Description GroupMap
  */
 @Data
-public class GroupMap {
+public class GroupMap extends Bsdx {
 
     // 数量
     private Integer itemQuantity;

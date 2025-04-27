@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.bin;
 
+import com.giga.nexasdxeditor.dto.bsdx.Bsdx;
 import lombok.Data;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.Map;
  * @Date 2025/4/24
  */
 @Data
-public class Bin {
+public class Bin extends Bsdx {
     
     // 入口点
     private List<Instruction> entryPoints;

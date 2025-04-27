@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.mek;
 
+import com.giga.nexasdxeditor.dto.bsdx.Bsdx;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import java.util.Map;
  *
  */
 @Data
-public class Mek {
+public class Mek extends Bsdx {
 
     private String fileName;
 

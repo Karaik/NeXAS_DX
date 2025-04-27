@@ -1,5 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz;
 
+import com.giga.nexasdxeditor.dto.bsdx.Bsdx;
 import com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.SkillUnit;
 import lombok.Data;
 
@@ -12,7 +13,7 @@ import java.util.List;
  * @Description Waz
  */
 @Data
-public class Waz {
+public class Waz extends Bsdx {
 
     public String fileName; // 仅记录用
 

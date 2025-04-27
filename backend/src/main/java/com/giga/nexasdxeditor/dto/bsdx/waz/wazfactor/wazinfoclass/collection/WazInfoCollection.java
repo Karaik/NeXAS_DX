@@ -1,12 +1,12 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.collection;
 
 import com.giga.nexasdxeditor.io.BinaryReader;
+import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.Data;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -56,4 +56,31 @@ public class WazInfoCollection {
 
         setInt2(reader.readInt());
     }
+
+    public void writeCollection(BinaryWriter writer) throws  IOException {
+        writer.writeInt(this.int1);
+
+        writer.writeInt(intList1.size());
+        for (Integer val : intList1) {
+            writer.writeInt(val);
+        }
+
+        writer.writeInt(intList2.size());
+        for (Integer val : intList2) {
+            writer.writeInt(val);
+        }
+
+        writer.writeInt(intList3.size());
+        for (Integer val : intList3) {
+            writer.writeInt(val);
+        }
+
+        writer.writeInt(intList4.size());
+        for (Integer val : intList4) {
+            writer.writeInt(val);
+        }
+
+        writer.writeInt(this.int2);
+    }
+
 }

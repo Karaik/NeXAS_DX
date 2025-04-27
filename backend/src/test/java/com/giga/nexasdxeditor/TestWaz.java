@@ -1,6 +1,8 @@
 package com.giga.nexasdxeditor;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.HexUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.giga.nexasdxeditor.dto.ResponseDTO;
@@ -26,39 +28,6 @@ public class TestWaz {
 
     @Autowired
     BinServiceImpl binServiceImpl;
-
-    @Test
-    void parseJson2Waz() throws IOException {
-        String inputFilePath = "src/main/resources/wazJson/Kou.json";
-        String jsonStr1 = FileUtil.readUtf8String(new File(inputFilePath));
-        Waz bean = JSONUtil.toBean(jsonStr1, Waz.class);
-        log.info("bean");
-
-        String JsonStr2 = JSONUtil.toJsonStr(bean);
-        JSONObject jsonObject1 = JSONUtil.parseObj(bean);
-        JSONObject jsonObject2 = JSONUtil.parseObj(JsonStr2);
-        boolean isEqual = jsonObject1.equals(jsonObject2);
-        log.info("result: {}", isEqual ? "✅" : "❌");
-        log.info("over");
-
-    }
-
-    @Test
-    void testCreateTestWazDat() throws IOException {
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        // 获取resources目录下的文件
-        Resource[] resources = resolver.getResources("classpath*:/Update3/*.waz");
-
-        if (resources.length > 0) {
-            byte[] firstFileContent = FileUtil.readBytes(resources[0].getFile());
-
-            for (int i = 1; i < resources.length; i++) {
-                File file = resources[i].getFile();
-                FileUtil.writeBytes(firstFileContent, file);
-            }
-        }
-
-    }
 
     @Test
     void testGenerateWazJsonFiles() throws IOException {
@@ -95,6 +64,63 @@ public class TestWaz {
             String filePath = FileUtil.file(outputDir, baseNames.get(i) + ".json").getAbsolutePath();
             FileUtil.writeUtf8String(jsonStr, filePath);
             log.info("transfer === {} ", baseNames.get(i));
+        }
+    }
+
+    @Test
+    void testGenerateWazFilesByJson() throws IOException {
+        // 读取之前生成的 JSON 文件
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource[] resources = resolver.getResources("classpath*:/wazJson/*.json");
+
+        String outputDir = "src/main/resources/wazGenerated";  // 输出 .waz 文件路径
+        FileUtil.mkdir(outputDir);  // 创建输出目录
+
+        for (Resource resource : resources) {
+            String jsonStr = FileUtil.readUtf8String(resource.getFile());
+            JSONObject jsonObj = JSONUtil.parseObj(jsonStr);
+
+            // 反序列化成 Waz 对象
+            Waz waz = JSONUtil.toBean(jsonObj, Waz.class);
+            String baseName = resource.getFilename().replace(".json", "");
+            String outputPath = FileUtil.file(outputDir, baseName + ".waz").getAbsolutePath();
+
+            // 调用生成器
+            binServiceImpl.generate(outputPath, waz, "Shift-jis");
+            log.info("generated === {}", baseName);
+        }
+    }
+
+    @Test
+    void testWazParseGenerateBinaryConsistency() throws IOException {
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        Resource[] resources = resolver.getResources("classpath*:/game/bsdx/waz/*.waz");
+
+        for (Resource resource : resources) {
+            String originalPath = resource.getFile().getPath();
+            String fileName = resource.getFilename();
+            log.info("checking === {}", fileName);
+
+            // 解析.waz
+            ResponseDTO<?> dto = binServiceImpl.parse(originalPath, "Shift-jis");
+            Waz waz = (Waz) dto.getData();
+
+            // 生成.waz
+            String tempPath = "src/main/resources/temp/" + fileName;
+            FileUtil.mkdir("src/main/resources/temp/");
+            binServiceImpl.generate(tempPath, waz, "Shift-jis");
+
+            // 读取为byte[]
+            byte[] originalBytes = FileUtil.readBytes(originalPath);
+            byte[] generatedBytes = FileUtil.readBytes(tempPath);
+
+            // 校验二进制是否一致
+            boolean isEqual = ArrayUtil.equals(originalBytes, generatedBytes);
+            if (!isEqual) {
+                log.error("二进制不一致: {}", fileName);
+                log.error("原始文件大小: {}, 生成文件大小: {}", originalBytes.length, generatedBytes.length);
+            }
+
         }
     }
 

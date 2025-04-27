@@ -1,6 +1,6 @@
 package com.giga.nexasdxeditor.dto.bsdx;
 
-public interface BsdxParser<T> {
+public interface BsdxParser<T extends Bsdx> {
 
     String supportExtension();
 
