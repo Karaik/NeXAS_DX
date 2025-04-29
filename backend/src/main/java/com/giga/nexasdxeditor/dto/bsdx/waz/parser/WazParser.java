@@ -93,6 +93,7 @@ public class WazParser implements BsdxParser<Waz> {
             for (int j = 0; j < count1; j++) {
                 try {
                     SkillInfoObject eventObject = SkillInfoFactory.createEventObject(i);
+                    eventObject.setUnitQuantity(i);
                     eventObject.readInfo(reader);  // 使用 BinaryReader 读取信息
                     skillInfoObjectList.add(eventObject);
                 } catch (Exception e) {

@@ -3,6 +3,7 @@ package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,11 +15,16 @@ import java.util.List;
  * CEvent__Read
  */
 @Data
+@NoArgsConstructor
 public class CEventSe extends SkillInfoObject {
 
     private Integer count;
 
     private List<byte[]> byteDataList = new ArrayList<>();
+
+    public CEventSe(Integer typeId) {
+        super(typeId);
+    }
 
     @Override
     public void readInfo(BinaryReader reader) {

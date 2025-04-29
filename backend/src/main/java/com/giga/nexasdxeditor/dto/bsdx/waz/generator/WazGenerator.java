@@ -40,8 +40,12 @@ public class WazGenerator implements BsdxGenerator<Waz> {
                 }
 
                 writer.writeInt(1);
-                writer.writeNullTerminatedString(skill.getSkillNameJapanese());
-                writer.writeNullTerminatedString(skill.getSkillNameEnglish());
+                try {
+                    writer.writeNullTerminatedString(skill.getSkillNameJapanese());
+                    writer.writeNullTerminatedString(skill.getSkillNameEnglish());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
 
                 int phaseQuantity = skill.getPhaseQuantity();
                 writer.writeInt(phaseQuantity);
@@ -67,49 +71,43 @@ public class WazGenerator implements BsdxGenerator<Waz> {
     }
 
     // 写入技能阶段信息
-    private void writeSkillPhaseInfo(Waz.Skill.SkillPhase skillPhase,
-                                     BinaryWriter writer) throws IOException {
+    private void writeSkillPhaseInfo(Waz.Skill.SkillPhase skillPhase, BinaryWriter writer) throws IOException {
 
-        // 固定72个SkillUnit
+        List<SkillUnit> skillUnitCollection = skillPhase.getSkillUnitCollection();
+
         for (int i = 0; i < 72; i++) {
-
-            // todo bugs
-            // 手动查找unitQuantity==i的SkillUnit
-            SkillUnit skillUnit = null;
-            for (SkillUnit su : skillPhase.getSkillUnitCollection()) {
-                if (su.getUnitQuantity() == i) {
-                    skillUnit = su;
+            SkillUnit matchedUnit = null;
+            for (SkillUnit unit : skillUnitCollection) {
+                if (unit.getUnitQuantity() == i) {
+                    matchedUnit = unit;
                     break;
                 }
             }
 
-            // SkillInfoObject
-            List<SkillInfoObject> infoObjects;
-            if (skillUnit != null) {
-                infoObjects = skillUnit.getSkillInfoObjectList();
+            List<SkillInfoObject> skillInfoObjectList;
+            if (matchedUnit != null) {
+                skillInfoObjectList = matchedUnit.getSkillInfoObjectList();
             } else {
-                infoObjects = new ArrayList<>();
+                skillInfoObjectList = new ArrayList<>();
             }
 
-            writer.writeInt(infoObjects.size());
-            for (SkillInfoObject info : infoObjects) {
-                info.writeInfo(writer);
+            writer.writeInt(skillInfoObjectList.size());
+            for (SkillInfoObject obj : skillInfoObjectList) {
+                obj.writeInfo(writer);
             }
 
-            // SkillInfoUnknown
-            List<SkillInfoUnknown> unknownObjects;
-            if (skillUnit != null) {
-                unknownObjects = skillUnit.getSkillInfoUnknownList();
+            List<SkillInfoUnknown> skillInfoUnknownList;
+            if (matchedUnit != null) {
+                skillInfoUnknownList = matchedUnit.getSkillInfoUnknownList();
             } else {
-                unknownObjects = new java.util.ArrayList<>();
+                skillInfoUnknownList = new ArrayList<>();
             }
 
-            writer.writeInt(unknownObjects.size());
-            for (SkillInfoUnknown un : unknownObjects) {
-                un.writeInfo(writer);
+            writer.writeInt(skillInfoUnknownList.size());
+            for (SkillInfoUnknown unknown : skillInfoUnknownList) {
+                unknown.writeInfo(writer);
             }
         }
-
     }
 
 }

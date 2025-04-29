@@ -5,6 +5,7 @@ import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.List;
  * CEventBlur__Read
  */
 @Data
+@NoArgsConstructor
 public class CEventBlur extends SkillInfoObject {
 
     @Data
@@ -33,7 +35,7 @@ public class CEventBlur extends SkillInfoObject {
             new CEventBlurType(0xFFFFFFFF, "⇒ %3d(%3d,%3d)"),
     };
 
-    private List<WazInfoCollection> wazInfoCollectionList;
+    private List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
 
     private Integer int1;
     private Integer int2;
@@ -42,8 +44,8 @@ public class CEventBlur extends SkillInfoObject {
     private Integer int5;
     private Integer int6;
 
-    public CEventBlur() {
-        wazInfoCollectionList = new ArrayList<>();
+    public CEventBlur(Integer typeId) {
+        super(typeId);
     }
 
     @Override

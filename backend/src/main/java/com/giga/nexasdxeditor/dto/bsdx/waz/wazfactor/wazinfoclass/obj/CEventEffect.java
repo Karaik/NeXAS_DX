@@ -4,6 +4,7 @@ import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.cre
  * CEventEffect__Read
  */
 @Data
+@NoArgsConstructor
 public class CEventEffect extends SkillInfoObject {
 
     @Data
@@ -87,6 +89,10 @@ public class CEventEffect extends SkillInfoObject {
     private Integer int11;
 
     private List<CEventEffectUnit> ceventEffectUnitList = new ArrayList<>();
+
+    public CEventEffect(Integer typeId) {
+        super(typeId);
+    }
 
     @Data
     public static class CEventEffectUnit {

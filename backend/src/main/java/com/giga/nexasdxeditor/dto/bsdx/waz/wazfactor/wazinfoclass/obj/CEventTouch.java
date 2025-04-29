@@ -4,6 +4,7 @@ import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 
@@ -13,6 +14,7 @@ import java.io.IOException;
  * CEventTouch__Read
  */
 @Data
+@NoArgsConstructor
 public class CEventTouch extends SkillInfoObject {
 
     @Data
@@ -40,6 +42,10 @@ public class CEventTouch extends SkillInfoObject {
     };
 
     private byte[] byteData1;
+
+    public CEventTouch(Integer typeId) {
+        super(typeId);
+    }
 
     @Override
     public void readInfo(BinaryReader reader) {

@@ -5,6 +5,7 @@ import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.List;
  * CEventMove__Read
  */
 @Data
+@NoArgsConstructor
 public class CEventMove extends SkillInfoObject {
 
     @Data
@@ -36,6 +38,10 @@ public class CEventMove extends SkillInfoObject {
     private List<WazInfoCollection> wazInfoCollectionList2 = new ArrayList<>();
 
     private Integer int1;
+
+    public CEventMove(Integer typeId) {
+        super(typeId);
+    }
 
     @Override
     public void readInfo(BinaryReader reader) {

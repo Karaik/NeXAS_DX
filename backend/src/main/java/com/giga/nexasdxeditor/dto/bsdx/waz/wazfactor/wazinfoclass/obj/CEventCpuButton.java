@@ -4,6 +4,7 @@ import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.cre
  * CEventCpuButton__Read
  */
 @Data
+@NoArgsConstructor
 public class CEventCpuButton extends SkillInfoObject {
 
     @Data
@@ -47,6 +49,10 @@ public class CEventCpuButton extends SkillInfoObject {
     private Short short2;
 
     private List<CEventCpuButtonUnit> ceventCpuButtonUnitList = new ArrayList<>();
+
+    public CEventCpuButton(Integer typeId) {
+        super(typeId);
+    }
 
     @Data
     public static class CEventCpuButtonUnit {

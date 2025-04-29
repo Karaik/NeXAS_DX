@@ -1,13 +1,11 @@
 package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
+import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.Data;
-import com.giga.nexasdxeditor.io.BinaryReader;
-
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
-
-import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
 
 /**
  * @Author 这位同学(Karaik)
@@ -15,11 +13,16 @@ import static com.giga.nexasdxeditor.util.ParserUtil.readInt32;
  * @Description WazInfoUnknown
  */
 @Data
+@NoArgsConstructor
 public class SkillInfoUnknown extends SkillInfoObject {
 
     private Integer int1;
     private Integer int2;
     private Integer int3;
+
+    public SkillInfoUnknown(Integer typeId) {
+        super(typeId);
+    }
 
     @Override
     public void readInfo(BinaryReader reader) {

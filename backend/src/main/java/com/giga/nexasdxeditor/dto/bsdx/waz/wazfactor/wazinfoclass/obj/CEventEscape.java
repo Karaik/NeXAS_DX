@@ -4,6 +4,7 @@ import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.cre
  * CEventEscape__Read
  */
 @Data
+@NoArgsConstructor
 public class CEventEscape extends SkillInfoObject {
 
     @Data
@@ -53,6 +55,10 @@ public class CEventEscape extends SkillInfoObject {
     private Integer int8;
 
     private List<CEventEscapeUnit> ceventEscapeUnitList = new ArrayList<>();
+
+    public CEventEscape(Integer typeId) {
+        super(typeId);
+    }
 
     @Data
     public static class CEventEscapeUnit {

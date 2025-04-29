@@ -2,9 +2,10 @@ package com.giga.nexasdxeditor;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ArrayUtil;
-import cn.hutool.core.util.HexUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giga.nexasdxeditor.dto.ResponseDTO;
 import com.giga.nexasdxeditor.dto.bsdx.waz.Waz;
 import com.giga.nexasdxeditor.service.impl.BinServiceImpl;
@@ -16,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,12 +76,15 @@ public class TestWaz {
         String outputDir = "src/main/resources/wazGenerated";  // 输出 .waz 文件路径
         FileUtil.mkdir(outputDir);  // 创建输出目录
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
         for (Resource resource : resources) {
             String jsonStr = FileUtil.readUtf8String(resource.getFile());
             JSONObject jsonObj = JSONUtil.parseObj(jsonStr);
 
             // 反序列化成 Waz 对象
-            Waz waz = JSONUtil.toBean(jsonObj, Waz.class);
+            Waz waz = objectMapper.readValue(jsonStr, Waz.class);
             String baseName = resource.getFilename().replace(".json", "");
             String outputPath = FileUtil.file(outputDir, baseName + ".waz").getAbsolutePath();
 

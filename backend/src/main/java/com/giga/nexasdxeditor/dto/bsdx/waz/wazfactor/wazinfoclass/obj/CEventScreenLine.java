@@ -4,6 +4,7 @@ import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import static com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.SkillInfoFactory.cre
  * CEventScreenLine__Read
  */
 @Data
+@NoArgsConstructor
 public class CEventScreenLine extends SkillInfoObject {
 
     @Data
@@ -52,6 +54,10 @@ public class CEventScreenLine extends SkillInfoObject {
     private Integer int10;
 
     private List<CEventScreenLineUnit> ceventScreenLineUnitList = new ArrayList<>();
+
+    public CEventScreenLine(Integer typeId) {
+        super(typeId);
+    }
 
     @Data
     public static class CEventScreenLineUnit {

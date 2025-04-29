@@ -67,7 +67,9 @@ public class BinaryWriter implements AutoCloseable {
 
     public void writeNullTerminatedString(String str) throws IOException {
         byte[] bytes = StrUtil.bytes(str, charset);
-        outputStream.write(bytes);
+        if (!StrUtil.isEmpty(str)) {
+            outputStream.write(bytes);
+        }
         outputStream.write(0); // 写入 null 终止符
     }
 

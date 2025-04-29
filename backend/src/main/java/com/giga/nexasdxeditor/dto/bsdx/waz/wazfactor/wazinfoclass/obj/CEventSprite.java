@@ -3,6 +3,7 @@ package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 
@@ -15,6 +16,7 @@ import java.io.IOException;
  *  ERROR:CMeka,CPartsじゃないのに自動指定を使った
  */
 @Data
+@NoArgsConstructor
 public class CEventSprite extends SkillInfoObject {
 
     /**
@@ -31,6 +33,10 @@ public class CEventSprite extends SkillInfoObject {
      * 该动作组的第几个动作
      */
     private Integer actionNumber;
+
+    public CEventSprite(Integer typeId) {
+        super(typeId);
+    }
 
     @Override
     public void readInfo(BinaryReader reader) {

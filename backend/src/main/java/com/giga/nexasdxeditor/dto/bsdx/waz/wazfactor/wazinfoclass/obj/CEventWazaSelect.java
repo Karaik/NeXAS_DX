@@ -3,6 +3,7 @@ package com.giga.nexasdxeditor.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 
@@ -12,10 +13,15 @@ import java.io.IOException;
  * CEventWazaSelect__Read
  */
 @Data
+@NoArgsConstructor
 public class CEventWazaSelect extends SkillInfoObject {
 
     private Integer int1;
     private Integer int2;
+
+    public CEventWazaSelect(Integer typeId) {
+        super(typeId);
+    }
 
     public static final String[] CEVENT_WAZA_SELECT_FORMATS = {
             " ： "

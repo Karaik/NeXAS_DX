@@ -4,6 +4,7 @@ import com.giga.nexasdxeditor.io.BinaryReader;
 import com.giga.nexasdxeditor.io.BinaryWriter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 
@@ -13,6 +14,7 @@ import java.io.IOException;
  * CEventScreenAttr__Read
  */
 @Data
+@NoArgsConstructor
 public class CEventScreenAttr extends SkillInfoObject {
 
     @Data
@@ -42,6 +44,10 @@ public class CEventScreenAttr extends SkillInfoObject {
     private Integer int7;
     private Integer int8;
     private Integer int9;
+
+    public CEventScreenAttr(Integer typeId) {
+        super(typeId);
+    }
 
     @Override
     public void readInfo(BinaryReader reader) {
