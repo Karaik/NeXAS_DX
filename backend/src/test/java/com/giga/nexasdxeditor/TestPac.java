@@ -31,7 +31,7 @@ public class TestPac {
             String pacFileName = resource.getFilename().replace(".pac", "");  // 去掉扩展名作为文件夹名
 
             // 生成文件夹路径，文件夹名即为 pac 文件的名称
-            String outputFolderPath = "D:\\Code\\java\\NeXAS_DX\\backend\\src\\main\\resources\\bsdx\\" + pacFileName;
+            String outputFolderPath = "D:\\Code\\java\\NeXAS_DX\\backend\\src\\main\\resources\\" + pacFileName;
 
             // 确保输出文件夹存在
             File outputFolder = new File(outputFolderPath);

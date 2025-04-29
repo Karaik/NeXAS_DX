@@ -81,6 +81,7 @@ public class CEventNokezori extends SkillInfoObject {
     public static class CEventNokezoriUnit {
         private Integer ceventHitUnitQuantity;
         private Integer buffer;
+        private Integer unitSlotNum; // 记录槽位便于write
         private String description;
         private SkillInfoObject data;
     }
@@ -114,6 +115,7 @@ public class CEventNokezori extends SkillInfoObject {
             unit.setCeventHitUnitQuantity(i);
             unit.setDescription(CEVENT_NOKEZORI_ENTRIES[i].getDescription());
             unit.setBuffer(buffer);
+            unit.setUnitSlotNum(i);
 
             if (buffer != 0) {
                 int typeId = CEVENT_NOKEZORI_ENTRIES[i].getType();
@@ -145,10 +147,21 @@ public class CEventNokezori extends SkillInfoObject {
         writer.writeInt(this.int11);
         writer.writeInt(this.int12);
         writer.writeInt(this.int13);
-        for (CEventNokezoriUnit unit : ceventNokezoriUnitList) {
-            writer.writeInt(unit.getBuffer());
-            if (unit.getBuffer() != 0 && unit.getData() != null) {
-                unit.getData().writeInfo(writer);
+        for (int i = 0; i < 17; i++) {
+            CEventNokezoriUnit target = null;
+            for (CEventNokezoriUnit unit : this.ceventNokezoriUnitList) {
+                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                    target = unit;
+                    break;
+                }
+            }
+            if (target != null) {
+                writer.writeInt(target.getBuffer());
+                if (target.getBuffer() != 0 && target.getData() != null) {
+                    target.getData().writeInfo(writer);
+                }
+            } else {
+                writer.writeInt(0);
             }
         }
     }

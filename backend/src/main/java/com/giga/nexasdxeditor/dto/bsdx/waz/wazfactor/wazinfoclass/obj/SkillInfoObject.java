@@ -60,7 +60,7 @@ import java.io.IOException;
 public class SkillInfoObject {
 
     public Integer offset;
-    public Integer unitQuantity;
+    public Integer slotNum;
     public Integer typeId;
     /**
      * 第几帧开始

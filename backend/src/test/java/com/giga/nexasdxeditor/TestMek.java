@@ -37,7 +37,7 @@ public class TestMek {
             path = resource.getFile().getPath();
             ResponseDTO parse = null;
             try {
-                parse = binServiceImpl.parse(path, "Shift-jis");
+                parse = binServiceImpl.parse(path, "x-SJIS");
             } catch (Exception e) {
                 continue;
             }
@@ -63,7 +63,7 @@ public class TestMek {
             baseNames.add(baseName);
 
             try {
-                ResponseDTO parse = binServiceImpl.parse(path, "Shift-jis");
+                ResponseDTO parse = binServiceImpl.parse(path, "x-SJIS");
                 Mek mek = (Mek) parse.getData();
                 allMekList.add(mek);
             } catch (Exception e) {
@@ -104,7 +104,7 @@ public class TestMek {
         }
 
         Mek zhMek = (Mek) binServiceImpl.parse(path1, "GBK").getData();
-        Mek jaMek = (Mek) binServiceImpl.parse(path2, "Shift-JIS").getData();
+        Mek jaMek = (Mek) binServiceImpl.parse(path2, "x-SJIS").getData();
 
         TransferUtil.transJA2ZH(jaMek, zhMek);
 
@@ -123,8 +123,8 @@ public class TestMek {
             break;
         }
 
-        Mek mek = (Mek) binServiceImpl.parse(path, "Shift-JIS").getData();
-        binServiceImpl.generate(path, mek, "Shift-JIS");
+        Mek mek = (Mek) binServiceImpl.parse(path, "x-SJIS").getData();
+        binServiceImpl.generate(path, mek, "x-SJIS");
 
     }
 

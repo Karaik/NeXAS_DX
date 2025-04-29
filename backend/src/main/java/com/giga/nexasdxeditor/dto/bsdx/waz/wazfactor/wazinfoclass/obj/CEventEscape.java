@@ -65,6 +65,7 @@ public class CEventEscape extends SkillInfoObject {
         private Integer ceventEscapeUnitQuantity;
         private String description;
         private Integer buffer;
+        private Integer unitSlotNum; // 记录槽位便于write
         private SkillInfoObject data;
     }
 
@@ -91,6 +92,7 @@ public class CEventEscape extends SkillInfoObject {
                 unit.setCeventEscapeUnitQuantity(i);
                 unit.setDescription(CEVENT_ESCAPE_TYPES[i].getDescription());
                 unit.setBuffer(buffer);
+                unit.setUnitSlotNum(i);
 
                 if (buffer != 0) {
                     int typeId = CEVENT_ESCAPE_TYPES[i].getType();
@@ -116,13 +118,27 @@ public class CEventEscape extends SkillInfoObject {
         writer.writeInt(this.int6);
         writer.writeInt(this.int7);
         writer.writeInt(this.int8);
-        for (CEventEscapeUnit unit : ceventEscapeUnitList) {
-            writer.writeInt(unit.getBuffer());
-            if (unit.getBuffer() != 0 && unit.getData() != null) {
-                unit.getData().writeInfo(writer);
+
+        for (int i = 0; i < 10; i++) {
+            if (i == 2 || i == 8) {
+                CEventEscapeUnit target = null;
+                for (CEventEscapeUnit unit : this.ceventEscapeUnitList) {
+                    if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                        target = unit;
+                        break;
+                    }
+                }
+
+                if (target != null) {
+                    writer.writeInt(target.getBuffer());
+                    if (target.getBuffer() != 0 && target.getData() != null) {
+                        target.getData().writeInfo(writer);
+                    }
+                } else {
+                    writer.writeInt(0);
+                }
             }
         }
     }
-
 
 }

@@ -59,6 +59,7 @@ public class CEventCpuButton extends SkillInfoObject {
         private Integer ceventCpuButtonUnitQuantity;
         private String description;
         private Integer buffer;
+        private Integer unitSlotNum; // 记录槽位便于write
         private SkillInfoObject data;
     }
 
@@ -85,6 +86,7 @@ public class CEventCpuButton extends SkillInfoObject {
                 unit.setCeventCpuButtonUnitQuantity(i);
                 unit.setDescription(CEVENT_CPU_BUTTON_ENTRIES[i].getDescription());
                 unit.setBuffer(buffer);
+                unit.setUnitSlotNum(i);
 
                 if (buffer != 0) {
                     SkillInfoObject obj = createCEventObjectByType(CEVENT_CPU_BUTTON_ENTRIES[i].getType());
@@ -108,10 +110,22 @@ public class CEventCpuButton extends SkillInfoObject {
         writer.writeInt(this.int5);
         writer.writeShort(this.short1);
         writer.writeShort(this.short2);
-        for (CEventCpuButtonUnit unit : ceventCpuButtonUnitList) {
-            writer.writeInt(unit.getBuffer());
-            if (unit.getBuffer() != 0 && unit.getData() != null) {
-                unit.getData().writeInfo(writer);
+
+        for (int i = 0; i < 8; i++) {
+            CEventCpuButtonUnit target = null;
+
+            for (CEventCpuButtonUnit unit : this.ceventCpuButtonUnitList) {
+                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                    target = unit;
+                    break;
+                }
+            }
+
+            if (target != null) {
+                writer.writeInt(target.getBuffer());
+                if (target.getBuffer() != 0 && target.getData() != null) {
+                    target.getData().writeInfo(writer);
+                }
             }
         }
     }

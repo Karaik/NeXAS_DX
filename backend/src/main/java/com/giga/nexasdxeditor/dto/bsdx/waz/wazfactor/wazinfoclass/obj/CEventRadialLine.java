@@ -67,6 +67,7 @@ public class CEventRadialLine extends SkillInfoObject {
     public static class CEventRadialLineUnit {
         private Integer ceventRadialLineUnitQuantity;
         private Integer buffer;
+        private Integer unitSlotNum; // 记录槽位便于write
         private String description;
         private SkillInfoObject data;
     }
@@ -97,6 +98,7 @@ public class CEventRadialLine extends SkillInfoObject {
                 unit.setCeventRadialLineUnitQuantity(i);
                 unit.setDescription(CEVENT_RADIAL_LINE_TYPES[i].getDescription());
                 unit.setBuffer(buffer);
+                unit.setUnitSlotNum(i);
 
                 if (buffer != 0) {
                     int typeId = CEVENT_RADIAL_LINE_TYPES[i].getType();
@@ -128,10 +130,25 @@ public class CEventRadialLine extends SkillInfoObject {
         writer.writeInt(this.int10);
         writer.writeInt(this.int11);
         writer.writeInt(this.int12);
-        for (CEventRadialLineUnit unit : ceventRadialLineUnitList) {
-            writer.writeInt(unit.getBuffer());
-            if (unit.getBuffer() != 0 && unit.getData() != null) {
-                unit.getData().writeInfo(writer);
+
+        for (int i = 0; i < 13; i++) {
+            if (i == 4) {
+                CEventRadialLineUnit target = null;
+                for (CEventRadialLineUnit unit : this.ceventRadialLineUnitList) {
+                    if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                        target = unit;
+                        break;
+                    }
+                }
+
+                if (target != null) {
+                    writer.writeInt(target.getBuffer());
+                    if (target.getBuffer() != 0 && target.getData() != null) {
+                        target.getData().writeInfo(writer);
+                    }
+                } else {
+                    writer.writeInt(0);
+                }
             }
         }
     }

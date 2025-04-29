@@ -220,7 +220,7 @@ public class SkillInfoFactory {
         int typeId = SKILL_INFO_TYPE_ENTRIES[sequence].getType();
         SkillInfoObject obj = createCEventObjectByType(typeId);
 
-        obj.setUnitQuantity(sequence);
+        obj.setSlotNum(sequence);
         return obj;
     }
 

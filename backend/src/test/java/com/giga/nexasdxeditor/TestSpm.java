@@ -75,7 +75,7 @@ public class TestSpm {
             baseNames.add(baseName);
 
             try {
-                ResponseDTO parse = binServiceImpl.parse(path, "Shift-jis");
+                ResponseDTO parse = binServiceImpl.parse(path, "x-SJIS");
                 Spm spm = (Spm) parse.getData();
                 allSpmList.add(spm);
             } catch (Exception e) {

@@ -40,7 +40,7 @@ public class TestBin {
             baseNames.add(baseName);
 
             try {
-                ResponseDTO parse = binServiceImpl.parse(path, "Shift-jis");
+                ResponseDTO parse = binServiceImpl.parse(path, "x-SJIS");
                 Bin bin = (Bin) parse.getData();
                 allBinList.add(bin);
             } catch (Exception e) {

@@ -98,6 +98,7 @@ public class CEventEffect extends SkillInfoObject {
     public static class CEventEffectUnit {
         private Integer ceventEffectUnitQuantity;
         private Integer buffer;
+        private Integer unitSlotNum; // 记录槽位便于write
         private String description;
         private SkillInfoObject data;
     }
@@ -126,6 +127,7 @@ public class CEventEffect extends SkillInfoObject {
             unit.setDescription(CEVENT_EFFECT_TYPES[i].getDescription());
             unit.setCeventEffectUnitQuantity(i);
             unit.setBuffer(buffer);
+            unit.setUnitSlotNum(i);
 
             if (buffer != 0) {
                 int typeId = CEVENT_EFFECT_TYPES[i].getType();
@@ -153,10 +155,23 @@ public class CEventEffect extends SkillInfoObject {
         writer.writeInt(this.int9);
         writer.writeInt(this.int10);
         writer.writeInt(this.int11);
-        for (CEventEffectUnit unit : ceventEffectUnitList) {
-            writer.writeInt(unit.getBuffer());
-            if (unit.getBuffer() != 0 && unit.getData() != null) {
-                unit.getData().writeInfo(writer);
+
+        for (int i = 0; i < 45; i++) {
+            CEventEffectUnit target = null;
+            for (CEventEffectUnit unit : this.ceventEffectUnitList) {
+                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                    target = unit;
+                    break;
+                }
+            }
+
+            if (target != null) {
+                writer.writeInt(target.getBuffer());
+                if (target.getBuffer() != 0 && target.getData() != null) {
+                    target.getData().writeInfo(writer);
+                }
+            } else {
+                writer.writeInt(0);
             }
         }
     }

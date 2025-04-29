@@ -51,6 +51,7 @@ public class CEventScreenEffect extends SkillInfoObject {
     public static class CEventScreenEffectUnit {
         private Integer ceventScreenEffectUnitQuantity;
         private Integer buffer;
+        private Integer unitSlotNum; // 记录槽位便于write
         private String description;
         private SkillInfoObject data;
     }
@@ -73,6 +74,7 @@ public class CEventScreenEffect extends SkillInfoObject {
                 unit.setCeventScreenEffectUnitQuantity(i);
                 unit.setDescription(CEVENT_SCREEN_EFFECT_TYPES[i].getDescription());
                 unit.setBuffer(buffer);
+                unit.setUnitSlotNum(i);
 
                 if (buffer != 0) {
                     int typeId = CEVENT_SCREEN_EFFECT_TYPES[i].getType();
@@ -94,10 +96,25 @@ public class CEventScreenEffect extends SkillInfoObject {
         writer.writeInt(this.int2);
         writer.writeInt(this.int3);
         writer.writeInt(this.int4);
-        for (CEventScreenEffectUnit unit : ceventScreenEffectUnitList) {
-            writer.writeInt(unit.getBuffer());
-            if (unit.getBuffer() != 0 && unit.getData() != null) {
-                unit.getData().writeInfo(writer);
+
+        for (int i = 0; i < 5; i++) {
+            if (i == 4) {
+                CEventScreenEffectUnit target = null;
+                for (CEventScreenEffectUnit unit : this.ceventScreenEffectUnitList) {
+                    if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                        target = unit;
+                        break;
+                    }
+                }
+
+                if (target != null) {
+                    writer.writeInt(target.getBuffer());
+                    if (target.getBuffer() != 0 && target.getData() != null) {
+                        target.getData().writeInfo(writer);
+                    }
+                } else {
+                    writer.writeInt(0);
+                }
             }
         }
     }

@@ -40,15 +40,15 @@ public class WazGenerator implements BsdxGenerator<Waz> {
                 }
 
                 writer.writeInt(1);
+                writer.writeNullTerminatedString(skill.getSkillNameJapanese());
+                writer.writeNullTerminatedString(skill.getSkillNameEnglish());
+
                 try {
-                    writer.writeNullTerminatedString(skill.getSkillNameJapanese());
-                    writer.writeNullTerminatedString(skill.getSkillNameEnglish());
+                    int phaseQuantity = skill.getPhaseQuantity();
+                    writer.writeInt(phaseQuantity);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-
-                int phaseQuantity = skill.getPhaseQuantity();
-                writer.writeInt(phaseQuantity);
 
                 List<Waz.Skill.SkillPhase> phaseInfoList = skill.getPhasesInfo();
                 for (Waz.Skill.SkillPhase skillPhase : phaseInfoList) {

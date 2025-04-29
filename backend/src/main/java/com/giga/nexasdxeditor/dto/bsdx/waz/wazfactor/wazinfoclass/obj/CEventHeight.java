@@ -52,6 +52,7 @@ public class CEventHeight extends SkillInfoObject {
         private Integer ceventHeightUnitQuantity;
         private String description;
         private Integer buffer;
+        private Integer unitSlotNum; // 记录槽位便于write
         private SkillInfoObject data;
     }
 
@@ -69,6 +70,7 @@ public class CEventHeight extends SkillInfoObject {
             unit.setCeventHeightUnitQuantity(i);
             unit.setDescription(CEVENT_HEIGHT_TYPES[i].getDescription());
             unit.setBuffer(buffer);
+            unit.setUnitSlotNum(i);
 
             if (buffer != 0) {
                 int typeId = CEVENT_HEIGHT_TYPES[i].getType();
@@ -86,12 +88,24 @@ public class CEventHeight extends SkillInfoObject {
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
         writer.writeInt(this.int1);
-        for (CEventHeightUnit unit : ceventHeightUnitList) {
-            writer.writeInt(unit.getBuffer());
-            if (unit.getBuffer() != 0 && unit.getData() != null) {
-                unit.getData().writeInfo(writer);
+        for (int i = 0; i < 3; i++) {
+            CEventHeightUnit target = null;
+            for (CEventHeightUnit unit : this.ceventHeightUnitList) {
+                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                    target = unit;
+                    break;
+                }
+            }
+            if (target != null) {
+                writer.writeInt(target.getBuffer());
+                if (target.getBuffer() != 0 && target.getData() != null) {
+                    target.getData().writeInfo(writer);
+                }
+            } else {
+                writer.writeInt(0);
             }
         }
     }
+
 
 }

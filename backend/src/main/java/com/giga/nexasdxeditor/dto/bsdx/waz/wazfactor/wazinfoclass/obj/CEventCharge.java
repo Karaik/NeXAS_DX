@@ -44,6 +44,7 @@ public class CEventCharge extends SkillInfoObject {
         private Integer ceventChargeUnitQuantity;
         private String description;
         private Integer buffer;
+        private Integer unitSlotNum; // 记录槽位便于write
         private SkillInfoObject data;
     }
 
@@ -60,6 +61,7 @@ public class CEventCharge extends SkillInfoObject {
             unit.setCeventChargeUnitQuantity(i);
             unit.setDescription(CEVENT_CHARGE_ENTRIES[i].getDescription());
             unit.setBuffer(buffer);
+            unit.setUnitSlotNum(i);
 
             if (buffer != 0) {
                 int typeId = CEVENT_CHARGE_ENTRIES[i].getType();
@@ -77,10 +79,24 @@ public class CEventCharge extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
-        for (CEventChargeUnit unit : ceventChargeUnitList) {
-            writer.writeInt(unit.getBuffer());
-            if (unit.getBuffer() != 0 && unit.getData() != null) {
-                unit.getData().writeInfo(writer);
+
+        for (int i = 0; i < 2; i++) {
+            CEventChargeUnit target = null;
+
+            for (CEventChargeUnit unit : this.ceventChargeUnitList) {
+                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                    target = unit;
+                    break;
+                }
+            }
+
+            if (target != null) {
+                writer.writeInt(target.getBuffer());
+                if (target.getBuffer() != 0 && target.getData() != null) {
+                    target.getData().writeInfo(writer);
+                }
+            } else {
+                writer.writeInt(0);
             }
         }
     }

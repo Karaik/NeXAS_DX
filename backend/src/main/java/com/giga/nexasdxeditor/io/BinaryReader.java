@@ -14,7 +14,7 @@ public class BinaryReader {
     private final byte[] data;
     private int position = 0;
     private boolean littleEndian = true;
-    private Charset charset = Charset.forName("Shift-JIS");
+    private Charset charset = Charset.forName("x-SJIS");
 
     public BinaryReader(byte[] data) {
         this.data = data;

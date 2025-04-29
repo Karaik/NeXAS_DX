@@ -44,7 +44,7 @@ public class TestWaz {
             baseNames.add(baseName);
 
             try {
-                ResponseDTO parse = binServiceImpl.parse(path, "Shift-jis");
+                ResponseDTO parse = binServiceImpl.parse(path, "x-SJIS");
                 Waz waz = (Waz) parse.getData();
                 allWazList.add(waz);
             } catch (Exception e) {
@@ -89,7 +89,7 @@ public class TestWaz {
             String outputPath = FileUtil.file(outputDir, baseName + ".waz").getAbsolutePath();
 
             // 调用生成器
-            binServiceImpl.generate(outputPath, waz, "Shift-jis");
+            binServiceImpl.generate(outputPath, waz, "x-SJIS");
             log.info("generated === {}", baseName);
         }
     }
@@ -105,13 +105,13 @@ public class TestWaz {
             log.info("checking === {}", fileName);
 
             // 解析.waz
-            ResponseDTO<?> dto = binServiceImpl.parse(originalPath, "Shift-jis");
+            ResponseDTO<?> dto = binServiceImpl.parse(originalPath, "x-SJIS");
             Waz waz = (Waz) dto.getData();
 
             // 生成.waz
             String tempPath = "src/main/resources/temp/" + fileName;
             FileUtil.mkdir("src/main/resources/temp/");
-            binServiceImpl.generate(tempPath, waz, "Shift-jis");
+            binServiceImpl.generate(tempPath, waz, "x-SJIS");
 
             // 读取为byte[]
             byte[] originalBytes = FileUtil.readBytes(originalPath);

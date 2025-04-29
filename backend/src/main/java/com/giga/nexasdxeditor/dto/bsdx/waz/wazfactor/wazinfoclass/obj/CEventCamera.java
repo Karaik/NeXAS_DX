@@ -47,6 +47,7 @@ public class CEventCamera extends SkillInfoObject {
         private Integer ceventCameraUnitQuantity;
         private String description;
         private Integer buffer;
+        private Integer unitSlotNum; // 记录槽位便于write
         private SkillInfoObject data;
     }
 
@@ -65,6 +66,7 @@ public class CEventCamera extends SkillInfoObject {
             unit.setCeventCameraUnitQuantity(i);
             unit.setDescription(CEVENT_CAMERA_ENTRIES[i].getDescription());
             unit.setBuffer(buffer);
+            unit.setUnitSlotNum(i);
 
             if (buffer != 0) {
                 int typeId = CEVENT_CAMERA_ENTRIES[i].getType();
@@ -82,10 +84,24 @@ public class CEventCamera extends SkillInfoObject {
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
         writer.writeShort(this.short1);
-        for (CEventCameraUnit unit : ceventCameraUnitList) {
-            writer.writeInt(unit.getBuffer());
-            if (unit.getBuffer() != 0 && unit.getData() != null) {
-                unit.getData().writeInfo(writer);
+
+        for (int i = 0; i < 5; i++) {
+            CEventCameraUnit target = null;
+
+            for (CEventCameraUnit unit : this.ceventCameraUnitList) {
+                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                    target = unit;
+                    break;
+                }
+            }
+
+            if (target != null) {
+                writer.writeInt(target.getBuffer());
+                if (target.getBuffer() != 0 && target.getData() != null) {
+                    target.getData().writeInfo(writer);
+                }
+            } else {
+                writer.writeInt(0);
             }
         }
     }

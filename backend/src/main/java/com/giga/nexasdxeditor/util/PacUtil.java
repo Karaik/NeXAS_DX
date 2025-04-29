@@ -76,7 +76,7 @@ public class PacUtil {
             }
         }
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.forName(simulateEnter?"GBK":"Shift-JIS")))) { //前为打包程序输出编码，后为解包
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.forName(simulateEnter?"GBK":"x-SJIS")))) { //前为打包程序输出编码，后为解包
             StringBuilder output = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
