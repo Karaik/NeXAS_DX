@@ -14,7 +14,7 @@ public class BinaryWriter implements AutoCloseable {
 
     private final OutputStream outputStream;
     private boolean littleEndian = true;
-    private Charset charset = Charset.forName("x-SJIS");
+    private Charset charset = Charset.forName("windows-31j");
 
     public BinaryWriter(OutputStream outputStream) {
         this.outputStream = new BufferedOutputStream(outputStream);

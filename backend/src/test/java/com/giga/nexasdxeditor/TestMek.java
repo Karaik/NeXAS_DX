@@ -22,8 +22,8 @@ import java.util.List;
 public class TestMek {
     Logger log = LoggerFactory.getLogger(TestMek.class);
 
-    @Autowired
-    BinServiceImpl binServiceImpl;
+    
+    BinServiceImpl binServiceImpl = new BinServiceImpl();
 
     @Test
     void testParseMek() throws IOException {
@@ -37,7 +37,7 @@ public class TestMek {
             path = resource.getFile().getPath();
             ResponseDTO parse = null;
             try {
-                parse = binServiceImpl.parse(path, "x-SJIS");
+                parse = binServiceImpl.parse(path, "windows-31j");
             } catch (Exception e) {
                 continue;
             }
@@ -63,7 +63,7 @@ public class TestMek {
             baseNames.add(baseName);
 
             try {
-                ResponseDTO parse = binServiceImpl.parse(path, "x-SJIS");
+                ResponseDTO parse = binServiceImpl.parse(path, "windows-31j");
                 Mek mek = (Mek) parse.getData();
                 allMekList.add(mek);
             } catch (Exception e) {
@@ -104,7 +104,7 @@ public class TestMek {
         }
 
         Mek zhMek = (Mek) binServiceImpl.parse(path1, "GBK").getData();
-        Mek jaMek = (Mek) binServiceImpl.parse(path2, "x-SJIS").getData();
+        Mek jaMek = (Mek) binServiceImpl.parse(path2, "windows-31j").getData();
 
         TransferUtil.transJA2ZH(jaMek, zhMek);
 
@@ -123,8 +123,8 @@ public class TestMek {
             break;
         }
 
-        Mek mek = (Mek) binServiceImpl.parse(path, "x-SJIS").getData();
-        binServiceImpl.generate(path, mek, "x-SJIS");
+        Mek mek = (Mek) binServiceImpl.parse(path, "windows-31j").getData();
+        binServiceImpl.generate(path, mek, "windows-31j");
 
     }
 

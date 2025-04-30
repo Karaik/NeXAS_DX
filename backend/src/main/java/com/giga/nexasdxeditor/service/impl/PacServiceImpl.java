@@ -4,15 +4,14 @@ import cn.hutool.core.util.StrUtil;
 import com.giga.nexasdxeditor.dto.ResponseDTO;
 import com.giga.nexasdxeditor.service.PacService;
 import com.giga.nexasdxeditor.util.PacUtil;
-import org.springframework.stereotype.Service;
 
-import java.nio.file.Path;
 import java.io.File;
 import java.nio.file.Files;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-@Service
 public class PacServiceImpl implements PacService {
 
     private final static String PAC_SUFFIX = ".pac";

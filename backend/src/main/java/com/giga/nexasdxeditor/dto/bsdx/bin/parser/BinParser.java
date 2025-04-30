@@ -212,7 +212,7 @@ public class BinParser implements BsdxParser<Bin> {
         // 构造结果列表
         List<String> props2 = new ArrayList<>(count);
 
-        // 循环读取 count 条 x-SJIS 字符串
+        // 循环读取 count 条 windows-31j 字符串
         for (int i = 0; i < count; i++) {
             // 记录起始位置
             int start = reader.getPosition();

@@ -16,7 +16,7 @@ import java.io.File;
 public class TestPac {
     Logger log = LoggerFactory.getLogger(TestPac.class);
 
-    @Autowired
+    
     PacServiceImpl pacServiceImpl;
 
     @Test

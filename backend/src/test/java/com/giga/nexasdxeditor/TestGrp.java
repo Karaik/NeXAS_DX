@@ -50,7 +50,7 @@ public class TestGrp {
 
             // 读取并解析 .grp 文件
             byte[] fileBytes = Files.readAllBytes(resource.getFile().toPath());
-            List<GroupMap> groupMapList = parser.parseGrp(fileBytes, "x-SJIS");
+            List<GroupMap> groupMapList = parser.parseGrp(fileBytes, "windows-31j");
 
             // 准备 Excel 数据
             List<Map<String, Object>> excelData = new ArrayList<>();

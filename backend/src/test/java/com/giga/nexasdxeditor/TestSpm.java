@@ -24,8 +24,8 @@ public class TestSpm {
 
     Logger log = LoggerFactory.getLogger(TestSpm.class);
 
-    @Autowired
-    BinServiceImpl binServiceImpl;
+    
+    BinServiceImpl binServiceImpl = new BinServiceImpl();
 
     @Test
     void parseJson2Spm() throws IOException {
@@ -75,7 +75,7 @@ public class TestSpm {
             baseNames.add(baseName);
 
             try {
-                ResponseDTO parse = binServiceImpl.parse(path, "x-SJIS");
+                ResponseDTO parse = binServiceImpl.parse(path, "windows-31j");
                 Spm spm = (Spm) parse.getData();
                 allSpmList.add(spm);
             } catch (Exception e) {

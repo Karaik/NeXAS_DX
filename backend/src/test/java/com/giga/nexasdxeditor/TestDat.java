@@ -25,8 +25,8 @@ import java.util.Map;
 public class TestDat {
     Logger log = LoggerFactory.getLogger(TestDat.class);
 
-    @Autowired
-    BinServiceImpl binServiceImpl;
+    
+    BinServiceImpl binServiceImpl = new BinServiceImpl();
 
     @Test
     void testDat2Excel() throws IOException {
@@ -52,7 +52,7 @@ public class TestDat {
             String sheetName = resource.getFilename().replace(".dat", "");  // 去掉扩展名作为 Sheet 名
 
             // 读取并解析 .dat 文件
-            ResponseDTO resp = binServiceImpl.parse(filePath, "x-SJIS");
+            ResponseDTO resp = binServiceImpl.parse(filePath, "windows-31j");
             Dat dat = (Dat) resp.getData();
 
             // 准备 Excel 数据

@@ -21,8 +21,8 @@ import java.util.List;
 public class TestBin {
     Logger log = LoggerFactory.getLogger(TestBin.class);
 
-    @Autowired
-    BinServiceImpl binServiceImpl;
+    
+    BinServiceImpl binServiceImpl = new BinServiceImpl();
     
     @Test
     void testGenerateBinJsonFiles() throws IOException {
@@ -40,7 +40,7 @@ public class TestBin {
             baseNames.add(baseName);
 
             try {
-                ResponseDTO parse = binServiceImpl.parse(path, "x-SJIS");
+                ResponseDTO parse = binServiceImpl.parse(path, "windows-31j");
                 Bin bin = (Bin) parse.getData();
                 allBinList.add(bin);
             } catch (Exception e) {

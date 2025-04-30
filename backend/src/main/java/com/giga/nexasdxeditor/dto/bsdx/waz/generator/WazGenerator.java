@@ -34,7 +34,7 @@ public class WazGenerator implements BsdxGenerator<Waz> {
 
             List<Waz.Skill> skills = waz.getSkillList();
             for (Waz.Skill skill : skills) {
-                if (skill.isEmpty()) {
+                if (skill.isEmpty() || skill.getPhaseQuantity() == null) {
                     writer.writeInt(0);
                     continue;
                 }

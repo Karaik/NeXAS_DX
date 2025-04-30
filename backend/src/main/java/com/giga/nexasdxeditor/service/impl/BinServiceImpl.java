@@ -7,7 +7,6 @@ import com.giga.nexasdxeditor.dto.bsdx.BsdxGenerator;
 import com.giga.nexasdxeditor.dto.bsdx.BsdxParser;
 import com.giga.nexasdxeditor.dto.bsdx.bin.parser.BinParser;
 import com.giga.nexasdxeditor.dto.bsdx.dat.parser.DatParser;
-import com.giga.nexasdxeditor.dto.bsdx.mek.Mek;
 import com.giga.nexasdxeditor.dto.bsdx.mek.generator.MekGenerator;
 import com.giga.nexasdxeditor.dto.bsdx.mek.parser.MekParser;
 import com.giga.nexasdxeditor.dto.bsdx.spm.parser.SpmParser;
@@ -15,7 +14,6 @@ import com.giga.nexasdxeditor.dto.bsdx.waz.generator.WazGenerator;
 import com.giga.nexasdxeditor.dto.bsdx.waz.parser.WazParser;
 import com.giga.nexasdxeditor.exception.BusinessException;
 import com.giga.nexasdxeditor.service.BinService;
-import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Service
 public class BinServiceImpl implements BinService {
 
     private final Map<String, BsdxParser<?>> parserMap = new HashMap<>();

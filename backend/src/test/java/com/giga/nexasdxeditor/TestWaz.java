@@ -12,22 +12,23 @@ import com.giga.nexasdxeditor.service.impl.BinServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootTest
 public class TestWaz {
 
     Logger log = LoggerFactory.getLogger(TestWaz.class);
 
-    @Autowired
-    BinServiceImpl binServiceImpl;
+
+    BinServiceImpl binServiceImpl = new BinServiceImpl();
 
     @Test
     void testGenerateWazJsonFiles() throws IOException {
@@ -44,7 +45,7 @@ public class TestWaz {
             baseNames.add(baseName);
 
             try {
-                ResponseDTO parse = binServiceImpl.parse(path, "x-SJIS");
+                ResponseDTO parse = binServiceImpl.parse(path, "windows-31j");
                 Waz waz = (Waz) parse.getData();
                 allWazList.add(waz);
             } catch (Exception e) {
@@ -89,7 +90,7 @@ public class TestWaz {
             String outputPath = FileUtil.file(outputDir, baseName + ".waz").getAbsolutePath();
 
             // 调用生成器
-            binServiceImpl.generate(outputPath, waz, "x-SJIS");
+            binServiceImpl.generate(outputPath, waz, "windows-31j");
             log.info("generated === {}", baseName);
         }
     }
@@ -97,34 +98,44 @@ public class TestWaz {
     @Test
     void testWazParseGenerateBinaryConsistency() throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        Resource[] resources = resolver.getResources("classpath*:/game/bsdx/waz/*.waz");
+        Resource[] originalResources = resolver.getResources("classpath*:/game/bsdx/waz/*.waz");
+        Resource[] generatedResources = resolver.getResources("classpath*:/wazGenerated/*.waz");
 
-        for (Resource resource : resources) {
-            String originalPath = resource.getFile().getPath();
-            String fileName = resource.getFilename();
-            log.info("checking === {}", fileName);
+        Map<String, Resource> generatedMap = new HashMap<>();
+        for (Resource gen : generatedResources) {
+            generatedMap.put(gen.getFilename(), gen);
+        }
 
-            // 解析.waz
-            ResponseDTO<?> dto = binServiceImpl.parse(originalPath, "x-SJIS");
-            Waz waz = (Waz) dto.getData();
+        for (Resource original : originalResources) {
+            String fileName = original.getFilename();
+            Resource generated = generatedMap.get(fileName);
 
-            // 生成.waz
-            String tempPath = "src/main/resources/temp/" + fileName;
-            FileUtil.mkdir("src/main/resources/temp/");
-            binServiceImpl.generate(tempPath, waz, "x-SJIS");
-
-            // 读取为byte[]
-            byte[] originalBytes = FileUtil.readBytes(originalPath);
-            byte[] generatedBytes = FileUtil.readBytes(tempPath);
-
-            // 校验二进制是否一致
-            boolean isEqual = ArrayUtil.equals(originalBytes, generatedBytes);
-            if (!isEqual) {
-                log.error("二进制不一致: {}", fileName);
-                log.error("原始文件大小: {}, 生成文件大小: {}", originalBytes.length, generatedBytes.length);
+            if (generated == null) {
+                log.warn("未找到对应生成文件: {}", fileName);
+                continue;
             }
 
+            byte[] originalBytes = FileUtil.readBytes(original.getFile());
+            byte[] generatedBytes = FileUtil.readBytes(generated.getFile());
+
+            if (!ArrayUtil.equals(originalBytes, generatedBytes)) {
+                log.error("不一致: {}", fileName);
+                log.error("原始大小: {}, 生成大小: {}", originalBytes.length, generatedBytes.length);
+
+                int minLen = Math.min(originalBytes.length, generatedBytes.length);
+                for (int i = 0; i < minLen; i++) {
+                    if (originalBytes[i] != generatedBytes[i]) {
+                        log.error("差异位置 0x{}：原始=0x{} 生成=0x{}", Integer.toHexString(i),
+                                Integer.toHexString(originalBytes[i] & 0xFF),
+                                Integer.toHexString(generatedBytes[i] & 0xFF));
+                        break;
+                    }
+                }
+            } else {
+                log.info("一致: {}", fileName);
+            }
         }
     }
+
 
 }
