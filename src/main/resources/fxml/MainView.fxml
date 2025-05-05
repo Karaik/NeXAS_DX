@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane fx:id="root" xmlns:fx="http://javafx.com/fxml" fx:controller="com.giga.nexas.controller.MainViewController">
+
+    <top>
+        <HBox spacing="10.0" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="6.0" right="10.0" bottom="6.0" left="10.0"/>
+            </padding>
+
+            <MenuBar fx:id="menuBar">
+                <menus>
+                    <Menu text="设置"/>
+                </menus>
+            </MenuBar>
+
+            <RadioButton fx:id="modePackRadio" text="解包或封包"/>
+            <RadioButton fx:id="modeAnalyzeRadio" text="解析或生成" selected="true"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <CheckBox fx:id="alwaysOnTop" text="总在最前"/>
+        </HBox>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.25">
+            <TreeView fx:id="tree" prefWidth="300.0"/>
+
+            <VBox spacing="10.0" VBox.vgrow="ALWAYS">
+                <padding>
+                    <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                </padding>
+
+                <VBox spacing="10.0" VBox.vgrow="ALWAYS">
+                    <GridPane hgap="6.0" vgap="6.0">
+                        <columnConstraints>
+                            <ColumnConstraints halignment="RIGHT" prefWidth="60.0"/>
+                            <ColumnConstraints hgrow="ALWAYS"/>
+                            <ColumnConstraints prefWidth="32.0"/>
+                        </columnConstraints>
+
+                        <Label text="输入" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <TextField fx:id="inputField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                        <Button fx:id="inputBrowse" text="…" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+
+                        <Label text="输出" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <TextField fx:id="outputField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        <Button fx:id="outputBrowse" text="…" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                    </GridPane>
+
+                    <TitledPane text="选项" expanded="true">
+                        <VBox>
+                            <Label text="空"/>
+                        </VBox>
+                    </TitledPane>
+
+                    <HBox alignment="CENTER_RIGHT">
+                        <Button fx:id="actionButton" text="开始" minWidth="80"/>
+                    </HBox>
+                </VBox>
+
+                <Label text="日志"/>
+                <TextArea fx:id="logArea" editable="false" prefRowCount="8"
+                          VBox.vgrow="ALWAYS"
+                          style="-fx-control-inner-background: black; -fx-text-fill: white;"/>
+            </VBox>
+        </SplitPane>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="8.0">
+            <padding>
+                <Insets top="4.0" right="10.0" bottom="4.0" left="10.0"/>
+            </padding>
+            <Label fx:id="statusLabel" text="\@这位同学(Karaik)"/>
+        </HBox>
+    </bottom>
+</BorderPane>
