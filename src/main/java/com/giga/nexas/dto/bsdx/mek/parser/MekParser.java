@@ -3,18 +3,15 @@ package com.giga.nexas.dto.bsdx.mek.parser;
 import com.giga.nexas.dto.bsdx.BsdxParser;
 import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.mek.checker.MekChecker;
+import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEvent;
+import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEventAttack;
+import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEventMove;
 import com.giga.nexas.exception.BusinessException;
+import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.util.ParserUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import static com.giga.nexas.util.ParserUtil.findNullTerminator;
-import static com.giga.nexas.util.ParserUtil.readInt32;
+import java.util.*;
 
 /**
  * @Author 这位同学(Karaik)
@@ -33,11 +30,10 @@ public class MekParser implements BsdxParser<Mek> {
         return "mek";
     }
 
+    @Override
     public Mek parse(byte[] bytes, String filename, String charset) {
-
         Mek mek = new Mek();
         try {
-
             // 1.解析头
             parseMekHead(mek, bytes);
             if (MekChecker.checkMek(mek, bytes)) {
@@ -45,287 +41,207 @@ public class MekParser implements BsdxParser<Mek> {
             }
             mek.setFileName(filename);
 
-            // 按MekHead分割数组
+            // 按 MekHead 分割数组
             Mek.MekHead mekHead = mek.getMekHead();
-            // 机体信息块
-            byte[] bodyInfoBlock = Arrays.copyOfRange(bytes, mekHead.getSequence1(), mekHead.getSequence2());
-            // 未知信息块1
+            byte[] bodyInfoBlock     = Arrays.copyOfRange(bytes, mekHead.getSequence1(), mekHead.getSequence2());
             byte[] unknownInfoBlock1 = Arrays.copyOfRange(bytes, mekHead.getSequence2(), mekHead.getSequence3());
-            // 武装信息块
-            byte[] weaponInfoBlock = Arrays.copyOfRange(bytes, mekHead.getSequence3(), mekHead.getSequence4());
-            // AI信息块1
-            byte[] aiInfoBlock1 = Arrays.copyOfRange(bytes, mekHead.getSequence4(), mekHead.getSequence5());
-            // AI信息块2
-            byte[] aiInfoBlock2 = Arrays.copyOfRange(bytes, mekHead.getSequence5(), mekHead.getSequence6());
-            // 武装插槽块
-            byte[] mekPluginBlock = Arrays.copyOfRange(bytes, mekHead.getSequence6(), bytes.length);
+            byte[] weaponInfoBlock   = Arrays.copyOfRange(bytes, mekHead.getSequence3(), mekHead.getSequence4());
+            byte[] aiInfoBlock1      = Arrays.copyOfRange(bytes, mekHead.getSequence4(), mekHead.getSequence5());
+            byte[] aiInfoBlock2      = Arrays.copyOfRange(bytes, mekHead.getSequence5(), mekHead.getSequence6());
+            byte[] mekPluginBlock    = Arrays.copyOfRange(bytes, mekHead.getSequence6(), bytes.length);
 
             // 2.解析机体
             parseMekInfo(mek, bodyInfoBlock, charset);
-
             // 3.解析未知块1
             parseMekUnknownBlock1(mek, unknownInfoBlock1);
-
             // 4.解析武装块
             parseMekWeaponInfo(mek, weaponInfoBlock, charset);
-
-            // 5.解析ai块1
-            parseMekAiInfoBlock1(mek, aiInfoBlock1);
-
-            // 6.解析ai块2
-            parseMekAiInfoBlock2(mek, aiInfoBlock2);
-
+            // 5.解析 ai 块1
+            parseMekAiInfoBlock(mek, aiInfoBlock1, charset);
+            // 6.解析 ai 块2
+            parseMekAiInfoBlock2(mek, aiInfoBlock2, charset);
             // 7.解析武装插槽块
             parseMekPluginBlock(mek, mekPluginBlock);
-
 
         } catch (Exception e) {
             log.info("error === {}", e.getMessage());
             throw e;
         }
-
         return mek;
     }
 
-    public static void parseMekHead(Mek mek, byte[] bytes) {
+    /**
+     * 解析 Mek 头
+     */
+    private static void parseMekHead(Mek mek, byte[] bytes) {
         Mek.MekHead mekHead = mek.getMekHead();
-
-        mekHead.setSequence1(readInt32(bytes, 0));
-        mekHead.setSequence2(readInt32(bytes, 4));
-        mekHead.setSequence3(readInt32(bytes, 8));
-        mekHead.setSequence4(readInt32(bytes, 12));
-        mekHead.setSequence5(readInt32(bytes, 16));
-        mekHead.setSequence6(readInt32(bytes, 20));
+        BinaryReader reader = new BinaryReader(bytes);
+        mekHead.setSequence1(reader.readInt());
+        mekHead.setSequence2(reader.readInt());
+        mekHead.setSequence3(reader.readInt());
+        mekHead.setSequence4(reader.readInt());
+        mekHead.setSequence5(reader.readInt());
+        mekHead.setSequence6(reader.readInt());
 
         // 计算各块大小
         mek.getMekBlocks().calculateBlockSizes(mekHead);
-
     }
 
+    /**
+     * 解析机体信息块
+     */
     private static void parseMekInfo(Mek mek, byte[] bytes, String charset) {
         Mek.MekBasicInfo mekInfo = mek.getMekBasicInfo();
-        int offset = 0;
+        BinaryReader reader = new BinaryReader(bytes, charset);
 
-        mekInfo.setMekNameKana(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName(charset)));
-        offset += findNullTerminator(bytes, offset) + 1;
+        mekInfo.setMekNameKana(reader.readNullTerminatedString());
 
-        mekInfo.setMekNameEnglish(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName("UTF-8")));
-        offset += findNullTerminator(bytes, offset) + 1;
+        reader.setCharset("UTF-8");
+        mekInfo.setMekNameEnglish(reader.readNullTerminatedString());
 
-        mekInfo.setPilotNameKanji(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName(charset)));
-        offset += findNullTerminator(bytes, offset) + 1;
+        reader.setCharset(charset);
+        mekInfo.setPilotNameKanji(reader.readNullTerminatedString());
 
-        mekInfo.setPilotNameRoma(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName("UTF-8")));
-        offset += findNullTerminator(bytes, offset) + 1;
+        reader.setCharset("UTF-8");
+        mekInfo.setPilotNameRoma(reader.readNullTerminatedString());
 
-        mekInfo.setMekDescription(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName(charset)));
-        offset += findNullTerminator(bytes, offset) + 1;
+        // 机体描述
+        reader.setCharset(charset);
+        mekInfo.setMekDescription(reader.readNullTerminatedString());
 
-        mekInfo.setWazFileSequence(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setSpmFileSequence(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setMekType(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setHealthRecovery(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setForceOnKill(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setBaseHealth(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setEnergyIncreaseLevel1(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setEnergyIncreaseLevel2(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setBoosterLevel(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setBoosterIncreaseLevel(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setPermanentArmor(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setUnknownProperty12(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setFightingAbility(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setShootingAbility(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setDurability(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setMobility(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setUnknownProperty17(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setWalkingSpeed(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setNormalDashSpeed(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setSearchDashSpeed(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setBoostDashSpeed(readInt32(bytes, offset));
-        offset += 4;
-
-        mekInfo.setAutoHoverHeight(readInt32(bytes, offset));
+        mekInfo.setWazFileSequence(reader.readInt());
+        mekInfo.setSpmFileSequence(reader.readInt());
+        mekInfo.setMekType(reader.readInt());
+        mekInfo.setHealthRecovery(reader.readInt());
+        mekInfo.setForceOnKill(reader.readInt());
+        mekInfo.setBaseHealth(reader.readInt());
+        mekInfo.setEnergyIncreaseLevel1(reader.readInt());
+        mekInfo.setEnergyIncreaseLevel2(reader.readInt());
+        mekInfo.setBoosterLevel(reader.readInt());
+        mekInfo.setBoosterIncreaseLevel(reader.readInt());
+        mekInfo.setPermanentArmor(reader.readInt());
+        mekInfo.setComboImpactFactor(reader.readInt());
+        mekInfo.setFightingAbility(reader.readInt());
+        mekInfo.setShootingAbility(reader.readInt());
+        mekInfo.setDurability(reader.readInt());
+        mekInfo.setMobility(reader.readInt());
+        mekInfo.setPhysicsWeight(reader.readInt());
+        mekInfo.setWalkingSpeed(reader.readInt());
+        mekInfo.setNormalDashSpeed(reader.readInt());
+        mekInfo.setSearchDashSpeed(reader.readInt());
+        mekInfo.setBoostDashSpeed(reader.readInt());
+        mekInfo.setAutoHoverHeight(reader.readInt());
     }
 
+    /**
+     * 解析未知块 1（暂存原始字节）
+     */
     private static void parseMekUnknownBlock1(Mek mek, byte[] bytes) {
         // 前面的蛆，以后再探索吧
-        Mek.MekUnknownBlock1 mekUnknownBlock1 = mek.getMekUnknownBlock1();
-        mekUnknownBlock1.setInfo(bytes);
+        mek.getMekUnknownBlock1().setInfo(bytes);
     }
 
+    /**
+     * 解析武装信息块
+     */
     private static void parseMekWeaponInfo(Mek mek, byte[] bytes, String charset) {
         Map<Integer, Mek.MekWeaponInfo> mekWeaponInfoMap = mek.getMekWeaponInfoMap();
-        int offset = 0;
+        BinaryReader reader = new BinaryReader(bytes, charset);
 
-        int weaponCount = readInt32(bytes, offset);
-        offset += 4;
-
+        int weaponCount = reader.readInt();
         for (int i = 0; i < weaponCount; i++) {
 
             // 起始符
-            if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.FLAG_DATA)) {
-                offset += 4;
-            } else {
-                throw new BusinessException(500, "文件数据格式错误！（武装起始符）");
+            int flag = reader.readInt();
+            if (flag != 1) {
+                return;
             }
 
             Mek.MekWeaponInfo mekWeaponInfo = new Mek.MekWeaponInfo();
+            // 记录绝对偏移
+            mekWeaponInfo.setOffset(mek.getMekHead().getSequence3() + reader.getPosition());
 
-            mekWeaponInfo.setOffset(mek.getMekHead().getSequence3()+offset);
+            reader.setCharset(charset);
+            mekWeaponInfo.setWeaponName(reader.readNullTerminatedString());
+            mekWeaponInfo.setWeaponSequence(reader.readNullTerminatedString());
+            mekWeaponInfo.setWeaponDescription(reader.readNullTerminatedString());
 
-            mekWeaponInfo.setWeaponName(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName(charset)));
-            offset += findNullTerminator(bytes, offset) + 1;
-
-            mekWeaponInfo.setWeaponSequence(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName(charset)));
-            offset += findNullTerminator(bytes, offset) + 1;
-
-            mekWeaponInfo.setWeaponDescription(new String(bytes, offset, findNullTerminator(bytes, offset), Charset.forName(charset)));
-            offset += findNullTerminator(bytes, offset) + 1;
-
-//            // 数据块与描述块间的分隔符
-//            if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.SPLIT_DATA)) {
-//                offset += 4;
-//            } else {
-//                offset += 4;
-////                throw new BusinessException(500, "文件数据格式错误！（武装中间分隔符）");
-//            }
-
-            mekWeaponInfo.setWeaponUnknownProperty1(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setWazSequence(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setForceCrashAmount(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setHeatMaxConsumption(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setHeatMinConsumption(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setNecessaryUpgradeExp(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setStartPointWhenDemonstrate(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setWeaponCategory(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setWeaponType(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setMeleeSkillFlag(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setColdWeaponSkillFlag(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setMissileSkillFlag(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setBulletCategorySkillFlag(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setOpticalWeaponSkillFlag(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setDroneSkillFlag(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setExplosiveSkillFlag(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setDefensiveWeaponSkillFlag(readInt32(bytes, offset));
-            offset += 4;
-
-            mekWeaponInfo.setWeaponIdentifier(readInt32(bytes, offset));
-            offset += 4;
-
-//            // 结尾符
-//            if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.FLAG_DATA)) {
-//                offset += 4;
-//            } else {
-//                offset += 4;
-////                throw new BusinessException(500, "文件数据格式错误！（武装结尾符）");
-//            }
-
-            mekWeaponInfo.setWeaponUnknownProperty19(readInt32(bytes, offset));
-            offset += 4;
+            mekWeaponInfo.setSwitchToMekNo(reader.readInt());
+            mekWeaponInfo.setWazSequence(reader.readInt());
+            mekWeaponInfo.setForceCrashAmount(reader.readInt());
+            mekWeaponInfo.setHeatMaxConsumption(reader.readInt());
+            mekWeaponInfo.setHeatMinConsumption(reader.readInt());
+            mekWeaponInfo.setUpgradeExp(reader.readInt());
+            mekWeaponInfo.setStartPointWhenDemonstrate(reader.readInt());
+            mekWeaponInfo.setWeaponCategory(reader.readInt());
+            mekWeaponInfo.setWeaponType(reader.readInt());
+            mekWeaponInfo.setMeleeSkillFlag(reader.readInt());
+            mekWeaponInfo.setColdWeaponSkillFlag(reader.readInt());
+            mekWeaponInfo.setMissileSkillFlag(reader.readInt());
+            mekWeaponInfo.setBulletCategorySkillFlag(reader.readInt());
+            mekWeaponInfo.setOpticalWeaponSkillFlag(reader.readInt());
+            mekWeaponInfo.setDroneSkillFlag(reader.readInt());
+            mekWeaponInfo.setExplosiveSkillFlag(reader.readInt());
+            mekWeaponInfo.setDefensiveWeaponSkillFlag(reader.readInt());
+            mekWeaponInfo.setWeaponIdentifier(reader.readInt());
+            mekWeaponInfo.setWeaponUnknownProperty19(reader.readInt());
 
             mekWeaponInfoMap.put(i, mekWeaponInfo);
         }
     }
 
-    private static void parseMekAiInfoBlock1(Mek mek, byte[] bytes) {
-        // 前面的蛆，以后再探索吧
-        Mek.MekAi1Info MekAiInfoBlock1 = mek.getMekAi1Info();
-        MekAiInfoBlock1.setInfo(bytes);
+    /**
+     * ai信息块
+     */
+    private static void parseMekAiInfoBlock(Mek mek, byte[] bytes, String charset) {
+        List<Mek.MekAiInfo> aiInfoList = mek.getMekAiInfoList();
+        BinaryReader reader = new BinaryReader(bytes, charset);
+
+        int aiCount = reader.readInt();
+        for (int i = 0; i < aiCount; i++) {
+            Mek.MekAiInfo mekAiInfo = new Mek.MekAiInfo();
+            mekAiInfo.setAiTypeJapanese(reader.readNullTerminatedString());
+            mekAiInfo.setAiTypeEnglish(reader.readNullTerminatedString());
+            int actionCount = reader.readInt();
+            for (int j = 0; j < actionCount; j++) {
+                short type = reader.readShort();
+
+                CCpuEvent event;
+                if (type == 1) {
+                    event = new CCpuEventMove();
+                    event.readInfo(reader);
+                } else if (type == 2) {
+                    event = new CCpuEventAttack();
+                    event.readInfo(reader);
+                } else {
+                    log.warn("未知AI子对象类型: {}, 偏移: {}", type, reader.getPosition());
+                    event = new CCpuEvent();
+                }
+
+                event.setType(type);
+                mekAiInfo.getCpuEventList().add(event);
+            }
+            aiInfoList.add(mekAiInfo);
+        }
     }
 
-    private static void parseMekAiInfoBlock2(Mek mek, byte[] bytes) {
+    private static void parseMekAiInfoBlock2(Mek mek, byte[] bytes, String charset) {
         // 前面的蛆，以后再探索吧
-        Mek.MekAi2Info MekAiInfoBlock2 = mek.getMekAi2Info();
-        MekAiInfoBlock2.setInfo(bytes);
+        mek.getMekAi2Info().setInfo(bytes);
     }
 
+    /**
+     * 解析武装插槽块（保持原有逻辑）
+     */
     private static void parseMekPluginBlock(Mek mek, byte[] bytes) {
-
         Mek.MekPluginBlock mekPluginBlock = mek.getMekPluginBlock();
+        mekPluginBlock.setInfo(bytes); // 先原样保存
 
-        // 原路放回
-        mekPluginBlock.setInfo(bytes);
-
-        // TODO
-        // 尝试解析
         int offset = 0;
-        int start = 0;
+        int start;
         List<byte[]> infoList = new ArrayList<>();
 
-        // 判断起始符类型
-        byte[] startFlag = null;
+        byte[] startFlag;
         if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.WEAPON_PLUGINS_FLAG_DATA)) {
             startFlag = ParserUtil.WEAPON_PLUGINS_FLAG_DATA;
         } else if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.WEAPON_PLUGINS_FLAG_DATA_2)) {
@@ -354,7 +270,6 @@ public class MekParser implements BsdxParser<Mek> {
                     break;
                 }
             }
-
         }
 
         // 存储常规状态（武装）插槽
@@ -372,9 +287,5 @@ public class MekParser implements BsdxParser<Mek> {
             weaponPluginInfoList.add(weaponPluginInfo);
             mek.getMekWeaponInfoMap().get(i).setWeaponPluginInfo(weaponPluginInfo);
         }
-
-
     }
-
 }
-

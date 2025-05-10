@@ -1,6 +1,6 @@
 package com.giga.nexas.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexas.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import com.giga.nexas.dto.bsdx.BsdxInfoCollection;
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
 import lombok.AllArgsConstructor;
@@ -35,7 +35,7 @@ public class CEventBlur extends SkillInfoObject {
             new CEventBlurType(0xFFFFFFFF, "⇒ %3d(%3d,%3d)"),
     };
 
-    private List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
+    private List<BsdxInfoCollection> bsdxInfoCollectionList = new ArrayList<>();
 
     private Integer int1;
     private Integer int2;
@@ -52,12 +52,12 @@ public class CEventBlur extends SkillInfoObject {
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
 
-        List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
+        List<BsdxInfoCollection> bsdxInfoCollectionList = new ArrayList<>();
 
-        WazInfoCollection wazInfoCollection = new WazInfoCollection();
-        wazInfoCollection.readCollection(reader);
-        wazInfoCollectionList.add(wazInfoCollection);
-        setWazInfoCollectionList(wazInfoCollectionList);
+        BsdxInfoCollection bsdxInfoCollection = new BsdxInfoCollection();
+        bsdxInfoCollection.readCollection(reader);
+        bsdxInfoCollectionList.add(bsdxInfoCollection);
+        setBsdxInfoCollectionList(bsdxInfoCollectionList);
 
         setInt1(reader.readInt());
         setInt2(reader.readInt());
@@ -70,7 +70,7 @@ public class CEventBlur extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
-        for (WazInfoCollection collection : wazInfoCollectionList) {
+        for (BsdxInfoCollection collection : bsdxInfoCollectionList) {
             collection.writeCollection(writer);
         }
         writer.writeInt(this.int1);

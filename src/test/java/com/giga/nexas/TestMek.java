@@ -7,6 +7,8 @@ import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.service.BinService;
 import com.giga.nexas.util.TransferUtil;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -14,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TestMek {
+
+    private static final Logger log = LoggerFactory.getLogger(TestMek.class);
 
     private final BinService binService = new BinService();
 
@@ -30,11 +34,12 @@ public class TestMek {
                     ResponseDTO dto = binService.parse(path.toString(), "windows-31j");
                     allMek.add((Mek) dto.getData());
                 } catch (Exception ignored) {
+                    continue;
                 }
             }
         }
 
-        System.out.println("✅ Parsed mek count: " + allMek.size());
+        log.info("✅ Parsed mek count: {}", allMek.size());
     }
 
     @Test
@@ -51,9 +56,9 @@ public class TestMek {
                     Path jsonPath = JSON_OUTPUT.resolve(baseName + ".json");
                     FileUtil.writeUtf8String(JSONUtil.toJsonStr(mek), jsonPath.toFile());
 
-                    System.out.println("✅ Exported: " + jsonPath);
+                    log.info("✅ Exported: {}", jsonPath);
                 } catch (Exception e) {
-                    System.err.println("❌ Failed to parse: " + path.getFileName());
+                    log.info("❌ Failed to parse: {}", path.getFileName());
                 }
             }
         }
@@ -78,7 +83,7 @@ public class TestMek {
         }
 
         if (zhFile == null || jaFile == null) {
-            System.err.println("❌ 找不到 .zh.mek 或 .ja.mek 文件");
+            log.error("❌ 找不到 .zh.mek 或 .ja.mek 文件");
             return;
         }
 
@@ -88,7 +93,7 @@ public class TestMek {
         TransferUtil.transJA2ZH(jaMek, zhMek);
         binService.generate(zhFile.toString(), jaMek, "GBK");
 
-        System.out.println("✅ 已用日语内容替换中文文件：" + zhFile);
+        log.info("✅ 已用日语内容替换中文文件：{}", zhFile);
     }
 
     @Test
@@ -103,13 +108,13 @@ public class TestMek {
         }
 
         if (target == null) {
-            System.err.println("❌ 未找到任何 .mek 文件");
+            log.error("❌ 未找到任何 .mek 文件");
             return;
         }
 
         Mek mek = (Mek) binService.parse(target.toString(), "windows-31j").getData();
         binService.generate(target.toString(), mek, "windows-31j");
 
-        System.out.println("✅ 再生成成功: " + target);
+        log.info("✅ 再生成成功: {}", target);
     }
 }

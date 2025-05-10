@@ -1,6 +1,6 @@
 package com.giga.nexas.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexas.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import com.giga.nexas.dto.bsdx.BsdxInfoCollection;
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
 import lombok.Data;
@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CEventTerm extends SkillInfoObject {
 
-    private List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
+    private List<BsdxInfoCollection> bsdxInfoCollectionList = new ArrayList<>();
 
     public CEventTerm(Integer typeId) {
         super(typeId);
@@ -30,16 +30,16 @@ public class CEventTerm extends SkillInfoObject {
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
 
-        this.wazInfoCollectionList.clear();
-        WazInfoCollection wazInfoCollection = new WazInfoCollection();
-        wazInfoCollection.readCollection(reader);
-        this.wazInfoCollectionList.add(wazInfoCollection);
+        this.bsdxInfoCollectionList.clear();
+        BsdxInfoCollection bsdxInfoCollection = new BsdxInfoCollection();
+        bsdxInfoCollection.readCollection(reader);
+        this.bsdxInfoCollectionList.add(bsdxInfoCollection);
     }
 
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
-        for (WazInfoCollection collection : wazInfoCollectionList) {
+        for (BsdxInfoCollection collection : bsdxInfoCollectionList) {
             collection.writeCollection(writer);
         }
     }

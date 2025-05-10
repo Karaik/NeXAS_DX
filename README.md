@@ -1,7 +1,7 @@
 # NeXAS_DX
 Some tools to unpack and analyze for video game baldr_sky_divex.
 
-Now it could parse the 
+Now it could parse the
 `.bin .waz .spm .mek(mek analyze is incomplete)`
 to json file.
 
@@ -14,3 +14,6 @@ unpack/pack: https://github.com/pkuislm/NexasPackEdit
 
 ## Environment
 java 17 full: https://download.bell-sw.com/java/17.0.15+10/bellsoft-jdk17.0.15+10-windows-amd64-full.msi
+
+## Purpose
+The final purpose is transplant the baldr_heart_exe charactors into the baldr_sky_divex.

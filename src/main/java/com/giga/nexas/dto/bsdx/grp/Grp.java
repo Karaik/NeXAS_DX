@@ -9,15 +9,9 @@ import lombok.Data;
  * @Description GroupMap
  */
 @Data
-public class GroupMap extends Bsdx {
-
-    // 数量
-    private Integer itemQuantity;
+public class Grp extends Bsdx {
 
     // 文件名
     private String fileName;
-
-    // 代号
-    private String codeName;
 
 }

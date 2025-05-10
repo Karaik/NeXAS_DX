@@ -91,7 +91,7 @@ public class BinaryReader {
 
     private void checkAvailable(int length) {
         if (position + length > data.length) {
-            throw new IndexOutOfBoundsException("剩余字节不足：" + (data.length - position) + " < " + length);
+            throw new IndexOutOfBoundsException("剩余字节不足：" + (data.length - position) + " < " + length + ", offset = " + position);
         }
     }
 

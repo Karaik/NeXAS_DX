@@ -1,6 +1,6 @@
 package com.giga.nexas.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexas.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import com.giga.nexas.dto.bsdx.BsdxInfoCollection;
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
 import lombok.AllArgsConstructor;
@@ -29,8 +29,8 @@ public class CEventChange extends SkillInfoObject {
 
     private Integer flag;
 
-    private List<WazInfoCollection> wazInfoCollectionList1 = new ArrayList<>();
-    private List<WazInfoCollection> wazInfoCollectionList2 = new ArrayList<>();
+    private List<BsdxInfoCollection> bsdxInfoCollectionList1 = new ArrayList<>();
+    private List<BsdxInfoCollection> bsdxInfoCollectionList2 = new ArrayList<>();
 
     private Integer int1;
 
@@ -49,24 +49,24 @@ public class CEventChange extends SkillInfoObject {
 
         this.flag = reader.readInt();
 
-        this.wazInfoCollectionList1.clear();
-        this.wazInfoCollectionList2.clear();
+        this.bsdxInfoCollectionList1.clear();
+        this.bsdxInfoCollectionList2.clear();
 
         if (flag > 0) {
 
             int counter = 0;
             do {
-                WazInfoCollection wazInfoCollection = new WazInfoCollection();
-                wazInfoCollection.readCollection(reader);  // 使用 BinaryReader 读取数据
-                this.wazInfoCollectionList1.add(wazInfoCollection);
+                BsdxInfoCollection bsdxInfoCollection = new BsdxInfoCollection();
+                bsdxInfoCollection.readCollection(reader);  // 使用 BinaryReader 读取数据
+                this.bsdxInfoCollectionList1.add(bsdxInfoCollection);
 
                 counter++;
             } while (counter < flag);
         }
 
-        WazInfoCollection wazInfoCollection2 = new WazInfoCollection();
-        wazInfoCollection2.readCollection(reader);
-        this.wazInfoCollectionList2.add(wazInfoCollection2);
+        BsdxInfoCollection bsdxInfoCollection2 = new BsdxInfoCollection();
+        bsdxInfoCollection2.readCollection(reader);
+        this.bsdxInfoCollectionList2.add(bsdxInfoCollection2);
 
         this.int1 = reader.readInt();
     }
@@ -75,10 +75,10 @@ public class CEventChange extends SkillInfoObject {
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
         writer.writeInt(this.flag);
-        for (WazInfoCollection collection : wazInfoCollectionList1) {
+        for (BsdxInfoCollection collection : bsdxInfoCollectionList1) {
             collection.writeCollection(writer);
         }
-        for (WazInfoCollection collection : wazInfoCollectionList2) {
+        for (BsdxInfoCollection collection : bsdxInfoCollectionList2) {
             collection.writeCollection(writer);
         }
         writer.writeInt(this.int1);

@@ -1,6 +1,6 @@
 package com.giga.nexas.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexas.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import com.giga.nexas.dto.bsdx.BsdxInfoCollection;
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
 import lombok.AllArgsConstructor;
@@ -38,7 +38,7 @@ public class CEventScreenYure extends SkillInfoObject {
     };
 
 
-    private List<WazInfoCollection> wazInfoCollectionList = new ArrayList<>();
+    private List<BsdxInfoCollection> bsdxInfoCollectionList = new ArrayList<>();
 
     private Integer int1;
     private Integer int2;
@@ -53,11 +53,11 @@ public class CEventScreenYure extends SkillInfoObject {
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
 
-        this.wazInfoCollectionList.clear();
+        this.bsdxInfoCollectionList.clear();
 
-        WazInfoCollection wazInfoCollection = new WazInfoCollection();
-        wazInfoCollection.readCollection(reader);
-        this.wazInfoCollectionList.add(wazInfoCollection);
+        BsdxInfoCollection bsdxInfoCollection = new BsdxInfoCollection();
+        bsdxInfoCollection.readCollection(reader);
+        this.bsdxInfoCollectionList.add(bsdxInfoCollection);
 
         this.int1 = reader.readInt();
         this.int2 = reader.readInt();
@@ -68,7 +68,7 @@ public class CEventScreenYure extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
-        for (WazInfoCollection collection : wazInfoCollectionList) {
+        for (BsdxInfoCollection collection : bsdxInfoCollectionList) {
             collection.writeCollection(writer);
         }
         writer.writeInt(this.int1);

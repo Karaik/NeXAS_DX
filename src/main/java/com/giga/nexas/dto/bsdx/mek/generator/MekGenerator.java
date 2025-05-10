@@ -2,13 +2,16 @@ package com.giga.nexas.dto.bsdx.mek.generator;
 
 import com.giga.nexas.dto.bsdx.BsdxGenerator;
 import com.giga.nexas.dto.bsdx.mek.Mek;
+import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEvent;
+import com.giga.nexas.exception.BusinessException;
+import com.giga.nexas.io.BinaryWriter;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,28 +32,21 @@ public class MekGenerator implements BsdxGenerator<Mek> {
 
     @Override
     public void generate(String path, Mek mek, String charset) throws IOException {
-        File originalFile = new File(path);
-        String parentDir = originalFile.getParent();
-        String fileNameWithoutExt = originalFile.getName().replaceFirst("\\.mek$", "");
-        String newFileName = fileNameWithoutExt + ".mek";
-        File newFile = new File(parentDir, newFileName);
 
-        List<byte[]> blocks = new ArrayList<>();
+        File originalFile   = new File(path);
+        String parentDir    = originalFile.getParent();
+        String fileNameBase = originalFile.getName().replaceFirst("\\.mek$", "");
+        File newFile        = new File(parentDir, fileNameBase + ".mek");
 
-        byte[] bodyInfoBlock = serializeMekBasicInfo(mek, charset);
+        // 区块序列化为byte[]
+        byte[] bodyInfoBlock     = serializeMekBasicInfo(mek, charset);
         byte[] unknownInfo1Block = mek.getMekUnknownBlock1().getInfo();
-        byte[] weaponInfoBlock = serializeMekWeaponInfoMap(mek, charset);
-        byte[] aiInfo1Block = mek.getMekAi1Info().getInfo();
-        byte[] aiInfo2Block = mek.getMekAi2Info().getInfo();
-        byte[] mekPluginBlock = mek.getMekPluginBlock().getInfo();
-        blocks.add(bodyInfoBlock);
-        blocks.add(unknownInfo1Block);
-        blocks.add(weaponInfoBlock);
-        blocks.add(aiInfo1Block);
-        blocks.add(aiInfo2Block);
-        blocks.add(mekPluginBlock);
+        byte[] weaponInfoBlock   = serializeMekWeaponInfoMap(mek, charset);
+        byte[] aiInfo1Block      = serializeMekAiInfoMap(mek, charset);
+        byte[] aiInfo2Block      = mek.getMekAi2Info().getInfo();
+        byte[] mekPluginBlock    = mek.getMekPluginBlock().getInfo();
 
-        // 计算块序列值
+        // 计算6个序列偏移
         int sequence1 = 24;
         int sequence2 = sequence1 + bodyInfoBlock.length;
         int sequence3 = sequence2 + unknownInfo1Block.length;
@@ -58,24 +54,23 @@ public class MekGenerator implements BsdxGenerator<Mek> {
         int sequence5 = sequence4 + aiInfo1Block.length;
         int sequence6 = sequence5 + aiInfo2Block.length;
 
-        try (FileOutputStream fos = new FileOutputStream(newFile)) {
-            ByteBuffer buffer = ByteBuffer.allocate(sequence6+mek.getMekPluginBlock().getInfo().length);
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
+        try (FileOutputStream fos = new FileOutputStream(newFile);
+             BinaryWriter writer  = new BinaryWriter(fos, charset)) {
 
-            // 写入头部
-            buffer.putInt(sequence1);
-            buffer.putInt(sequence2);
-            buffer.putInt(sequence3);
-            buffer.putInt(sequence4);
-            buffer.putInt(sequence5);
-            buffer.putInt(sequence6);
+            // head
+            writer.writeInt(sequence1);
+            writer.writeInt(sequence2);
+            writer.writeInt(sequence3);
+            writer.writeInt(sequence4);
+            writer.writeInt(sequence5);
+            writer.writeInt(sequence6);
 
-            // 写入各块数据
-            for (byte[] block : blocks) {
-                buffer.put(block);
-            }
-
-            fos.write(buffer.array());
+            writer.writeBytes(bodyInfoBlock);
+            writer.writeBytes(unknownInfo1Block);
+            writer.writeBytes(weaponInfoBlock);
+            writer.writeBytes(aiInfo1Block);
+            writer.writeBytes(aiInfo2Block);
+            writer.writeBytes(mekPluginBlock);
         }
     }
 
@@ -100,12 +95,12 @@ public class MekGenerator implements BsdxGenerator<Mek> {
         buffer.putInt(mekBasicInfo.getBoosterLevel());
         buffer.putInt(mekBasicInfo.getBoosterIncreaseLevel());
         buffer.putInt(mekBasicInfo.getPermanentArmor());
-        buffer.putInt(mekBasicInfo.getUnknownProperty12());
+        buffer.putInt(mekBasicInfo.getComboImpactFactor());
         buffer.putInt(mekBasicInfo.getFightingAbility());
         buffer.putInt(mekBasicInfo.getShootingAbility());
         buffer.putInt(mekBasicInfo.getDurability());
         buffer.putInt(mekBasicInfo.getMobility());
-        buffer.putInt(mekBasicInfo.getUnknownProperty17());
+        buffer.putInt(mekBasicInfo.getPhysicsWeight());
         buffer.putInt(mekBasicInfo.getWalkingSpeed());
         buffer.putInt(mekBasicInfo.getNormalDashSpeed());
         buffer.putInt(mekBasicInfo.getSearchDashSpeed());
@@ -125,12 +120,12 @@ public class MekGenerator implements BsdxGenerator<Mek> {
             putString(buffer, weaponInfo.getWeaponName(), charset);
             putString(buffer, weaponInfo.getWeaponSequence(), charset);
             putString(buffer, weaponInfo.getWeaponDescription(), charset);
-            buffer.putInt(weaponInfo.getWeaponUnknownProperty1());
+            buffer.putInt(weaponInfo.getSwitchToMekNo());
             buffer.putInt(weaponInfo.getWazSequence());
             buffer.putInt(weaponInfo.getForceCrashAmount());
             buffer.putInt(weaponInfo.getHeatMaxConsumption());
             buffer.putInt(weaponInfo.getHeatMinConsumption());
-            buffer.putInt(weaponInfo.getNecessaryUpgradeExp());
+            buffer.putInt(weaponInfo.getUpgradeExp());
             buffer.putInt(weaponInfo.getStartPointWhenDemonstrate());
             buffer.putInt(weaponInfo.getWeaponCategory());
             buffer.putInt(weaponInfo.getWeaponType());
@@ -146,6 +141,36 @@ public class MekGenerator implements BsdxGenerator<Mek> {
             buffer.putInt(weaponInfo.getWeaponUnknownProperty19());
         });
         return buffer.array();
+    }
+
+    private static byte[] serializeMekAiInfoMap(Mek mek, String charset) throws IOException {
+        List<Mek.MekAiInfo> aiInfos = mek.getMekAiInfoList();
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             BinaryWriter writer = new BinaryWriter(baos, charset)) {
+
+            writer.writeInt(aiInfos.size());
+            for (Mek.MekAiInfo ai : aiInfos) {
+                writer.writeNullTerminatedString(ai.getAiTypeJapanese());
+                writer.setCharset("UTF-8");
+                writer.writeNullTerminatedString(ai.getAiTypeEnglish());
+                writer.setCharset(charset);
+
+                List<CCpuEvent> events = ai.getCpuEventList();
+
+                writer.writeInt(events.size());
+                for (CCpuEvent cpuEvent : events) {
+                    short type = cpuEvent.getType();
+                    writer.writeShort(type);
+                    if (type == 1 || type == 2) {
+                        cpuEvent.writeInfo(writer);
+                    } else {
+                        throw new BusinessException(500, "未曾设想的ai类型：" + type);
+                    }
+                }
+            }
+            writer.close();
+            return baos.toByteArray();
+        }
     }
 
     private static int calculateBodyInfoBlockSize(Mek mek, String charset) {
@@ -164,16 +189,12 @@ public class MekGenerator implements BsdxGenerator<Mek> {
         Map<Integer, Mek.MekWeaponInfo> weaponInfoMap = mek.getMekWeaponInfoMap();
         int size = 4;
         for (Mek.MekWeaponInfo weaponInfo : weaponInfoMap.values()) {
-            // 01 00 00 00
+            // 01 00 00 00 flag，表示下一个块是否存在，目前没有发现不存在的
             size += 4;
             size += calculateStringSize(weaponInfo.getWeaponName(), charset);
             size += calculateStringSize(weaponInfo.getWeaponSequence(), charset);
             size += calculateStringSize(weaponInfo.getWeaponDescription(), charset);
-            // FF FF FF FF
-//            size += 4;
             size += 4 * 19;
-            // 01 00 00 00
-//            size += 4;
         }
         return size;
     }

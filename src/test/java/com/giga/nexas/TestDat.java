@@ -1,65 +1,119 @@
 package com.giga.nexas;
 
-import cn.hutool.poi.excel.ExcelUtil;
-import cn.hutool.poi.excel.ExcelWriter;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.json.JSONUtil;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giga.nexas.dto.ResponseDTO;
 import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.service.BinService;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
 
+
 public class TestDat {
 
-    private static final Path INPUT_DIR = Paths.get("src/main/resources/game/bh/dat");
-    private static final Path OUTPUT_EXCEL = Paths.get("src/main/resources/output_dat.xlsx");
+    private static final Logger log = LoggerFactory.getLogger(TestDat.class);
+    private static final Path INPUT_DIR = Paths.get("src/main/resources/game/bsdx/dat");
+    private static final Path JSON_OUTPUT_DIR = Paths.get("src/main/resources/datJson");
+    private static final Path DAT_OUTPUT_DIR = Paths.get("src/main/resources/datGenerated");
 
     private final BinService binService = new BinService();
 
     @Test
-    void testDat2Excel() throws IOException {
-        if (!Files.exists(INPUT_DIR)) {
-            System.err.println("❌ 输入路径不存在: " + INPUT_DIR);
-            return;
-        }
+    void testGenerateDatJsonFiles() throws IOException {
+        List<Dat> allDatList = new ArrayList<>();
+        List<String> baseNames = new ArrayList<>();
 
-        Files.createDirectories(OUTPUT_EXCEL.getParent());
-        if (Files.exists(OUTPUT_EXCEL)) {
-            Files.delete(OUTPUT_EXCEL);
-        }
-
-        ExcelWriter writer = ExcelUtil.getWriter(OUTPUT_EXCEL.toFile());
+        Files.createDirectories(JSON_OUTPUT_DIR);
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(INPUT_DIR, "*.dat")) {
-            for (Path datFile : stream) {
-                String sheetName = datFile.getFileName().toString().replace(".dat", "");
-                ResponseDTO dto = binService.parse(datFile.toString(), "windows-31j");
-                Dat dat = (Dat) dto.getData();
+            for (Path path : stream) {
+                String fileName = path.getFileName().toString();
+                String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+                baseNames.add(baseName);
 
-                List<Map<String, Object>> rows = new ArrayList<>();
-                for (List<Object> row : dat.getData()) {
-                    Map<String, Object> rowMap = new LinkedHashMap<>();
-                    for (int i = 0; i < dat.getColumnTypes().size(); i++) {
-                        String col = dat.getColumnTypes().get(i) + "_" + (i + 1);
-                        rowMap.put(col, i < row.size() ? row.get(i) : "");
-                    }
-                    rows.add(rowMap);
+                try {
+                    ResponseDTO dto = binService.parse(path.toString(), "windows-31j");
+                    Dat dat = (Dat) dto.getData();
+                    allDatList.add(dat);
+                } catch (Exception e) {
+                    log.warn("❌ Failed to parse: {}", fileName, e);
                 }
-
-                writer.setSheet(sheetName);
-                writer.write(rows, true);
-
-                for (int i = 0; i < dat.getColumnTypes().size(); i++) {
-                    writer.getSheet().autoSizeColumn(i);
-                }
-
-                System.out.println("✅ 写入 sheet: " + sheetName);
             }
         }
 
-        writer.close();
-        System.out.println("✅ Excel 输出成功: " + OUTPUT_EXCEL.toAbsolutePath());
+        for (int i = 0; i < allDatList.size(); i++) {
+            Dat dat = allDatList.get(i);
+            String jsonStr = JSONUtil.toJsonStr(dat);
+            Path jsonPath = JSON_OUTPUT_DIR.resolve(baseNames.get(i) + ".json");
+            FileUtil.writeUtf8String(jsonStr, jsonPath.toFile());
+            log.info("✅ Exported: {}", jsonPath);
+        }
+    }
+
+    @Test
+    void testGenerateDatFilesByJson() throws IOException {
+        Files.createDirectories(DAT_OUTPUT_DIR);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(JSON_OUTPUT_DIR, "*.json")) {
+            for (Path path : stream) {
+                String jsonStr = FileUtil.readUtf8String(path.toFile());
+                Dat dat = mapper.readValue(jsonStr, Dat.class);
+                String baseName = path.getFileName().toString().replace(".json", "");
+                Path output = DAT_OUTPUT_DIR.resolve(baseName + ".dat");
+
+                binService.generate(output.toString(), dat, "windows-31j");
+                log.info("✅ Generated: {}", output);
+            }
+        }
+    }
+
+    @Test
+    void testDatParseGenerateBinaryConsistency() throws IOException {
+        Map<String, Path> generatedMap = new HashMap<>();
+        try (DirectoryStream<Path> genStream = Files.newDirectoryStream(DAT_OUTPUT_DIR, "*.dat")) {
+            for (Path gen : genStream) {
+                generatedMap.put(gen.getFileName().toString(), gen);
+            }
+        }
+
+        try (DirectoryStream<Path> oriStream = Files.newDirectoryStream(INPUT_DIR, "*.dat")) {
+            for (Path ori : oriStream) {
+                String name = ori.getFileName().toString();
+                Path gen = generatedMap.get(name);
+                if (gen == null) {
+                    log.warn("⚠️ Not Found: {}", name);
+                    continue;
+                }
+
+                byte[] originalBytes = FileUtil.readBytes(ori.toFile());
+                byte[] generatedBytes = FileUtil.readBytes(gen.toFile());
+
+                if (!ArrayUtil.equals(originalBytes, generatedBytes)) {
+                    log.error("❌ Mismatch: {}", name);
+                    int minLen = Math.min(originalBytes.length, generatedBytes.length);
+                    for (int i = 0; i < minLen; i++) {
+                        if (originalBytes[i] != generatedBytes[i]) {
+                            log.error("Diff at 0x{}: orig=0x{} gen=0x{}",
+                                    Integer.toHexString(i),
+                                    Integer.toHexString(originalBytes[i] & 0xFF),
+                                    Integer.toHexString(generatedBytes[i] & 0xFF));
+                            break;
+                        }
+                    }
+                } else {
+                    log.info("✅ Match: {}", name);
+                }
+            }
+        }
     }
 }

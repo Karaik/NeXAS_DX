@@ -1,6 +1,6 @@
 package com.giga.nexas.dto.bsdx.waz.wazfactor.wazinfoclass.obj;
 
-import com.giga.nexas.dto.bsdx.waz.wazfactor.wazinfoclass.collection.WazInfoCollection;
+import com.giga.nexas.dto.bsdx.BsdxInfoCollection;
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
 import lombok.AllArgsConstructor;
@@ -34,8 +34,8 @@ public class CEventMove extends SkillInfoObject {
             new CEventMoveType(0xFFFFFFFF, "移動タイプ")
     };
 
-    private List<WazInfoCollection> wazInfoCollectionList1 = new ArrayList<>();
-    private List<WazInfoCollection> wazInfoCollectionList2 = new ArrayList<>();
+    private List<BsdxInfoCollection> bsdxInfoCollectionList1 = new ArrayList<>();
+    private List<BsdxInfoCollection> bsdxInfoCollectionList2 = new ArrayList<>();
 
     private Integer int1;
 
@@ -47,16 +47,16 @@ public class CEventMove extends SkillInfoObject {
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
 
-        this.wazInfoCollectionList1.clear();
-        this.wazInfoCollectionList2.clear();
+        this.bsdxInfoCollectionList1.clear();
+        this.bsdxInfoCollectionList2.clear();
 
-        WazInfoCollection wazInfoCollection1 = new WazInfoCollection();
-        wazInfoCollection1.readCollection(reader);
-        this.wazInfoCollectionList1.add(wazInfoCollection1);
+        BsdxInfoCollection bsdxInfoCollection1 = new BsdxInfoCollection();
+        bsdxInfoCollection1.readCollection(reader);
+        this.bsdxInfoCollectionList1.add(bsdxInfoCollection1);
 
-        WazInfoCollection wazInfoCollection2 = new WazInfoCollection();
-        wazInfoCollection2.readCollection(reader);
-        this.wazInfoCollectionList2.add(wazInfoCollection2);
+        BsdxInfoCollection bsdxInfoCollection2 = new BsdxInfoCollection();
+        bsdxInfoCollection2.readCollection(reader);
+        this.bsdxInfoCollectionList2.add(bsdxInfoCollection2);
 
         this.int1 = reader.readInt();
     }
@@ -64,10 +64,10 @@ public class CEventMove extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
-        for (WazInfoCollection collection : wazInfoCollectionList1) {
+        for (BsdxInfoCollection collection : bsdxInfoCollectionList1) {
             collection.writeCollection(writer);
         }
-        for (WazInfoCollection collection : wazInfoCollectionList2) {
+        for (BsdxInfoCollection collection : bsdxInfoCollectionList2) {
             collection.writeCollection(writer);
         }
         writer.writeInt(this.int1);

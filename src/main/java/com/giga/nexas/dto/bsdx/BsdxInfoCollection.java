@@ -1,4 +1,4 @@
-package com.giga.nexas.dto.bsdx.waz.wazfactor.wazinfoclass.collection;
+package com.giga.nexas.dto.bsdx;
 
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
@@ -11,10 +11,11 @@ import java.util.List;
 /**
  * @Author 这位同学(Karaik)
  * @Date 2025/2/23
- * @Description WazInfoCollection
+ * @Description BsdxInfoCollection
+ * 后续逆向发现不单独是针对waz文件的集合，ai部分也有用到
  */
 @Data
-public class WazInfoCollection {
+public class BsdxInfoCollection {
 
     private Integer int1;
     private List<Integer> intList1;
@@ -23,7 +24,7 @@ public class WazInfoCollection {
     private List<Integer> intList4;
     private Integer int2;
 
-    public WazInfoCollection() {
+    public BsdxInfoCollection() {
         intList1 = new ArrayList<>();
         intList2 = new ArrayList<>();
         intList3 = new ArrayList<>();
