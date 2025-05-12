@@ -10,7 +10,10 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +25,7 @@ public class TestBin {
     private final BinService binService = new BinService();
 
     @Test
-    void testGenerateBinJsonFiles() throws IOException {
+    public void testGenerateBinJsonFiles() throws IOException {
         if (!Files.exists(BIN_DIR)) {
             System.err.println("❌ Bin 目录不存在: " + BIN_DIR);
             return;

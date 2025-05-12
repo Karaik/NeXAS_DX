@@ -78,6 +78,7 @@ public class WazGenerator implements BsdxGenerator<Waz> {
         for (int i = 0; i < 72; i++) {
             SkillUnit matchedUnit = null;
             for (SkillUnit unit : skillUnitCollection) {
+                // todo bug
                 if (unit.getUnitQuantity() == i) {
                     matchedUnit = unit;
                     break;

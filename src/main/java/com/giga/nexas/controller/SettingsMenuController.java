@@ -31,8 +31,8 @@ public class SettingsMenuController {
         charsetBox.setValue("windows-31j");
 
         ComboBox<String> typeBox = new ComboBox<>();
-        typeBox.getItems().addAll("NeXAS WAZ", "NeXAS MEK", "其他");
-        typeBox.setValue("NeXAS WAZ");
+        typeBox.getItems().addAll("BALDR SKY DIVEX", "BALDR HEART EXE");
+        typeBox.setValue("BALDR SKY DIVEX");
 
         GridPane grid = new GridPane();
         grid.setHgap(10);

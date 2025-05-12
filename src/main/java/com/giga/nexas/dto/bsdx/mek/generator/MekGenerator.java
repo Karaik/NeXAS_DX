@@ -10,13 +10,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.List;
 import java.util.Map;
-
-import static com.giga.nexas.util.GenerateUtil.calculateStringSize;
-import static com.giga.nexas.util.GenerateUtil.putString;
 
 /**
  * @Author 这位同学(Karaik)
@@ -74,75 +69,86 @@ public class MekGenerator implements BsdxGenerator<Mek> {
         }
     }
 
-    private static byte[] serializeMekBasicInfo(Mek mek, String charset) {
+    // 2 meka基本信息
+    private static byte[] serializeMekBasicInfo(Mek mek, String charset) throws IOException {
         Mek.MekBasicInfo mekBasicInfo = mek.getMekBasicInfo();
-        ByteBuffer buffer = ByteBuffer.allocate(calculateBodyInfoBlockSize(mek, charset));
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             BinaryWriter writer = new BinaryWriter(baos, charset)) {
 
-        putString(buffer, mekBasicInfo.getMekNameKana(), charset);
-        putString(buffer, mekBasicInfo.getMekNameEnglish(), charset);
-        putString(buffer, mekBasicInfo.getPilotNameKanji(), charset);
-        putString(buffer, mekBasicInfo.getPilotNameRoma(), charset);
-        putString(buffer, mekBasicInfo.getMekDescription(), charset);
-        buffer.putInt(mekBasicInfo.getWazFileSequence());
-        buffer.putInt(mekBasicInfo.getSpmFileSequence());
-        buffer.putInt(mekBasicInfo.getMekType());
-        buffer.putInt(mekBasicInfo.getHealthRecovery());
-        buffer.putInt(mekBasicInfo.getForceOnKill());
-        buffer.putInt(mekBasicInfo.getBaseHealth());
-        buffer.putInt(mekBasicInfo.getEnergyIncreaseLevel1());
-        buffer.putInt(mekBasicInfo.getEnergyIncreaseLevel2());
-        buffer.putInt(mekBasicInfo.getBoosterLevel());
-        buffer.putInt(mekBasicInfo.getBoosterIncreaseLevel());
-        buffer.putInt(mekBasicInfo.getPermanentArmor());
-        buffer.putInt(mekBasicInfo.getComboImpactFactor());
-        buffer.putInt(mekBasicInfo.getFightingAbility());
-        buffer.putInt(mekBasicInfo.getShootingAbility());
-        buffer.putInt(mekBasicInfo.getDurability());
-        buffer.putInt(mekBasicInfo.getMobility());
-        buffer.putInt(mekBasicInfo.getPhysicsWeight());
-        buffer.putInt(mekBasicInfo.getWalkingSpeed());
-        buffer.putInt(mekBasicInfo.getNormalDashSpeed());
-        buffer.putInt(mekBasicInfo.getSearchDashSpeed());
-        buffer.putInt(mekBasicInfo.getBoostDashSpeed());
-        buffer.putInt(mekBasicInfo.getAutoHoverHeight());
-        return buffer.array();
+            writer.writeNullTerminatedString(mekBasicInfo.getMekNameKana());
+            writer.writeNullTerminatedString(mekBasicInfo.getMekNameEnglish());
+            writer.writeNullTerminatedString(mekBasicInfo.getPilotNameKanji());
+            writer.writeNullTerminatedString(mekBasicInfo.getPilotNameRoma());
+            writer.writeNullTerminatedString(mekBasicInfo.getMekDescription());
+
+            writer.writeInt(mekBasicInfo.getWazFileSequence());
+            writer.writeInt(mekBasicInfo.getSpmFileSequence());
+            writer.writeInt(mekBasicInfo.getMekType());
+            writer.writeInt(mekBasicInfo.getHealthRecovery());
+            writer.writeInt(mekBasicInfo.getForceOnKill());
+            writer.writeInt(mekBasicInfo.getBaseHealth());
+            writer.writeInt(mekBasicInfo.getEnergyIncreaseLevel1());
+            writer.writeInt(mekBasicInfo.getEnergyIncreaseLevel2());
+            writer.writeInt(mekBasicInfo.getBoosterLevel());
+            writer.writeInt(mekBasicInfo.getBoosterIncreaseLevel());
+            writer.writeInt(mekBasicInfo.getPermanentArmor());
+            writer.writeInt(mekBasicInfo.getComboImpactFactor());
+            writer.writeInt(mekBasicInfo.getFightingAbility());
+            writer.writeInt(mekBasicInfo.getShootingAbility());
+            writer.writeInt(mekBasicInfo.getDurability());
+            writer.writeInt(mekBasicInfo.getMobility());
+            writer.writeInt(mekBasicInfo.getPhysicsWeight());
+            writer.writeInt(mekBasicInfo.getWalkingSpeed());
+            writer.writeInt(mekBasicInfo.getNormalDashSpeed());
+            writer.writeInt(mekBasicInfo.getSearchDashSpeed());
+            writer.writeInt(mekBasicInfo.getBoostDashSpeed());
+            writer.writeInt(mekBasicInfo.getAutoHoverHeight());
+
+            writer.close();
+            return baos.toByteArray();
+        }
     }
 
-    private static byte[] serializeMekWeaponInfoMap(Mek mek, String charset) {
+    // 4 武装基本信息
+    private static byte[] serializeMekWeaponInfoMap(Mek mek, String charset) throws IOException {
         Map<Integer, Mek.MekWeaponInfo> weaponInfoMap = mek.getMekWeaponInfoMap();
-        ByteBuffer buffer = ByteBuffer.allocate(calculateWeaponInfoBlockSize(mek, charset));
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             BinaryWriter writer = new BinaryWriter(baos, charset)) {
 
-        buffer.putInt(weaponInfoMap.size());
-        weaponInfoMap.values().forEach(weaponInfo -> {
-            buffer.putInt(0x01);
-            putString(buffer, weaponInfo.getWeaponName(), charset);
-            putString(buffer, weaponInfo.getWeaponSequence(), charset);
-            putString(buffer, weaponInfo.getWeaponDescription(), charset);
-            buffer.putInt(weaponInfo.getSwitchToMekNo());
-            buffer.putInt(weaponInfo.getWazSequence());
-            buffer.putInt(weaponInfo.getForceCrashAmount());
-            buffer.putInt(weaponInfo.getHeatMaxConsumption());
-            buffer.putInt(weaponInfo.getHeatMinConsumption());
-            buffer.putInt(weaponInfo.getUpgradeExp());
-            buffer.putInt(weaponInfo.getStartPointWhenDemonstrate());
-            buffer.putInt(weaponInfo.getWeaponCategory());
-            buffer.putInt(weaponInfo.getWeaponType());
-            buffer.putInt(weaponInfo.getMeleeSkillFlag());
-            buffer.putInt(weaponInfo.getColdWeaponSkillFlag());
-            buffer.putInt(weaponInfo.getMissileSkillFlag());
-            buffer.putInt(weaponInfo.getBulletCategorySkillFlag());
-            buffer.putInt(weaponInfo.getOpticalWeaponSkillFlag());
-            buffer.putInt(weaponInfo.getDroneSkillFlag());
-            buffer.putInt(weaponInfo.getExplosiveSkillFlag());
-            buffer.putInt(weaponInfo.getDefensiveWeaponSkillFlag());
-            buffer.putInt(weaponInfo.getWeaponIdentifier());
-            buffer.putInt(weaponInfo.getWeaponUnknownProperty19());
-        });
-        return buffer.array();
+            writer.writeInt(weaponInfoMap.size());
+            for (Mek.MekWeaponInfo weaponInfo : weaponInfoMap.values()) {
+                writer.writeInt(0x01);
+                writer.writeNullTerminatedString(weaponInfo.getWeaponName());
+                writer.writeNullTerminatedString(weaponInfo.getWeaponSequence());
+                writer.writeNullTerminatedString(weaponInfo.getWeaponDescription());
+
+                writer.writeInt(weaponInfo.getSwitchToMekNo());
+                writer.writeInt(weaponInfo.getWazSequence());
+                writer.writeInt(weaponInfo.getForceCrashAmount());
+                writer.writeInt(weaponInfo.getHeatMaxConsumption());
+                writer.writeInt(weaponInfo.getHeatMinConsumption());
+                writer.writeInt(weaponInfo.getUpgradeExp());
+                writer.writeInt(weaponInfo.getStartPointWhenDemonstrate());
+                writer.writeInt(weaponInfo.getWeaponCategory());
+                writer.writeInt(weaponInfo.getWeaponType());
+                writer.writeInt(weaponInfo.getMeleeSkillFlag());
+                writer.writeInt(weaponInfo.getColdWeaponSkillFlag());
+                writer.writeInt(weaponInfo.getMissileSkillFlag());
+                writer.writeInt(weaponInfo.getBulletCategorySkillFlag());
+                writer.writeInt(weaponInfo.getOpticalWeaponSkillFlag());
+                writer.writeInt(weaponInfo.getDroneSkillFlag());
+                writer.writeInt(weaponInfo.getExplosiveSkillFlag());
+                writer.writeInt(weaponInfo.getDefensiveWeaponSkillFlag());
+                writer.writeInt(weaponInfo.getWeaponIdentifier());
+                writer.writeInt(weaponInfo.getWeaponUnknownProperty19());
+            }
+
+            writer.close();
+            return baos.toByteArray();
+        }
     }
 
+    // 5 ai相关基本信息
     private static byte[] serializeMekAiInfoMap(Mek mek, String charset) throws IOException {
         List<Mek.MekAiInfo> aiInfos = mek.getMekAiInfoList();
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -173,30 +179,7 @@ public class MekGenerator implements BsdxGenerator<Mek> {
         }
     }
 
-    private static int calculateBodyInfoBlockSize(Mek mek, String charset) {
-        Mek.MekBasicInfo mekBasicInfo = mek.getMekBasicInfo();
-        int size = 0;
-        size += calculateStringSize(mekBasicInfo.getMekNameKana(), charset);
-        size += calculateStringSize(mekBasicInfo.getMekNameEnglish(), charset);
-        size += calculateStringSize(mekBasicInfo.getPilotNameKanji(), charset);
-        size += calculateStringSize(mekBasicInfo.getPilotNameRoma(), charset);
-        size += calculateStringSize(mekBasicInfo.getMekDescription(), charset);
-        size += 4 * 22;
-        return size;
-    }
+    // 6 跟声音绑定的各种信息
 
-    private static int calculateWeaponInfoBlockSize(Mek mek, String charset) {
-        Map<Integer, Mek.MekWeaponInfo> weaponInfoMap = mek.getMekWeaponInfoMap();
-        int size = 4;
-        for (Mek.MekWeaponInfo weaponInfo : weaponInfoMap.values()) {
-            // 01 00 00 00 flag，表示下一个块是否存在，目前没有发现不存在的
-            size += 4;
-            size += calculateStringSize(weaponInfo.getWeaponName(), charset);
-            size += calculateStringSize(weaponInfo.getWeaponSequence(), charset);
-            size += calculateStringSize(weaponInfo.getWeaponDescription(), charset);
-            size += 4 * 19;
-        }
-        return size;
-    }
-
+    // 7 武装选择界面，该角色的武装插槽信息，剩余未知，推测跟spm相关，会播放动画
 }
