@@ -14,6 +14,9 @@ import java.util.List;
  */
 public class SpmParser implements BsdxParser<Spm> {
 
+    private static final String SPM_VERSION_202 = "SPM VER-2.02";
+    private static String currentVersion;
+
     @Override
     public String supportExtension() {
         return "spm";
@@ -25,6 +28,7 @@ public class SpmParser implements BsdxParser<Spm> {
         Spm spm = new Spm();
 
         spm.setSpmVersion(reader.readNullTerminatedString());
+        currentVersion = spm.getSpmVersion();
 
         spm.setNumPageData(reader.readInt());
 
@@ -110,6 +114,9 @@ public class SpmParser implements BsdxParser<Spm> {
         chipData.setDrawOption(reader.readInt() & 0xFFFFFFFFL);
         chipData.setDrawOptionValue(reader.readInt() & 0xFFFFFFFFL);
         chipData.setOption(reader.readInt());
+        if (SPM_VERSION_202.equals(currentVersion)) {
+            chipData.setUnk5(reader.readByte());
+        }
         return chipData;
     }
 

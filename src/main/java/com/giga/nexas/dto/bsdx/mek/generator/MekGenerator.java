@@ -109,6 +109,8 @@ public class MekGenerator implements BsdxGenerator<Mek> {
         }
     }
 
+    // 3 spm相关信息？
+
     // 4 武装基本信息
     private static byte[] serializeMekWeaponInfoMap(Mek mek, String charset) throws IOException {
         Map<Integer, Mek.MekWeaponInfo> weaponInfoMap = mek.getMekWeaponInfoMap();
@@ -116,6 +118,7 @@ public class MekGenerator implements BsdxGenerator<Mek> {
              BinaryWriter writer = new BinaryWriter(baos, charset)) {
 
             writer.writeInt(weaponInfoMap.size());
+            // todo edit
             for (Mek.MekWeaponInfo weaponInfo : weaponInfoMap.values()) {
                 writer.writeInt(0x01);
                 writer.writeNullTerminatedString(weaponInfo.getWeaponName());
