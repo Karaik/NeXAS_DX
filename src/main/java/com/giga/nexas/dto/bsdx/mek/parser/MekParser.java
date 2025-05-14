@@ -227,7 +227,7 @@ public class MekParser implements BsdxParser<Mek> {
 
     private static void parseMekAiInfoBlock2(Mek mek, byte[] bytes, String charset) {
         // 前面的蛆，以后再探索吧
-        mek.getMekAi2Info().setInfo(bytes);
+        mek.getMekVoiceInfo().setInfo(bytes);
     }
 
     /**

@@ -38,7 +38,7 @@ public class MekGenerator implements BsdxGenerator<Mek> {
         byte[] unknownInfo1Block = mek.getMekUnknownBlock1().getInfo();
         byte[] weaponInfoBlock   = serializeMekWeaponInfoMap(mek, charset);
         byte[] aiInfo1Block      = serializeMekAiInfoMap(mek, charset);
-        byte[] aiInfo2Block      = mek.getMekAi2Info().getInfo();
+        byte[] aiInfo2Block      = mek.getMekVoiceInfo().getInfo();
         byte[] mekPluginBlock    = mek.getMekPluginBlock().getInfo();
 
         // 计算6个序列偏移

@@ -4,10 +4,7 @@ import com.giga.nexas.dto.bsdx.Bsdx;
 import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEvent;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author 这位同学(Karaik)
@@ -23,8 +20,8 @@ import java.util.Map;
  * 2 机体基本信息块
  * 3 spm信息块
  * 4 武装信息块
- * 5 ai块1
- * 6 ai块2
+ * 5 ai块
+ * 6 疑似播放音频相关
  * 7 武装栏位块
  *
  * 经深度逆向发现并由本人完善结构
@@ -49,11 +46,11 @@ public class Mek extends Bsdx {
     // 武装信息块
     private Map<Integer, MekWeaponInfo> mekWeaponInfoMap;
 
-    // ai信息块1
+    // ai信息块
     private List<MekAiInfo> mekAiInfoList;
 
-    // ai信息块2
-    private MekAi2Info mekAi2Info;
+    // 声音信息块
+    private MekVoiceInfo mekVoiceInfo;
 
     // 未知信息块2
     private MekPluginBlock mekPluginBlock;
@@ -63,9 +60,9 @@ public class Mek extends Bsdx {
         this.mekBlocks = new MekBlocks();
         this.mekBasicInfo = new MekBasicInfo();
         this.mekUnknownBlock1 = new MekUnknownBlock1();
-        this.mekWeaponInfoMap = new HashMap<>();
+        this.mekWeaponInfoMap = new LinkedHashMap<>();
         this.mekAiInfoList = new ArrayList<>();
-        this.mekAi2Info = new MekAi2Info();
+        this.mekVoiceInfo = new MekVoiceInfo();
         this.mekPluginBlock = new MekPluginBlock();
     }
 
@@ -84,10 +81,10 @@ public class Mek extends Bsdx {
         // 序列4：区块大小块 + 机体信息 + 未知信息1 + 武装信息总字节
         private Integer sequence4;
 
-        // 序列5：区块大小块 + 机体信息 + 未知信息1 + 武装信息 + AI信息1总字节
+        // 序列5：区块大小块 + 机体信息 + 未知信息1 + 武装信息 + AI信息总字节
         private Integer sequence5;
 
-        // 序列6：区块大小块 + 机体信息 + 未知信息1 + 武装信息 + AI信息1 + AI信息2总字节
+        // 序列6：区块大小块 + 机体信息 + 未知信息1 + 武装信息 + AI信息 + 声音信息总字节
         private Integer sequence6;
 
     }
@@ -104,11 +101,11 @@ public class Mek extends Bsdx {
         // 武装信息块大小
         private Integer weaponInfoBlockSize;
 
-        // AI信息块1的大小
-        private Integer aiInfo1BlockSize;
+        // AI信息块的大小
+        private Integer aiInfoBlockSize;
 
-        // AI信息块2的大小
-        private Integer aiInfo2BlockSize;
+        // 声音信息块的大小
+        private Integer voiceInfoBlockSize;
 
         // 用于计算每个区块的字节数
         public void calculateBlockSizes(MekHead mekHead) {
@@ -117,8 +114,8 @@ public class Mek extends Bsdx {
             this.bodyInfoBlockSize = mekHead.getSequence2() - mekHead.getSequence1();
             this.unknownInfo1BlockSize = mekHead.getSequence3() - mekHead.getSequence2();
             this.weaponInfoBlockSize = mekHead.getSequence4() - mekHead.getSequence3();
-            this.aiInfo1BlockSize = mekHead.getSequence5() - mekHead.getSequence4();
-            this.aiInfo2BlockSize = mekHead.getSequence6() - mekHead.getSequence5();
+            this.aiInfoBlockSize = mekHead.getSequence5() - mekHead.getSequence4();
+            this.voiceInfoBlockSize = mekHead.getSequence6() - mekHead.getSequence5();
         }
 
     }
@@ -531,7 +528,7 @@ public class Mek extends Bsdx {
     }
 
     @Data
-    public static class MekAi2Info {
+    public static class MekVoiceInfo {
 
         private byte[] info;
 
@@ -541,14 +538,13 @@ public class Mek extends Bsdx {
      * 极大可能为武装选择列表（插槽块）
      * 其中，开头的几个为常规块，如走路、站立、ND、BD等，因机体的不同有包括数量在内的差异
      * 另，内容物作用尚未查明，故直接以byte数组存储
-     * 因此采用倒序匹配插槽所对应武装
      */
     @Data
     public static class MekPluginBlock {
 
         private byte[] info;
 
-        private  List<byte[]> regularPluginInfoList;
+        private List<byte[]> regularPluginInfoList;
 
         private List<byte[]> weaponPluginInfoList;
 
