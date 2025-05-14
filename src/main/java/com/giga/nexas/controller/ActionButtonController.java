@@ -56,7 +56,7 @@ public class ActionButtonController {
             BinService service = new BinService();
             Object result = service.parse(selectedFile.getAbsolutePath(), "windows-31j").getData();
             String json = JSONUtil.toJsonStr(result);
-            File outputFile = new File(view.getOutputField().getText(), FileUtil.mainName(selectedFile) + ".json");
+            File outputFile = new File(view.getOutputField().getText(), FileUtil.getName(selectedFile) + ".json");
             FileUtil.writeUtf8String(json, outputFile);
             view.getLogArea().appendText("✔ 解析成功: " + selectedFile.getName() + "\n");
             view.getLogArea().appendText("✔ JSON 文件输出至:\n" + outputFile.getAbsolutePath() + "\n");
@@ -79,7 +79,7 @@ public class ActionButtonController {
                 default -> throw new IllegalArgumentException("不支持的扩展名: " + ext);
             };
 
-            File outputPath = new File(view.getOutputField().getText(), FileUtil.mainName(selectedFile) + "." + obj.getExtensionName());
+            File outputPath = new File(view.getOutputField().getText(), FileUtil.mainName(selectedFile));
             new BinService().generate(outputPath.getAbsolutePath(), obj, "windows-31j");
 
             view.getLogArea().appendText("✔ 已生成游戏文件:\n" + outputPath.getAbsolutePath() + "\n");
