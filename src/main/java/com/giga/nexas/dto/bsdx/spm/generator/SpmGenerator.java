@@ -105,8 +105,9 @@ public class SpmGenerator implements BsdxGenerator<Spm> {
 
     private void writeAnimData(BinaryWriter writer, Spm.SPMAnimData anim, int patPageNum) throws IOException {
         writer.writeNullTerminatedString(anim.getAnimName());
-        writer.writeShort((short) anim.getAnimRotateDirection().intValue());
-        writer.writeShort((short) anim.getAnimReverseDirection().intValue());
+        writer.writeInt(anim.getPatData().size());
+        writer.writeInt(anim.getAnimRotateDirection());
+        writer.writeInt(anim.getAnimReverseDirection());
 
         for (Spm.SPMPatData pat : anim.getPatData()) {
             writePatData(writer, pat, patPageNum);

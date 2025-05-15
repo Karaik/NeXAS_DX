@@ -87,4 +87,9 @@ public class Spm extends Bsdx {
         private List<SPMPatData> patData; // size = numPat & 65535
     }
 
+    @Data
+    public static class SPMTailData {
+
+    }
+
 }

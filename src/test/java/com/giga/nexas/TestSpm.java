@@ -1,64 +1,36 @@
 package com.giga.nexas;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.json.JSONObject;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.json.JSONUtil;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giga.nexas.dto.ResponseDTO;
 import com.giga.nexas.dto.bsdx.spm.Spm;
 import com.giga.nexas.service.BinService;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class TestSpm {
 
-    BinService binService = new BinService();
+    private static final Logger log = LoggerFactory.getLogger(TestSpm.class);
+    private final BinService binService = new BinService();
 
     private static final Path GAME_SPM_DIR = Paths.get("src/main/resources/game/bsdx/spm");
     private static final Path JSON_OUTPUT_DIR = Paths.get("src/main/resources/spmJson");
-    private static final Path UPDATE3_DIR = Paths.get("src/main/resources/Update3");
-
-    @Test
-    void parseJson2Spm() throws IOException {
-        Path inputFilePath = JSON_OUTPUT_DIR.resolve("Kou.json");
-        String jsonStr1 = FileUtil.readUtf8String(inputFilePath.toFile());
-        Spm bean = JSONUtil.toBean(jsonStr1, Spm.class);
-        System.out.println("Loaded bean: " + bean.getClass().getSimpleName());
-
-        String jsonStr2 = JSONUtil.toJsonStr(bean);
-        JSONObject jsonObject1 = JSONUtil.parseObj(bean);
-        JSONObject jsonObject2 = JSONUtil.parseObj(jsonStr2);
-        boolean isEqual = jsonObject1.equals(jsonObject2);
-        System.out.println("Result: " + (isEqual ? "✅ Equal" : "❌ Not Equal"));
-    }
-
-    @Test
-    void testCreateTestSpmDat() throws IOException {
-        List<Path> files = new ArrayList<>();
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(UPDATE3_DIR, "*.spm")) {
-            for (Path path : stream) {
-                files.add(path);
-            }
-        }
-
-        if (!files.isEmpty()) {
-            byte[] firstFileContent = FileUtil.readBytes(files.get(0).toFile());
-            for (int i = 1; i < files.size(); i++) {
-                FileUtil.writeBytes(firstFileContent, files.get(i).toFile());
-                System.out.println("Overwritten: " + files.get(i));
-            }
-        }
-    }
+    private static final Path SPM_OUTPUT_DIR = Paths.get("src/main/resources/spmGenerated");
 
     @Test
     void testGenerateSpmJsonFiles() throws IOException {
-        Files.createDirectories(JSON_OUTPUT_DIR);
-
         List<Spm> allSpmList = new ArrayList<>();
         List<String> baseNames = new ArrayList<>();
+
+        Files.createDirectories(JSON_OUTPUT_DIR);
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(GAME_SPM_DIR, "*.spm")) {
             for (Path path : stream) {
@@ -67,23 +39,91 @@ public class TestSpm {
                 baseNames.add(baseName);
 
                 try {
-                    ResponseDTO parse = binService.parse(path.toString(), "windows-31j");
-                    Spm spm = (Spm) parse.getData();
+                    ResponseDTO dto = binService.parse(path.toString(), "windows-31j");
+                    Spm spm = (Spm) dto.getData();
                     allSpmList.add(spm);
                 } catch (Exception e) {
-                    System.err.println("Parse failed for: " + fileName);
+                    log.warn("Failed to parse: {}", fileName, e);
                 }
             }
         }
 
-        System.out.println("Total parsed: " + allSpmList.size());
-
         for (int i = 0; i < allSpmList.size(); i++) {
             Spm spm = allSpmList.get(i);
             String jsonStr = JSONUtil.toJsonStr(spm);
-            Path outputPath = JSON_OUTPUT_DIR.resolve(baseNames.get(i) + ".json");
-            FileUtil.writeUtf8String(jsonStr, outputPath.toFile());
-            System.out.println("Exported JSON: " + outputPath);
+            Path jsonPath = JSON_OUTPUT_DIR.resolve(baseNames.get(i) + ".json");
+            FileUtil.writeUtf8String(jsonStr, jsonPath.toFile());
+            log.info("Exported: {}", jsonPath);
         }
     }
+
+    @Test
+    void testGenerateSpmFilesByJson() throws IOException {
+        Files.createDirectories(SPM_OUTPUT_DIR);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(JSON_OUTPUT_DIR, "*.json")) {
+            for (Path path : stream) {
+                String jsonStr = FileUtil.readUtf8String(path.toFile());
+                Spm spm = mapper.readValue(jsonStr, Spm.class);
+                String baseName = path.getFileName().toString().replace(".json", "");
+                Path output = SPM_OUTPUT_DIR.resolve(baseName + ".generated.spm");
+
+                binService.generate(output.toString(), spm, "windows-31j");
+                log.info("Generated: {}", output);
+            }
+        }
+    }
+
+    @Test
+    void testSpmParseGenerateBinaryConsistency() throws IOException {
+        Map<String, Path> generatedMap = new HashMap<>();
+        try (DirectoryStream<Path> genStream = Files.newDirectoryStream(SPM_OUTPUT_DIR, "*.generated.spm")) {
+            for (Path gen : genStream) {
+                generatedMap.put(gen.getFileName().toString(), gen);
+            }
+        }
+
+        Path mismatchDir = SPM_OUTPUT_DIR.resolve("mismatch");
+        Files.createDirectories(mismatchDir); // 确保 mismatch 文件夹存在
+
+        try (DirectoryStream<Path> oriStream = Files.newDirectoryStream(GAME_SPM_DIR, "*.spm")) {
+            for (Path ori : oriStream) {
+                String name = ori.getFileName().toString().replace(".spm", ".generated.spm");
+                Path gen = generatedMap.get(name);
+                if (gen == null) {
+                    log.warn("Not Found: {}", name);
+                    continue;
+                }
+
+                byte[] originalBytes = FileUtil.readBytes(ori.toFile());
+                byte[] generatedBytes = FileUtil.readBytes(gen.toFile());
+
+                if (!ArrayUtil.equals(originalBytes, generatedBytes)) {
+                    log.error("Mismatch: {}", name);
+                    int minLen = Math.min(originalBytes.length, generatedBytes.length);
+                    for (int i = 0; i < minLen; i++) {
+                        if (originalBytes[i] != generatedBytes[i]) {
+                            log.error("Diff at 0x{}: orig=0x{} gen=0x{}",
+                                    Integer.toHexString(i),
+                                    Integer.toHexString(originalBytes[i] & 0xFF),
+                                    Integer.toHexString(generatedBytes[i] & 0xFF));
+                            break;
+                        }
+                    }
+
+                    // 移动 mismatch 文件
+                    String newName = gen.getFileName().toString().replace(".generated", "");
+                    Path target = mismatchDir.resolve(newName);
+                    Files.move(gen, target, StandardCopyOption.REPLACE_EXISTING);
+                    log.warn("Moved mismatch file to: {}", target);
+
+                } else {
+//                log.info("Match: {}", name);
+                }
+            }
+        }
+    }
+
 }

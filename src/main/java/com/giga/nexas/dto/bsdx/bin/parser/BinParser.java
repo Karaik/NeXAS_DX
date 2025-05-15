@@ -154,7 +154,6 @@ public class BinParser implements BsdxParser<Bin> {
             // 读取字符串
             String txt = new String(reader.readBytes(len), reader.getCharset())
                     .replace("\0", "");
-            // 按 C# 实现包双引号
             table.add("\"" + txt + "\"");
         }
 

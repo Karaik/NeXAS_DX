@@ -120,14 +120,14 @@ public class SpmParser implements BsdxParser<Spm> {
         return chipData;
     }
 
-    // 解析 `SPMImageData`
+    // 解析SPMImageData
     private Spm.SPMImageData parseImageData(BinaryReader reader) {
         Spm.SPMImageData imageData = new Spm.SPMImageData();
         imageData.setImageName(reader.readNullTerminatedString());
         return imageData;
     }
 
-    // 解析 `SPMAnimData`
+    // 解析SPMAnimData
     private Spm.SPMAnimData parseAnimData(BinaryReader reader, int patPageNum) {
         Spm.SPMAnimData animData = new Spm.SPMAnimData();
         animData.setAnimName(reader.readNullTerminatedString());
