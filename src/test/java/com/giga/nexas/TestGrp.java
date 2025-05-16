@@ -68,10 +68,10 @@ public class TestGrp {
                 String jsonStr = FileUtil.readUtf8String(path.toFile());
                 Grp grp = mapper.readValue(jsonStr, Grp.class);
                 String baseName = path.getFileName().toString().replace(".json", "");
-                Path output = GRP_OUTPUT_DIR.resolve(baseName + ".grp");
+                Path output = GRP_OUTPUT_DIR.resolve(baseName + ".generated.grp");
 
                 binService.generate(output.toString(), grp, "windows-31j");
-                log.info("✅ Generated: {}", output);
+                log.info("Generated: {}", output);
             }
         }
     }
@@ -79,18 +79,21 @@ public class TestGrp {
     @Test
     void testGrpParseGenerateBinaryConsistency() throws IOException {
         Map<String, Path> generatedMap = new HashMap<>();
-        try (DirectoryStream<Path> genStream = Files.newDirectoryStream(GRP_OUTPUT_DIR, "*.grp")) {
+        try (DirectoryStream<Path> genStream = Files.newDirectoryStream(GRP_OUTPUT_DIR, "*.generated.grp")) {
             for (Path gen : genStream) {
                 generatedMap.put(gen.getFileName().toString(), gen);
             }
         }
 
+        Path mismatchDir = GRP_OUTPUT_DIR.resolve("mismatch");
+        Files.createDirectories(mismatchDir);
+
         try (DirectoryStream<Path> oriStream = Files.newDirectoryStream(GRP_DIR, "*.grp")) {
             for (Path ori : oriStream) {
-                String name = ori.getFileName().toString();
+                String name = ori.getFileName().toString().replace(".grp", ".generated.grp");
                 Path gen = generatedMap.get(name);
                 if (gen == null) {
-                    log.warn("⚠️ Not Found: {}", name);
+                    log.warn("Not Found: {}", name);
                     continue;
                 }
 
@@ -98,7 +101,7 @@ public class TestGrp {
                 byte[] generatedBytes = FileUtil.readBytes(gen.toFile());
 
                 if (!ArrayUtil.equals(originalBytes, generatedBytes)) {
-                    log.error("❌ Mismatch: {}", name);
+                    log.error("Mismatch: {}", name);
                     int minLen = Math.min(originalBytes.length, generatedBytes.length);
                     for (int i = 0; i < minLen; i++) {
                         if (originalBytes[i] != generatedBytes[i]) {
@@ -109,8 +112,10 @@ public class TestGrp {
                             break;
                         }
                     }
-                } else {
-                    log.info("✅ Match: {}", name);
+                    String newName = gen.getFileName().toString().replace(".generated", "");
+                    Path target = mismatchDir.resolve(newName);
+                    Files.move(gen, target, StandardCopyOption.REPLACE_EXISTING);
+                    log.warn("Moved mismatch file to: {}", target);
                 }
             }
         }

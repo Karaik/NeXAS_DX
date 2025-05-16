@@ -14,13 +14,14 @@ import java.util.List;
 @Data
 public class WazaGroupGrp extends Grp {
 
-    public List<WazaGroupEntry> wazaList = new ArrayList<>();
+    private List<WazaGroupEntry> wazaList = new ArrayList<>();
 
     @Data
     public static class WazaGroupEntry {
-        public String wazaName;
-        public String wazaCodeName;
-        public String wazaDisplayName;
-        public int param;
+        public Integer existFlag; // 仅记录用
+        private String wazaName;
+        private String wazaCodeName;
+        private String wazaDisplayName;
+        private Integer param;
     }
 }

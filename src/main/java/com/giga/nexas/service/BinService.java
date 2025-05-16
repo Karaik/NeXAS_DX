@@ -7,6 +7,7 @@ import com.giga.nexas.dto.bsdx.BsdxGenerator;
 import com.giga.nexas.dto.bsdx.BsdxParser;
 import com.giga.nexas.dto.bsdx.bin.parser.BinParser;
 import com.giga.nexas.dto.bsdx.dat.parser.DatParser;
+import com.giga.nexas.dto.bsdx.grp.generator.GrpGenerator;
 import com.giga.nexas.dto.bsdx.grp.parser.GrpParser;
 import com.giga.nexas.dto.bsdx.mek.generator.MekGenerator;
 import com.giga.nexas.dto.bsdx.mek.parser.MekParser;
@@ -41,6 +42,7 @@ public class BinService {
         registerGenerator(new SpmGenerator());
         registerGenerator(new MekGenerator());
         registerGenerator(new WazGenerator());
+        registerGenerator(new GrpGenerator());
     }
 
     public BinService(List<BsdxParser<?>> bsdxParsers) {

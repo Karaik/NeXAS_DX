@@ -18,7 +18,7 @@ public class BinConst {
     public final static Map<String, Integer> MNEMONIC_OPERAND_MAP;
 
     static {
-        Map<Integer, String> tmp = new HashMap<>(128);
+        Map<Integer, String> tmp = new HashMap<>(1 << 7, 1); // 128
 
         // 基本运算
         tmp.put(0,  "VAL");
@@ -99,7 +99,7 @@ public class BinConst {
     }
 
     static {
-        Map<Integer, String> tmp = new HashMap<>();
+        Map<Integer, String> tmp = new HashMap<>(1 << 9,1); // 512
 
         //  // Toodo: find where LoopVoice functions are located
         //  // also need to find whats 11->66 do

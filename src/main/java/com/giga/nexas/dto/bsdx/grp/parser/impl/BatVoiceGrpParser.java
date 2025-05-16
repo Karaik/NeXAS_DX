@@ -31,16 +31,18 @@ public class BatVoiceGrpParser implements GrpFileParser<Grp> {
 
         int groupObjectCount = reader.readInt();
         for (int i = 0; i < groupObjectCount; i++) {
+            BatVoiceGrp.BatVoiceGroup group = new BatVoiceGrp.BatVoiceGroup();
             int existFlag = reader.readInt();
+            group.setExistFlag(existFlag);
             if (existFlag != 0) {
-                BatVoiceGrp.BatVoiceGroup group = new BatVoiceGrp.BatVoiceGroup();
                 group.setCharacterName(reader.readNullTerminatedString());
                 group.setCharacterCodeName(reader.readNullTerminatedString());
 
                 int voiceCount = reader.readInt();
                 for (int j = 0; j < voiceCount; j++) {
-                    int voiceExist = reader.readInt();
                     BatVoiceGrp.BatVoice voice = new BatVoiceGrp.BatVoice();
+                    int voiceExist = reader.readInt();
+                    voice.setExistFlag(voiceExist);
                     if (voiceExist != 0) {
                         voice.setVoice(reader.readNullTerminatedString());
                         voice.setVoiceCodeName(reader.readNullTerminatedString());
@@ -48,9 +50,8 @@ public class BatVoiceGrpParser implements GrpFileParser<Grp> {
                     }
                     group.getVoices().add(voice);
                 }
-
-                batVoiceGrp.getVoiceList().add(group);
             }
+            batVoiceGrp.getVoiceList().add(group);
         }
 
         return batVoiceGrp;

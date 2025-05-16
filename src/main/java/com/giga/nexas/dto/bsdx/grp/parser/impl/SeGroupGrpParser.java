@@ -23,24 +23,27 @@ public class SeGroupGrpParser implements GrpFileParser<Grp> {
 
         int groupCount = reader.readInt();
         for (int i = 0; i < groupCount; i++) {
+            SeGroupGrp.SeGroupGroup group = new SeGroupGrp.SeGroupGroup();
             int existFlag = reader.readInt();
+            group.setExistFlag(existFlag);
             if (existFlag != 0) {
-                SeGroupGrp.SeGroupGroup group = new SeGroupGrp.SeGroupGroup();
+
                 group.setSeType(reader.readNullTerminatedString());
                 group.setSeTypeCodeName(reader.readNullTerminatedString());
                 int itemCount = reader.readInt();
                 for (int j = 0; j < itemCount; j++) {
+                    SeGroupGrp.SeGroupItem item = new SeGroupGrp.SeGroupItem();
                     int itemFlag = reader.readInt();
+                    item.setExistFlag(itemFlag);
                     if (itemFlag != 0) {
-                        SeGroupGrp.SeGroupItem item = new SeGroupGrp.SeGroupItem();
                         item.setSeItemName(reader.readNullTerminatedString());
                         item.setSeItemCodeName(reader.readNullTerminatedString());
                         item.setSeFileName(reader.readNullTerminatedString());
-                        group.getSeItems().add(item);
                     }
+                    group.getSeItems().add(item);
                 }
-                seGroupGrp.getSeList().add(group);
             }
+            seGroupGrp.getSeList().add(group);
         }
 
         return seGroupGrp;

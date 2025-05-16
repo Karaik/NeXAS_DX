@@ -23,14 +23,15 @@ public class SpriteGroupGrpParser implements GrpFileParser<Grp> {
 
         int groupCount = reader.readInt();
         for (int i = 0; i < groupCount; i++) {
+            SpriteGroupGrp.SpriteGroupEntry entry = new SpriteGroupGrp.SpriteGroupEntry();
             int flag = reader.readInt();
+            entry.setExistFlag(flag);
             if (flag != 0) {
-                SpriteGroupGrp.SpriteGroupEntry entry = new SpriteGroupGrp.SpriteGroupEntry();
                 entry.setSpriteFileName(reader.readNullTerminatedString());
                 entry.setSpriteCodeName(reader.readNullTerminatedString());
                 entry.setParam(reader.readInt());
-                spriteGroupGrp.getSpriteList().add(entry);
             }
+            spriteGroupGrp.getSpriteList().add(entry);
         }
 
         return spriteGroupGrp;

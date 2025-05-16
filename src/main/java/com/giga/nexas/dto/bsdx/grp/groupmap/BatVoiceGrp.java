@@ -14,27 +14,29 @@ import java.util.List;
 @Data
 public class BatVoiceGrp extends Grp {
 
-    public List<BatVoiceTypeGroup> voiceTypeList = new ArrayList<>();
-    public List<BatVoiceGroup> voiceList = new ArrayList<>();
+    private List<BatVoiceTypeGroup> voiceTypeList = new ArrayList<>();
+    private List<BatVoiceGroup> voiceList = new ArrayList<>();
 
     @Data
     public static class BatVoiceTypeGroup {
-        public String voiceType;
-        public String voiceTypeCodeName;
+        private String voiceType;
+        private String voiceTypeCodeName;
     }
 
     @Data
     public static class BatVoiceGroup {
-        public String characterName;
-        public String characterCodeName;
-        public List<BatVoice> voices = new ArrayList<>();
+        public Integer existFlag; // 仅记录用
+        private String characterName;
+        private String characterCodeName;
+        private List<BatVoice> voices = new ArrayList<>();
     }
 
     @Data
     public static class BatVoice {
-        public String voice;
-        public String voiceCodeName;
-        public String voiceFileName;
+        public Integer existFlag; // 仅记录用
+        private String voice;
+        private String voiceCodeName;
+        private String voiceFileName;
     }
 
 }

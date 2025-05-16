@@ -23,9 +23,10 @@ public class MekaGroupGrpParser implements GrpFileParser<Grp> {
 
         int groupCount = reader.readInt();
         for (int i = 0; i < groupCount; i++) {
-            int flag = reader.readInt();
             MekaGroupGrp.MekaGroup group = new MekaGroupGrp.MekaGroup();
-            if (flag != 0) {
+            int existFLag = reader.readInt();
+            group.setExistFlag(existFLag);
+            if (existFLag != 0) {
                 group.setMekaName(reader.readNullTerminatedString());
                 group.setMekaCodeName(reader.readNullTerminatedString());
             }

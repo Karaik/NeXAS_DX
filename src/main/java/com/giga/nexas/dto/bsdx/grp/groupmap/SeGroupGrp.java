@@ -14,19 +14,21 @@ import java.util.List;
 @Data
 public class SeGroupGrp extends Grp {
 
-    public List<SeGroupGroup> seList = new ArrayList<>();
+    private List<SeGroupGroup> seList = new ArrayList<>();
 
     @Data
     public static class SeGroupGroup {
-        public String seType;
-        public String seTypeCodeName;
-        public List<SeGroupItem> seItems = new ArrayList<>();
+        public Integer existFlag; // 仅记录用
+        private String seType;
+        private String seTypeCodeName;
+        private List<SeGroupItem> seItems = new ArrayList<>();
     }
 
     @Data
     public static class SeGroupItem {
-        public String seItemName;
-        public String seItemCodeName;
-        public String seFileName;
+        public Integer existFlag; // 仅记录用
+        private String seItemName;
+        private String seItemCodeName;
+        private String seFileName;
     }
 }

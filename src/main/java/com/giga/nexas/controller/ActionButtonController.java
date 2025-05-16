@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giga.nexas.dto.ResponseDTO;
 import com.giga.nexas.dto.bsdx.Bsdx;
+import com.giga.nexas.dto.bsdx.grp.Grp;
 import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.service.BinService;
@@ -76,6 +77,7 @@ public class ActionButtonController {
             obj = switch (ext) {
                 case WAZ_EXT -> objectMapper.readValue(jsonStr, Waz.class);
                 case MEK_EXT -> objectMapper.readValue(jsonStr, Mek.class);
+                case GRP_EXT -> objectMapper.readValue(jsonStr, Grp.class);
                 default -> throw new IllegalArgumentException("不支持的扩展名: " + ext);
             };
 

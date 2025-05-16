@@ -14,21 +14,21 @@ import java.util.List;
 @Data
 public class TermGrp extends Grp {
 
-    public List<TermGroup> termList = new ArrayList<>();
+    private List<TermGroup> termList = new ArrayList<>();
 
     @Data
     public static class TermGroup {
-        public String termGroupName;
-        public String termGroupCodeName;
-        public List<TermItem> termItemList = new ArrayList<>();
+        private String termGroupName;
+        private String termGroupCodeName;
+        private List<TermItem> termItemList = new ArrayList<>();
     }
 
     @Data
     public static class TermItem {
-        public String termItemName;
-        public String termItemCodeName;
-        public String termItemDescription;
-        public int param1;
-        public int param2;
+        private String termItemName;
+        private String termItemCodeName;
+        private String termItemDescription;
+        private Integer param1;
+        private Integer param2;
     }
 }

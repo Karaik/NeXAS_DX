@@ -1,10 +1,6 @@
 package com.giga.nexas.util;
 
 import java.io.*;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 public class PacUtil {

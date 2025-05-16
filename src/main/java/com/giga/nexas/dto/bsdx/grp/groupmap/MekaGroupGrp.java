@@ -14,11 +14,12 @@ import java.util.List;
 @Data
 public class MekaGroupGrp extends Grp {
 
-    public List<MekaGroup> mekaList = new ArrayList<>();
+    private List<MekaGroup> mekaList = new ArrayList<>();
 
     @Data
     public static class MekaGroup {
-        public String mekaName;
-        public String mekaCodeName;
+        public Integer existFlag; // 仅记录用
+        private String mekaName;
+        private String mekaCodeName;
     }
 }

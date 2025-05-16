@@ -23,8 +23,9 @@ public class WazaGroupGrpParser implements GrpFileParser<Grp> {
 
         int groupCount = reader.readInt();
         for (int i = 0; i < groupCount; i++) {
-            int flag = reader.readInt();
             WazaGroupGrp.WazaGroupEntry entry = new WazaGroupGrp.WazaGroupEntry();
+            int flag = reader.readInt();
+            entry.setExistFlag(flag);
             if (flag != 0) {
                 entry.setWazaName(reader.readNullTerminatedString());
                 entry.setWazaCodeName(reader.readNullTerminatedString());

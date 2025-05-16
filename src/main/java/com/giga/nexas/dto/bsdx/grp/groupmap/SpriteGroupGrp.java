@@ -14,13 +14,14 @@ import java.util.List;
 @Data
 public class SpriteGroupGrp extends Grp {
 
-    public List<SpriteGroupEntry> spriteList = new ArrayList<>();
+    private List<SpriteGroupEntry> spriteList = new ArrayList<>();
 
     @Data
     public static class SpriteGroupEntry {
-        public String spriteFileName;
-        public String spriteCodeName;
-        public int param;
+        public Integer existFlag; // 仅记录用
+        private String spriteFileName;
+        private String spriteCodeName;
+        private Integer param;
     }
 
 }
