@@ -116,4 +116,24 @@ public class TestBin {
             log.info("✅ 导出 bin 内的IR: {}", outputPath);
         }
     }
+
+    @Test
+    void testGenerateGlobalJsonFile() throws IOException {
+        Path globalPath = BIN_DIR.resolve("__GLOBAL.bin");
+        if (!Files.exists(globalPath)) {
+            System.err.println("❌ 未找到 __GLOBAL.bin 文件: " + globalPath);
+            return;
+        }
+
+        byte[] data = FileUtil.readBytes(globalPath.toFile());
+        com.giga.nexas.dto.bsdx.bin.parser.GLOBALParser parser = new com.giga.nexas.dto.bsdx.bin.parser.GLOBALParser();
+        com.giga.nexas.dto.bsdx.bin.GLOBAL global = parser.parse(data, "__GLOBAL", "windows-31j");
+
+        String jsonStr = JSONUtil.toJsonStr(global);
+        Path outputPath = OUTPUT_DIR.resolve("__GLOBAL.json");
+        FileUtil.writeUtf8String(jsonStr, outputPath.toFile());
+
+        System.out.println("✅ 导出 __GLOBAL.json: " + outputPath);
+    }
+
 }

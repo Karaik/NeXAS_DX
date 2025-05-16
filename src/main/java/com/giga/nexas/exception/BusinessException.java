@@ -1,18 +1,16 @@
 package com.giga.nexas.exception;
 
 import lombok.Getter;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 public class BusinessException extends RuntimeException {
     private Integer code;
     private String msg;
 
-    public BusinessException(String message, Integer code, String msg) {
-        super(message);
+    public BusinessException(Integer code, String msg) {
+        super(msg);
         this.code = code;
         this.msg = msg;
     }

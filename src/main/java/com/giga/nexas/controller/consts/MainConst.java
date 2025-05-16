@@ -14,6 +14,7 @@ public class MainConst {
 
     public static final String WAZ_EXT ="waz";
     public static final String MEK_EXT ="mek";
+    public static final String SPM_EXT ="spm";
     public static final String GRP_EXT ="grp";
 
 }
