@@ -1,0 +1,26 @@
+// === 第 1 段 ===
+int count1 = readInt(4);  // File::read(a2, &Buffer, 4u);
+for (int i = 0; i < count1; i++) {
+    int elemCount = readInt(4);  // File::read(a2, &v42, 4u);
+    if (elemCount > 0) {
+        readBytes(elemCount * 4);  // File::read(a2, ..., elemCount * 4);
+    }
+}
+
+// === 第 2 段 ===
+int count2 = readInt(4);  // File::read(a2, &Buffer, 4u);
+for (int i = 0; i < count2; i++) {
+    int elemCount = readInt(4);
+    if (elemCount > 0) {
+        readBytes(elemCount * 4);
+    }
+}
+
+// === 第 3 段 ===
+int count3 = readInt(4);  // File::read(a2, &Buffer, 4u);
+for (int i = 0; i < count3; i++) {
+    int elemCount = readInt(4);
+    if (elemCount > 0) {
+        readBytes(elemCount * 4);
+    }
+}

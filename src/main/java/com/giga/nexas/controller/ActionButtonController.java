@@ -11,7 +11,7 @@ import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.spm.Spm;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.exception.BusinessException;
-import com.giga.nexas.service.BinService;
+import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.service.PacService;
 import javafx.scene.control.TreeItem;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +56,7 @@ public class ActionButtonController {
 
     private void parse(File selectedFile) {
         try {
-            BinService service = new BinService();
+            BsdxBinService service = new BsdxBinService();
             Object result = service.parse(selectedFile.getAbsolutePath(), "windows-31j").getData();
             String json = JSONUtil.toJsonStr(result);
             File outputFile = new File(view.getOutputField().getText(), FileUtil.getName(selectedFile) + ".json");
@@ -84,7 +84,7 @@ public class ActionButtonController {
             };
 
             File outputPath = new File(view.getOutputField().getText(), FileUtil.mainName(selectedFile));
-            new BinService().generate(outputPath.getAbsolutePath(), obj, "windows-31j");
+            new BsdxBinService().generate(outputPath.getAbsolutePath(), obj, "windows-31j");
 
             view.getLogArea().appendText("✔ 已生成游戏文件:\n" + outputPath.getAbsolutePath() + "\n");
         } catch (Exception ex) {

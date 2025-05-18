@@ -1,0 +1,35 @@
+// 打开 .mek 文件句柄（v60）
+openFile(".mek");  // 实际由 sub_76C940 完成
+
+// ===== 第一段：读取固定数量的结构 =====
+for (int i = 0; i < 7; i++) {
+    readStructureFromFile(v60);  // 调用 sub_5F32A0(v60)
+}
+
+// ===== 第二段：读取文件中的 N 个结构 =====
+int count = readStructureCount(v60);  // 实际是 au_re_File::read_2(v60)
+for (int i = 0; i < count; i++) {
+    readStructureFromFile(v60);       // 调用 sub_5F32A0(v60)
+}
+
+// ===== 第三段：遍历主结构体索引范围，条件成立则读取 =====
+for (int i = a1[27]; i < a1[28]; i += 4) {
+    if (field_164_at(i) != 0) {
+        readStructureFromFile(v60);   // 调用 sub_5F32A0(v60)
+    }
+    // 否则不读取
+}
+
+// ===== 第四段：另一种判断路径，嵌套条件决定读取次数 =====
+for (int j = a1[27]; j < a1[28]; j += 4) {
+    if (field_164_at(j) != 0) {
+        if (field_120_at(j) != 0) {
+            readStructureFromFile(v60);   // 读取一次
+        } else {
+            for (int k = 0; k < 3; k++) {
+                readStructureFromFile(v60); // 读取三次
+            }
+        }
+    }
+    // 否则不读取
+}

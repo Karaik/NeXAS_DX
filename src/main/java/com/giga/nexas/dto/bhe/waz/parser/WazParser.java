@@ -1,10 +1,11 @@
-package com.giga.nexas.dto.bsdx.waz.parser;
+package com.giga.nexas.dto.bhe.waz.parser;
 
-import com.giga.nexas.dto.bsdx.BsdxParser;
-import com.giga.nexas.dto.bsdx.waz.Waz;
-import com.giga.nexas.dto.bsdx.waz.wazfactory.SkillInfoFactory;
-import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
-import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.*;
+import com.giga.nexas.dto.bhe.BheParser;
+import com.giga.nexas.dto.bhe.waz.Waz;
+import com.giga.nexas.dto.bhe.waz.wazfactory.SkillInfoFactory;
+import com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.SkillUnit;
+import com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
+import com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.SkillInfoUnknown;
 import com.giga.nexas.io.BinaryReader;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,7 +18,7 @@ import java.util.List;
  * 逆向所得
  */
 @Slf4j
-public class WazParser implements BsdxParser<Waz> {
+public class WazParser implements BheParser<Waz> {
 
     @Override
     public String supportExtension() {
@@ -34,24 +35,19 @@ public class WazParser implements BsdxParser<Waz> {
             while (reader.hasRemaining()) {
                 Waz.Skill skill = new Waz.Skill();
 
-                // 每个块开始前，都会有个flag代表“是否存在”
                 int flag = reader.readInt();
                 if (flag == 0) {
                     wazBlockList.add(skill);
                     continue;
                 }
 
-                // 1.技能信息1
                 skill.setSkillNameJapanese(reader.readNullTerminatedString());
 
-                // 2.技能信息2
                 skill.setSkillNameEnglish(reader.readNullTerminatedString());
 
-                // 3.阶段数
                 int phaseQuantity = reader.readInt();
                 skill.setPhaseQuantity(phaseQuantity);
 
-                // 4.技能数据
                 List<Waz.Skill.SkillPhase> phaseInfoList = skill.getPhasesInfo();
                 for (int i = 0; i < phaseQuantity; i++) {
                     Waz.Skill.SkillPhase skillPhase = new Waz.Skill.SkillPhase();
@@ -59,7 +55,6 @@ public class WazParser implements BsdxParser<Waz> {
                     phaseInfoList.add(skillPhase);
                 }
 
-                // 解析技能后缀
                 int countSuffix = reader.readInt();
                 List<Waz.Skill.SkillSuffix> skillSuffixList = skill.getSkillSuffixList();
                 for (int i = 0; i < countSuffix; i++) {
@@ -69,7 +64,6 @@ public class WazParser implements BsdxParser<Waz> {
                     skillSuffixList.add(skillSuffix);
                 }
 
-                // 添加技能到列表
                 wazBlockList.add(skill);
             }
         } catch (Exception e) {
@@ -84,16 +78,20 @@ public class WazParser implements BsdxParser<Waz> {
     private void parseSkillPhaseInfo(Waz.Skill.SkillPhase skillPhase, BinaryReader reader) {
         List<SkillUnit> skillUnitCollection = skillPhase.getSkillUnitCollection();
 
-        for (int i = 0; i < 72; i++) { // 逆向得知循环72次
-            SkillUnit skillUnit = new SkillUnit(i, SkillInfoFactory.SKILL_INFO_TYPE_ENTRIES_BSDX[i].getDescription());
+        // 83次
+        for (int i = 0; i < 83; i++) {
+            SkillUnit skillUnit = new SkillUnit(i, SkillInfoFactory.SKILL_INFO_TYPE_ENTRIES_BHE[i].getDescription());
 
             List<SkillInfoObject> skillInfoObjectList = skillUnit.getSkillInfoObjectList();
             int count1 = reader.readInt();
+            if (count1 > 100) {
+                throw new RuntimeException("count1 == "+count1);
+            }
             for (int j = 0; j < count1; j++) {
                 try {
-                    SkillInfoObject eventObject = SkillInfoFactory.createEventObjectBsdx(i);
+                    SkillInfoObject eventObject = SkillInfoFactory.createEventObjectBhe(i);
                     eventObject.setSlotNum(i);
-                    eventObject.readInfo(reader);  // 使用 BinaryReader 读取信息
+                    eventObject.readInfo(reader);
                     skillInfoObjectList.add(eventObject);
                 } catch (Exception e) {
                     log.info("error === i={}", i);
@@ -103,10 +101,13 @@ public class WazParser implements BsdxParser<Waz> {
 
             List<SkillInfoUnknown> wazInfoUnknownList = skillUnit.getSkillInfoUnknownList();
             int count2 = reader.readInt();
+            if (count2 > 20) {
+                throw new RuntimeException("count2 == "+count2);
+            }
             for (int j = 0; j < count2; j++) {
                 try {
-                    SkillInfoUnknown wazInfoUnknown = (SkillInfoUnknown) SkillInfoFactory.createEventObjectBsdx(0xFF);
-                    wazInfoUnknown.readInfo(reader);  // 使用 BinaryReader 读取信息
+                    SkillInfoUnknown wazInfoUnknown = (SkillInfoUnknown) SkillInfoFactory.createEventObjectBhe(0xFF);
+                    wazInfoUnknown.readInfo(reader);
                     wazInfoUnknownList.add(wazInfoUnknown);
                 } catch (Exception e) {
                     log.info("error === i={}", i);

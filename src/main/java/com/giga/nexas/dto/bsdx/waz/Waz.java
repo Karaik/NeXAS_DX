@@ -1,7 +1,7 @@
 package com.giga.nexas.dto.bsdx.waz;
 
 import com.giga.nexas.dto.bsdx.Bsdx;
-import com.giga.nexas.dto.bsdx.waz.wazfactor.wazinfoclass.SkillUnit;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
 import lombok.Data;
 
 import java.util.ArrayList;
