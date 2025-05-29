@@ -471,7 +471,7 @@ public class BinConst {
         OPERAND_MNEMONIC_MAP = Collections.unmodifiableMap(tmp);
 
         // mnemonic → operand
-        Map<String, Integer> revN = new HashMap<>(tmp.size());
+        Map<String, Integer> revN = new HashMap<>(tmp.size(), 1);
         for (Map.Entry<Integer, String> e : tmp.entrySet()) {
             revN.put(e.getValue(), e.getKey());
         }

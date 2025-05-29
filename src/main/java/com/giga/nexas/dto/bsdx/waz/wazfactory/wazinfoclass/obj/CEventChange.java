@@ -57,7 +57,7 @@ public class CEventChange extends SkillInfoObject {
             int counter = 0;
             do {
                 BsdxInfoCollection bsdxInfoCollection = new BsdxInfoCollection();
-                bsdxInfoCollection.readCollection(reader);  // 使用 BinaryReader 读取数据
+                bsdxInfoCollection.readCollection(reader);
                 this.bsdxInfoCollectionList1.add(bsdxInfoCollection);
 
                 counter++;

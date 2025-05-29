@@ -67,28 +67,119 @@ public class CEventHit extends SkillInfoObject {
     private Short short1;
     private Short short2;
 
+    /**
+     *
+     */
     private Integer int1;
+
+    /**
+     *
+     */
     private Integer int2;
+
+    /**
+     *
+     */
     private Integer int3;
+
+    /**
+     * ヒット数
+     */
     private Integer int4;
+
+    /**
+     * ヒット間隔
+     */
     private Integer int5;
+
+    /**
+     *
+     */
     private Integer int6;
+
+    /**
+     *
+     */
     private Integer int7;
+
+    /**
+     *
+     */
     private Integer int8;
+
+    /**
+     * 攻撃力最低値
+     */
     private Integer int9;
+
+    /**
+     * 基底コンボ補正値
+     */
     private Integer int10;
+
+    /**
+     *
+     */
     private Integer int11;
+
+    /**
+     *
+     */
     private Integer int12;
+
+    /**
+     *
+     */
     private Integer int13;
+
+    /**
+     *
+     */
     private Integer int14;
+
+    /**
+     *
+     */
     private Integer int15;
+
+    /**
+     *
+     */
     private Integer int16;
+
+    /**
+     *
+     */
     private Integer int17;
+
+    /**
+     *
+     */
     private Integer int18;
+
+    /**
+     * 画面：振動時間
+     */
     private Integer int19;
+
+    /**
+     *
+     */
     private Integer int20;
+
+    /**
+     * 鉄ヒットＳＥ？
+     */
     private Integer int21;
+
+    /**
+     * ダメージ色時間？
+     */
     private Integer int22;
+
+    /**
+     * キャンセルフラグ？
+     */
     private Integer int23;
 
     private List<CEventHitUnit> ceventHitUnitList = new ArrayList<>();

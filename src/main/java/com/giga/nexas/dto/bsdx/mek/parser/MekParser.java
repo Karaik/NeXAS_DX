@@ -94,7 +94,7 @@ public class MekParser implements BsdxParser<Mek> {
         Mek.MekBasicInfo mekInfo = mek.getMekBasicInfo();
         BinaryReader reader = new BinaryReader(bytes, charset);
 
-        mekInfo.setMekNameKana(reader.readNullTerminatedString());
+        mekInfo.setMekName(reader.readNullTerminatedString());
 
         reader.setCharset("UTF-8");
         mekInfo.setMekNameEnglish(reader.readNullTerminatedString());
@@ -246,6 +246,8 @@ public class MekParser implements BsdxParser<Mek> {
             startFlag = ParserUtil.WEAPON_PLUGINS_FLAG_DATA;
         } else if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.WEAPON_PLUGINS_FLAG_DATA_2)) {
             startFlag = ParserUtil.WEAPON_PLUGINS_FLAG_DATA_2;
+        } else if (Arrays.equals(Arrays.copyOfRange(bytes, offset, offset + 4), ParserUtil.WEAPON_PLUGINS_FLAG_DATA_3)) {
+            startFlag = ParserUtil.WEAPON_PLUGINS_FLAG_DATA_3;
         } else {
             throw new BusinessException(500, "未曾设想的起始符类型！");
         }

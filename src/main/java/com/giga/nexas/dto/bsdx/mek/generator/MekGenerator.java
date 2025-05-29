@@ -75,7 +75,7 @@ public class MekGenerator implements BsdxGenerator<Mek> {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              BinaryWriter writer = new BinaryWriter(baos, charset)) {
 
-            writer.writeNullTerminatedString(mekBasicInfo.getMekNameKana());
+            writer.writeNullTerminatedString(mekBasicInfo.getMekName());
             writer.writeNullTerminatedString(mekBasicInfo.getMekNameEnglish());
             writer.writeNullTerminatedString(mekBasicInfo.getPilotNameKanji());
             writer.writeNullTerminatedString(mekBasicInfo.getPilotNameRoma());

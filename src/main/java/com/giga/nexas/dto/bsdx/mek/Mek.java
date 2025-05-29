@@ -135,7 +135,7 @@ public class Mek extends Bsdx {
     public static class MekBasicInfo {
 
         // jpメカ名
-        private String mekNameKana;
+        private String mekName;
 
         // jpメカのルビ
         private String mekNameEnglish;

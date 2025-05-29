@@ -15,7 +15,7 @@ public class TransferUtil {
         Mek.MekBasicInfo jaMekBasicInfo = jaMek.getMekBasicInfo();
         Mek.MekBasicInfo zhMekBasicInfo = zhMek.getMekBasicInfo();
 
-        jaMekBasicInfo.setMekNameKana(zhMekBasicInfo.getMekNameKana());
+        jaMekBasicInfo.setMekName(zhMekBasicInfo.getMekName());
         jaMekBasicInfo.setPilotNameKanji(zhMekBasicInfo.getPilotNameKanji());
         jaMekBasicInfo.setMekDescription(zhMekBasicInfo.getMekDescription());
 

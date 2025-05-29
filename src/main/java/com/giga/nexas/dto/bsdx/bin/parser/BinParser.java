@@ -33,7 +33,7 @@ public class BinParser implements BsdxParser<Bin> {
 
         if (SKIP_BIN.equals(filename)) {
             log.info("skip === {} ", filename);
-            return null;
+            return new Bin();
         }
 
         BinaryReader reader = new BinaryReader(data, charset);
