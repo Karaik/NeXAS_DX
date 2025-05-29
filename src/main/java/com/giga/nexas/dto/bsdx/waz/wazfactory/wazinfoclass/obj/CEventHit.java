@@ -83,39 +83,54 @@ public class CEventHit extends SkillInfoObject {
     private Integer int3;
 
     /**
+     * 当前行为的hit数
+     *
      * ヒット数
      */
     private Integer int4;
 
     /**
+     * 每hit的间隔
+     *
      * ヒット間隔
      */
     private Integer int5;
 
     /**
+     * 内补正，简单来说就是多段伤害的技能在每次造成伤害后
+     * 会在技能未结束时反复算上的补正，技能结束后会还原
      *
+     * 攻撃力補正：技のみ
      */
-    private Integer int6;
+    private Integer internalCorrection;
 
     /**
+     * 连段中的补正，中途补正，加上终了补正为最终补正
      *
+     * 攻撃力補正
      */
-    private Integer int7;
+    private Integer midComboCorrection;
 
     /**
+     * 起手补正一般是起手+终了
      *
+     * 攻撃力補正：技終了時
      */
-    private Integer int8;
+    private Integer endCorrection;
 
     /**
+     * 底伤，保底伤害
+     *
      * 攻撃力最低値
      */
-    private Integer int9;
+    private Integer minDamage;
 
     /**
+     * 起手补正，一般是本补正+终了补正
+     *
      * 基底コンボ補正値
      */
-    private Integer int10;
+    private Integer startComboCorrection;
 
     /**
      *
@@ -209,11 +224,11 @@ public class CEventHit extends SkillInfoObject {
         this.int3 = reader.readInt();
         this.int4 = reader.readInt();
         this.int5 = reader.readInt();
-        this.int6 = reader.readInt();
-        this.int7 = reader.readInt();
-        this.int8 = reader.readInt();
-        this.int9 = reader.readInt();
-        this.int10 = reader.readInt();
+        this.internalCorrection = reader.readInt();
+        this.midComboCorrection = reader.readInt();
+        this.endCorrection = reader.readInt();
+        this.minDamage = reader.readInt();
+        this.startComboCorrection = reader.readInt();
         this.int11 = reader.readInt();
         this.int12 = reader.readInt();
         this.int13 = reader.readInt();
@@ -259,11 +274,11 @@ public class CEventHit extends SkillInfoObject {
         writer.writeInt(this.int3);
         writer.writeInt(this.int4);
         writer.writeInt(this.int5);
-        writer.writeInt(this.int6);
-        writer.writeInt(this.int7);
-        writer.writeInt(this.int8);
-        writer.writeInt(this.int9);
-        writer.writeInt(this.int10);
+        writer.writeInt(this.internalCorrection);
+        writer.writeInt(this.midComboCorrection);
+        writer.writeInt(this.endCorrection);
+        writer.writeInt(this.minDamage);
+        writer.writeInt(this.startComboCorrection);
         writer.writeInt(this.int11);
         writer.writeInt(this.int12);
         writer.writeInt(this.int13);
