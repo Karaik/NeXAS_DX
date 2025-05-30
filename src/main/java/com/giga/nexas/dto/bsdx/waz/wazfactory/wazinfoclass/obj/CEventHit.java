@@ -64,7 +64,14 @@ public class CEventHit extends SkillInfoObject {
             new CEventHitType(0x23, "メカステータス増減値")
     };
 
-    private Short short1;
+    /**
+     * 01为正常对敌造成伤害，01更改为06时会只对自机造成伤害，更改为03时会对敌机和友军造成伤害
+     */
+    private Short attackTargetType;
+
+    /**
+     *
+     */
     private Short short2;
 
     /**
@@ -87,14 +94,14 @@ public class CEventHit extends SkillInfoObject {
      *
      * ヒット数
      */
-    private Integer int4;
+    private Integer hitCount;
 
     /**
      * 每hit的间隔
      *
      * ヒット間隔
      */
-    private Integer int5;
+    private Integer hitInterval;
 
     /**
      * 内补正，简单来说就是多段伤害的技能在每次造成伤害后
@@ -138,9 +145,13 @@ public class CEventHit extends SkillInfoObject {
     private Integer int11;
 
     /**
+     * 伤害倍率，蓄力时间对最终伤害的影响程度，
+     * 村正的威为-1，空的蜂刺、jk的矛为0，此数值可以不影响蓄力时间
+     * 蓄力时间“不会影响”并不代表不能蓄，而是不会提升伤害
      *
+     * 攻撃力溜め反映率
      */
-    private Integer int12;
+    private Integer chargeDamageRate;
 
     /**
      *
@@ -173,9 +184,11 @@ public class CEventHit extends SkillInfoObject {
     private Integer int18;
 
     /**
+     * 单位为帧
+     *
      * 画面：振動時間
      */
-    private Integer int19;
+    private Integer screenShakeFrame;
 
     /**
      *
@@ -216,28 +229,28 @@ public class CEventHit extends SkillInfoObject {
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
 
-        this.short1 = reader.readShort();
+        this.attackTargetType = reader.readShort();
         this.short2 = reader.readShort();
 
         this.int1 = reader.readInt();
         this.int2 = reader.readInt();
         this.int3 = reader.readInt();
-        this.int4 = reader.readInt();
-        this.int5 = reader.readInt();
+        this.hitCount = reader.readInt();
+        this.hitInterval = reader.readInt();
         this.internalCorrection = reader.readInt();
         this.midComboCorrection = reader.readInt();
         this.endCorrection = reader.readInt();
         this.minDamage = reader.readInt();
         this.startComboCorrection = reader.readInt();
         this.int11 = reader.readInt();
-        this.int12 = reader.readInt();
+        this.chargeDamageRate = reader.readInt();
         this.int13 = reader.readInt();
         this.int14 = reader.readInt();
         this.int15 = reader.readInt();
         this.int16 = reader.readInt();
         this.int17 = reader.readInt();
         this.int18 = reader.readInt();
-        this.int19 = reader.readInt();
+        this.screenShakeFrame = reader.readInt();
         this.int20 = reader.readInt();
         this.int21 = reader.readInt();
         this.int22 = reader.readInt();
@@ -267,27 +280,27 @@ public class CEventHit extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
-        writer.writeShort(this.short1);
+        writer.writeShort(this.attackTargetType);
         writer.writeShort(this.short2);
         writer.writeInt(this.int1);
         writer.writeInt(this.int2);
         writer.writeInt(this.int3);
-        writer.writeInt(this.int4);
-        writer.writeInt(this.int5);
+        writer.writeInt(this.hitCount);
+        writer.writeInt(this.hitInterval);
         writer.writeInt(this.internalCorrection);
         writer.writeInt(this.midComboCorrection);
         writer.writeInt(this.endCorrection);
         writer.writeInt(this.minDamage);
         writer.writeInt(this.startComboCorrection);
         writer.writeInt(this.int11);
-        writer.writeInt(this.int12);
+        writer.writeInt(this.chargeDamageRate);
         writer.writeInt(this.int13);
         writer.writeInt(this.int14);
         writer.writeInt(this.int15);
         writer.writeInt(this.int16);
         writer.writeInt(this.int17);
         writer.writeInt(this.int18);
-        writer.writeInt(this.int19);
+        writer.writeInt(this.screenShakeFrame);
         writer.writeInt(this.int20);
         writer.writeInt(this.int21);
         writer.writeInt(this.int22);
