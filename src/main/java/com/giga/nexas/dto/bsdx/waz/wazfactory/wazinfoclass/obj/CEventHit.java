@@ -196,19 +196,21 @@ public class CEventHit extends SkillInfoObject {
     private Integer int20;
 
     /**
-     * 鉄ヒットＳＥ？
+     *
      */
     private Integer int21;
 
     /**
-     * ダメージ色時間？
+     *
      */
     private Integer int22;
 
     /**
-     * キャンセルフラグ？
+     * 自机命中时出现的僵直
+     *
+     * 自分停止時間
      */
-    private Integer int23;
+    private Integer selfStunFrame;
 
     private List<CEventHitUnit> ceventHitUnitList = new ArrayList<>();
 
@@ -254,7 +256,7 @@ public class CEventHit extends SkillInfoObject {
         this.int20 = reader.readInt();
         this.int21 = reader.readInt();
         this.int22 = reader.readInt();
-        this.int23 = reader.readInt();
+        this.selfStunFrame = reader.readInt();
 
         this.ceventHitUnitList.clear();
 
@@ -304,7 +306,7 @@ public class CEventHit extends SkillInfoObject {
         writer.writeInt(this.int20);
         writer.writeInt(this.int21);
         writer.writeInt(this.int22);
-        writer.writeInt(this.int23);
+        writer.writeInt(this.selfStunFrame);
         for (int i = 0; i < 33; i++) {
             CEventHitUnit target = null;
             for (CEventHitUnit unit : this.ceventHitUnitList) {

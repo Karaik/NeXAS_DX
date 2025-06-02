@@ -69,21 +69,69 @@ public class CCpuEvent {
 
     private Integer int1;
     private Integer int2;
-    private Integer int3;
-    private Integer int4;
+
+    /**
+     * 発動確率
+     */
+    private Integer activationProbability;
+
+    /**
+     * 発動確率（反撃時）
+     */
+    private Integer activationProbabilityWhenCounter;
     private Integer int5;
-    private Integer int6;
-    private Integer int7;
-    private Integer int8;
-    private Integer int9;
-    private Integer int10;
-    private Integer int11;
-    private Integer int12;
-    private Integer int13;
+
+    /**
+     * 発動範囲Min
+     */
+    private Integer activationRangeMin;
+
+    /**
+     * 発動範囲Max
+     */
+    private Integer activationRangeMax;
+
+    /**
+     * 角度範囲Min
+     */
+    private Integer activationAngleRangeMin;
+
+    /**
+     * 角度範囲Max
+     */
+    private Integer activationAngleRangeMax;
+
+    /**
+     * 発動高度Min
+     */
+    private Integer activationAltitudeMin;
+
+    /**
+     * 発動高度Max
+     */
+    private Integer activationAltitudeMax;
+
+    /**
+     * 発動耐久力Min(%)
+     */
+    private Integer activationDurabilityMinPercentage;
+
+    /**
+     * 発動耐久力Max(%)
+     */
+    private Integer activationDurabilityMaxPercentage;
     private Integer int14;
     private Integer int15;
-    private Integer int16;
-    private Integer int17;
+
+    /**
+     * 発動熱量Min
+     */
+    private Integer activationHeatMin;
+
+    /**
+     * 発動熱量Max
+     */
+    private Integer activationHeatMax;
     private Integer int18;
     private Integer int19;
     private Integer int20;
@@ -112,21 +160,21 @@ public class CCpuEvent {
         this.short1 = reader.readShort();
         this.int1 = reader.readInt();
         this.int2 = reader.readInt();
-        this.int3 = reader.readInt();
-        this.int4 = reader.readInt();
+        this.activationProbability = reader.readInt();
+        this.activationProbabilityWhenCounter = reader.readInt();
         this.int5 = reader.readInt();
-        this.int6 = reader.readInt();
-        this.int7 = reader.readInt();
-        this.int8 = reader.readInt();
-        this.int9 = reader.readInt();
-        this.int10 = reader.readInt();
-        this.int11 = reader.readInt();
-        this.int12 = reader.readInt();
-        this.int13 = reader.readInt();
+        this.activationRangeMin = reader.readInt();
+        this.activationRangeMax = reader.readInt();
+        this.activationAngleRangeMin = reader.readInt();
+        this.activationAngleRangeMax = reader.readInt();
+        this.activationAltitudeMin = reader.readInt();
+        this.activationAltitudeMax = reader.readInt();
+        this.activationDurabilityMinPercentage = reader.readInt();
+        this.activationDurabilityMaxPercentage = reader.readInt();
         this.int14 = reader.readInt();
         this.int15 = reader.readInt();
-        this.int16 = reader.readInt();
-        this.int17 = reader.readInt();
+        this.activationHeatMin = reader.readInt();
+        this.activationHeatMax = reader.readInt();
         this.int18 = reader.readInt();
         this.int19 = reader.readInt();
         this.int20 = reader.readInt();
@@ -151,21 +199,21 @@ public class CCpuEvent {
         writer.writeShort(this.short1);
         writer.writeInt(this.int1);
         writer.writeInt(this.int2);
-        writer.writeInt(this.int3);
-        writer.writeInt(this.int4);
+        writer.writeInt(this.activationProbability);
+        writer.writeInt(this.activationProbabilityWhenCounter);
         writer.writeInt(this.int5);
-        writer.writeInt(this.int6);
-        writer.writeInt(this.int7);
-        writer.writeInt(this.int8);
-        writer.writeInt(this.int9);
-        writer.writeInt(this.int10);
-        writer.writeInt(this.int11);
-        writer.writeInt(this.int12);
-        writer.writeInt(this.int13);
+        writer.writeInt(this.activationRangeMin);
+        writer.writeInt(this.activationRangeMax);
+        writer.writeInt(this.activationAngleRangeMin);
+        writer.writeInt(this.activationAngleRangeMax);
+        writer.writeInt(this.activationAltitudeMin);
+        writer.writeInt(this.activationAltitudeMax);
+        writer.writeInt(this.activationDurabilityMinPercentage);
+        writer.writeInt(this.activationDurabilityMaxPercentage);
         writer.writeInt(this.int14);
         writer.writeInt(this.int15);
-        writer.writeInt(this.int16);
-        writer.writeInt(this.int17);
+        writer.writeInt(this.activationHeatMin);
+        writer.writeInt(this.activationHeatMax);
         writer.writeInt(this.int18);
         writer.writeInt(this.int19);
         writer.writeInt(this.int20);

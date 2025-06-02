@@ -2,6 +2,7 @@ package com.giga.nexas.bsdx;
 
 import cn.hutool.core.util.StrUtil;
 import com.giga.nexas.dto.ResponseDTO;
+import com.giga.nexas.dto.bsdx.BsdxInfoCollection;
 import com.giga.nexas.dto.bsdx.grp.Grp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.MekaGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp;
@@ -10,6 +11,7 @@ import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventHit;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventTerm;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.service.BsdxBinService;
 import org.junit.jupiter.api.Test;
@@ -25,10 +27,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public class TestTrans {
+/**
+ * 为导出实际技能信息做准备的测试类……
+ * 先模拟游戏的注册行为，再根据实际waz的结构再反复循环抽出想要抽出的数据，
+ * 但说实话过于复杂，一天不看就忘记自己写了啥了，所以需要的时候还是直接重写为好
+ */
+public class TestTransMekaInfoWithWaza {
 
-    private static final Logger log = LoggerFactory.getLogger(TestTrans.class);
+    private static final Logger log = LoggerFactory.getLogger(TestTransMekaInfoWithWaza.class);
     private final BsdxBinService bsdxBinService = new BsdxBinService();
     private static final Path GAME_WAZ_DIR = Paths.get("src/main/resources/game/bsdx/waz");
     private static final Path MEK_DIR = Paths.get("src/main/resources/game/bsdx/mek");
@@ -117,17 +125,20 @@ public class TestTrans {
             String mekSearchDashSpeed = mekBasicInfo.getSearchDashSpeed().toString();
             String mekBoostDashSpeed = mekBasicInfo.getBoostDashSpeed().toString();
 
-            List<Waza> wazaList = parseWaza(mek, waz);
-            for (Waza waza : wazaList) {
-                tableRows.add(List.of(
-                        mekSequence,
-                        mekFileName,
-                        mekName,
-                        mekNormalDashSpeed,
-                        mekSearchDashSpeed,
-                        mekBoostDashSpeed
-                ));
+            if ("Kou".equals(mek.getFileName()) || 0==0){
+                List<Waza> wazaList = parseWaza(mek, waz);
+                for (Waza waza : wazaList) {
+                    tableRows.add(List.of(
+                            mekSequence,
+                            mekFileName,
+                            mekName,
+                            mekNormalDashSpeed,
+                            mekSearchDashSpeed,
+                            mekBoostDashSpeed
+                    ));
+                }
             }
+
         }
     }
 
@@ -144,40 +155,89 @@ public class TestTrans {
                 skill = skillList.get("Kou".equals(mek.getFileName()) && weaponInfo.getWeaponCategory()==0 ?
                         wazSequence+2 : wazSequence);
             } catch (Exception e) {
+
+                // 只有克里斯shift时会报错，重新赋值
                 // chris == 29, chris2 == 30
                 log.info("skill not found, at mekName={}, weaponName={}", mek.getMekBasicInfo().getMekName(), weaponInfo.getWeaponName());
                 continue;
             }
 
-            for (Waz.Skill.SkillPhase skillPhase : skill.getPhasesInfo()) {
-                for (SkillUnit skillUnit : skillPhase.getSkillUnitCollection()) {
-                    for (SkillInfoObject skillInfoObject : skillUnit.getSkillInfoObjectList()) {
-                        if (skillInfoObject instanceof CEventHit) {
-                            CEventHit hitUnit = (CEventHit) skillInfoObject;
-                            String phaseQuantity = skill.phaseQuantity.toString();
-                            String activeFrameRange = skillInfoObject.getStartFrame()+"~"+ skillInfoObject.getEndFrame();
-                            String attackTargetType = switch (hitUnit.getAttackTargetType()) {
-                                case 1 -> "敵";
-                                case 6 -> "自分";
-                                case 3 -> "全員";
-                                default -> "未知" + String.valueOf(hitUnit.getAttackTargetType());
-                            };
-                            String hitCount = hitUnit.getHitCount().toString();
-                            String hitInterval = hitUnit.getHitInterval().toString();
-                            String attackAttribute = switch (hitUnit.getInt2()) {
-                                case 0 -> "通常";
-                                case 4 -> "燃焼";
-                                case 2, 10 -> "電撃";
-                                case 8, 24, 88 -> "早期放熱";
-                                default -> "未知" + hitUnit.getInt2();
-                            };
+//            String weaponName1 = weaponInfo.getWeaponName();
+//            if (weaponName1.contains("クライマックス")) {
+//                int flag = 1;
+//            } else {
+//                continue;
+//            }
 
+            Integer phaseNum = 0; // 该技能的第几个阶段
+            for (Waz.Skill.SkillPhase phaseInfo : skill.getPhasesInfo()) {
+                Integer actionNum = 0; // 第几个动作数
+                for (SkillUnit skillUnitCollection : phaseInfo.getSkillUnitCollection()) {
+                    for (SkillInfoObject skillUnit : skillUnitCollection.getSkillInfoObjectList()) {
+                        if (skillUnit instanceof CEventHit) {
+                            CEventHit hit = (CEventHit) skillUnit;
+                            for (CEventHit.CEventHitUnit hitUnit : hit.getCeventHitUnitList()) {
+                                if (hitUnit.getCeventHitUnitQuantity()==6) { // 攻撃力
+                                    CEventTerm term = (CEventTerm) hitUnit.getData();
+                                    List<BsdxInfoCollection> attackList = term.getBsdxInfoCollectionList();
+                                    BsdxInfoCollection attackInfo = attackList.get(0);
+//                                    if (attackList.size() > 1){
+//                                        // 没有找到大于1的情况，可以认作每个攻击力模块有且仅有一个
+//                                        log.error("weaponInfo == {} ", weaponInfo.getWeaponName());
+//                                    }
 
-                            // todo
-                            log.info("1");
+                                    String weaponName = weaponInfo.getWeaponName();
+                                    String phaseStr = phaseNum.toString();
+                                    String actionStr = actionNum.toString();
+                                    String activeFrameRange = skillUnit.getStartFrame()+"~"+ skillUnit.getEndFrame();
+                                    String attackTargetType = switch (hit.getAttackTargetType()) {
+                                        case 1 -> "敵";
+                                        case 6 -> "自分";
+                                        case 3 -> "全員";
+                                        default -> "未知" + String.valueOf(hit.getAttackTargetType());
+                                    };
+                                    String hitCount = hit.getHitCount().toString();
+                                    String hitInterval = hit.getHitInterval().toString();
+                                    String attackAttribute = switch (hit.getInt2()) {
+                                        case 0 -> "通常";
+                                        case 4 -> "燃焼";
+                                        case 2, 10 -> "電撃";
+                                        case 8, 24, 32, 64, 88 -> "早期放熱"+hit.getInt2()/8;
+                                        default -> "未知" + hit.getInt2();
+                                    };
+                                    String selfStunFrame = hit.getSelfStunFrame().toString();
+                                    String damageType = attackInfo.getTypeList().stream()
+                                            .map(t -> switch (t) {
+                                                case 0 -> "通常攻撃力";
+                                                case 1 -> "自機攻撃力(%)";
+                                                case 2 -> "敵機攻撃力(%)";
+                                                default -> "未知" + t;
+                                            })
+                                            .collect(Collectors.joining(","));
+                                    String damage = attackInfo.getParamList()
+                                            .stream()
+                                            .map(String::valueOf)
+                                            .collect(Collectors.joining(","));
+                                    String minDamage = hit.getMinDamage().toString();
+                                    String startComboCorrection = hit.getStartComboCorrection().toString();
+                                    String midComboCorrection = hit.getMidComboCorrection().toString();
+                                    String endCorrection = hit.getEndCorrection().toString();
+                                    String internalCorrection = hit.getInternalCorrection().toString();
+
+                                    if (hit.getInt20()!=0) {
+                                        log.info("mekName == {}, weaponName == {}, phaseNum == {}, actionNum == {} , int20 == {}",mek.getMekBasicInfo().getMekName() , weaponName, phaseNum, actionNum, hit.getInt20());
+                                    }
+
+                                    // todo
+                                    int abc=1;
+                                }
+                            }
+
                         }
                     }
+                    actionNum++;
                 }
+                phaseNum++;
             }
 
         }

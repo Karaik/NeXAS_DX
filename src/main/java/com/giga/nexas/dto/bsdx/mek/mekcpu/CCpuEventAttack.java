@@ -27,6 +27,9 @@ public class CCpuEventAttack extends CCpuEvent {
             new CCpuEventAttackType(0xFFFFFFFF, "技リスト番号")
     };
 
+    // 仅记录用
+    public String wazaName;
+
     private Integer mekWeaponInfoMapNo;
 
 
