@@ -273,7 +273,7 @@ public class TestTransMekaInfoWithWaza {
         for (int i = 0; i < mekaGroupGrp.getMekaList().size(); i++) {
             MEK_GRP.put(i, mekaGroupGrp.getMekaList().get(i).getMekaName());
         }
-        WAZ_GRP.put(110, "Akao"); // 没有，所以手动注册
+        MEK_GRP.put(110, "Akao"); // 没有，所以手动注册
     }
 
     private void registerWaz(Grp grp) {
