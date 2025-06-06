@@ -10,6 +10,7 @@ import java.util.List;
  * @Date 2025/5/11
  * @Description __GLOBAL.bin 对应类
  */
+// TODO not yet
 @Data
 public class GLOBAL extends Bsdx {
 

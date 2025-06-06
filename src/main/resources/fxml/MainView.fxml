@@ -68,12 +68,12 @@
         </SplitPane>
     </center>
 
-    <bottom>
-        <HBox alignment="CENTER_LEFT" spacing="8.0">
-            <padding>
-                <Insets top="4.0" right="10.0" bottom="4.0" left="10.0"/>
-            </padding>
-            <Label fx:id="statusLabel" text="\@这位同学(Karaik)"/>
-        </HBox>
-    </bottom>
+<!--    <bottom>-->
+<!--        <HBox alignment="CENTER_LEFT" spacing="8.0">-->
+<!--            <padding>-->
+<!--                <Insets top="4.0" right="10.0" bottom="4.0" left="10.0"/>-->
+<!--            </padding>-->
+<!--            <Label fx:id="statusLabel" text="\@这位同学(Karaik)"/>-->
+<!--        </HBox>-->
+<!--    </bottom>-->
 </BorderPane>
