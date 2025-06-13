@@ -5,7 +5,7 @@ import lombok.Data;
 /**
  * @Author 这位同学(Karaik)
  * @Date 2025/4/27
- * @Description Bsdx
+ * @Description Bhe
  */
 @Data
 public class Bhe {

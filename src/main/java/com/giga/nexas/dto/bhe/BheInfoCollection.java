@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * @Author 这位同学(Karaik)
  * @Date 2025/5/18
- * @Description BsdxInfoCollection
+ * @Description BheInfoCollection
  * 后续逆向发现不单独是针对waz文件的集合，ai部分也有用到
  */
 @Data

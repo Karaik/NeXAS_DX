@@ -14,6 +14,9 @@ public class ParserUtil {
     public static final byte[] WEAPON_PLUGINS_FLAG_DATA_2 =  new byte[] { (byte) 0x88, 0x00, 0x00, 0x00 };
     public static final byte[] WEAPON_PLUGINS_FLAG_DATA_3 =  new byte[] { (byte) 0x8B, 0x00, 0x00, 0x00 };
 
+    // BHE
+    public static final byte[] WEAPON_PLUGINS_FLAG_DATA_BHE =  new byte[] { (byte) 0xD0, 0x00, 0x00, 0x00 };
+
     // 数值
     public static final Integer DAT_COLUMN_TYPE_DATA = 0;
 
