@@ -136,4 +136,56 @@ public class TestBin {
         System.out.println("✅ 导出 __GLOBAL.json: " + outputPath);
     }
 
+    @Test
+    void testOutputInstructions() throws IOException {
+        {
+            if (!Files.exists(BIN_DIR)) {
+                log.error("❌ Bin 目录不存在: {}", BIN_DIR);
+                return;
+            }
+
+            Files.createDirectories(OUTPUT_DIR);
+            List<List<Bin.Instruction>> allInstructionList = new ArrayList<>();
+            List<String> baseNames = new ArrayList<>();
+
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(BIN_DIR, "*.bin")) {
+                for (Path path : stream) {
+                    String fileName = URLDecoder.decode(path.getFileName().toString(), StandardCharsets.UTF_8);
+                    String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+                    baseNames.add(baseName);
+
+                    try {
+                        ResponseDTO parse = bsdxBinService.parse(path.toString(), "windows-31j");
+                        Bin bin = (Bin) parse.getData();
+                        if (bin != null) {
+                            allInstructionList.add(bin.getInstructions());
+                        } else {
+                            log.info("⚠️ 解析为空: " + fileName);
+                        }
+                    } catch (Exception e) {
+                        log.error("❌ 解析失败: {} - {}", fileName, e.getMessage());
+                        throw e;
+                    }
+                }
+            }
+
+            for (int i = 0; i < allInstructionList.size(); i++) {
+                List<Bin.Instruction> instructions = allInstructionList.get(i);
+                StringBuilder instructionStr = new StringBuilder();
+                for (Bin.Instruction instruction : instructions) {
+                    String line = String.format("%-8s\t%-2d\t%s",
+                            instruction.getOpcode(),
+                            instruction.getParamCount(),
+                            instruction.getNativeFunction() != null ? instruction.getNativeFunction() : "");
+                    instructionStr.append(line).append("\n");
+                }
+                if (instructionStr.isEmpty()) continue;
+
+                Path outputPath = OUTPUT_DIR.resolve(baseNames.get(i) + ".txt");
+                FileUtil.writeUtf8String(instructionStr.toString(), outputPath.toFile());
+                log.info("✅ 导出 JSON: {}", outputPath);
+            }
+        }
+    }
+
 }

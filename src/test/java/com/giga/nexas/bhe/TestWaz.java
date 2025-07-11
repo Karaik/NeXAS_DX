@@ -28,21 +28,18 @@ public class TestWaz {
     private final BheBinService bheBinService = new BheBinService();
 
     private static final Path GAME_WAZ_DIR = Paths.get("src/main/resources/game/bhe/waz");
-    private static final Path JSON_OUTPUT_DIR = Paths.get("src/main/resources/wazJsonBhe");
-    private static final Path WAZ_OUTPUT_DIR = Paths.get("src/main/resources/wazGeneratedBhe");
+    private static final Path JSON_OUTPUT_DIR = Paths.get("src/main/resources/wazBheJson");
+    private static final Path WAZ_OUTPUT_DIR = Paths.get("src/main/resources/wazBheGenerated");
 
     @Test
     void testGenerateWazJsonFiles() throws IOException {
         List<Waz> allWazList = new ArrayList<>();
-        List<String> baseNames = new ArrayList<>();
 
         Files.createDirectories(JSON_OUTPUT_DIR);
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(GAME_WAZ_DIR, "*.waz")) {
             for (Path path : stream) {
                 String fileName = path.getFileName().toString();
-                String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
-                baseNames.add(baseName);
 
                 try {
                     ResponseDTO dto = bheBinService.parse(path.toString(), "windows-31j");
@@ -57,7 +54,7 @@ public class TestWaz {
         for (int i = 0; i < allWazList.size(); i++) {
             Waz waz = allWazList.get(i);
             String jsonStr = JSONUtil.toJsonStr(waz);
-            Path jsonPath = JSON_OUTPUT_DIR.resolve(baseNames.get(i) + ".waz.json");
+            Path jsonPath = JSON_OUTPUT_DIR.resolve(waz.getFileName() + ".waz.json");
             FileUtil.writeUtf8String(jsonStr, jsonPath.toFile());
             log.info("✅ Exported: {}", jsonPath);
         }

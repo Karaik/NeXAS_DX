@@ -43,6 +43,22 @@ public class BinConst {
         MNEMONIC_OPERAND_MAP = Collections.unmodifiableMap(rev);
     }
 
+    // escape character (escapeType)
+    public final static Map<String, String> TYPE_ESCAPE_MAP;
+    public final static Map<String, String> ESCAPE_TYPE_MAP;
+    static {
+        Map<String, String> tmp = new HashMap<>(1 << 5, 1); // 32
+        Map<String, String> rev = new HashMap<>();
+
+        for (EscapeType et : EscapeType.values()) {
+            tmp.put(et.escapeChar, et.name());
+            rev.put(et.name(), et.escapeChar);
+        }
+
+        TYPE_ESCAPE_MAP = Collections.unmodifiableMap(tmp);
+        ESCAPE_TYPE_MAP = Collections.unmodifiableMap(rev);
+    }
+
     private BinConst() {}
 
 }

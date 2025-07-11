@@ -3,6 +3,7 @@ package com.giga.nexas.dto.bsdx.bin.parser;
 import com.giga.nexas.dto.bsdx.BsdxParser;
 import com.giga.nexas.dto.bsdx.bin.Bin;
 import com.giga.nexas.dto.bsdx.bin.consts.BinConst;
+import com.giga.nexas.dto.bsdx.bin.consts.Opcode;
 import com.giga.nexas.exception.BusinessException;
 import com.giga.nexas.io.BinaryReader;
 import org.slf4j.Logger;
@@ -90,7 +91,7 @@ public class BinParser implements BsdxParser<Bin> {
             Bin.Instruction inst = new Bin.Instruction();
             inst.setOpcode(opcode);
 
-            if (BinConst.OPCODE_MNEMONIC_MAP.get(7).equals(opcode)) {
+            if (BinConst.OPCODE_MNEMONIC_MAP.get(Opcode.CALL.code).equals(opcode)) {
                 // CALL
                 int paramCount = operandNum >>> 16;
                 int nativeId   = operandNum & 0xFFFF;
@@ -100,12 +101,8 @@ public class BinParser implements BsdxParser<Bin> {
                 inst.setParamCount(paramCount);
                 inst.setNativeFunction(nativeFunc);
             } else {
-                // 非 CALL 指令，直接用 operandNum
-                String operand = BinConst.OPERAND_MNEMONIC_MAP.get(operandNum) == null ?
-                        "" + operandNum :
-                        BinConst.OPERAND_MNEMONIC_MAP.get(operandNum);
                 inst.setParamCount(0);
-                inst.setNativeFunction(operand);
+                inst.setNativeFunction(String.valueOf(operandNum));
             }
 
             instructions.add(inst);

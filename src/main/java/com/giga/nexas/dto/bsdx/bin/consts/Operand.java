@@ -359,7 +359,15 @@ public enum Operand {
     BGMRestart(403),
     BGMRestart2(404),
     WaitBGM(405),
-    GetBGMNo(406);
+    GetBGMNo(406),
+
+    // 自己写的
+    StartCountdown(471),
+    LoadMap(506),
+    InitDeployTama(515),
+    LoadMek(541),
+    InitDeployMek(553),
+    MidDeployMek(668);
 
     public final int code;
 
