@@ -79,9 +79,9 @@ Outputs:
 
 ## Conventions & pitfalls
 - Keep `extensionName` in JSON/DTOs; adapters dispatch by it.
-- Default charset is `windows-31j`; if you override it, sync `WorkspaceState.charset`.
+- Default charset is `windows-31j` (Japanese same as `Shift-jis`); if you override it, sync `WorkspaceState.charset`.
 - Tests are single-threaded; running multiple heavy suites in parallel will clash on output folders.
 - Windows paths are assumed in some tests (e.g., `D:\A\NeXAS_DX`); adjust constants or use a symlink if you use a different path.
-
+- The code on the `develop` branch is generally the most up to date. If you encounter a bug or notice anything that appears unfinished, please switch to the `develop` branch to check. However, releases are made only from `main`.
 ## License
 MIT License. See `LICENSE`.

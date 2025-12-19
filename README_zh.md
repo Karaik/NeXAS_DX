@@ -79,9 +79,9 @@ mvn clean package -DskipTests
 
 ## 约定与易踩点
 - JSON/DTO 必须包含 `extensionName`，适配器靠它分派。
-- 默认字符集 `windows-31j`，若覆盖需同步更新 `WorkspaceState.charset`。
+- 默认字符集 `windows-31j` (和 `Shift-jis` 一样都是日语，包含关系)，若覆盖需同步更新 `WorkspaceState.charset`。
 - 测试均为单线程，勿并行跑多个重 IO 套件，否则输出目录会互相覆盖。
 - 部分测试假定路径为 `D:\A\NeXAS_DX`；若路径不同，可改常量或创建同名符号链接。
-
+- `develop` 分支的代码一般都是最新的，如果发现有 bug 或者有些看上去未处理好的位置，请自行切到 `develop` 分支查看，但 release 仅在 `main` 中进行。
 ## 许可
 MIT License，详见 `LICENSE`。
