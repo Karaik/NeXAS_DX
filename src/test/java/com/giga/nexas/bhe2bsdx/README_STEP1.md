@@ -43,9 +43,11 @@
 - `WazConverter`：waz 事件槽位映射与事件复制。
 - `SpmConverter`：spm 结构迁移与 hitbox 适配。
 - `UiSpmReplacer`：UI SPM 替换（Nanoha 槽位覆盖 Tsukuyomi）。
+- `StaticAssetCopier`：抽取 spm 图片/语音文件名并复制到输出根目录。
 
 ## 我之后必须要做的
-- UI 资源挂接已用 “替换 Nanoha 槽位” 完成（MekaPilot/SelectMekaMenuMeka），后续可补做正式追加逻辑。
+- UI 选择界面追加新槽位逻辑（当前仅覆盖 Nanoha）。
+- 静态资源复制补齐 segroup/其它 grp 引用文件（音效等），并输出缺失清单。
 - WAZ 转换中同步 `skillInfoUnknownList`，并补齐 slot52（CPU 特殊行动）等被丢弃槽位的降级逻辑。
 - 完整搬运 BHE 的 `Tama01`~`Tama05` 依赖，并与 BSDX 同号资源合并/替换。
 - 核对 `MekMaterialBlock` 的 se/voice 组是否也需索引映射。
@@ -59,3 +61,5 @@
 - `MekMaterialBlock` 的 sprite/se/voice groups 目前全部置空，技能演示相关的真实语义尚未恢复。
 - `MekVoiceInfo` 的 `groupId` 与 `batvoice.grp` 的对应关系尚未确认。
 - UI 选择界面当前采用 Nanoha 槽位覆盖，尚未实现“追加新槽位”的正式流程。
+- 静态资源复制当前只覆盖 spm 图片与追加语音，segroup 等音效尚未纳入。
+- `PacUtil.pack` 仍输出 Size:0，需要确认 pac 结构/索引或资源目录组织方式。

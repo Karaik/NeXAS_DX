@@ -3,11 +3,13 @@ package com.giga.nexas.bhe2bsdx;
 import com.giga.nexas.bhe2bsdx.steps.TransMeka;
 import com.giga.nexas.bhe2bsdx.steps.TransMekaOutputWriter;
 import com.giga.nexas.bhe2bsdx.steps.TransMekaResult;
+import com.giga.nexas.bhe2bsdx.steps.StaticAssetCopier;
 import com.giga.nexas.dto.ResponseDTO;
 
 import com.giga.nexas.service.BheBinService;
 import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.dto.bsdx.dat.Dat;
+import com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp;
 import com.giga.nexas.util.PacUtil;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -24,6 +26,9 @@ import java.util.Map;
 public class TransferTest {
 
     private static final Path OUTPUT_DIR = Paths.get("src/main/resources/testBhe");
+    // 静态资源来源目录（按需修改）
+    private static final Path STATIC_ASSET_ROOT = Paths.get("D:/BaiduNetdiskDownload/bsdx_bhe/bheAll");
+    private static final boolean COPY_STATIC_ASSETS = true;
 
     private static final Logger log = LoggerFactory.getLogger(TransferTest.class);
     private final BsdxBinService bsdxBinService = new BsdxBinService();
@@ -215,6 +220,17 @@ public class TransferTest {
 
         TransMekaOutputWriter outputWriter = new TransMekaOutputWriter();
         outputWriter.writeOutputs(outputDir, outputGrp, outputMek, outputWaz, outputSpm);
+
+        if (COPY_STATIC_ASSETS) {
+            StaticAssetCopier assetCopier = new StaticAssetCopier();
+            Map<String, com.giga.nexas.dto.bsdx.grp.Grp> assetGrp = new HashMap<>();
+            if (result != null && result.getBsdxBatVoiceGroup() != null) {
+                BatVoiceGrp batVoiceGrp = new BatVoiceGrp();
+                batVoiceGrp.getVoiceList().add(result.getBsdxBatVoiceGroup());
+                assetGrp.put("batvoice", batVoiceGrp);
+            }
+            assetCopier.copyAssets(outputDir, STATIC_ASSET_ROOT, outputSpm, assetGrp);
+        }
 
         // 打包
         log.info("outputPath === {}", PacUtil.pack(outputPath, "7"));

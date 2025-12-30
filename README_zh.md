@@ -65,6 +65,7 @@ mvn clean package -DskipTests
 - BSDX 其它格式：`mvn "-Dtest=com.giga.nexas.bsdx.TestBin#testGenerateBinJsonFiles" test`（`TestGrp/TestMek/TestSpm/TestWaz` 同理），无自动清理。
 - BHE ：`mvn "-Dtest=com.giga.nexas.bhe.TestGrp" test` 等，输出目录保留中间文件。
 - BHE → BSDX 移植流水线（实验性质）：`mvn "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testPipeline" test`，会写入 `src/main/resources/testBhe` 下的 `grp/mek/waz/spm`，默认仅输出本次迁移变更（避免写出全部 spm）；如需完整 pac，请改为写出完整资源集。
+- 静态资源复制：源目录在 `TransferTest.STATIC_ASSET_ROOT`（默认 `D:\BaiduNetdiskDownload\bsdx_bhe\bheAll`），执行迁移后会把 spm 图片与追加的语音文件复制到 `src/main/resources/testBhe` 根目录，路径可随时改。
 
 **测试输出目录**位于 `src/main/resources`（如 `datBsdxJson`、`grpBsdxGenerated`），已在 `.gitignore` 中。不需要时请手动清理，避免仓库膨胀。
 
@@ -93,7 +94,7 @@ mvn clean package -DskipTests
 -> Step4: 资源转换(mek/waz/spm，含 hitbox；MaterialBlock groups 默认置空)
 -> Step5: 回写 MekBasicInfo 的 waz/spm 索引
 -> Step6: UI SPM 挂接（用 Tsukuyomi 覆盖 Nanoha 槽位：MekaPilot / SelectMekaMenuMeka）
--> Step7: 输出变更文件(grp/mek/waz/spm)并尝试封包(PacUtil.pack)
+-> Step7: 输出变更文件(grp/mek/waz/spm) + 复制静态资源(图片/语音)并尝试封包(PacUtil.pack)
 
 ## TransMeka 代码结构（拆分后）
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/TransMeka.java`：迁移入口，仅组织流程并输出索引日志。
@@ -110,6 +111,7 @@ mvn clean package -DskipTests
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/WazConverter.java`：waz 事件槽位映射。
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/SpmConverter.java`：spm 结构迁移与 hitbox 适配。
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/UiSpmReplacer.java`：UI SPM 替换（Nanoha 槽位覆盖 Tsukuyomi）。
+- `src/test/java/com/giga/nexas/bhe2bsdx/steps/StaticAssetCopier.java`：抽取 spm 图片/语音文件名并复制到输出根目录。
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/TransMekaOutputWriter.java`：迁移输出写盘，仅写出传入的变更集合。
 
 ## 目录速览
