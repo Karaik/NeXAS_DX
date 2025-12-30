@@ -57,7 +57,7 @@
 | BHE 对照数据 | `mvn "-Dtest=com.giga.nexas.bhe.TestGrp" test` 等 | 输出到 `datBheJson`、`grpBheGenerated` 等 | 主要用作移植素材，没有自动清理                                                          |
 | CLARIAS `.dat` | 同 BSDX 流程（命令将 `bsdx` 换成 `clarias`） | `datClariasJson` / `datClariasGenerated`（成功后自动清理） | `ending.dat` ~430 MB，会读取到异常列数。运行前请提高堆内存（`set MAVEN_OPTS=-Xmx4g`）或暂时移出该文件 |
 | Jinki / 其它实验资源 | `mvn "-Dtest=com.giga.nexas.jinki.TestGrp" test` 等 | `grpJinkiJson` / `grpJinkiGenerated` | 结构与 BSDX 流程一致                                                            |
-| BHE→BSDX pipeline | `mvn "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testPipeline" test` | 输出至 `src/main/resources/testBhe` | 仍在实验阶段，会读取大量资源并尝试整合，执行前确认路径与磁盘空间                                         |
+| BHE→BSDX pipeline | `mvn "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testPipeline" test` | 输出至 `src/main/resources/testBhe` | 仍在实验阶段，会读取大量资源；默认仅写出变更的 grp/mek/waz/spm 并封包，执行前确认路径与磁盘空间                    |
 
 以上测试会直接在 `src/main/resources` 下生成大量 JSON / binary / CSV，全部已列入 `.gitignore`，但**提交前务必确认没有误加大文件**。
 

@@ -43,10 +43,10 @@
 
 ## BHE→BSDX 移植流水线
 - **入口**：`com.giga.nexas.bhe2bsdx.TransferTest#testPipeline`
-- **作用**：注册 BHE/BSDX 全部 grp/mek/waz/spm，挑选 Tsukuyomi 机体执行 `TransMeka.process`，并演示 `PacUtil.unpack`。
+- **作用**：注册 BHE/BSDX 全部 grp/mek/waz/spm，挑选 Tsukuyomi 机体执行 `TransMeka.process`，写出变更文件并执行 `PacUtil.pack`。
 - **注意事项**
-  - 依赖 `.grp/.mek/.waz/.spm` 的完整集合，且会将数据缓存到 `src/main/resources/testBhe`。
-  - 尚未写回 PAC，且很多 TODO（详见 `README_STEP1.md` 和 `steps/TransMeka.java`），运行前请确认是否真的需要。
+  - 依赖 `.grp/.mek/.waz/.spm` 的完整集合完成索引对齐，但输出目录默认仅包含本次变更的 `grp/mek/waz/spm`。
+  - 仍有 TODO（详见 `README_STEP1.md` 和 `steps/TransMeka.java`），运行前请确认是否真的需要。
 
 ---
 
