@@ -21,7 +21,8 @@ public class MekConverter {
 
     public Mek convert(
             com.giga.nexas.dto.bhe.mek.Mek bheMek,
-            Map<Integer, Integer> spriteIndexMap
+            Map<Integer, Integer> spriteIndexMap,
+            int voiceGroupCount
     ) {
         Mek dst = new Mek();
         if (bheMek == null) {
@@ -47,7 +48,11 @@ public class MekConverter {
         // 7) Voice（保持版本号）
         dst.setMekVoiceInfo(voiceConverter.convert(bheMek.getMekVoiceInfo()));
         // 8) Material（SpriteGroup 索引映射）
-        dst.setMekMaterialBlock(materialConverter.convert(bheMek.getMekMaterialBlock(), spriteIndexMap));
+        dst.setMekMaterialBlock(materialConverter.convert(
+                bheMek.getMekMaterialBlock(),
+                spriteIndexMap,
+                voiceGroupCount
+        ));
 
         return dst;
     }

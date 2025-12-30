@@ -36,7 +36,10 @@ public class TransMeka {
 
             com.giga.nexas.dto.bsdx.spm.Spm mekaPilotSpm,
             com.giga.nexas.dto.bsdx.spm.Spm selectMekaMenuMekaSpm,
-            com.giga.nexas.dto.bsdx.dat.Dat selectMekaMenuDat
+            com.giga.nexas.dto.bsdx.dat.Dat selectMekaMenuDat,
+            com.giga.nexas.dto.bsdx.mek.Mek targetBsdxMek,
+            String targetCodeName,
+            boolean keepTargetKey
     ) {
         // Step0: 统一组装输入，便于后续扩展/复用
         TransMekaRequest request = TransMekaRequest.fromLegacy(
@@ -58,7 +61,10 @@ public class TransMeka {
                 bsdxSpriteGroup,
                 mekaPilotSpm,
                 selectMekaMenuMekaSpm,
-                selectMekaMenuDat
+                selectMekaMenuDat,
+                targetBsdxMek,
+                targetCodeName,
+                keepTargetKey
         );
 
         // Step1~Step6: 执行迁移流水线

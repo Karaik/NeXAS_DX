@@ -51,6 +51,52 @@ public class GrpRegistryUpdater {
         return list.size() - 1;
     }
 
+    public int findMekaGroupIndexByCode(MekaGroupGrp bsdxGroup, String targetCode) {
+        if (bsdxGroup == null || targetCode == null) {
+            return -1;
+        }
+        List<MekaGroupGrp.MekaGroup> list = bsdxGroup.getMekaList();
+        String codeKey = normalizeKey(targetCode);
+        for (int i = 0; i < list.size(); i++) {
+            MekaGroupGrp.MekaGroup entry = list.get(i);
+            if (entry == null || isEmptyEntry(entry.getExistFlag())) {
+                continue;
+            }
+            String dstKey = normalizeKey(entry.getMekaCodeName());
+            if (codeKey != null && codeKey.equals(dstKey)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int replaceMekaGroupAtIndex(
+            MekaGroupGrp bsdxGroup,
+            int index,
+            com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp.MekaGroup bheEntry,
+            boolean keepTargetKey
+    ) {
+        if (bsdxGroup == null || bheEntry == null) {
+            return -1;
+        }
+        List<MekaGroupGrp.MekaGroup> list = bsdxGroup.getMekaList();
+        if (index < 0 || index >= list.size()) {
+            return -1;
+        }
+        MekaGroupGrp.MekaGroup target = list.get(index);
+        MekaGroupGrp.MekaGroup replaced = new MekaGroupGrp.MekaGroup();
+        replaced.setExistFlag(1);
+        if (keepTargetKey && target != null) {
+            replaced.setMekaName(target.getMekaName());
+            replaced.setMekaCodeName(target.getMekaCodeName());
+        } else {
+            replaced.setMekaName(bheEntry.getMekaName());
+            replaced.setMekaCodeName(bheEntry.getMekaCodeName());
+        }
+        list.set(index, replaced);
+        return index;
+    }
+
     public int upsertWazaGroup(
             WazaGroupGrp bsdxGroup,
             com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp.WazaGroupEntry bheEntry
@@ -94,6 +140,55 @@ public class GrpRegistryUpdater {
         return list.size() - 1;
     }
 
+    public int findWazaGroupIndexByCode(WazaGroupGrp bsdxGroup, String targetCode) {
+        if (bsdxGroup == null || targetCode == null) {
+            return -1;
+        }
+        List<WazaGroupGrp.WazaGroupEntry> list = bsdxGroup.getWazaList();
+        String codeKey = normalizeKey(targetCode);
+        for (int i = 0; i < list.size(); i++) {
+            WazaGroupGrp.WazaGroupEntry entry = list.get(i);
+            if (entry == null || isEmptyEntry(entry.getExistFlag())) {
+                continue;
+            }
+            String dstCode = normalizeKey(entry.getWazaCodeName());
+            if (codeKey != null && codeKey.equals(dstCode)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int replaceWazaGroupAtIndex(
+            WazaGroupGrp bsdxGroup,
+            int index,
+            com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp.WazaGroupEntry bheEntry,
+            boolean keepTargetKey
+    ) {
+        if (bsdxGroup == null || bheEntry == null) {
+            return -1;
+        }
+        List<WazaGroupGrp.WazaGroupEntry> list = bsdxGroup.getWazaList();
+        if (index < 0 || index >= list.size()) {
+            return -1;
+        }
+        WazaGroupGrp.WazaGroupEntry target = list.get(index);
+        WazaGroupGrp.WazaGroupEntry replaced = new WazaGroupGrp.WazaGroupEntry();
+        replaced.setExistFlag(1);
+        if (keepTargetKey && target != null) {
+            replaced.setWazaName(target.getWazaName());
+            replaced.setWazaCodeName(target.getWazaCodeName());
+            replaced.setWazaDisplayName(target.getWazaDisplayName());
+        } else {
+            replaced.setWazaName(bheEntry.getWazaName());
+            replaced.setWazaCodeName(bheEntry.getWazaCodeName());
+            replaced.setWazaDisplayName(bheEntry.getWazaDisplayName());
+        }
+        replaced.setParam(bheEntry.getParam());
+        list.set(index, replaced);
+        return index;
+    }
+
     public int upsertSpriteGroup(
             SpriteGroupGrp bsdxGroup,
             com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp.SpriteGroupEntry bheEntry
@@ -134,6 +229,53 @@ public class GrpRegistryUpdater {
 
         list.add(newEntry);
         return list.size() - 1;
+    }
+
+    public int findSpriteGroupIndexByCode(SpriteGroupGrp bsdxGroup, String targetCode) {
+        if (bsdxGroup == null || targetCode == null) {
+            return -1;
+        }
+        List<SpriteGroupGrp.SpriteGroupEntry> list = bsdxGroup.getSpriteList();
+        String codeKey = normalizeKey(targetCode);
+        for (int i = 0; i < list.size(); i++) {
+            SpriteGroupGrp.SpriteGroupEntry entry = list.get(i);
+            if (entry == null || isEmptyEntry(entry.getExistFlag())) {
+                continue;
+            }
+            String dstCode = normalizeKey(entry.getSpriteCodeName());
+            if (codeKey != null && codeKey.equals(dstCode)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int replaceSpriteGroupAtIndex(
+            SpriteGroupGrp bsdxGroup,
+            int index,
+            com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp.SpriteGroupEntry bheEntry,
+            boolean keepTargetKey
+    ) {
+        if (bsdxGroup == null || bheEntry == null) {
+            return -1;
+        }
+        List<SpriteGroupGrp.SpriteGroupEntry> list = bsdxGroup.getSpriteList();
+        if (index < 0 || index >= list.size()) {
+            return -1;
+        }
+        SpriteGroupGrp.SpriteGroupEntry target = list.get(index);
+        SpriteGroupGrp.SpriteGroupEntry replaced = new SpriteGroupGrp.SpriteGroupEntry();
+        replaced.setExistFlag(1);
+        if (keepTargetKey && target != null) {
+            replaced.setSpriteFileName(target.getSpriteFileName());
+            replaced.setSpriteCodeName(target.getSpriteCodeName());
+        } else {
+            replaced.setSpriteFileName(bheEntry.getSpriteFileName());
+            replaced.setSpriteCodeName(bheEntry.getSpriteCodeName());
+        }
+        replaced.setParam(bheEntry.getParam());
+        list.set(index, replaced);
+        return index;
     }
 
     private boolean isEmptyEntry(Integer existFlag) {

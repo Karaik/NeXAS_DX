@@ -36,6 +36,11 @@ public class TransMekaRequest {
     private WazaGroupGrp bsdxWazaGroup;
     private SpriteGroupGrp bsdxSpriteGroup;
 
+    // ===== BSDX 目标槽位（默认使用 Nanoha） =====
+    private com.giga.nexas.dto.bsdx.mek.Mek targetBsdxMek;
+    private String targetCodeName;
+    private boolean keepTargetKey = true;
+
     // ===== BSDX UI SPM =====
     // 用于 Step6 UI 资源替换（mekaPilot/selectMenu）
     private Spm mekaPilotSpm;
@@ -65,7 +70,10 @@ public class TransMekaRequest {
             SpriteGroupGrp bsdxSpriteGroup,
             Spm mekaPilotSpm,
             Spm selectMekaMenuMekaSpm,
-            Dat selectMekaMenuDat
+            Dat selectMekaMenuDat,
+            com.giga.nexas.dto.bsdx.mek.Mek targetBsdxMek,
+            String targetCodeName,
+            boolean keepTargetKey
     ) {
         TransMekaRequest request = new TransMekaRequest();
         request.setBheMek(bheMek);
@@ -87,6 +95,9 @@ public class TransMekaRequest {
         request.setMekaPilotSpm(mekaPilotSpm);
         request.setSelectMekaMenuMekaSpm(selectMekaMenuMekaSpm);
         request.setSelectMekaMenuDat(selectMekaMenuDat);
+        request.setTargetBsdxMek(targetBsdxMek);
+        request.setTargetCodeName(targetCodeName);
+        request.setKeepTargetKey(keepTargetKey);
         return request;
     }
 }

@@ -1,4 +1,4 @@
-# BHE -> BSDX Transfer Flow (Tsukuyomi baseline)
+# BHE -> BSDX Transfer Flow (Tsukuyomi baseline, Nanoha slot)
 
 This document is a detailed, step-by-step description of the current BHE to BSDX transfer pipeline
 implemented in `src/test/java/com/giga/nexas/bhe2bsdx/TransferTest.java` and the `steps/` package.
@@ -64,12 +64,12 @@ For UI replacement and mapping:
 - `src/main/resources/game/bsdx/dat/SelectMekaMenu.dat`
 
 ### 1.3 Output files (binary)
-Written by `TransMekaOutputWriter` to:
+Written by `TransMekaOutputWriter` to the output root (no subfolders):
 
-- `src/main/resources/testBhe/grp/*.grp`
-- `src/main/resources/testBhe/mek/*.mek`
-- `src/main/resources/testBhe/waz/*.waz`
-- `src/main/resources/testBhe/spm/*.spm`
+- `src/main/resources/testBhe/*.grp`
+- `src/main/resources/testBhe/*.mek`
+- `src/main/resources/testBhe/*.waz`
+- `src/main/resources/testBhe/*.spm`
 
 Only the files that are changed by the transfer are written.
 
@@ -125,12 +125,12 @@ These relationships must stay consistent after migration:
             |
             v
 [TransMeka.process]  (Step0..Step6 in TransMekaPipeline)
-  Step1  batvoice deep copy + append to BSDX
-  Step2  grp upsert (meka/waza/sprite) and return indices
-  Step3  spritegroup mapping (BHE -> BSDX)
+  Step1  batvoice deep copy + replace Nanoha slot (keep key)
+  Step2  grp replace at Nanoha slot (meka/waza/sprite) and return indices
+  Step3  spritegroup mapping (BHE -> BSDX, skipped when using Nanoha slot)
   Step4  convert mek/waz/spm (includes hitbox)
   Step5  align MekBasicInfo waz/spm indices
-  Step6  UI spm replacement (Nanoha slot -> Tsukuyomi)
+  Step6  UI spm replacement (Nanoha slot, keep key by default)
             |
             v
 [TransMekaResult]
@@ -167,17 +167,18 @@ Files involved:
 
 ---
 
-### Step 1: BatVoice deep copy and append
+### Step 1: BatVoice deep copy and slot replace
 Code: `src/test/java/com/giga/nexas/bhe2bsdx/steps/BatVoiceConverter.java`
 
 - Converts `BHE BatVoiceGroup` -> `BSDX BatVoiceGroup`.
 - `existFlag` is normalized to `1` if null.
 - Voice entries are deep-copied to avoid mixed BHE/BSDX types.
-- Result is appended to BSDX `batvoice.grp`, and the new index is recorded.
+- If a target slot is provided (Nanoha), the group at that index is replaced,
+  while keeping Nanoha's key (characterName/characterCodeName).
 
 Why this matters:
 
-- `MekVoiceInfo` uses `groupId` to select a voice group; the new index is required
+- `MekVoiceInfo` uses `groupId` to select a voice group; the target index is required
   so the correct voices can be located.
 
 ---
@@ -187,14 +188,19 @@ Code: `src/test/java/com/giga/nexas/bhe2bsdx/steps/GrpRegistryUpdater.java`
 
 For each registry:
 
-- **mekagroup**: match by `mekaCodeName`; if not found, use empty slot or append.
-- **wazagroup**: match by `wazaCodeName` or `wazaDisplayName`; otherwise insert.
-- **spritegroup**: match by `spriteCodeName` or `spriteFileName`; otherwise insert.
+- **Nanoha slot mode** (default): find the target index and replace that slot,
+  keeping Nanoha's key (codeName/displayName/fileName).
+- **Append mode**: match by `codeName/fileName`; otherwise use empty slot or append.
 
 Output:
 
 - `mekaGroupIndex`, `wazaGroupIndex`, `spriteGroupIndex`
 - These indices are used later to align `MekBasicInfo`.
+
+Notes (Nanoha slot mode):
+
+- `wazaGroupIndex`/`spriteGroupIndex` are taken from the target BSDX Mek
+  (`Nanoha.mek`), because BSDX spritegroup does not contain `spriteCodeName=NANOHA`.
 
 Relationship enforced:
 
@@ -210,6 +216,11 @@ Purpose:
 
 - BHE `MekMaterialBlock.spriteGroups` reference BHE spritegroup indices.
 - BSDX spritegroup indices can be different (due to insertion or gaps).
+
+Note:
+
+- When using the Nanoha slot, this step is skipped and the mapping remains empty
+  because the spritegroup index is fixed to Nanoha's existing slot.
 
 Process:
 
@@ -254,8 +265,10 @@ Code: `src/test/java/com/giga/nexas/bhe2bsdx/steps/MekMaterialConverter.java`
 Current behavior:
 
 - `CLEAR_MATERIAL_GROUPS = true`
-- The converter keeps the **group counts** but clears group contents to avoid
+- The converter keeps **sprite/se** group counts but clears contents to avoid
   incorrect references during early testing.
+- `voiceGroups` count is aligned to the BSDX `batvoice.grp` group count to avoid
+  BHE/BSDX size mismatch.
 
 If enabled later:
 
@@ -323,19 +336,22 @@ Goal:
 - Collect page indices used by that animation.
 - Replace those pages with pages from `m_tsukuyomi.spm`.
 - Replace the image name at the target image index with the first image from `m_tsukuyomi`.
-- Update `animName` to Tsukuyomi pilot name (from `MekBasicInfo`).
+- If `keepTargetKey=false`, update `animName` to Tsukuyomi pilot name;
+  otherwise keep Nanoha's animName as the key.
 
 #### 6.2 SelectMekaMenuMeka.spm
 - Find the Nanoha meka index in `mekagroup.grp` using `TARGET_MEKA_CODE`.
 - Map that meka index to a UI anim index using `SelectMekaMenu.dat`.
 - Replace pages with `s_tsukuyomi.spm` (same logic as above).
 - Replace the image name at the target image index with the first image from `s_tsukuyomi`.
-- Update the animation name to the Tsukuyomi menu name.
+- If `keepTargetKey=false`, update the animation name to Tsukuyomi;
+  otherwise keep Nanoha's animName as the key.
 
 Notes:
 
 - This is a temporary test strategy. It allows immediate validation without
   adding a new UI slot.
+- Default behavior keeps Nanoha keys and only replaces the visual content.
 
 ---
 
@@ -345,28 +361,23 @@ Code: `src/test/java/com/giga/nexas/bhe2bsdx/steps/TransMekaOutputWriter.java`
 Process:
 
 - Writes only the **changed** resources to the output directory.
-- Output subdirectories:
-  - `grp/`
-  - `mek/`
-  - `waz/`
-  - `spm/`
+- Output is placed directly under the output root (no subfolders).
 - Uses `BsdxBinService.generate(...)` with `windows-31j` encoding.
 
-The following outputs are generated in the Tsukuyomi run:
+The following outputs are generated in the Nanoha-slot run:
 
-- `grp/batvoice.grp` (with appended group)
-- `grp/mekagroup.grp`
-- `grp/wazagroup.grp`
-- `grp/spritegroup.grp`
-- `mek/tsukuyomi.mek`
-- `waz/tsukuyomi.waz`
-- `spm/tsukuyomi.spm`
-- `spm/c_tsukuyomi.spm`
-- `spm/s_tsukuyomi.spm`
-- `spm/g_tsukuyomi.spm`
-- `spm/m_tsukuyomi.spm`
-- `spm/mekapilot.spm` (if UI replacement succeeds)
-- `spm/selectmekamenumeka.spm` (if UI replacement succeeds)
+- `batvoice.grp` (Nanoha slot replaced)
+- `mekagroup.grp`
+- `wazagroup.grp`
+- `spritegroup.grp`
+- `nanoha.mek` (Tsukuyomi data, Nanoha key)
+- `nanoha.waz` (Tsukuyomi data, Nanoha key)
+- `zako_021a.spm` (Nanoha sprite slot file name)
+- `mekapilot.spm` (if UI replacement succeeds)
+- `selectmekamenumeka.spm` (if UI replacement succeeds)
+
+Aux spm (`c_/g_/m_/s_`) are still used as **conversion sources** but are not written
+when using the Nanoha slot (to avoid introducing new keys).
 
 ---
 
@@ -445,8 +456,5 @@ mvn "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testPipeline" test
 
 Then inspect:
 
-- `src/main/resources/testBhe/grp/`
-- `src/main/resources/testBhe/mek/`
-- `src/main/resources/testBhe/waz/`
-- `src/main/resources/testBhe/spm/`
+- `src/main/resources/testBhe/` (grp/mek/waz/spm written here)
 - `src/main/resources/testBhe/` (static assets copied here)

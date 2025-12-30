@@ -64,7 +64,7 @@ mvn clean package -DskipTests
   如需 CSV 补丁：在第 3 步前先跑 `testToCsv` / `testCsvPatchToJson`。
 - BSDX 其它格式：`mvn "-Dtest=com.giga.nexas.bsdx.TestBin#testGenerateBinJsonFiles" test`（`TestGrp/TestMek/TestSpm/TestWaz` 同理），无自动清理。
 - BHE ：`mvn "-Dtest=com.giga.nexas.bhe.TestGrp" test` 等，输出目录保留中间文件。
-- BHE → BSDX 移植流水线（实验性质）：`mvn "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testPipeline" test`，会写入 `src/main/resources/testBhe` 下的 `grp/mek/waz/spm`，默认仅输出本次迁移变更（避免写出全部 spm）；如需完整 pac，请改为写出完整资源集。
+- BHE → BSDX 移植流水线（实验性质）：`mvn "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testPipeline" test`，会写入 `src/main/resources/testBhe` 根目录（无子目录），默认仅输出本次迁移变更（Nanoha 槽位替换：`nanoha.mek`/`nanoha.waz`/`zako_021a.spm` + grp/UI spm）；如需完整 pac，请改为写出完整资源集。
 - 静态资源复制：源目录在 `TransferTest.STATIC_ASSET_ROOT`（默认 `D:\BaiduNetdiskDownload\bsdx_bhe\bheAll`），执行迁移后会把 spm 图片与追加的语音文件复制到 `src/main/resources/testBhe` 根目录，路径可随时改。
 
 **测试输出目录**位于 `src/main/resources`（如 `datBsdxJson`、`grpBsdxGenerated`），已在 `.gitignore` 中。不需要时请手动清理，避免仓库膨胀。
@@ -81,19 +81,19 @@ mvn clean package -DskipTests
 - UI spm：`c_tsukuyomi`(2/1/2)、`g_tsukuyomi`(2/2/2)、`m_tsukuyomi`(1/1/1)、`s_tsukuyomi`(8/1/8)。
 - grp 注册表（BHE）：`mekagroup`(mekaName=Tsukuyomi, code=TSUKUYOMI)、`wazagroup`(wazaName=◆月詠, code=TSUKUYOMI, display=Tsukuyomi, param=31)、`spritegroup`(file=tsukuyomi.spm, code=TSUKUYOMI, param=0)。
 - SPM hitbox 迁移要点：BHE hitRects 的 shapeType 映射到 BSDX `SPMHitArea.unk0`（0→1, 1→2, 2→4, 7→3, 8→0, 9→5, 10→7, 11→6），hitRect 直接拷贝，zMin/zMax→unk1/unk2，hitFlag 按 hitRects 数量置位低位。
-- grp 索引对齐：通过 codeName/fileName 在 BSDX 的 `mekagroup/wazagroup/spritegroup` 中查找或占用空槽追加，得到索引后回写到 `MekBasicInfo.wazFileSequence/spmFileSequence`。MaterialBlock 的 sprite/se/voice groups 当前按协议置空，索引映射逻辑保留待验证。
-- spritegroup 重建：BHE 的 spritegroup 索引以 BHE 的 grp 为准，迁移时会先从 mek.materialBlock 收集用到的索引，再把对应条目补入 BSDX spritegroup（占空槽或追加），保证索引可映射。
-- UI 挂接（当前测试策略）：MekaPilot/SelectMekaMenuMeka 直接替换 BSDX 的 Nanoha 槽位；SelectMekaMenu 的映射来自 `SelectMekaMenu.dat`。
+- grp 索引对齐：默认使用 Nanoha 槽位替换（meka=4, waza=15, sprite=57），索引来自 `Nanoha.mek`，并保持 Nanoha key；仅在非替换模式时才使用 codeName/fileName 的 upsert 追加。
+- spritegroup 映射：Nanoha 槽位模式下直接使用 `Nanoha.mek` 的 `spmFileSequence=57`（对应 `zako_021a.spm`），跳过 BHE->BSDX 的映射构建；追加模式才会按 BHE grp 重建映射表。
+- UI 挂接（当前测试策略）：MekaPilot/SelectMekaMenuMeka 直接替换 BSDX 的 Nanoha 槽位，默认保留 Nanoha 的 animName 作为 key；SelectMekaMenu 的映射来自 `SelectMekaMenu.dat`。
 
 ## TransMeka 迁移流程（文字流程图）
 输入(BHE: mek/waz/spm/grp/batvoice)
 -> Step0: 组装输入(TransMekaRequest)
--> Step1: BatVoice 深拷贝并追加到 BSDX batvoice.grp
--> Step2: grp 对齐(upsert meka/waza/sprite)并生成索引
--> Step3: spritegroup 索引映射(BHE index -> BSDX index)
+-> Step1: BatVoice 深拷贝并替换 Nanoha 槽位（保持 key）
+-> Step2: grp 对齐（Nanoha 槽位替换或 upsert）并生成索引
+-> Step3: spritegroup 索引映射(BHE index -> BSDX index；Nanoha 槽位模式下跳过)
 -> Step4: 资源转换(mek/waz/spm，含 hitbox；MaterialBlock groups 默认置空)
 -> Step5: 回写 MekBasicInfo 的 waz/spm 索引
--> Step6: UI SPM 挂接（用 Tsukuyomi 覆盖 Nanoha 槽位：MekaPilot / SelectMekaMenuMeka）
+-> Step6: UI SPM 挂接（Nanoha 槽位替换，默认保留 key：MekaPilot / SelectMekaMenuMeka）
 -> Step7: 输出变更文件(grp/mek/waz/spm) + 复制静态资源(图片/语音)并尝试封包(PacUtil.pack)
 
 ## TransMeka 代码结构（拆分后）
@@ -102,7 +102,7 @@ mvn clean package -DskipTests
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/TransMekaRequest.java`：输入聚合对象，打包 BHE 源资源与 BSDX 目标注册表。
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/TransMekaResult.java`：输出聚合对象，保存索引与转换结果。
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/BatVoiceConverter.java`：batvoice 深拷贝。
-- `src/test/java/com/giga/nexas/bhe2bsdx/steps/GrpRegistryUpdater.java`：grp upsert 对齐与索引生成。
+- `src/test/java/com/giga/nexas/bhe2bsdx/steps/GrpRegistryUpdater.java`：grp 替换/追加与索引生成。
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/SpriteGroupIndexMapper.java`：spritegroup 索引映射。
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/MekConverter.java`：mek 总转换，内部再拆 AI/Voice/Material。
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/MekAiConverter.java`：AI 事件转换与 InfoCollection 迁移。
@@ -110,7 +110,7 @@ mvn clean package -DskipTests
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/MekMaterialConverter.java`：MaterialBlock 迁移（默认置空 groups，避免错误映射）。
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/WazConverter.java`：waz 事件槽位映射。
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/SpmConverter.java`：spm 结构迁移与 hitbox 适配。
-- `src/test/java/com/giga/nexas/bhe2bsdx/steps/UiSpmReplacer.java`：UI SPM 替换（Nanoha 槽位覆盖 Tsukuyomi）。
+- `src/test/java/com/giga/nexas/bhe2bsdx/steps/UiSpmReplacer.java`：UI SPM 替换（Nanoha 槽位覆盖，默认保留 key）。
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/StaticAssetCopier.java`：抽取 spm 图片/语音文件名并复制到输出根目录。
 - `src/test/java/com/giga/nexas/bhe2bsdx/steps/TransMekaOutputWriter.java`：迁移输出写盘，仅写出传入的变更集合。
 

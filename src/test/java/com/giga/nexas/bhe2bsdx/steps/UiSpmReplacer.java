@@ -36,7 +36,8 @@ public class UiSpmReplacer {
             Spm tsukuyomiSSpm,
             Dat selectMekaMenuDat,
             MekaGroupGrp bsdxMekaGroup,
-            Mek tsukuyomiMek
+            Mek tsukuyomiMek,
+            boolean keepTargetKey
     ) {
         UiSpmReplaceResult result = new UiSpmReplaceResult();
 
@@ -49,10 +50,12 @@ public class UiSpmReplacer {
                 if (!pageIndices.isEmpty()) {
                     replacePages(mekaPilotSpm, pageIndices, tsukuyomiMSpm, imageIndex);
                     replaceImageName(mekaPilotSpm, imageIndex, firstImageName(tsukuyomiMSpm));
-                    // Pilot 名称同步为 Tsukuyomi
-                    String pilotName = extractPilotName(tsukuyomiMek);
-                    if (!pilotName.isEmpty()) {
-                        mekaPilotSpm.getAnimData().get(animIndex).setAnimName(pilotName);
+                    // keepTargetKey=true 时保留 Nanoha 的 animName 作为 key
+                    if (!keepTargetKey) {
+                        String pilotName = extractPilotName(tsukuyomiMek);
+                        if (!pilotName.isEmpty()) {
+                            mekaPilotSpm.getAnimData().get(animIndex).setAnimName(pilotName);
+                        }
                     }
                     result.setMekaPilotReplaced(true);
                     result.setMekaPilotAnimIndex(animIndex);
@@ -75,9 +78,11 @@ public class UiSpmReplacer {
                 if (!pageIndices.isEmpty()) {
                     replacePages(selectMekaMenuMekaSpm, pageIndices, tsukuyomiSSpm, imageIndex);
                     replaceImageName(selectMekaMenuMekaSpm, imageIndex, firstImageName(tsukuyomiSSpm));
-                    String menuName = buildSelectMenuName(tsukuyomiMek);
-                    if (!menuName.isEmpty()) {
-                        animData.setAnimName(menuName);
+                    if (!keepTargetKey) {
+                        String menuName = buildSelectMenuName(tsukuyomiMek);
+                        if (!menuName.isEmpty()) {
+                            animData.setAnimName(menuName);
+                        }
                     }
                     result.setSelectMekaMenuReplaced(true);
                     result.setSelectMekaMenuAnimIndex(animIndex);

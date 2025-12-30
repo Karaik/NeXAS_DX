@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * 迁移输出写盘：只输出传入的变更集合，避免一次性写出全部 SPM 造成目录膨胀。
- * 输出目录结构与游戏资源一致：grp/mek/waz/spm。
+ * 输出默认为扁平结构（直接写入输出根目录）。
  */
 @Slf4j
 public class TransMekaOutputWriter {

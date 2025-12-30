@@ -17,12 +17,13 @@ import java.util.Map;
 @Slf4j
 public class MekMaterialConverter {
 
-    // 默认按协议置空：保留组数量，但清空每组内容，避免错误映射
+    // 默认按协议置空：sprite/se 按源数量，voiceGroups 按 BSDX batvoice 数量
     private static final boolean CLEAR_MATERIAL_GROUPS = true;
 
     public Mek.MekMaterialBlock convert(
             com.giga.nexas.dto.bhe.mek.Mek.MekMaterialBlock src,
-            Map<Integer, Integer> spriteIndexMap
+            Map<Integer, Integer> spriteIndexMap,
+            int voiceGroupCount
     ) {
         Mek.MekMaterialBlock dst = new Mek.MekMaterialBlock();
         if (src == null) {
@@ -31,30 +32,32 @@ public class MekMaterialConverter {
 
         dst.setExtraRegularCount(src.getExtraRegularCount());
         dst.setRegularCount(src.getRegularCount());
-        dst.setEntries(convertEntries(src.getEntries(), spriteIndexMap));
-        dst.setRegularEntries(convertEntries(src.getRegularEntries(), spriteIndexMap));
-        dst.setTrailingEntries(convertEntries(src.getTrailingEntries(), spriteIndexMap));
+        dst.setEntries(convertEntries(src.getEntries(), spriteIndexMap, voiceGroupCount));
+        dst.setRegularEntries(convertEntries(src.getRegularEntries(), spriteIndexMap, voiceGroupCount));
+        dst.setTrailingEntries(convertEntries(src.getTrailingEntries(), spriteIndexMap, voiceGroupCount));
 
         return dst;
     }
 
     private List<Mek.MekMaterialBlock.PluginEntry> convertEntries(
             List<com.giga.nexas.dto.bhe.mek.Mek.MekMaterialBlock.PluginEntry> src,
-            Map<Integer, Integer> spriteIndexMap
+            Map<Integer, Integer> spriteIndexMap,
+            int voiceGroupCount
     ) {
         List<Mek.MekMaterialBlock.PluginEntry> out = new ArrayList<>();
         if (src == null) {
             return out;
         }
         for (com.giga.nexas.dto.bhe.mek.Mek.MekMaterialBlock.PluginEntry entry : src) {
-            out.add(convertEntry(entry, spriteIndexMap));
+            out.add(convertEntry(entry, spriteIndexMap, voiceGroupCount));
         }
         return out;
     }
 
     private Mek.MekMaterialBlock.PluginEntry convertEntry(
             com.giga.nexas.dto.bhe.mek.Mek.MekMaterialBlock.PluginEntry src,
-            Map<Integer, Integer> spriteIndexMap
+            Map<Integer, Integer> spriteIndexMap,
+            int voiceGroupCount
     ) {
         Mek.MekMaterialBlock.PluginEntry dst = new Mek.MekMaterialBlock.PluginEntry();
         if (src == null) {
@@ -65,7 +68,7 @@ public class MekMaterialConverter {
         if (CLEAR_MATERIAL_GROUPS) {
             dst.setSpriteGroups(emptyGroupsLike(src.getSpriteGroups()));
             dst.setSeGroups(emptyGroupsLike(src.getSeGroups()));
-            dst.setVoiceGroups(emptyGroupsLike(src.getVoiceGroups()));
+            dst.setVoiceGroups(emptyGroupsByCount(voiceGroupCount, src.getVoiceGroups()));
             return dst;
         }
         // spriteGroups: BHE 的每个组是成对数据，BSDX 只保留第一项
@@ -105,6 +108,17 @@ public class MekMaterialConverter {
             return out;
         }
         for (int i = 0; i < srcGroups.size(); i++) {
+            out.add(new int[0]);
+        }
+        return out;
+    }
+
+    private List<int[]> emptyGroupsByCount(int count, List<int[]> fallback) {
+        if (count <= 0) {
+            return emptyGroupsLike(fallback);
+        }
+        List<int[]> out = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
             out.add(new int[0]);
         }
         return out;

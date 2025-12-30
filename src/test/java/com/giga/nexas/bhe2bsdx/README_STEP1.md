@@ -8,7 +8,11 @@
 - 新增 grp upsert 与索引对齐：按 codeName/fileName 查找或占空槽追加，回写 `MekBasicInfo.wazFileSequence/spmFileSequence`，并建立 `spritegroup` 索引映射用于 `MekMaterialBlock.spriteGroups`。
 - AI 事件与 `BsdxInfoCollection` 跨引擎迁移完成，丢弃 BHE 独有字段（无法直接映射的部分）。
 - MaterialBlock 的 sprite/se/voice groups 先按协议置空，避免错误映射影响机体可用性。
+- MaterialBlock 的 voiceGroups 数量改为以 BSDX `batvoice.grp` 的组数对齐，避免 BHE/BSDX 组数不一致导致错位。
 - 新增 `TransMekaOutputWriter`：仅输出本次迁移变更的 grp/mek/waz/spm，并执行打包。
+- 新增 Nanoha 槽位替换模式：batvoice/meka/waza/sprite 直接替换目标槽位，默认保留 Nanoha key（避免追加索引）。
+- spritegroup 槽位由 `Nanoha.mek` 的 `spmFileSequence` 决定（当前为 `zako_021a.spm`），主战斗 spm 输出会跟随该文件名。
+- 新增 `grp_mapping_analysis.md`：整理 Tsukuyomi -> Nanoha 的详细索引映射与残留风险。
 
 ## Tsukuyomi 基准数据（BHE）
 - mek 基础信息：mekName=桜火、mekNameEnglish=OUKA、pilotNameKanji=月詠、pilotNameRoma=TSUKUYOMI。
@@ -27,10 +31,11 @@
 - `hitFlag` 以 hitRects 数量设置低位 bit（最多 32 位），用于 BSDX 的启用掩码。
 
 ## grp 索引校准流程
-- 先在 BSDX `mekagroup/wazagroup/spritegroup` 中按 codeName/fileName 查找匹配项。
+- Nanoha 槽位模式：按 `Nanoha.mek` 的 `wazFileSequence/spmFileSequence` 定位目标索引并替换，保留 Nanoha key。
+- 追加模式：先在 BSDX `mekagroup/wazagroup/spritegroup` 中按 codeName/fileName 查找匹配项。
 - 若无匹配，优先占用 `existFlag=0` 的空槽，否则追加到末尾并将 `existFlag` 置 1。
 - 记录新索引回写到 `MekBasicInfo.wazFileSequence/spmFileSequence`；MaterialBlock groups 当前按协议置空，索引映射逻辑保留待验证。
-- spritegroup 的映射改为“以 BHE grp 为准”：先从 mek.materialBlock 收集需要的 BHE 索引，再将对应条目补入 BSDX spritegroup，保证后续映射有效。
+- spritegroup 的映射重建仅在追加模式启用（Nanoha 槽位模式直接使用目标索引）。
 
 ## TransMeka 结构拆分（便于理解流程）
 - `TransMeka`：迁移入口，参数保持旧格式，内部调用 Pipeline。
@@ -42,7 +47,7 @@
 - `MekConverter`：mek 总转换；内部拆分 `MekAiConverter/MekVoiceConverter/MekMaterialConverter`。
 - `WazConverter`：waz 事件槽位映射与事件复制。
 - `SpmConverter`：spm 结构迁移与 hitbox 适配。
-- `UiSpmReplacer`：UI SPM 替换（Nanoha 槽位覆盖 Tsukuyomi）。
+- `UiSpmReplacer`：UI SPM 替换（Nanoha 槽位覆盖，默认保留 key）。
 - `StaticAssetCopier`：抽取 spm 图片/语音文件名并复制到输出根目录。
 
 ## 我之后必须要做的

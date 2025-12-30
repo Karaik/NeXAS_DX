@@ -10,8 +10,8 @@ import java.util.Map;
  *
  * 流程（文字流程图）：
  * 输入(BHE: mek/waz/spm/grp/batvoice)
- * -> Step1: BatVoice 深拷贝并追加到 BSDX batvoice.grp
- * -> Step2: grp 对齐(upsert meka/waza/sprite)并生成索引
+ * -> Step1: BatVoice 深拷贝并写入目标槽位（默认 Nanoha）
+ * -> Step2: grp 对齐（目标槽位替换或 upsert）并生成索引
  * -> Step3: spritegroup 索引映射(BHE index -> BSDX index)
  * -> Step4: 资源转换(mek/waz/spm，含 hitbox)
  * -> Step5: 回写 MekBasicInfo 的 waz/spm 索引
@@ -33,36 +33,94 @@ public class TransMekaPipeline {
             return result;
         }
 
-        // Step1: batvoice 深拷贝并追加到 BSDX 注册表
+        String targetCode = normalizeCode(request.getTargetCodeName(), "NANOHA");
+        boolean keepTargetKey = request.isKeepTargetKey();
+        boolean useTargetSlot = request.getTargetBsdxMek() != null && targetCode != null;
+
+        // Step1: batvoice 深拷贝并写入目标槽位（默认 Nanoha）
         if (request.getBheBatVoiceGroup() != null && request.getBsdxBatVoice() != null) {
-            BatVoiceGrp.BatVoiceGroup batVoice = batVoiceConverter.convert(request.getBheBatVoiceGroup());
-            request.getBsdxBatVoice().getVoiceList().add(batVoice);
-            result.setBsdxBatVoiceGroup(batVoice);
-            result.setBatVoiceIndex(request.getBsdxBatVoice().getVoiceList().size() - 1);
+            if (useTargetSlot) {
+                int batVoiceIndex = findBatVoiceGroupIndex(request.getBsdxBatVoice(), targetCode);
+                if (batVoiceIndex >= 0) {
+                    BatVoiceGrp.BatVoiceGroup converted = batVoiceConverter.convert(request.getBheBatVoiceGroup());
+                    BatVoiceGrp.BatVoiceGroup replaced = mergeBatVoiceGroup(
+                            request.getBsdxBatVoice().getVoiceList().get(batVoiceIndex),
+                            converted,
+                            keepTargetKey
+                    );
+                    request.getBsdxBatVoice().getVoiceList().set(batVoiceIndex, replaced);
+                    result.setBsdxBatVoiceGroup(replaced);
+                    result.setBatVoiceIndex(batVoiceIndex);
+                }
+            } else {
+                BatVoiceGrp.BatVoiceGroup batVoice = batVoiceConverter.convert(request.getBheBatVoiceGroup());
+                request.getBsdxBatVoice().getVoiceList().add(batVoice);
+                result.setBsdxBatVoiceGroup(batVoice);
+                result.setBatVoiceIndex(request.getBsdxBatVoice().getVoiceList().size() - 1);
+            }
         }
 
         // Step2: grp 对齐，返回最终序号（索引用于 mek/waz/spm 对齐）
-        result.setMekaGroupIndex(
-                grpRegistryUpdater.upsertMekaGroup(request.getBsdxMekaGroup(), request.getBheMekaGroup())
-        );
-        result.setWazaGroupIndex(
-                grpRegistryUpdater.upsertWazaGroup(request.getBsdxWazaGroup(), request.getBheWazaGroup())
-        );
-        result.setSpriteGroupIndex(
-                grpRegistryUpdater.upsertSpriteGroup(request.getBsdxSpriteGroup(), request.getBheSpriteGroupEntry())
-        );
+        if (useTargetSlot) {
+            int mekaIndex = grpRegistryUpdater.findMekaGroupIndexByCode(request.getBsdxMekaGroup(), targetCode);
+            if (mekaIndex >= 0) {
+                grpRegistryUpdater.replaceMekaGroupAtIndex(
+                        request.getBsdxMekaGroup(),
+                        mekaIndex,
+                        request.getBheMekaGroup(),
+                        keepTargetKey
+                );
+            }
+            int wazaIndex = resolveWazaIndex(request, targetCode);
+            if (wazaIndex >= 0) {
+                grpRegistryUpdater.replaceWazaGroupAtIndex(
+                        request.getBsdxWazaGroup(),
+                        wazaIndex,
+                        request.getBheWazaGroup(),
+                        keepTargetKey
+                );
+            }
+            int spriteIndex = resolveSpriteIndex(request, targetCode);
+            if (spriteIndex >= 0) {
+                grpRegistryUpdater.replaceSpriteGroupAtIndex(
+                        request.getBsdxSpriteGroup(),
+                        spriteIndex,
+                        request.getBheSpriteGroupEntry(),
+                        keepTargetKey
+                );
+            }
+            result.setMekaGroupIndex(mekaIndex);
+            result.setWazaGroupIndex(wazaIndex);
+            result.setSpriteGroupIndex(spriteIndex);
+        } else {
+            result.setMekaGroupIndex(
+                    grpRegistryUpdater.upsertMekaGroup(request.getBsdxMekaGroup(), request.getBheMekaGroup())
+            );
+            result.setWazaGroupIndex(
+                    grpRegistryUpdater.upsertWazaGroup(request.getBsdxWazaGroup(), request.getBheWazaGroup())
+            );
+            result.setSpriteGroupIndex(
+                    grpRegistryUpdater.upsertSpriteGroup(request.getBsdxSpriteGroup(), request.getBheSpriteGroupEntry())
+            );
+        }
 
         // Step3: spritegroup 映射（BHE 索引 -> BSDX 索引）
         // 先从 BHE mek 的 materialBlock 抽取需要的 spritegroup 索引，再按 BHE grp 重建到 BSDX
-        Map<Integer, Integer> spriteIndexMap = spriteGroupIndexMapper.buildMap(
-                request.getBheSpriteGroup(),
-                request.getBsdxSpriteGroup(),
-                spriteGroupIndexMapper.collectRequiredIndicesFromMek(request.getBheMek())
-        );
+        Map<Integer, Integer> spriteIndexMap = new java.util.HashMap<>();
+        if (!useTargetSlot) {
+            spriteIndexMap = spriteGroupIndexMapper.buildMap(
+                    request.getBheSpriteGroup(),
+                    request.getBsdxSpriteGroup(),
+                    spriteGroupIndexMapper.collectRequiredIndicesFromMek(request.getBheMek())
+            );
+        }
         result.setSpriteIndexMap(spriteIndexMap);
 
         // Step4: 转换核心资源（mek/waz/spm）
-        result.setBsdxMeka(mekConverter.convert(request.getBheMek(), spriteIndexMap));
+        int voiceGroupCount = request.getBsdxBatVoice() != null
+                ? request.getBsdxBatVoice().getVoiceList().size()
+                : 0;
+        result.setBsdxMeka(mekConverter.convert(request.getBheMek(), spriteIndexMap, voiceGroupCount));
         result.setBsdxWaz(wazConverter.convert(request.getBheWaz()));
         result.setBsdxSpm(spmConverter.convert(request.getBheSpm()));
         result.setBsdxCSpm(spmConverter.convert(request.getBheCSpm()));
@@ -81,7 +139,8 @@ public class TransMekaPipeline {
                 result.getBsdxSSpm(),
                 request.getSelectMekaMenuDat(),
                 request.getBsdxMekaGroup(),
-                result.getBsdxMeka()
+                result.getBsdxMeka(),
+                keepTargetKey
         );
         if (uiReplaceResult.isMekaPilotReplaced()) {
             result.setBsdxMekaPilotSpm(request.getMekaPilotSpm());
@@ -103,5 +162,68 @@ public class TransMekaPipeline {
         if (spriteIndex >= 0) {
             mek.getMekBasicInfo().setSpmFileSequence(spriteIndex);
         }
+    }
+
+    private String normalizeCode(String code, String fallback) {
+        if (code == null || code.isBlank()) {
+            return fallback;
+        }
+        return code.trim().toUpperCase();
+    }
+
+    private int resolveWazaIndex(TransMekaRequest request, String targetCode) {
+        if (request.getTargetBsdxMek() != null && request.getTargetBsdxMek().getMekBasicInfo() != null) {
+            Integer index = request.getTargetBsdxMek().getMekBasicInfo().getWazFileSequence();
+            if (index != null) {
+                return index;
+            }
+        }
+        return grpRegistryUpdater.findWazaGroupIndexByCode(request.getBsdxWazaGroup(), targetCode);
+    }
+
+    private int resolveSpriteIndex(TransMekaRequest request, String targetCode) {
+        if (request.getTargetBsdxMek() != null && request.getTargetBsdxMek().getMekBasicInfo() != null) {
+            Integer index = request.getTargetBsdxMek().getMekBasicInfo().getSpmFileSequence();
+            if (index != null) {
+                return index;
+            }
+        }
+        return grpRegistryUpdater.findSpriteGroupIndexByCode(request.getBsdxSpriteGroup(), targetCode);
+    }
+
+    private int findBatVoiceGroupIndex(BatVoiceGrp grp, String targetCode) {
+        if (grp == null || grp.getVoiceList() == null || targetCode == null) {
+            return -1;
+        }
+        for (int i = 0; i < grp.getVoiceList().size(); i++) {
+            BatVoiceGrp.BatVoiceGroup group = grp.getVoiceList().get(i);
+            if (group == null || group.getExistFlag() == null || group.getExistFlag() == 0) {
+                continue;
+            }
+            String code = group.getCharacterCodeName();
+            if (code != null && targetCode.equalsIgnoreCase(code.trim())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private BatVoiceGrp.BatVoiceGroup mergeBatVoiceGroup(
+            BatVoiceGrp.BatVoiceGroup target,
+            BatVoiceGrp.BatVoiceGroup source,
+            boolean keepTargetKey
+    ) {
+        if (source == null) {
+            source = new BatVoiceGrp.BatVoiceGroup();
+        }
+        if (keepTargetKey && target != null) {
+            source.setExistFlag(target.getExistFlag() != null ? target.getExistFlag() : 1);
+            source.setCharacterName(target.getCharacterName());
+            source.setCharacterCodeName(target.getCharacterCodeName());
+        }
+        if (source.getExistFlag() == null) {
+            source.setExistFlag(1);
+        }
+        return source;
     }
 }

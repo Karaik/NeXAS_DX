@@ -27,7 +27,7 @@ public class TransferTest {
 
     private static final Path OUTPUT_DIR = Paths.get("src/main/resources/testBhe");
     // 静态资源来源目录（按需修改）
-    private static final Path STATIC_ASSET_ROOT = Paths.get("D:\\BDY\\bsdx_bhe\\bhe_resources");
+    private static final Path STATIC_ASSET_ROOT = Paths.get("D:\\BaiduNetdiskDownload\\bsdx_bhe\\bheAll");
     private static final boolean COPY_STATIC_ASSETS = true;
 
     private static final Logger log = LoggerFactory.getLogger(TransferTest.class);
@@ -48,6 +48,8 @@ public class TransferTest {
         final String sTsukuyomiKey = "s_tsukuyomi";
         final String gTsukuyomiKey = "g_tsukuyomi";
         final String mTsukuyomiKey = "m_tsukuyomi";
+        final String targetKey = "nanoha";
+        final String targetCodeName = "NANOHA";
 
         // 1.注册全部所需文件资源
         // grp
@@ -121,6 +123,12 @@ public class TransferTest {
 
         com.giga.nexas.dto.bsdx.spm.Spm mekaPilotSpm = bsdxSpm.get("mekapilot");
         com.giga.nexas.dto.bsdx.spm.Spm selectMekaMenuMekaSpm = bsdxSpm.get("selectmekamenumeka");
+        com.giga.nexas.dto.bsdx.mek.Mek targetBsdxMek = bsdxMek.get(targetKey);
+        boolean useTargetSlot = targetBsdxMek != null;
+        boolean keepTargetKey = true;
+        String targetSpriteKey = useTargetSlot
+                ? resolveSpriteBaseName(bsdxSpriteGroup, targetBsdxMek, targetKey)
+                : tsukuyomiKey;
 
         //
         TransMekaResult result = TransMeka.process(
@@ -145,29 +153,38 @@ public class TransferTest {
 
                 mekaPilotSpm,
                 selectMekaMenuMekaSpm,
-                selectMekaMenuDat);
+                selectMekaMenuDat,
+                targetBsdxMek,
+                targetCodeName,
+                keepTargetKey);
 
         // 3.回写到 BSDX Map（保持内存一致），同时只输出本次变更，避免写出全部 spm
         if (result != null) {
             if (result.getBsdxMeka() != null) {
-                bsdxMek.put(tsukuyomiKey, result.getBsdxMeka());
+                if (useTargetSlot) {
+                    result.getBsdxMeka().setFileName(targetKey);
+                }
+                bsdxMek.put(useTargetSlot ? targetKey : tsukuyomiKey, result.getBsdxMeka());
             }
             if (result.getBsdxWaz() != null) {
-                bsdxWaz.put(tsukuyomiKey, result.getBsdxWaz());
+                if (useTargetSlot) {
+                    result.getBsdxWaz().setFileName(targetKey);
+                }
+                bsdxWaz.put(useTargetSlot ? targetKey : tsukuyomiKey, result.getBsdxWaz());
             }
             if (result.getBsdxSpm() != null) {
-                bsdxSpm.put(tsukuyomiKey, result.getBsdxSpm());
+                bsdxSpm.put(useTargetSlot ? targetSpriteKey : tsukuyomiKey, result.getBsdxSpm());
             }
-            if (result.getBsdxCSpm() != null) {
+            if (!useTargetSlot && result.getBsdxCSpm() != null) {
                 bsdxSpm.put(cTsukuyomiKey, result.getBsdxCSpm());
             }
-            if (result.getBsdxSSpm() != null) {
+            if (!useTargetSlot && result.getBsdxSSpm() != null) {
                 bsdxSpm.put(sTsukuyomiKey, result.getBsdxSSpm());
             }
-            if (result.getBsdxGSpm() != null) {
+            if (!useTargetSlot && result.getBsdxGSpm() != null) {
                 bsdxSpm.put(gTsukuyomiKey, result.getBsdxGSpm());
             }
-            if (result.getBsdxMSpm() != null) {
+            if (!useTargetSlot && result.getBsdxMSpm() != null) {
                 bsdxSpm.put(mTsukuyomiKey, result.getBsdxMSpm());
             }
             if (result.getBsdxMekaPilotSpm() != null) {
@@ -187,28 +204,28 @@ public class TransferTest {
 
         Map<String, com.giga.nexas.dto.bsdx.mek.Mek> outputMek = new HashMap<>();
         if (result != null && result.getBsdxMeka() != null) {
-            outputMek.put(tsukuyomiKey, result.getBsdxMeka());
+            outputMek.put(useTargetSlot ? targetKey : tsukuyomiKey, result.getBsdxMeka());
         }
 
         Map<String, com.giga.nexas.dto.bsdx.waz.Waz> outputWaz = new HashMap<>();
         if (result != null && result.getBsdxWaz() != null) {
-            outputWaz.put(tsukuyomiKey, result.getBsdxWaz());
+            outputWaz.put(useTargetSlot ? targetKey : tsukuyomiKey, result.getBsdxWaz());
         }
 
         Map<String, com.giga.nexas.dto.bsdx.spm.Spm> outputSpm = new HashMap<>();
         if (result != null && result.getBsdxSpm() != null) {
-            outputSpm.put(tsukuyomiKey, result.getBsdxSpm());
+            outputSpm.put(useTargetSlot ? targetSpriteKey : tsukuyomiKey, result.getBsdxSpm());
         }
-        if (result != null && result.getBsdxCSpm() != null) {
+        if (!useTargetSlot && result != null && result.getBsdxCSpm() != null) {
             outputSpm.put(cTsukuyomiKey, result.getBsdxCSpm());
         }
-        if (result != null && result.getBsdxSSpm() != null) {
+        if (!useTargetSlot && result != null && result.getBsdxSSpm() != null) {
             outputSpm.put(sTsukuyomiKey, result.getBsdxSSpm());
         }
-        if (result != null && result.getBsdxGSpm() != null) {
+        if (!useTargetSlot && result != null && result.getBsdxGSpm() != null) {
             outputSpm.put(gTsukuyomiKey, result.getBsdxGSpm());
         }
-        if (result != null && result.getBsdxMSpm() != null) {
+        if (!useTargetSlot && result != null && result.getBsdxMSpm() != null) {
             outputSpm.put(mTsukuyomiKey, result.getBsdxMSpm());
         }
         if (result != null && result.getBsdxMekaPilotSpm() != null) {
@@ -231,16 +248,53 @@ public class TransferTest {
             }
             // 仅复制 BHE 来源的 spm 静态资源，避免搜索 BSDX 自带图片
             Map<String, com.giga.nexas.dto.bsdx.spm.Spm> assetSpm = new HashMap<>();
-            for (Map.Entry<String, com.giga.nexas.dto.bsdx.spm.Spm> entry : outputSpm.entrySet()) {
-                if (bheSpm.containsKey(entry.getKey())) {
-                    assetSpm.put(entry.getKey(), entry.getValue());
-                }
+            if (result != null) {
+                putIfPresent(assetSpm, tsukuyomiKey, result.getBsdxSpm());
+                putIfPresent(assetSpm, cTsukuyomiKey, result.getBsdxCSpm());
+                putIfPresent(assetSpm, sTsukuyomiKey, result.getBsdxSSpm());
+                putIfPresent(assetSpm, gTsukuyomiKey, result.getBsdxGSpm());
+                putIfPresent(assetSpm, mTsukuyomiKey, result.getBsdxMSpm());
             }
             assetCopier.copyAssets(outputDir, STATIC_ASSET_ROOT, assetSpm, assetGrp);
         }
 
         // 打包
         log.info("outputPath === {}", PacUtil.pack(outputPath, "4"));
+    }
+
+    private String resolveSpriteBaseName(
+            com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp spriteGroup,
+            com.giga.nexas.dto.bsdx.mek.Mek targetMek,
+            String fallback
+    ) {
+        if (spriteGroup == null || targetMek == null || targetMek.getMekBasicInfo() == null) {
+            return fallback;
+        }
+        Integer index = targetMek.getMekBasicInfo().getSpmFileSequence();
+        if (index == null || spriteGroup.getSpriteList() == null
+                || index < 0 || index >= spriteGroup.getSpriteList().size()) {
+            return fallback;
+        }
+        com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp.SpriteGroupEntry entry =
+                spriteGroup.getSpriteList().get(index);
+        if (entry == null || entry.getSpriteFileName() == null) {
+            return fallback;
+        }
+        String fileName = entry.getSpriteFileName().trim();
+        if (fileName.isEmpty()) {
+            return fallback;
+        }
+        int dot = fileName.lastIndexOf('.');
+        String baseName = dot > 0 ? fileName.substring(0, dot) : fileName;
+        return baseName.isEmpty() ? fallback : baseName;
+    }
+
+    private void putIfPresent(Map<String, com.giga.nexas.dto.bsdx.spm.Spm> map, String key,
+                              com.giga.nexas.dto.bsdx.spm.Spm value) {
+        if (map == null || key == null || value == null) {
+            return;
+        }
+        map.put(key, value);
     }
 
     // grp
