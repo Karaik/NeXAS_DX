@@ -229,7 +229,14 @@ public class TransferTest {
                 batVoiceGrp.getVoiceList().add(result.getBsdxBatVoiceGroup());
                 assetGrp.put("batvoice", batVoiceGrp);
             }
-            assetCopier.copyAssets(outputDir, STATIC_ASSET_ROOT, outputSpm, assetGrp);
+            // 仅复制 BHE 来源的 spm 静态资源，避免搜索 BSDX 自带图片
+            Map<String, com.giga.nexas.dto.bsdx.spm.Spm> assetSpm = new HashMap<>();
+            for (Map.Entry<String, com.giga.nexas.dto.bsdx.spm.Spm> entry : outputSpm.entrySet()) {
+                if (bheSpm.containsKey(entry.getKey())) {
+                    assetSpm.put(entry.getKey(), entry.getValue());
+                }
+            }
+            assetCopier.copyAssets(outputDir, STATIC_ASSET_ROOT, assetSpm, assetGrp);
         }
 
         // 打包

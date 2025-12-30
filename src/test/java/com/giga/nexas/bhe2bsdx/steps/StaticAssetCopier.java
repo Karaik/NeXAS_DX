@@ -48,7 +48,7 @@ public class StaticAssetCopier {
             return;
         }
 
-        Map<String, List<Path>> index = buildFileIndex(assetRoot);
+        AssetIndex index = buildFileIndex(assetRoot);
         int copied = 0;
         int missing = 0;
         int duplicated = 0;
@@ -56,7 +56,12 @@ public class StaticAssetCopier {
         for (Map.Entry<String, String> entry : requiredNames.entrySet()) {
             String key = entry.getKey();
             String fileName = entry.getValue();
-            List<Path> matches = index.get(key);
+            boolean baseMatched = false;
+            List<Path> matches = index.findByFileName(key);
+            if (matches == null || matches.isEmpty()) {
+                matches = index.findByBaseName(fileName);
+                baseMatched = true;
+            }
             if (matches == null || matches.isEmpty()) {
                 missing++;
                 log.warn("静态资源未找到: {}", fileName);
@@ -64,11 +69,18 @@ public class StaticAssetCopier {
             }
             if (matches.size() > 1) {
                 duplicated++;
-                log.warn("静态资源存在多个同名文件: {} -> {}", fileName, matches.size());
+                log.warn("静态资源存在多个同名文件: {} -> {}{}", fileName, matches.size(),
+                        baseMatched ? " (base)" : "");
+            }
+            Path source = chooseBestMatch(fileName, matches);
+            if (source == null) {
+                missing++;
+                log.warn("静态资源未找到(无法选择匹配项): {}", fileName);
+                continue;
             }
             Path target = outputDir.resolve(fileName);
             try {
-                Files.copy(matches.get(0), target, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
                 copied++;
             } catch (IOException e) {
                 log.warn("复制静态资源失败: {}", fileName, e);
@@ -171,19 +183,90 @@ public class StaticAssetCopier {
         return trimmed;
     }
 
-    private Map<String, List<Path>> buildFileIndex(Path root) {
-        Map<String, List<Path>> index = new HashMap<>();
+    private AssetIndex buildFileIndex(Path root) {
+        AssetIndex index = new AssetIndex();
         try {
             Files.walk(root)
                     .filter(Files::isRegularFile)
-                    .forEach(path -> {
-                        String fileName = path.getFileName().toString();
-                        String key = fileName.toLowerCase(Locale.ROOT);
-                        index.computeIfAbsent(key, k -> new ArrayList<>()).add(path);
-                    });
+                    .forEach(index::add);
         } catch (IOException e) {
             log.warn("扫描静态资源目录失败: {}", root, e);
         }
         return index;
+    }
+
+    private Path chooseBestMatch(String targetName, List<Path> matches) {
+        if (matches == null || matches.isEmpty()) {
+            return null;
+        }
+        if (matches.size() == 1) {
+            return matches.get(0);
+        }
+        String targetExt = extensionOf(targetName);
+        if (!targetExt.isEmpty()) {
+            for (Path path : matches) {
+                if (targetExt.equalsIgnoreCase(extensionOf(path.getFileName().toString()))) {
+                    return path;
+                }
+            }
+        }
+        for (Path path : matches) {
+            if (extensionOf(path.getFileName().toString()).isEmpty()) {
+                return path;
+            }
+        }
+        return matches.get(0);
+    }
+
+    private String extensionOf(String name) {
+        if (name == null) {
+            return "";
+        }
+        int dot = name.lastIndexOf('.');
+        if (dot > 0 && dot + 1 < name.length()) {
+            return name.substring(dot + 1);
+        }
+        return "";
+    }
+
+    private static final class AssetIndex {
+        private final Map<String, List<Path>> byFileName = new HashMap<>();
+        private final Map<String, List<Path>> byBaseName = new HashMap<>();
+
+        void add(Path path) {
+            if (path == null) {
+                return;
+            }
+            String fileName = path.getFileName().toString();
+            if (fileName.isEmpty()) {
+                return;
+            }
+            String fileKey = fileName.toLowerCase(Locale.ROOT);
+            byFileName.computeIfAbsent(fileKey, k -> new ArrayList<>()).add(path);
+
+            int dot = fileName.lastIndexOf('.');
+            String baseName = dot > 0 ? fileName.substring(0, dot) : fileName;
+            if (!baseName.isEmpty()) {
+                String baseKey = baseName.toLowerCase(Locale.ROOT);
+                byBaseName.computeIfAbsent(baseKey, k -> new ArrayList<>()).add(path);
+            }
+        }
+
+        List<Path> findByFileName(String nameKey) {
+            if (nameKey == null || nameKey.isEmpty()) {
+                return null;
+            }
+            return byFileName.get(nameKey);
+        }
+
+        List<Path> findByBaseName(String fileName) {
+            if (fileName == null || fileName.isEmpty()) {
+                return null;
+            }
+            int dot = fileName.lastIndexOf('.');
+            String baseName = dot > 0 ? fileName.substring(0, dot) : fileName;
+            String key = baseName.toLowerCase(Locale.ROOT);
+            return byBaseName.get(key);
+        }
     }
 }
