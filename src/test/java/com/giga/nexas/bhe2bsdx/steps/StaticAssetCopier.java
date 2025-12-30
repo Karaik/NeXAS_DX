@@ -78,7 +78,13 @@ public class StaticAssetCopier {
                 log.warn("静态资源未找到(无法选择匹配项): {}", fileName);
                 continue;
             }
-            Path target = outputDir.resolve(fileName);
+            String targetName = resolveTargetName(fileName, source);
+            if (targetName == null || targetName.isEmpty()) {
+                missing++;
+                log.warn("静态资源目标名为空: {}", fileName);
+                continue;
+            }
+            Path target = outputDir.resolve(targetName);
             try {
                 Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
                 copied++;
@@ -216,6 +222,20 @@ public class StaticAssetCopier {
             }
         }
         return matches.get(0);
+    }
+
+    private String resolveTargetName(String requestedName, Path source) {
+        String normalized = normalizeFileName(requestedName);
+        if (!extensionOf(normalized).isEmpty()) {
+            return normalized;
+        }
+        if (source != null) {
+            String sourceName = normalizeFileName(source.getFileName().toString());
+            if (!sourceName.isEmpty()) {
+                return sourceName;
+            }
+        }
+        return normalized;
     }
 
     private String extensionOf(String name) {
