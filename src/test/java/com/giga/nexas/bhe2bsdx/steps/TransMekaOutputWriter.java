@@ -45,10 +45,10 @@ public class TransMekaOutputWriter {
         }
         Files.createDirectories(outputDir);
 
-        writeMap(outputDir.resolve("grp"), grpMap, "grp", "grp");
-        writeMap(outputDir.resolve("mek"), mekMap, "mek", "mek");
-        writeMap(outputDir.resolve("waz"), wazMap, "waz", "waz");
-        writeMap(outputDir.resolve("spm"), spmMap, "spm", "spm");
+        writeMap(outputDir, grpMap, "grp", "grp");
+        writeMap(outputDir, mekMap, "mek", "mek");
+        writeMap(outputDir, wazMap, "waz", "waz");
+        writeMap(outputDir, spmMap, "spm", "spm");
     }
 
     private <T extends Bsdx> void writeMap(

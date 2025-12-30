@@ -27,7 +27,7 @@ public class TransferTest {
 
     private static final Path OUTPUT_DIR = Paths.get("src/main/resources/testBhe");
     // 静态资源来源目录（按需修改）
-    private static final Path STATIC_ASSET_ROOT = Paths.get("D:/BaiduNetdiskDownload/bsdx_bhe/bheAll");
+    private static final Path STATIC_ASSET_ROOT = Paths.get("D:\\BDY\\bsdx_bhe\\bhe_resources");
     private static final boolean COPY_STATIC_ASSETS = true;
 
     private static final Logger log = LoggerFactory.getLogger(TransferTest.class);
@@ -240,7 +240,7 @@ public class TransferTest {
         }
 
         // 打包
-        log.info("outputPath === {}", PacUtil.pack(outputPath, "7"));
+        log.info("outputPath === {}", PacUtil.pack(outputPath, "4"));
     }
 
     // grp
