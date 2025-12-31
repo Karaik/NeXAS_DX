@@ -21,18 +21,34 @@ import java.util.Map;
 public class WazConverter {
 
     public Waz convert(com.giga.nexas.dto.bhe.waz.Waz bheWaz) {
+        return convert(bheWaz, null, null);
+    }
+
+    public Waz convert(com.giga.nexas.dto.bhe.waz.Waz bheWaz, WazSequenceSanitizer sanitizer) {
+        return convert(bheWaz, sanitizer, null);
+    }
+
+    public Waz convert(
+            com.giga.nexas.dto.bhe.waz.Waz bheWaz,
+            WazSequenceSanitizer sanitizer,
+            Map<Integer, Integer> spriteIndexMap
+    ) {
         Waz bsdxWaz = new Waz();
         if (bheWaz == null) {
             return bsdxWaz;
         }
-        processWazaSkillUnitCollection(bsdxWaz, bheWaz);
+        processWazaSkillUnitCollection(bsdxWaz, bheWaz, spriteIndexMap);
+        if (sanitizer != null) {
+            sanitizer.sanitize(bsdxWaz);
+        }
         return bsdxWaz;
     }
 
     // unitQuantity 与实际情况不符，需额外处理
     private void processWazaSkillUnitCollection(
             com.giga.nexas.dto.bsdx.waz.Waz bsdxWaz,
-            com.giga.nexas.dto.bhe.waz.Waz bheWaz
+            com.giga.nexas.dto.bhe.waz.Waz bheWaz,
+            Map<Integer, Integer> spriteIndexMap
     ) {
         bsdxWaz.setFileName(bheWaz.getFileName());
         bsdxWaz.setExtensionName(bheWaz.getExtensionName());
@@ -174,6 +190,7 @@ public class WazConverter {
                             BeanUtil.copyProperties(srcInfo, ev);
                         } else if (dstInfo instanceof CEventSprite ev) {
                             BeanUtil.copyProperties(srcInfo, ev);
+                            remapSpriteSequence(ev, spriteIndexMap);
                         } else if (dstInfo instanceof CEventHeight ev) {
                             BeanUtil.copyProperties(srcInfo, ev);
                             ev.transBheCEventHeightToBsdx(srcInfo, ev);
@@ -228,6 +245,20 @@ public class WazConverter {
         }
 
         bsdxWaz.setSkillList(dstSkills);
+    }
+
+    private void remapSpriteSequence(CEventSprite ev, Map<Integer, Integer> spriteIndexMap) {
+        if (ev == null || spriteIndexMap == null || spriteIndexMap.isEmpty()) {
+            return;
+        }
+        Integer seq = ev.getSpmFileSequence();
+        if (seq == null || seq < 0) {
+            return;
+        }
+        Integer mapped = spriteIndexMap.get(seq);
+        if (mapped != null) {
+            ev.setSpmFileSequence(mapped);
+        }
     }
 
     // bhe -> bsdx

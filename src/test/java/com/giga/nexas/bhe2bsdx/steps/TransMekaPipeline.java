@@ -4,6 +4,7 @@ import com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp;
 import com.giga.nexas.dto.bsdx.mek.Mek;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 迁移流程编排器：按步骤执行并产出结果。
@@ -107,11 +108,26 @@ public class TransMekaPipeline {
         // Step3: spritegroup 映射（BHE 索引 -> BSDX 索引）
         // 先从 BHE mek 的 materialBlock 抽取需要的 spritegroup 索引，再按 BHE grp 重建到 BSDX
         Map<Integer, Integer> spriteIndexMap = new java.util.HashMap<>();
-        if (!useTargetSlot) {
+        Set<Integer> requiredSpriteIndices =
+                spriteGroupIndexMapper.collectRequiredIndicesFromMek(request.getBheMek());
+        if (useTargetSlot) {
+            spriteIndexMap = spriteGroupIndexMapper.buildMapByName(
+                    request.getBheSpriteGroup(),
+                    request.getBsdxSpriteGroup(),
+                    requiredSpriteIndices
+            );
+            int bheSpriteIndex = spriteGroupIndexMapper.findBheSpriteIndex(
+                    request.getBheSpriteGroup(),
+                    request.getBheSpriteGroupEntry()
+            );
+            if (bheSpriteIndex >= 0 && result.getSpriteGroupIndex() >= 0) {
+                spriteIndexMap.put(bheSpriteIndex, result.getSpriteGroupIndex());
+            }
+        } else {
             spriteIndexMap = spriteGroupIndexMapper.buildMap(
                     request.getBheSpriteGroup(),
                     request.getBsdxSpriteGroup(),
-                    spriteGroupIndexMapper.collectRequiredIndicesFromMek(request.getBheMek())
+                    requiredSpriteIndices
             );
         }
         result.setSpriteIndexMap(spriteIndexMap);
@@ -121,7 +137,8 @@ public class TransMekaPipeline {
                 ? request.getBsdxBatVoice().getVoiceList().size()
                 : 0;
         result.setBsdxMeka(mekConverter.convert(request.getBheMek(), spriteIndexMap, voiceGroupCount));
-        result.setBsdxWaz(wazConverter.convert(request.getBheWaz()));
+        WazSequenceSanitizer sanitizer = WazSequenceSanitizer.fromBsdxWaz(request.getBsdxWazRegistry());
+        result.setBsdxWaz(wazConverter.convert(request.getBheWaz(), sanitizer, spriteIndexMap));
         result.setBsdxSpm(spmConverter.convert(request.getBheSpm()));
         result.setBsdxCSpm(spmConverter.convert(request.getBheCSpm()));
         result.setBsdxSSpm(spmConverter.convert(request.getBheSSpm()));

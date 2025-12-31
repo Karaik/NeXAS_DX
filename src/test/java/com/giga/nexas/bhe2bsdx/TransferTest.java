@@ -151,6 +151,7 @@ public class TransferTest {
                 bsdxMekaGroup,
                 bsdxWazaGroup,
                 bsdxSpriteGroup,
+                bsdxWaz,
 
                 mekaPilotSpm,
                 selectMekaMenuMekaSpm,

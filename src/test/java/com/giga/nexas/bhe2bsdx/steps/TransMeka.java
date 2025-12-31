@@ -33,6 +33,7 @@ public class TransMeka {
             MekaGroupGrp bsdxMekaGroup,
             WazaGroupGrp bsdxWazaGroup,
             SpriteGroupGrp bsdxSpriteGroup,
+            java.util.Map<String, com.giga.nexas.dto.bsdx.waz.Waz> bsdxWazRegistry,
 
             com.giga.nexas.dto.bsdx.spm.Spm mekaPilotSpm,
             com.giga.nexas.dto.bsdx.spm.Spm selectMekaMenuMekaSpm,
@@ -59,6 +60,7 @@ public class TransMeka {
                 bsdxMekaGroup,
                 bsdxWazaGroup,
                 bsdxSpriteGroup,
+                bsdxWazRegistry,
                 mekaPilotSpm,
                 selectMekaMenuMekaSpm,
                 selectMekaMenuDat,

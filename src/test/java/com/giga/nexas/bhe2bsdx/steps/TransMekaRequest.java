@@ -35,6 +35,7 @@ public class TransMekaRequest {
     private MekaGroupGrp bsdxMekaGroup;
     private WazaGroupGrp bsdxWazaGroup;
     private SpriteGroupGrp bsdxSpriteGroup;
+    private java.util.Map<String, com.giga.nexas.dto.bsdx.waz.Waz> bsdxWazRegistry;
 
     // ===== BSDX 目标槽位（默认使用 Nanoha） =====
     private com.giga.nexas.dto.bsdx.mek.Mek targetBsdxMek;
@@ -68,6 +69,7 @@ public class TransMekaRequest {
             MekaGroupGrp bsdxMekaGroup,
             WazaGroupGrp bsdxWazaGroup,
             SpriteGroupGrp bsdxSpriteGroup,
+            java.util.Map<String, com.giga.nexas.dto.bsdx.waz.Waz> bsdxWazRegistry,
             Spm mekaPilotSpm,
             Spm selectMekaMenuMekaSpm,
             Dat selectMekaMenuDat,
@@ -92,6 +94,7 @@ public class TransMekaRequest {
         request.setBsdxMekaGroup(bsdxMekaGroup);
         request.setBsdxWazaGroup(bsdxWazaGroup);
         request.setBsdxSpriteGroup(bsdxSpriteGroup);
+        request.setBsdxWazRegistry(bsdxWazRegistry);
         request.setMekaPilotSpm(mekaPilotSpm);
         request.setSelectMekaMenuMekaSpm(selectMekaMenuMekaSpm);
         request.setSelectMekaMenuDat(selectMekaMenuDat);

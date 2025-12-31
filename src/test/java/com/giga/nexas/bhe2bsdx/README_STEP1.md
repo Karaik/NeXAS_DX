@@ -14,6 +14,7 @@
 - 新增 Nanoha 槽位替换模式：batvoice/meka/waza/sprite 直接替换目标槽位，默认保留 Nanoha key（避免追加索引）。
 - spritegroup 槽位由 `Nanoha.mek` 的 `spmFileSequence` 决定（当前为 `zako_021a.spm`），主战斗 spm 输出会跟随该文件名。
 - 新增 `grp_mapping_analysis.md`：整理 Tsukuyomi -> Nanoha 的详细索引映射与残留风险。
+- 新增 `WazSequenceSanitizer`：对 `CEventWazaSelect` 做序号校验，避免 BHE 引用超出 BSDX 范围的效果/子弹资源导致崩溃。
 
 ## Tsukuyomi 基准数据（BHE）
 - mek 基础信息：mekName=桜火、mekNameEnglish=OUKA、pilotNameKanji=月詠、pilotNameRoma=TSUKUYOMI。
@@ -36,7 +37,9 @@
 - 追加模式：先在 BSDX `mekagroup/wazagroup/spritegroup` 中按 codeName/fileName 查找匹配项。
 - 若无匹配，优先占用 `existFlag=0` 的空槽，否则追加到末尾并将 `existFlag` 置 1。
 - 记录新索引回写到 `MekBasicInfo.wazFileSequence/spmFileSequence`；MaterialBlock groups 当前按协议置空，索引映射逻辑保留待验证。
-- spritegroup 的映射重建仅在追加模式启用（Nanoha 槽位模式直接使用目标索引）。
+- spritegroup 映射重建：
+  - 追加模式：按 codeName/fileName upsert 并建立映射。
+  - Nanoha 槽位模式：按名称建立映射（不修改 grp），并将 BHE 的 TSUKUYOMI 索引映射到 Nanoha 目标索引，供 `CEventSprite`/MaterialBlock 使用。
 
 ## TransMeka 结构拆分（便于理解流程）
 - `TransMeka`：迁移入口，参数保持旧格式，内部调用 Pipeline。
