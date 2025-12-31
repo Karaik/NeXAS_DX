@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.giga.nexas.util.InfoCollectionMapper;
 import static com.giga.nexas.dto.bsdx.waz.wazfactory.SkillInfoFactory.createCEventObjectByTypeBsdx;
 
 /**
@@ -394,13 +395,19 @@ public class CEventHit extends SkillInfoObject {
                 if (buffer != 0 && in.getData() != null) {
                     SkillInfoObject inner = createCEventObjectByTypeBsdx(CEVENT_HIT_TYPES[bsdxIdx].getType());
                     cn.hutool.core.bean.BeanUtil.copyProperties(in.getData(), inner);
+                    InfoCollectionMapper.copyBheToBsdx(in.getData(), inner);
+                    if (inner instanceof CEventNokezori nokezori) {
+                        nokezori.transBheCEventNokezoriToBsdx(in.getData(), nokezori);
+                    }
                     inner.setSlotNum(CEVENT_HIT_TYPES[bsdxIdx].getType());
                     out.setBuffer(1);
                     out.setData(inner);
                 }
             }
 
-            bsdx.getCeventHitUnitList().add(out);
+            if (out.getBuffer() != null && out.getBuffer() != 0) {
+                bsdx.getCeventHitUnitList().add(out);
+            }
         }
     }
 

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.giga.nexas.util.InfoCollectionMapper;
 import static com.giga.nexas.dto.bsdx.waz.wazfactory.SkillInfoFactory.createCEventObjectByTypeBsdx;
 
 /**
@@ -177,8 +178,14 @@ public class CEventRadialLine extends SkillInfoObject {
                 bsdxUnit.setUnitSlotNum(i);
                 bsdxUnit.setBuffer(0);
 
-                if (bheUnits.size() > i) {
-                    var bheUnit = bheUnits.get(i);
+                com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventRadialLine.CEventRadialLineUnit bheUnit = null;
+                for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventRadialLine.CEventRadialLineUnit unit : bheUnits) {
+                    if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                        bheUnit = unit;
+                        break;
+                    }
+                }
+                if (bheUnit != null) {
                     Integer buffer = bheUnit.getBuffer();
                     if (buffer == null) {
                         buffer = (bheUnit.getData() != null ? 1 : 0);
@@ -187,6 +194,7 @@ public class CEventRadialLine extends SkillInfoObject {
                     if (buffer != 0 && bheUnit.getData() != null) {
                         SkillInfoObject inner = createCEventObjectByTypeBsdx(CEVENT_RADIAL_LINE_TYPES[i].getType());
                         BeanUtil.copyProperties(bheUnit.getData(), inner);
+                        InfoCollectionMapper.copyBheToBsdx(bheUnit.getData(), inner);
                         inner.setSlotNum(CEVENT_RADIAL_LINE_TYPES[i].getType());
                         bsdxUnit.setBuffer(1);
                         bsdxUnit.setData(inner);

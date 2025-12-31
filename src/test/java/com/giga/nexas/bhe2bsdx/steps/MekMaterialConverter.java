@@ -66,9 +66,10 @@ public class MekMaterialConverter {
         dst.setOffset(src.getOffset());
         dst.setLength(src.getLength());
         if (CLEAR_MATERIAL_GROUPS) {
-            dst.setSpriteGroups(emptyGroupsLike(src.getSpriteGroups()));
-            dst.setSeGroups(emptyGroupsLike(src.getSeGroups()));
-            dst.setVoiceGroups(emptyGroupsByCount(voiceGroupCount, src.getVoiceGroups()));
+            // 完全置空：groupCount=0，避免触发演示资源读取
+            dst.setSpriteGroups(new ArrayList<>());
+            dst.setSeGroups(new ArrayList<>());
+            dst.setVoiceGroups(new ArrayList<>());
             return dst;
         }
         // spriteGroups: BHE 的每个组是成对数据，BSDX 只保留第一项
@@ -98,28 +99,6 @@ public class MekMaterialConverter {
                 dst[i] = remapSpriteGroupIndex(bheIndex, spriteIndexMap);
             }
             out.add(dst);
-        }
-        return out;
-    }
-
-    private List<int[]> emptyGroupsLike(List<int[]> srcGroups) {
-        List<int[]> out = new ArrayList<>();
-        if (srcGroups == null) {
-            return out;
-        }
-        for (int i = 0; i < srcGroups.size(); i++) {
-            out.add(new int[0]);
-        }
-        return out;
-    }
-
-    private List<int[]> emptyGroupsByCount(int count, List<int[]> fallback) {
-        if (count <= 0) {
-            return emptyGroupsLike(fallback);
-        }
-        List<int[]> out = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-            out.add(new int[0]);
         }
         return out;
     }

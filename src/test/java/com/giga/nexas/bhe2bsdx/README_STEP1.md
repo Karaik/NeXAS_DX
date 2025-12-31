@@ -9,6 +9,7 @@
 - AI 事件与 `BsdxInfoCollection` 跨引擎迁移完成，丢弃 BHE 独有字段（无法直接映射的部分）。
 - MaterialBlock 的 sprite/se/voice groups 先按协议置空，避免错误映射影响机体可用性。
 - MaterialBlock 的 voiceGroups 数量改为以 BSDX `batvoice.grp` 的组数对齐，避免 BHE/BSDX 组数不一致导致错位。
+- MekVoiceInfo 暂按协议置空（emotion/slot/table），避免 groupId 与 batvoice 组数不一致造成崩溃。
 - 新增 `TransMekaOutputWriter`：仅输出本次迁移变更的 grp/mek/waz/spm，并执行打包。
 - 新增 Nanoha 槽位替换模式：batvoice/meka/waza/sprite 直接替换目标槽位，默认保留 Nanoha key（避免追加索引）。
 - spritegroup 槽位由 `Nanoha.mek` 的 `spmFileSequence` 决定（当前为 `zako_021a.spm`），主战斗 spm 输出会跟随该文件名。

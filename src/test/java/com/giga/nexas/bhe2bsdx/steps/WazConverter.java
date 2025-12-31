@@ -6,6 +6,7 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.SkillInfoFactory;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.*;
 import com.giga.nexas.exception.OperationException;
+import com.giga.nexas.util.InfoCollectionMapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,13 +90,9 @@ public class WazConverter {
                     List<com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.SkillInfoObject> srcInfoList =
                             srcSkillUnit.getSkillInfoObjectList();
 
-                    // 为空跳过
-                    if (srcInfoList == null || srcInfoList.isEmpty()) {
-                        continue;
-                    }
-
                     // 将每个 bhe 事件创建为对应 bsdx 子类
-                    for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.SkillInfoObject srcInfo : srcInfoList) {
+                    if (srcInfoList != null) {
+                        for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.SkillInfoObject srcInfo : srcInfoList) {
 
                         SkillInfoObject dstInfo;
                         // 37: 汎用変数  BHE:CEventFreeParam -> BSDX:CEventVal
@@ -165,6 +162,7 @@ public class WazConverter {
                             ev.transBheCEventEscapeToBsdx(srcInfo, ev);
                         } else if (dstInfo instanceof CEventScreenEffect ev) {
                             BeanUtil.copyProperties(srcInfo, ev);
+                            ev.transBheCEventScreenEffectToBsdx(srcInfo, ev);
                         } else if (dstInfo instanceof CEventHit ev) {
                             // CEventHit 需要显式拷贝基础帧信息，再做字段映射
                             BeanUtil.copyProperties(srcInfo, ev);
@@ -181,6 +179,7 @@ public class WazConverter {
                             ev.transBheCEventHeightToBsdx(srcInfo, ev);
                         } else if (dstInfo instanceof CEventCamera ev) {
                             BeanUtil.copyProperties(srcInfo, ev);
+                            ev.transBheCEventCameraToBsdx(srcInfo, ev);
                         } else if (dstInfo instanceof CEventScreenYure ev) {
                             BeanUtil.copyProperties(srcInfo, ev);
                         } else if (dstInfo instanceof CEventSpriteYure ev) {
@@ -192,15 +191,33 @@ public class WazConverter {
                             throw new OperationException(500, "error");
                         }
 
+                        // 修复 BHE/BSDX InfoCollection 名称不一致导致的空列表
+                        InfoCollectionMapper.copyBheToBsdx(srcInfo, dstInfo);
+
                         // 槽位号同步
                         dstInfo.setSlotNum(bsdxSlot);
                         normalizeFrames(dstInfo, srcInfo);
                         dstInfos.add(dstInfo);
+                        }
                     }
 
-                    // 写回该单元的事件集合
-                    dstUnit.setSkillInfoObjectList(dstInfos);
-                    dstPhase.getSkillUnitCollection().add(dstUnit);
+                    // 复制 unknown 列表
+                    if (srcSkillUnit.getSkillInfoUnknownList() != null) {
+                        for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.SkillInfoUnknown srcUnknown
+                                : srcSkillUnit.getSkillInfoUnknownList()) {
+                            com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoUnknown dstUnknown =
+                                    new com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoUnknown(0xFF);
+                            BeanUtil.copyProperties(srcUnknown, dstUnknown);
+                            dstUnknown.setSlotNum(bsdxSlot);
+                            dstUnit.getSkillInfoUnknownList().add(dstUnknown);
+                        }
+                    }
+
+                    if (!dstInfos.isEmpty() || !dstUnit.getSkillInfoUnknownList().isEmpty()) {
+                        // 写回该单元的事件集合
+                        dstUnit.setSkillInfoObjectList(dstInfos);
+                        dstPhase.getSkillUnitCollection().add(dstUnit);
+                    }
                 }
                 dstPhases.add(dstPhase);
             }

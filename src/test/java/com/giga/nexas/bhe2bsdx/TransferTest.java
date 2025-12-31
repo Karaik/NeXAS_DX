@@ -20,6 +20,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -259,7 +260,18 @@ public class TransferTest {
         }
 
         // 打包
-        log.info("outputPath === {}", PacUtil.pack(outputPath, "4"));
+        String packLog = PacUtil.pack(outputPath, "4");
+        log.info("outputPath === {}", packLog);
+
+        // 统一输出包名：testBhe.pacNew -> Update3.pac
+        Path pacNew = outputDir.resolveSibling(outputDir.getFileName().toString() + ".pacNew");
+        Path updatePac = outputDir.resolveSibling("Update3.pac");
+        if (Files.exists(pacNew)) {
+            Files.move(pacNew, updatePac, StandardCopyOption.REPLACE_EXISTING);
+            log.info("✅ pac renamed: {} -> {}", pacNew.getFileName(), updatePac.getFileName());
+        } else {
+            log.warn("⚠️ pac not found: {}", pacNew);
+        }
     }
 
     private String resolveSpriteBaseName(

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.giga.nexas.util.InfoCollectionMapper;
 import static com.giga.nexas.dto.bsdx.waz.wazfactory.SkillInfoFactory.createCEventObjectByTypeBsdx;
 
 /**
@@ -163,14 +164,21 @@ public class CEventEscape extends SkillInfoObject {
                 bsdxUnit.setUnitSlotNum(i);
                 bsdxUnit.setBuffer(0);
 
-                if (bheUnits.size() > i) {
-                    var bheUnit = bheUnits.get(i);
+                com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventEscape.CEventEscapeUnit bheUnit = null;
+                for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventEscape.CEventEscapeUnit unit : bheUnits) {
+                    if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                        bheUnit = unit;
+                        break;
+                    }
+                }
+                if (bheUnit != null) {
                     Integer buffer = bheUnit.getBuffer();
                     if (buffer == null) buffer = (bheUnit.getData() != null ? 1 : 0);
 
                     if (buffer != 0 && bheUnit.getData() != null) {
                         SkillInfoObject inner = createCEventObjectByTypeBsdx(CEVENT_ESCAPE_TYPES[i].getType());
                         cn.hutool.core.bean.BeanUtil.copyProperties(bheUnit.getData(), inner);
+                        InfoCollectionMapper.copyBheToBsdx(bheUnit.getData(), inner);
                         inner.setSlotNum(CEVENT_ESCAPE_TYPES[i].getType());
                         bsdxUnit.setBuffer(1);
                         bsdxUnit.setData(inner);

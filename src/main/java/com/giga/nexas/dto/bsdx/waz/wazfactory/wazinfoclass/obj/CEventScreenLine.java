@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.giga.nexas.util.InfoCollectionMapper;
 import static com.giga.nexas.dto.bsdx.waz.wazfactory.SkillInfoFactory.createCEventObjectByTypeBsdx;
 
 /**
@@ -161,23 +162,32 @@ public class CEventScreenLine extends SkillInfoObject {
         }
 
         for (int i = 0; i < 11; i++) {
-            if (i == 3 && bheUnits.size() > i) {
-                var bheUnit = bheUnits.get(i);
-                Integer buffer = bheUnit.getBuffer();
-                if (buffer == null) buffer = (bheUnit.getData() != null ? 1 : 0);
-                if (buffer != 0 && bheUnit.getData() != null) {
-                    var bsdxUnit = new CEventScreenLine.CEventScreenLineUnit();
-                    bsdxUnit.setCeventScreenLineUnitQuantity(i);
-                    bsdxUnit.setDescription(CEVENT_SCREEN_LINE_TYPES[i].getDescription());
-                    bsdxUnit.setUnitSlotNum(i);
-                    bsdxUnit.setBuffer(1);
+            if (i == 3) {
+                com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventScreenLine.CEventScreenLineUnit bheUnit = null;
+                for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventScreenLine.CEventScreenLineUnit unit : bheUnits) {
+                    if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                        bheUnit = unit;
+                        break;
+                    }
+                }
+                if (bheUnit != null) {
+                    Integer buffer = bheUnit.getBuffer();
+                    if (buffer == null) buffer = (bheUnit.getData() != null ? 1 : 0);
+                    if (buffer != 0 && bheUnit.getData() != null) {
+                        var bsdxUnit = new CEventScreenLine.CEventScreenLineUnit();
+                        bsdxUnit.setCeventScreenLineUnitQuantity(i);
+                        bsdxUnit.setDescription(CEVENT_SCREEN_LINE_TYPES[i].getDescription());
+                        bsdxUnit.setUnitSlotNum(i);
+                        bsdxUnit.setBuffer(1);
 
-                    SkillInfoObject inner = createCEventObjectByTypeBsdx(CEVENT_SCREEN_LINE_TYPES[i].getType()); // 0x09
-                    cn.hutool.core.bean.BeanUtil.copyProperties(bheUnit.getData(), inner);
-                    inner.setSlotNum(CEVENT_SCREEN_LINE_TYPES[i].getType());
-                    bsdxUnit.setData(inner);
+                        SkillInfoObject inner = createCEventObjectByTypeBsdx(CEVENT_SCREEN_LINE_TYPES[i].getType()); // 0x09
+                        cn.hutool.core.bean.BeanUtil.copyProperties(bheUnit.getData(), inner);
+                        InfoCollectionMapper.copyBheToBsdx(bheUnit.getData(), inner);
+                        inner.setSlotNum(CEVENT_SCREEN_LINE_TYPES[i].getType());
+                        bsdxUnit.setData(inner);
 
-                    bsdx.getCeventScreenLineUnitList().add(bsdxUnit);
+                        bsdx.getCeventScreenLineUnitList().add(bsdxUnit);
+                    }
                 }
             }
         }

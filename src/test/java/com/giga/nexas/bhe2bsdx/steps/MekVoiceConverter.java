@@ -11,15 +11,28 @@ import java.util.List;
  */
 public class MekVoiceConverter {
 
+    // 暂按协议置空：避免 groupId 与 batvoice 组数不一致导致错位
+    private static final boolean CLEAR_VOICE_TABLES = true;
+
     public Mek.MekVoiceInfo convert(com.giga.nexas.dto.bhe.mek.Mek.MekVoiceInfo src) {
         Mek.MekVoiceInfo dst = new Mek.MekVoiceInfo();
         if (src == null) {
+            dst.setVersion(1);
+            dst.builtinEmotionCount = 0;
             return dst;
         }
 
         // 版本号保持一致，不强行覆盖
-        dst.setVersion(src.getVersion());
-        dst.builtinEmotionCount = src.builtinEmotionCount;
+        Integer version = src.getVersion();
+        dst.setVersion(version != null ? version : 1);
+        dst.builtinEmotionCount = CLEAR_VOICE_TABLES ? 0 : src.builtinEmotionCount;
+
+        if (CLEAR_VOICE_TABLES) {
+            dst.setEmotions(new ArrayList<>());
+            dst.setVoiceSlots(new ArrayList<>());
+            dst.setTable(new ArrayList<>());
+            return dst;
+        }
 
         List<Mek.MekVoiceInfo.Emotion> emotions = new ArrayList<>();
         if (src.getEmotions() != null) {

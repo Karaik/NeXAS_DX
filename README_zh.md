@@ -83,6 +83,7 @@ mvn clean package -DskipTests
 - SPM hitbox 迁移要点：BHE hitRects 的 shapeType 映射到 BSDX `SPMHitArea.unk0`（0→1, 1→2, 2→4, 7→3, 8→0, 9→5, 10→7, 11→6），hitRect 直接拷贝，zMin/zMax→unk1/unk2，hitFlag 按 hitRects 数量置位低位。
 - grp 索引对齐：默认使用 Nanoha 槽位替换（meka=4, waza=15, sprite=57），索引来自 `Nanoha.mek`，并保持 Nanoha key；仅在非替换模式时才使用 codeName/fileName 的 upsert 追加。
 - spritegroup 映射：Nanoha 槽位模式下直接使用 `Nanoha.mek` 的 `spmFileSequence=57`（对应 `zako_021a.spm`），跳过 BHE->BSDX 的映射构建；追加模式才会按 BHE grp 重建映射表。
+- MekVoiceInfo 暂按协议置空（emotion/slot/table），避免 groupId 与 batvoice 组数不一致导致崩溃。
 - UI 挂接（当前测试策略）：MekaPilot/SelectMekaMenuMeka 直接替换 BSDX 的 Nanoha 槽位，默认保留 Nanoha 的 animName 作为 key；SelectMekaMenu 的映射来自 `SelectMekaMenu.dat`。
 
 ## TransMeka 迁移流程（文字流程图）

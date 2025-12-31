@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.giga.nexas.util.InfoCollectionMapper;
 import static com.giga.nexas.dto.bsdx.waz.wazfactory.SkillInfoFactory.createCEventObjectByTypeBsdx;
 
 /**
@@ -114,6 +115,55 @@ public class CEventScreenEffect extends SkillInfoObject {
                     }
                 } else {
                     writer.writeInt(0);
+                }
+            }
+        }
+    }
+
+    public void transBheCEventScreenEffectToBsdx(
+            com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.SkillInfoObject src,
+            CEventScreenEffect bsdx) {
+
+        if (!(src instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventScreenEffect bhe)) {
+            return;
+        }
+
+        bsdx.getCeventScreenEffectUnitList().clear();
+        var bheUnits = bhe.getCeventScreenEffectUnitList();
+        if (bheUnits == null || bheUnits.isEmpty()) {
+            return;
+        }
+
+        for (int i = 0; i < 5; i++) {
+            if (i == 4) {
+                CEventScreenEffectUnit bsdxUnit = new CEventScreenEffectUnit();
+                bsdxUnit.setCeventScreenEffectUnitQuantity(i);
+                bsdxUnit.setDescription(CEVENT_SCREEN_EFFECT_TYPES[i].getDescription());
+                bsdxUnit.setUnitSlotNum(i);
+                bsdxUnit.setBuffer(0);
+
+                com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventScreenEffect.CEventScreenEffectUnit bheUnit = null;
+                for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventScreenEffect.CEventScreenEffectUnit unit : bheUnits) {
+                    if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                        bheUnit = unit;
+                        break;
+                    }
+                }
+                if (bheUnit != null) {
+                    Integer buffer = bheUnit.getBuffer();
+                    if (buffer == null) buffer = (bheUnit.getData() != null ? 1 : 0);
+                    if (buffer != 0 && bheUnit.getData() != null) {
+                        SkillInfoObject inner = createCEventObjectByTypeBsdx(CEVENT_SCREEN_EFFECT_TYPES[i].getType());
+                        cn.hutool.core.bean.BeanUtil.copyProperties(bheUnit.getData(), inner);
+                        InfoCollectionMapper.copyBheToBsdx(bheUnit.getData(), inner);
+                        inner.setSlotNum(CEVENT_SCREEN_EFFECT_TYPES[i].getType());
+                        bsdxUnit.setBuffer(1);
+                        bsdxUnit.setData(inner);
+                    }
+                }
+
+                if (bsdxUnit.getBuffer() != null && bsdxUnit.getBuffer() != 0) {
+                    bsdx.getCeventScreenEffectUnitList().add(bsdxUnit);
                 }
             }
         }

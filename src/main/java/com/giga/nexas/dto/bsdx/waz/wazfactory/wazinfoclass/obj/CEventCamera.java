@@ -3,6 +3,7 @@ package com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.SkillInfoFactory;
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
+import com.giga.nexas.util.InfoCollectionMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -102,6 +103,53 @@ public class CEventCamera extends SkillInfoObject {
                 }
             } else {
                 writer.writeInt(0);
+            }
+        }
+    }
+
+    public void transBheCEventCameraToBsdx(
+            com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.SkillInfoObject src,
+            CEventCamera bsdx) {
+
+        if (!(src instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventCamera bhe)) {
+            return;
+        }
+
+        bsdx.getCeventCameraUnitList().clear();
+        var bheUnits = bhe.getCeventCameraUnitList();
+        if (bheUnits == null || bheUnits.isEmpty()) {
+            return;
+        }
+
+        for (int i = 0; i < 5; i++) {
+            CEventCameraUnit bsdxUnit = new CEventCameraUnit();
+            bsdxUnit.setCeventCameraUnitQuantity(i);
+            bsdxUnit.setDescription(CEVENT_CAMERA_ENTRIES[i].getDescription());
+            bsdxUnit.setUnitSlotNum(i);
+            bsdxUnit.setBuffer(0);
+
+            com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventCamera.CEventCameraUnit bheUnit = null;
+            for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventCamera.CEventCameraUnit unit : bheUnits) {
+                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                    bheUnit = unit;
+                    break;
+                }
+            }
+            if (bheUnit != null) {
+                Integer buffer = bheUnit.getBuffer();
+                if (buffer == null) buffer = (bheUnit.getData() != null ? 1 : 0);
+                if (buffer != 0 && bheUnit.getData() != null) {
+                    SkillInfoObject inner = SkillInfoFactory.createCEventObjectByTypeBsdx(CEVENT_CAMERA_ENTRIES[i].getType());
+                    cn.hutool.core.bean.BeanUtil.copyProperties(bheUnit.getData(), inner);
+                    InfoCollectionMapper.copyBheToBsdx(bheUnit.getData(), inner);
+                    inner.setSlotNum(CEVENT_CAMERA_ENTRIES[i].getType());
+                    bsdxUnit.setBuffer(1);
+                    bsdxUnit.setData(inner);
+                }
+            }
+
+            if (bsdxUnit.getBuffer() != null && bsdxUnit.getBuffer() != 0) {
+                bsdx.getCeventCameraUnitList().add(bsdxUnit);
             }
         }
     }

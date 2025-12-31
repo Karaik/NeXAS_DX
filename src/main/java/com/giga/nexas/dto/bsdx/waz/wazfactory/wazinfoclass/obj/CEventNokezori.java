@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.giga.nexas.util.InfoCollectionMapper;
 import static com.giga.nexas.dto.bsdx.waz.wazfactory.SkillInfoFactory.createCEventObjectByTypeBsdx;
 
 /**
@@ -161,6 +162,55 @@ public class CEventNokezori extends SkillInfoObject {
                 }
             } else {
                 writer.writeInt(0);
+            }
+        }
+    }
+
+    public void transBheCEventNokezoriToBsdx(
+            com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.SkillInfoObject src,
+            CEventNokezori bsdx) {
+
+        if (!(src instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventNokezori bhe)) {
+            return;
+        }
+
+        bsdx.getCeventNokezoriUnitList().clear();
+
+        var bheUnits = bhe.getCeventNokezoriUnitList();
+        if (bheUnits == null || bheUnits.isEmpty()) {
+            return;
+        }
+
+        for (int i = 0; i < 17; i++) {
+            var bsdxUnit = new CEventNokezori.CEventNokezoriUnit();
+            bsdxUnit.setCeventHitUnitQuantity(i);
+            bsdxUnit.setDescription(CEVENT_NOKEZORI_ENTRIES[i].getDescription());
+            bsdxUnit.setUnitSlotNum(i);
+            bsdxUnit.setBuffer(0);
+
+            com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventNokezori.CEventNokezoriUnit bheUnit = null;
+            for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventNokezori.CEventNokezoriUnit unit : bheUnits) {
+                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                    bheUnit = unit;
+                    break;
+                }
+            }
+            if (bheUnit != null) {
+                Integer buffer = bheUnit.getBuffer();
+                if (buffer == null) buffer = (bheUnit.getData() != null ? 1 : 0);
+
+                if (buffer != 0 && bheUnit.getData() != null) {
+                    SkillInfoObject inner = createCEventObjectByTypeBsdx(CEVENT_NOKEZORI_ENTRIES[i].getType());
+                    cn.hutool.core.bean.BeanUtil.copyProperties(bheUnit.getData(), inner);
+                    InfoCollectionMapper.copyBheToBsdx(bheUnit.getData(), inner);
+                    inner.setSlotNum(CEVENT_NOKEZORI_ENTRIES[i].getType());
+                    bsdxUnit.setBuffer(1);
+                    bsdxUnit.setData(inner);
+                }
+            }
+
+            if (bsdxUnit.getBuffer() != null && bsdxUnit.getBuffer() != 0) {
+                bsdx.getCeventNokezoriUnitList().add(bsdxUnit);
             }
         }
     }
