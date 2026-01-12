@@ -11,8 +11,8 @@ import java.util.List;
  */
 public class MekVoiceConverter {
 
-    // 暂按协议置空：避免 groupId 与 batvoice 组数不一致导致错位
-    private static final boolean CLEAR_VOICE_TABLES = true;
+    // 是否清空语音表（设为 false 以保留语音映射）
+    private static final boolean CLEAR_VOICE_TABLES = false;
 
     public Mek.MekVoiceInfo convert(com.giga.nexas.dto.bhe.mek.Mek.MekVoiceInfo src) {
         Mek.MekVoiceInfo dst = new Mek.MekVoiceInfo();

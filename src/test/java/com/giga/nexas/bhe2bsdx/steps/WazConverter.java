@@ -112,21 +112,27 @@ public class WazConverter {
 
                         SkillInfoObject dstInfo;
                         // 37: 汎用変数  BHE:CEventFreeParam -> BSDX:CEventVal
+                        // BHE 的 CEventFreeParam 包含多个 unit，只取 buffer==0 的那个
                         if (bheSlot == 37 &&
                                 srcInfo instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventFreeParam srcBhe) {
                             dstInfo = SkillInfoFactory.createEventObjectBsdx(35);
                             if (dstInfo instanceof CEventVal ev) {
                                 for (var unit : srcBhe.getUnitList()) {
-                                    if (unit.getBuffer() != 0) {
-                                        continue;
-                                    }
-                                    if (unit.getData() instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventVal v) {
-                                        ev.setInt1(v.getInt1());
-                                        ev.setInt2(v.getInt2());
-                                        ev.setInt3(v.getInt3());
-                                        ev.setInt4(v.getInt4());
+                                    // 修复：只取 buffer == 0 的数据
+                                    if (unit.getBuffer() == 0) {
+                                        if (unit.getData() instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventVal v) {
+                                            ev.setInt1(v.getInt1());
+                                            ev.setInt2(v.getInt2());
+                                            ev.setInt3(v.getInt3());
+                                            ev.setInt4(v.getInt4());
+                                        }
+                                        break; // 找到后退出循环
                                     }
                                 }
+                                // 复制帧信息
+                                ev.setStartFrame(srcInfo.getStartFrame());
+                                ev.setEndFrame(srcInfo.getEndFrame());
+                                ev.setSlotNum(35);
                                 dstInfos.add(ev);
                             } else {
                                 throw new OperationException(500, "汎用変数error");
