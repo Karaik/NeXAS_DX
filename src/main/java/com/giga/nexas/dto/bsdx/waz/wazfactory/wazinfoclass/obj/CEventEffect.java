@@ -242,6 +242,7 @@ public class CEventEffect extends SkillInfoObject {
                     }
 
                     inner.setSlotNum(CEVENT_EFFECT_TYPES[i].getType());
+                    inner.typeId = CEVENT_EFFECT_TYPES[i].getType(); // 修复：恢复正确的 BSDX typeId
                     bsdxUnit.setBuffer(1);
                     bsdxUnit.setData(inner);
                 }

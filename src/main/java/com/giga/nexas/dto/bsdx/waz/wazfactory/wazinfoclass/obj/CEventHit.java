@@ -400,6 +400,7 @@ public class CEventHit extends SkillInfoObject {
                         nokezori.transBheCEventNokezoriToBsdx(in.getData(), nokezori);
                     }
                     inner.setSlotNum(CEVENT_HIT_TYPES[bsdxIdx].getType());
+                    inner.typeId = CEVENT_HIT_TYPES[bsdxIdx].getType(); // 修复：恢复正确的 BSDX typeId
                     out.setBuffer(1);
                     out.setData(inner);
                 }

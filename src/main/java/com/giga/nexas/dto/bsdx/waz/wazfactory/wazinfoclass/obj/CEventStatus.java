@@ -207,6 +207,7 @@ public class CEventStatus extends SkillInfoObject {
                     SkillInfoObject inner = createCEventObjectByTypeBsdx(CEVENT_STATUS_TYPES[i].getType());
                     BeanUtil.copyProperties(bheUnit.getData(), inner);
                     inner.setSlotNum(CEVENT_STATUS_TYPES[i].getType());
+                    inner.typeId = CEVENT_STATUS_TYPES[i].getType(); // 修复：恢复正确的 BSDX typeId
                     bsdxUnit.setBuffer(1);
                     bsdxUnit.setData(inner);
                 }

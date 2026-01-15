@@ -117,14 +117,19 @@ public class WazConverter {
                                 srcInfo instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventFreeParam srcBhe) {
                             dstInfo = SkillInfoFactory.createEventObjectBsdx(35);
                             if (dstInfo instanceof CEventVal ev) {
+                                // 先设置默认值，防止字段为 null
+                                ev.setInt1(0);
+                                ev.setInt2(0);
+                                ev.setInt3(0);
+                                ev.setInt4(0);
                                 for (var unit : srcBhe.getUnitList()) {
                                     // 修复：只取 buffer == 0 的数据
                                     if (unit.getBuffer() == 0) {
                                         if (unit.getData() instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventVal v) {
-                                            ev.setInt1(v.getInt1());
-                                            ev.setInt2(v.getInt2());
-                                            ev.setInt3(v.getInt3());
-                                            ev.setInt4(v.getInt4());
+                                            ev.setInt1(v.getInt1() != null ? v.getInt1() : 0);
+                                            ev.setInt2(v.getInt2() != null ? v.getInt2() : 0);
+                                            ev.setInt3(v.getInt3() != null ? v.getInt3() : 0);
+                                            ev.setInt4(v.getInt4() != null ? v.getInt4() : 0);
                                         }
                                         break; // 找到后退出循环
                                     }
@@ -141,6 +146,8 @@ public class WazConverter {
                         }
 
                         dstInfo = SkillInfoFactory.createEventObjectBsdx(bsdxSlot);
+                        // 保存正确的 BSDX typeId，因为 BeanUtil.copyProperties 会覆盖它
+                        Integer correctBsdxTypeId = dstInfo.getTypeId();
 
                         if (dstInfo instanceof CEventSpriteAttr ev) {
                             BeanUtil.copyProperties(srcInfo, ev);
@@ -217,8 +224,9 @@ public class WazConverter {
                         // 修复 BHE/BSDX InfoCollection 名称不一致导致的空列表
                         InfoCollectionMapper.copyBheToBsdx(srcInfo, dstInfo);
 
-                        // 槽位号同步
+                        // 槽位号同步 + 恢复正确的 BSDX typeId
                         dstInfo.setSlotNum(bsdxSlot);
+                        dstInfo.typeId = correctBsdxTypeId;
                         normalizeFrames(dstInfo, srcInfo);
                         dstInfos.add(dstInfo);
                         }

@@ -1,87 +1,133 @@
-> Huge thanks to [kdw-code](https://github.com/kdw-code) for leading me into reverse engineering and for his massive contributions. This project wouldn’t exist without him, and I wouldn’t have gotten started on RE on my own.
+<div align="center">
+  <img src="src/main/resources/images/head.png" width="400" alt="NeXAS_DX Preview">
+  <h1>NeXAS_DX</h1>
+  <p>
+    <strong>JavaFX desktop tool for NeXAS engine (GIGA/戯画/Entergram) resource conversion and BHE → BSDX character porting</strong>
+  </p>
+
+
+  <p>
+    <img src="https://img.shields.io/badge/Language-Java_17-ed8b00?style=flat-square&logo=openjdk" alt="Java">
+    <img src="https://img.shields.io/badge/GUI-JavaFX_21-blue?style=flat-square" alt="JavaFX">
+    <img src="https://img.shields.io/badge/Engine-NeXAS-purple?style=flat-square" alt="Engine">
+    <img src="https://img.shields.io/badge/Status-Active-success?style=flat-square" alt="Status">
+  </p>
+</div>
+
+---
+
+> Huge thanks to [kdw-code](https://github.com/kdw-code) for leading me into reverse engineering and for his massive contributions. This project wouldn't exist without him.
 
 [中文说明](README_zh.md)
 
-# NeXAS_DX
+---
 
-JavaFX desktop tool for converting **NeXAS engine (GIGA/戯画)** resources between binary and JSON, aimed at modding, format research, and a BHE → BSDX transplant experiment. If you’re interested—even without coding experience—feel free to reach out.
+## 📖 Overview
 
-The end goal is to port BHE characters into BSDX. We have the file structures, but missing symbols mean many fields are still unknown and require time-consuming testing.
+A JavaFX desktop application for converting **NeXAS engine** game resources between binary and JSON formats. Designed for modding, format research, and an experimental BHE → BSDX character transplant project.
 
-![image-20251215145506259](docimages/image-20251215145506259.png)
+**End goal**: Port BHE (Baldr Heart EXE) characters into BSDX (Baldr Sky DiveX). File structures are reverse-engineered, but missing symbols mean many fields remain unknown and require extensive testing.
 
-## What it does
-- Parse and rebuild NeXAS resources via GUI: select files/folders, run single or batch conversions.
-- Round-trip testing for each format to ensure binary/JSON consistency.
-- Shaded JAR and optional self-contained Windows bundle (embedded JRE via `javapackager`).
-- Comes with real game assets for research (kept under `src/main/resources/game`—handle with care).
+If you're interested—even without coding experience—feel free to reach out.
 
-## Engines & formats
-| Engine/Game            | Parse | Generate | Notes |
-|------------------------| --- | --- | --- |
-| BSDX (Baldr Sky DiveX) | `.waz`, `.mek`, `.spm`, `.grp`, `.bin`, `.dat` | same set | Most complete coverage. `.bin` skips `__GLOBAL.bin` during tests. |
-| BHE (Baldr Heart EXE)  | `.waz`, `.mek`, `.spm`, `.grp` | `.spm`, `.grp` | Used mainly for comparison/transfer. |
-| CLARIAS                | `.dat` | `.dat` |  |
+---
 
-## Requirements
-- Windows 10+ (JavaFX dependencies use `javafx-*-win` classifiers).
-- JDK 17 (BellSoft full JDK recommended), Maven 3.9+.
-- UTF-8 (no BOM) + CRLF for source/resources.
+## ⚙️ Features
 
-## Build
+- **GUI-based conversion**: Select files/folders, run single or batch conversions
+- **Round-trip testing**: Ensures binary ↔ JSON consistency for each format
+- **Cross-platform JAR** + optional Windows bundle with embedded JRE
+- **Real game assets included** for research (under `src/main/resources/game`)
+
+---
+
+## 🎮 Supported Engines & Formats
+
+| Engine/Game | Parse | Generate | Notes |
+|-------------|-------|----------|-------|
+| **BSDX** (Baldr Sky DiveX) | `.waz` `.mek` `.spm` `.grp` `.bin` `.dat` | Same | Most complete coverage |
+| **BHE** (Baldr Heart EXE) | `.waz` `.mek` `.spm` `.grp` | `.spm` `.grp` | Used for comparison/transfer |
+| **CLARIAS** | `.dat` | `.dat` | |
+
+---
+
+## 🔧 Requirements
+
+- Windows 10+ (JavaFX uses `javafx-*-win` classifiers)
+- JDK 17 (BellSoft Full JDK recommended)
+- Maven 3.9+
+
+---
+
+## 🚀 Quick Start
+
+> Recommended: Open in IntelliJ IDEA as a Maven project, then run `NeXASConverter` -> `Lifecycle` -> `package` to build. Default output is a self-contained Windows package; edit `pom.xml` if needed.
+
+### Build
+
 ```bash
 git clone <repo-url>
 cd NeXAS_DX
 mvn clean package -DskipTests
 ```
-Outputs:
-- Shaded JAR: `target/NeXAS_DX-x.x.x-FULL.jar`
-- Optional Windows bundle with embedded JRE (needs your JDK path):  
-  `mvn clean package -DskipTests -Dpackager.jdk="C:\\Program Files\\BellSoft\\jdk-17"`
 
-## Run the GUI
-- Grab the prebuilt Windows package from Releases (unzip and run).
-- Bundled app you build yourself: run `target/javapackager/NeXASConverter.exe`.
-- Shaded JAR (requires JavaFX on module path):
-  ```powershell
-  set PATH_TO_FX=C:\path\to\javafx-sdk-21\lib
-  java --module-path "%PATH_TO_FX%" --add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.base `
-       -jar target/NeXAS_DX-x.x.x-FULL.jar
+**Outputs**:
+- Shaded JAR: `target/NeXAS_DX-x.x.x-FULL.jar`
+- Windows bundle (optional):
+  ```bash
+  mvn clean package -DskipTests -Dpackager.jdk="C:\Program Files\BellSoft\jdk-17"
   ```
 
-## Using the app (GUI flow)
-1. Pick a workspace folder (game resources) and optional output folder.
-2. The tree/card view lists detected files by engine/type; double-click or press **Run selected** to parse → JSON, or generate → binary depending on mode.
-3. Batch convert by category or **Run all**. Progress/status updates in the footer.
-4. Keep backups—only experiment on copies of game data.
+### Run
 
-## Tests & workflows
-- Run GUI without tests: `mvn -q -DskipTests compile` then `mvn javafx:run`.
-- BSDX `.dat` chain (in order):  
-  1) `mvn "-Dtest=com.giga.nexas.bsdx.TestDat#testGenerateDatJsonFiles" test`  
-  2) `mvn "-Dtest=com.giga.nexas.bsdx.TestDat#testGenerateDatFilesByJson" test`  
-  3) `mvn "-Dtest=com.giga.nexas.bsdx.TestDat#testDatParseGenerateBinaryConsistency" test` (auto-cleans JSON/Generated on success)  
-  Optional CSV patching: run `testToCsv` / `testCsvPatchToJson` before step 3.
-- BSDX other formats: `mvn "-Dtest=com.giga.nexas.bsdx.TestBin#testGenerateBinJsonFiles" test` (and similarly `TestGrp/TestMek/TestSpm/TestWaz`); no auto-clean.
-- BHE: `mvn "-Dtest=com.giga.nexas.bhe.TestGrp" test`, etc.; outputs keep intermediate files.
-- BHE → BSDX pipeline (experimental): `mvn "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testPipeline" test` (writes to `src/main/resources/testBhe`; requires full grp/mek/waz/spm sets).
+1. **Recommended**: Download prebuilt Windows package from [Releases](../../releases)
+2. **Self-built bundle**: Run `target/javapackager/NeXASConverter.exe`
+3. **Shaded JAR**:
 
-**Test outputs** live under `src/main/resources` (e.g., `datBsdxJson`, `grpBsdxGenerated`) and are gitignored. Delete them when not needed to keep the tree light.
+   ```powershell
+   set PATH_TO_FX=C:\path\to\javafx-sdk-21\lib
+   java --module-path "%PATH_TO_FX%" --add-modules javafx.controls,javafx.fxml,javafx.graphics,javafx.base -jar target/NeXAS_DX-x.x.x-FULL.jar
+   ```
 
-## Project layout
-- `MainApplication` + `resources/fxml/MainView.fxml` — JavaFX entry and UI.
-- `controller/*` — GUI controllers (file picker, mode tree, branch grid, settings, drag/drop, actions).
-- `service/*BinService` + `service/engine/*Adapter` — format registration and engine dispatch.
-- `dto/<engine>/<format>` — DTOs per engine/game/format; add new ones here.
-- `io/BinaryReader|BinaryWriter`, `util/*` — common binary/JSON helpers and PAC utilities.
-- `transfer/*` + `src/test/java/com/giga/nexas/bhe2bsdx` — transplant experiment tooling.
-- `src/main/resources/game/*` — real assets for testing; handle responsibly.
+---
 
-## Conventions & pitfalls
-- Keep `extensionName` in JSON/DTOs; adapters dispatch by it.
-- Default charset is `windows-31j` (Japanese same as `Shift-jis`); if you override it, sync `WorkspaceState.charset`.
-- Tests are single-threaded; running multiple heavy suites in parallel will clash on output folders.
-- Windows paths are assumed in some tests (e.g., `D:\A\NeXAS_DX`); adjust constants or use a symlink if you use a different path.
-- The code on the `develop` branch is generally the most up to date. If you encounter a bug or notice anything that appears unfinished, please switch to the `develop` branch to check. However, releases are made only from `main`.
-## License
-MIT License. See `LICENSE`.
+## 📂 Project Structure
+
+```
+├── controller/          # GUI controllers
+├── service/             # Format registration & engine dispatch
+├── dto/<engine>/        # DTOs per engine/format (key code - check parsers here if you only care about file formats)
+├── io/                  # BinaryReader/Writer
+├── util/                # Helpers & PAC utilities
+├── src/test/.../bhe2bsdx/  # BHE→BSDX transplant tooling
+└── src/main/resources/game/  # Real game assets (handle with care)
+```
+
+---
+
+## 🔬 BHE → BSDX Transplant
+
+Experimental pipeline to port BHE characters into BSDX.
+
+```bash
+mvn "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testPipeline" test
+```
+
+**Output**: `src/main/resources/testBhe/` → `Update3.pac`
+
+For detailed documentation, see [`src/test/java/com/giga/nexas/bhe2bsdx/README.md`](src/test/java/com/giga/nexas/bhe2bsdx/README.md)
+
+---
+
+## ⚠️ Notes
+
+- Default charset: `windows-31j` (Japanese Shift-JIS)
+- JSON/DTOs must include `extensionName` for adapter dispatch
+- Tests assume path `D:\A\NeXAS_DX`; adjust or create symlink if different
+- `develop` branch has latest code; releases are from `main` only
+
+---
+
+## 📝 License
+
+MIT License. See [LICENSE](LICENSE).

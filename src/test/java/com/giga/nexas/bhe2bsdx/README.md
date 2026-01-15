@@ -169,6 +169,25 @@ flowchart LR
 | #2 | `MekMaterialConverter.java:22` | CLEAR_MATERIAL_GROUPS=true | 改为 false |
 | #3 | `MekVoiceConverter.java:15` | CLEAR_VOICE_TABLES=true | 改为 false |
 | #4 | `MekMaterialConverter.java:91-144` | spriteIndexMap误用于actionGroupNum | 改为重映射数组索引 |
+| #5 | 12个trans*方法 | `BeanUtil.copyProperties`覆盖typeId | 在copyProperties后恢复`inner.typeId = XXX_TYPES[i].getType()` |
+| #6 | `WazConverter.java:120-124` | slot37→35时CEventVal字段为null | 添加默认值初始化 `int1=0,int2=0,int3=0,int4=0` |
+
+### #5 typeId恢复 - 涉及文件
+
+| 文件 | 行号 |
+|------|------|
+| `CEventHit.java` | 403 |
+| `CEventNokezori.java` | 207 |
+| `CEventCharge.java` | 140 |
+| `CEventCamera.java` | 146 |
+| `CEventHeight.java` | 148 |
+| `CEventEscape.java` | 183 |
+| `CEventStatus.java` | 210 |
+| `CEventEffect.java` | 245 |
+| `CEventRadialLine.java` | 199 |
+| `CEventScreenLine.java` | 187 |
+| `CEventScreenEffect.java` | 160 |
+| `CEventCpuButton.java` | 181 |
 
 ---
 

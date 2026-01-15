@@ -184,6 +184,7 @@ public class CEventScreenLine extends SkillInfoObject {
                         cn.hutool.core.bean.BeanUtil.copyProperties(bheUnit.getData(), inner);
                         InfoCollectionMapper.copyBheToBsdx(bheUnit.getData(), inner);
                         inner.setSlotNum(CEVENT_SCREEN_LINE_TYPES[i].getType());
+                        inner.typeId = CEVENT_SCREEN_LINE_TYPES[i].getType(); // 修复：恢复正确的 BSDX typeId
                         bsdxUnit.setData(inner);
 
                         bsdx.getCeventScreenLineUnitList().add(bsdxUnit);

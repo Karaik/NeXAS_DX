@@ -137,6 +137,7 @@ public class CEventCharge extends SkillInfoObject {
                     SkillInfoObject inner = createCEventObjectByTypeBsdx(CEVENT_CHARGE_ENTRIES[i].getType()); // 0x00
                     cn.hutool.core.bean.BeanUtil.copyProperties(bheUnit.getData(), inner);
                     inner.setSlotNum(CEVENT_CHARGE_ENTRIES[i].getType());
+                    inner.typeId = CEVENT_CHARGE_ENTRIES[i].getType(); // 修复：恢复正确的 BSDX typeId
                     bsdxUnit.setData(inner);
 
                     bsdx.getCeventChargeUnitList().add(bsdxUnit);

@@ -178,6 +178,7 @@ public class CEventCpuButton extends SkillInfoObject {
                     InfoCollectionMapper.copyBheToBsdx(bheUnit.getData(), inner);
                     bsdxUnit.setBuffer(1);
                     inner.setSlotNum(CEVENT_CPU_BUTTON_ENTRIES[i].getType());
+                    inner.typeId = CEVENT_CPU_BUTTON_ENTRIES[i].getType(); // 修复：恢复正确的 BSDX typeId
                     bsdxUnit.setData(inner);
                 }
 

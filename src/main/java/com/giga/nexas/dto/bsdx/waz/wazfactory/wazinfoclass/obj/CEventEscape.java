@@ -180,6 +180,7 @@ public class CEventEscape extends SkillInfoObject {
                         cn.hutool.core.bean.BeanUtil.copyProperties(bheUnit.getData(), inner);
                         InfoCollectionMapper.copyBheToBsdx(bheUnit.getData(), inner);
                         inner.setSlotNum(CEVENT_ESCAPE_TYPES[i].getType());
+                        inner.typeId = CEVENT_ESCAPE_TYPES[i].getType(); // 修复：恢复正确的 BSDX typeId
                         bsdxUnit.setBuffer(1);
                         bsdxUnit.setData(inner);
                     }

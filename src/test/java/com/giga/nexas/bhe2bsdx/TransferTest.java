@@ -4,6 +4,7 @@ import com.giga.nexas.bhe2bsdx.steps.TransMeka;
 import com.giga.nexas.bhe2bsdx.steps.TransMekaOutputWriter;
 import com.giga.nexas.bhe2bsdx.steps.TransMekaResult;
 import com.giga.nexas.bhe2bsdx.steps.StaticAssetCopier;
+import com.giga.nexas.bhe2bsdx.steps.WazConverter;
 import com.giga.nexas.dto.ResponseDTO;
 
 import com.giga.nexas.service.BheBinService;
@@ -273,6 +274,39 @@ public class TransferTest {
         } else {
             log.warn("⚠️ pac not found: {}", pacNew);
         }
+    }
+
+    @Test
+    public void testTransSingle() throws Exception {
+        Path resourceDir = Paths.get("src/main/resources");
+        String bheWazJsonName = "tkytama.waz.json";
+        Path bheWazJsonPath = resourceDir.resolve(bheWazJsonName);
+
+        // 1. 读取 BHE WAZ JSON
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper()
+                .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        String jsonStr = Files.readString(bheWazJsonPath);
+        com.giga.nexas.dto.bhe.waz.Waz bheWaz = mapper.readValue(jsonStr, com.giga.nexas.dto.bhe.waz.Waz.class);
+        log.info("✅ BHE WAZ loaded: {}, skills={}", bheWaz.getFileName(), bheWaz.getSkillList().size());
+
+        // 2. 转换为 BSDX WAZ
+        WazConverter wazConverter = new WazConverter();
+        com.giga.nexas.dto.bsdx.waz.Waz bsdxWaz = wazConverter.convert(bheWaz);
+        bsdxWaz.setFileName(bheWaz.getFileName());
+        bsdxWaz.setExtensionName("waz");
+        log.info("✅ BSDX WAZ converted: {}, skills={}", bsdxWaz.getFileName(), bsdxWaz.getSkillList().size());
+
+        // 3. 输出到同一目录
+        String outputName = bheWazJsonName.replace(".waz.json", ".bsdx.waz.json");
+        Path outputPath = resourceDir.resolve(outputName);
+        String outputJson = cn.hutool.json.JSONUtil.toJsonPrettyStr(bsdxWaz);
+        Files.writeString(outputPath, outputJson);
+        log.info("✅ BSDX WAZ JSON written: {}", outputPath);
+
+        // 4. 验证：用 BSDX 解析器读取生成的 JSON
+        String bsdxJsonStr = Files.readString(outputPath);
+        com.giga.nexas.dto.bsdx.waz.Waz verifyWaz = mapper.readValue(bsdxJsonStr, com.giga.nexas.dto.bsdx.waz.Waz.class);
+        log.info("✅ BSDX WAZ verified: {}, skills={}", verifyWaz.getFileName(), verifyWaz.getSkillList().size());
     }
 
     private String resolveSpriteBaseName(
