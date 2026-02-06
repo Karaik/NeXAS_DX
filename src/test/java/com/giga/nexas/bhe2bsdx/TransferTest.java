@@ -22,8 +22,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class TransferTest {
 
@@ -31,6 +36,16 @@ public class TransferTest {
     // 静态资源来源目录（按需修改）
     private static final Path STATIC_ASSET_ROOT = Paths.get("D:\\BaiduNetdiskDownload\\bsdx_bhe\\bheAll");
     private static final boolean COPY_STATIC_ASSETS = true;
+    // 自动发现源机体时使用（根据 mekBheJson 目录名）
+    private static final Path BHE_MEK_JSON_DIR = Paths.get("src/main/resources/mekBheJson");
+
+    // ===== 可配置项（把原先写死的 tsukuyomi 相关配置挪到这里） =====
+    // 源机体：如果这里为空，会自动根据 mekBheJson 目录名发现全部机体
+    private static final List<MekaSource> SOURCE_MEKA_LIST = List.of();
+    // 目标槽位（默认替换 Nanoha）
+    private static final String TARGET_KEY = "nanoha";
+    private static final String TARGET_CODE_NAME = "NANOHA";
+    private static final boolean KEEP_TARGET_KEY = true;
 
     private static final Logger log = LoggerFactory.getLogger(TransferTest.class);
     private final BsdxBinService bsdxBinService = new BsdxBinService();
@@ -42,238 +57,131 @@ public class TransferTest {
     @Test
     public void testPipeline() throws Exception {
 
-        Path outputDir = OUTPUT_DIR;
-        String outputPath = outputDir.toAbsolutePath().toString();
+        List<MekaSource> sources = SOURCE_MEKA_LIST;
+        if (sources == null || sources.isEmpty()) {
+            sources = discoverSourcesFromMekJson();
+        }
+        sources = applyRuntimeFilters(sources);
 
-        final String tsukuyomiKey = "tsukuyomi";
-        final String cTsukuyomiKey = "c_tsukuyomi";
-        final String sTsukuyomiKey = "s_tsukuyomi";
-        final String gTsukuyomiKey = "g_tsukuyomi";
-        final String mTsukuyomiKey = "m_tsukuyomi";
-        final String targetKey = "nanoha";
-        final String targetCodeName = "NANOHA";
+        if (sources == null || sources.isEmpty()) {
+            log.warn("未发现可用源机体，跳过转换。");
+            return;
+        }
 
-        // 1.注册全部所需文件资源
-        // grp
-        Map<String, com.giga.nexas.dto.bsdx.grp.Grp> bsdxGrp = registerBsdxGrp();
+        log.info("本次转换源机体数量: {}", sources.size());
+        for (MekaSource source : sources) {
+            runSingleSourcePipeline(source);
+        }
+    }
+
+    private List<MekaSource> discoverSourcesFromMekJson() throws IOException {
+        List<MekaSource> sources = new ArrayList<>();
+        if (!Files.isDirectory(BHE_MEK_JSON_DIR)) {
+            log.warn("mekBheJson 目录不存在: {}", BHE_MEK_JSON_DIR.toAbsolutePath());
+            return sources;
+        }
+
+        Map<String, String> codeNameMap = loadBheCodeNameMap();
+        final String suffix = ".mek.json";
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(BHE_MEK_JSON_DIR, "*" + suffix)) {
+            for (Path path : stream) {
+                String fileName = path.getFileName().toString();
+                if (!fileName.endsWith(suffix)) {
+                    continue;
+                }
+                String baseKey = normalizeKey(fileName.substring(0, fileName.length() - suffix.length()));
+                if (baseKey.isEmpty()) {
+                    continue;
+                }
+
+                String codeName = codeNameMap.get(baseKey);
+                if (codeName == null || codeName.isBlank()) {
+                    log.warn("跳过未匹配 codeName 的机体: baseKey={}", baseKey);
+                    continue;
+                }
+                sources.add(new MekaSource(baseKey, codeName));
+            }
+        }
+
+        sources.sort(Comparator.comparing(s -> s.baseKey));
+        log.info("自动发现源机体: {} 个 (来自 {})", sources.size(), BHE_MEK_JSON_DIR);
+        return sources;
+    }
+
+    private List<MekaSource> applyRuntimeFilters(List<MekaSource> sources) {
+        if (sources == null || sources.isEmpty()) {
+            return sources;
+        }
+
+        List<MekaSource> filtered = sources;
+
+        String filterProp = System.getProperty("transfer.sources");
+        if (filterProp != null && !filterProp.isBlank()) {
+            Set<String> allowList = new LinkedHashSet<>();
+            for (String token : filterProp.split(",")) {
+                String key = normalizeKey(token);
+                if (!key.isEmpty()) {
+                    allowList.add(key);
+                }
+            }
+            if (!allowList.isEmpty()) {
+                filtered = new ArrayList<>();
+                for (MekaSource source : sources) {
+                    if (source != null && allowList.contains(source.baseKey)) {
+                        filtered.add(source);
+                    }
+                }
+                log.info("运行时过滤生效 transfer.sources={}, 命中 {} 个",
+                        allowList, filtered.size());
+            }
+        }
+
+        String limitProp = System.getProperty("transfer.limit");
+        if (limitProp != null && !limitProp.isBlank()) {
+            try {
+                int limit = Integer.parseInt(limitProp.trim());
+                if (limit > 0 && filtered.size() > limit) {
+                    filtered = new ArrayList<>(filtered.subList(0, limit));
+                    log.info("运行时限制生效 transfer.limit={}, 截断后 {} 个", limit, filtered.size());
+                }
+            } catch (NumberFormatException e) {
+                log.warn("transfer.limit 不是有效整数: {}", limitProp);
+            }
+        }
+
+        return filtered;
+    }
+
+    private Map<String, String> loadBheCodeNameMap() throws IOException {
+        Map<String, String> codeNameMap = new HashMap<>();
+
         Map<String, com.giga.nexas.dto.bhe.grp.Grp> bheGrp = registerBheGrp();
-        // mek
-        Map<String, com.giga.nexas.dto.bsdx.mek.Mek> bsdxMek = registerBsdxMek();
-        Map<String, com.giga.nexas.dto.bhe.mek.Mek> bheMek = registerBheMek();
-        // waz
-        Map<String, com.giga.nexas.dto.bsdx.waz.Waz> bsdxWaz = registerBsdxWaz();
-        Map<String, com.giga.nexas.dto.bhe.waz.Waz> bheWaz = registerBheWaz();
-        // spm
-        Map<String, com.giga.nexas.dto.bsdx.spm.Spm> bsdxSpm = registerBsdxSpm();
-        Map<String, com.giga.nexas.dto.bhe.spm.Spm> bheSpm = registerBheSpm();
-        // dat（UI 选择菜单映射表）
-        Dat selectMekaMenuDat = loadBsdxDat("SelectMekaMenu.dat");
-
-        // 2.抽出移植目标
-        // 月读
-        // batVoice
-        com.giga.nexas.dto.bhe.grp.groupmap.BatVoiceGrp bheBatVoice =
-                (com.giga.nexas.dto.bhe.grp.groupmap.BatVoiceGrp) bheGrp.get("batvoice");
-        com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp bsdxBatVoice =
-                (com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp) bsdxGrp.get("batvoice");
-        com.giga.nexas.dto.bhe.grp.groupmap.BatVoiceGrp.BatVoiceGroup tsukuyomiBatvoice = bheBatVoice.getVoiceList().get(1);
-        // grp: 机体/技能/spm 注册表
         com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp bheMekaGroup =
                 (com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp) bheGrp.get("mekagroup");
-        com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp bheWazaGroup =
-                (com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp) bheGrp.get("wazagroup");
-        com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp bheSpriteGroup =
-                (com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp) bheGrp.get("spritegroup");
-        com.giga.nexas.dto.bsdx.grp.groupmap.MekaGroupGrp bsdxMekaGroup =
-                (com.giga.nexas.dto.bsdx.grp.groupmap.MekaGroupGrp) bsdxGrp.get("mekagroup");
-        com.giga.nexas.dto.bsdx.grp.groupmap.WazaGroupGrp bsdxWazaGroup =
-                (com.giga.nexas.dto.bsdx.grp.groupmap.WazaGroupGrp) bsdxGrp.get("wazagroup");
-        com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp bsdxSpriteGroup =
-                (com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp) bsdxGrp.get("spritegroup");
-        final String tsukuyomiCode = "TSUKUYOMI";
-        com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp.MekaGroup tsukuyomiMekaGroup = null;
+        if (bheMekaGroup == null || bheMekaGroup.getMekaList() == null) {
+            log.warn("无法载入 BHE MekaGroup，自动发现将返回空列表。");
+            return codeNameMap;
+        }
+
         for (com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp.MekaGroup group : bheMekaGroup.getMekaList()) {
-            if (tsukuyomiCode.equalsIgnoreCase(group.getMekaCodeName())) {
-                tsukuyomiMekaGroup = group;
-                break;
+            if (group == null || group.getExistFlag() == null || group.getExistFlag() == 0) {
+                continue;
             }
-        }
-        com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp.WazaGroupEntry tsukuyomiWazaGroup = null;
-        for (com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp.WazaGroupEntry entry : bheWazaGroup.getWazaList()) {
-            if (tsukuyomiCode.equalsIgnoreCase(entry.getWazaCodeName())) {
-                tsukuyomiWazaGroup = entry;
-                break;
+            String mekaName = group.getMekaName();
+            String mekaCodeName = group.getMekaCodeName();
+            if (mekaName == null || mekaCodeName == null) {
+                continue;
             }
-        }
-        com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp.SpriteGroupEntry tsukuyomiSpriteGroup = null;
-        for (com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp.SpriteGroupEntry entry : bheSpriteGroup.getSpriteList()) {
-            if (tsukuyomiCode.equalsIgnoreCase(entry.getSpriteCodeName())) {
-                tsukuyomiSpriteGroup = entry;
-                break;
-            }
-        }
-        // mek
-        com.giga.nexas.dto.bhe.mek.Mek tsukuyomiMek = bheMek.get(tsukuyomiKey);
-        // waz
-        com.giga.nexas.dto.bhe.waz.Waz tsukuyomiWaz = bheWaz.get(tsukuyomiKey);
-        // spm（5 种静态资源）
-        com.giga.nexas.dto.bhe.spm.Spm tsukuyomiSpm = bheSpm.get(tsukuyomiKey);
-        com.giga.nexas.dto.bhe.spm.Spm tsukuyomiCSpm = bheSpm.get(cTsukuyomiKey);
-        com.giga.nexas.dto.bhe.spm.Spm tsukuyomiSSpm = bheSpm.get(sTsukuyomiKey);
-        com.giga.nexas.dto.bhe.spm.Spm tsukuyomiGSpm = bheSpm.get(gTsukuyomiKey);
-        com.giga.nexas.dto.bhe.spm.Spm tsukuyomiMSpm = bheSpm.get(mTsukuyomiKey);
-
-        com.giga.nexas.dto.bsdx.spm.Spm mekaPilotSpm = bsdxSpm.get("mekapilot");
-        com.giga.nexas.dto.bsdx.spm.Spm selectMekaMenuMekaSpm = bsdxSpm.get("selectmekamenumeka");
-        com.giga.nexas.dto.bsdx.mek.Mek targetBsdxMek = bsdxMek.get(targetKey);
-        boolean useTargetSlot = targetBsdxMek != null;
-        boolean keepTargetKey = true;
-        String targetSpriteKey = useTargetSlot
-                ? resolveSpriteBaseName(bsdxSpriteGroup, targetBsdxMek, targetKey)
-                : tsukuyomiKey;
-
-        //
-        TransMekaResult result = TransMeka.process(
-                tsukuyomiMek,
-                tsukuyomiWaz,
-                tsukuyomiSpm,
-                tsukuyomiCSpm,
-                tsukuyomiSSpm,
-                tsukuyomiGSpm,
-                tsukuyomiMSpm,
-
-                tsukuyomiBatvoice,
-                bsdxBatVoice,
-
-                tsukuyomiMekaGroup,
-                tsukuyomiWazaGroup,
-                tsukuyomiSpriteGroup,
-                bheSpriteGroup,
-                bsdxMekaGroup,
-                bsdxWazaGroup,
-                bsdxSpriteGroup,
-                bsdxWaz,
-
-                mekaPilotSpm,
-                selectMekaMenuMekaSpm,
-                selectMekaMenuDat,
-                targetBsdxMek,
-                targetCodeName,
-                keepTargetKey);
-
-        // 3.回写到 BSDX Map（保持内存一致），同时只输出本次变更，避免写出全部 spm
-        if (result != null) {
-            if (result.getBsdxMeka() != null) {
-                if (useTargetSlot) {
-                    result.getBsdxMeka().setFileName(targetKey);
-                }
-                bsdxMek.put(useTargetSlot ? targetKey : tsukuyomiKey, result.getBsdxMeka());
-            }
-            if (result.getBsdxWaz() != null) {
-                if (useTargetSlot) {
-                    result.getBsdxWaz().setFileName(targetKey);
-                }
-                bsdxWaz.put(useTargetSlot ? targetKey : tsukuyomiKey, result.getBsdxWaz());
-            }
-            if (result.getBsdxSpm() != null) {
-                bsdxSpm.put(useTargetSlot ? targetSpriteKey : tsukuyomiKey, result.getBsdxSpm());
-            }
-            if (!useTargetSlot && result.getBsdxCSpm() != null) {
-                bsdxSpm.put(cTsukuyomiKey, result.getBsdxCSpm());
-            }
-            if (!useTargetSlot && result.getBsdxSSpm() != null) {
-                bsdxSpm.put(sTsukuyomiKey, result.getBsdxSSpm());
-            }
-            if (!useTargetSlot && result.getBsdxGSpm() != null) {
-                bsdxSpm.put(gTsukuyomiKey, result.getBsdxGSpm());
-            }
-            if (!useTargetSlot && result.getBsdxMSpm() != null) {
-                bsdxSpm.put(mTsukuyomiKey, result.getBsdxMSpm());
-            }
-            if (result.getBsdxMekaPilotSpm() != null) {
-                bsdxSpm.put("mekapilot", result.getBsdxMekaPilotSpm());
-            }
-            if (result.getBsdxSelectMekaMenuMekaSpm() != null) {
-                bsdxSpm.put("selectmekamenumeka", result.getBsdxSelectMekaMenuMekaSpm());
+            String baseKey = normalizeKey(mekaName);
+            String codeName = normalizeCode(mekaCodeName);
+            if (!baseKey.isEmpty() && !codeName.isEmpty()) {
+                codeNameMap.put(baseKey, codeName);
             }
         }
 
-        // 4.输出变更文件（grp/mek/waz/spm）
-        Map<String, com.giga.nexas.dto.bsdx.grp.Grp> outputGrp = new HashMap<>();
-        outputGrp.put("batvoice", bsdxBatVoice);
-        outputGrp.put("mekagroup", bsdxMekaGroup);
-        outputGrp.put("wazagroup", bsdxWazaGroup);
-        outputGrp.put("spritegroup", bsdxSpriteGroup);
-
-        Map<String, com.giga.nexas.dto.bsdx.mek.Mek> outputMek = new HashMap<>();
-        if (result != null && result.getBsdxMeka() != null) {
-            outputMek.put(useTargetSlot ? targetKey : tsukuyomiKey, result.getBsdxMeka());
-        }
-
-        Map<String, com.giga.nexas.dto.bsdx.waz.Waz> outputWaz = new HashMap<>();
-        if (result != null && result.getBsdxWaz() != null) {
-            outputWaz.put(useTargetSlot ? targetKey : tsukuyomiKey, result.getBsdxWaz());
-        }
-
-        Map<String, com.giga.nexas.dto.bsdx.spm.Spm> outputSpm = new HashMap<>();
-        if (result != null && result.getBsdxSpm() != null) {
-            outputSpm.put(useTargetSlot ? targetSpriteKey : tsukuyomiKey, result.getBsdxSpm());
-        }
-        if (!useTargetSlot && result != null && result.getBsdxCSpm() != null) {
-            outputSpm.put(cTsukuyomiKey, result.getBsdxCSpm());
-        }
-        if (!useTargetSlot && result != null && result.getBsdxSSpm() != null) {
-            outputSpm.put(sTsukuyomiKey, result.getBsdxSSpm());
-        }
-        if (!useTargetSlot && result != null && result.getBsdxGSpm() != null) {
-            outputSpm.put(gTsukuyomiKey, result.getBsdxGSpm());
-        }
-        if (!useTargetSlot && result != null && result.getBsdxMSpm() != null) {
-            outputSpm.put(mTsukuyomiKey, result.getBsdxMSpm());
-        }
-        if (result != null && result.getBsdxMekaPilotSpm() != null) {
-            outputSpm.put("mekapilot", result.getBsdxMekaPilotSpm());
-        }
-        if (result != null && result.getBsdxSelectMekaMenuMekaSpm() != null) {
-            outputSpm.put("selectmekamenumeka", result.getBsdxSelectMekaMenuMekaSpm());
-        }
-
-        TransMekaOutputWriter outputWriter = new TransMekaOutputWriter();
-        outputWriter.writeOutputs(outputDir, outputGrp, outputMek, outputWaz, outputSpm);
-
-        if (COPY_STATIC_ASSETS) {
-            StaticAssetCopier assetCopier = new StaticAssetCopier();
-            Map<String, com.giga.nexas.dto.bsdx.grp.Grp> assetGrp = new HashMap<>();
-            if (result != null && result.getBsdxBatVoiceGroup() != null) {
-                BatVoiceGrp batVoiceGrp = new BatVoiceGrp();
-                batVoiceGrp.getVoiceList().add(result.getBsdxBatVoiceGroup());
-                assetGrp.put("batvoice", batVoiceGrp);
-            }
-            // 仅复制 BHE 来源的 spm 静态资源，避免搜索 BSDX 自带图片
-            Map<String, com.giga.nexas.dto.bsdx.spm.Spm> assetSpm = new HashMap<>();
-            if (result != null) {
-                putIfPresent(assetSpm, tsukuyomiKey, result.getBsdxSpm());
-                putIfPresent(assetSpm, cTsukuyomiKey, result.getBsdxCSpm());
-                putIfPresent(assetSpm, sTsukuyomiKey, result.getBsdxSSpm());
-                putIfPresent(assetSpm, gTsukuyomiKey, result.getBsdxGSpm());
-                putIfPresent(assetSpm, mTsukuyomiKey, result.getBsdxMSpm());
-            }
-            assetCopier.copyAssets(outputDir, STATIC_ASSET_ROOT, assetSpm, assetGrp);
-        }
-
-        // 打包
-        String packLog = PacUtil.pack(outputPath, "4");
-        log.info("outputPath === {}", packLog);
-
-        // 统一输出包名：testBhe.pacNew -> Update3.pac
-        Path pacNew = outputDir.resolveSibling(outputDir.getFileName().toString() + ".pacNew");
-        Path updatePac = outputDir.resolveSibling("Update3.pac");
-        if (Files.exists(pacNew)) {
-            Files.move(pacNew, updatePac, StandardCopyOption.REPLACE_EXISTING);
-            log.info("✅ pac renamed: {} -> {}", pacNew.getFileName(), updatePac.getFileName());
-        } else {
-            log.warn("⚠️ pac not found: {}", pacNew);
-        }
+        log.info("载入 BHE 机体 codeName 映射: {} 个", codeNameMap.size());
+        return codeNameMap;
     }
 
     @Test
@@ -560,6 +468,335 @@ public class TransferTest {
 
         classMapBsdx.forEach((k, v) -> {log.info("{}", k);});
 
+    }
+
+    private void runSingleSourcePipeline(MekaSource source) throws Exception {
+        if (source == null) {
+            return;
+        }
+
+        String baseKey = normalizeKey(source.baseKey);
+        String codeName = normalizeCode(source.codeName);
+        if (baseKey.isEmpty() || codeName.isEmpty()) {
+            log.warn("源机体配置无效: baseKey={}, codeName={}", source.baseKey, source.codeName);
+            return;
+        }
+
+        String cKey = variantKey("c_", baseKey);
+        String sKey = variantKey("s_", baseKey);
+        String gKey = variantKey("g_", baseKey);
+        String mKey = variantKey("m_", baseKey);
+
+        Path outputDir = OUTPUT_DIR.resolve(baseKey);
+        String outputPath = outputDir.toAbsolutePath().toString();
+
+        log.info("========== 开始转换: baseKey={}, codeName={}, outputDir={} ==========",
+                baseKey, codeName, outputDir);
+
+        // 1.注册全部所需文件资源（每个源机体都重新注册，保证基线干净）
+        Map<String, com.giga.nexas.dto.bsdx.grp.Grp> bsdxGrp = registerBsdxGrp();
+        Map<String, com.giga.nexas.dto.bhe.grp.Grp> bheGrp = registerBheGrp();
+        Map<String, com.giga.nexas.dto.bsdx.mek.Mek> bsdxMek = registerBsdxMek();
+        Map<String, com.giga.nexas.dto.bhe.mek.Mek> bheMek = registerBheMek();
+        Map<String, com.giga.nexas.dto.bsdx.waz.Waz> bsdxWaz = registerBsdxWaz();
+        Map<String, com.giga.nexas.dto.bhe.waz.Waz> bheWaz = registerBheWaz();
+        Map<String, com.giga.nexas.dto.bsdx.spm.Spm> bsdxSpm = registerBsdxSpm();
+        Map<String, com.giga.nexas.dto.bhe.spm.Spm> bheSpm = registerBheSpm();
+        Dat selectMekaMenuDat = loadBsdxDat("SelectMekaMenu.dat");
+
+        // 2.抽出移植目标
+        com.giga.nexas.dto.bhe.grp.groupmap.BatVoiceGrp bheBatVoice =
+                (com.giga.nexas.dto.bhe.grp.groupmap.BatVoiceGrp) bheGrp.get("batvoice");
+        com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp bsdxBatVoice =
+                (com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp) bsdxGrp.get("batvoice");
+        com.giga.nexas.dto.bhe.grp.groupmap.BatVoiceGrp.BatVoiceGroup sourceBatvoice =
+                findBatVoiceGroupByCode(bheBatVoice, codeName);
+
+        com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp bheMekaGroup =
+                (com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp) bheGrp.get("mekagroup");
+        com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp bheWazaGroup =
+                (com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp) bheGrp.get("wazagroup");
+        com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp bheSpriteGroup =
+                (com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp) bheGrp.get("spritegroup");
+        com.giga.nexas.dto.bsdx.grp.groupmap.MekaGroupGrp bsdxMekaGroup =
+                (com.giga.nexas.dto.bsdx.grp.groupmap.MekaGroupGrp) bsdxGrp.get("mekagroup");
+        com.giga.nexas.dto.bsdx.grp.groupmap.WazaGroupGrp bsdxWazaGroup =
+                (com.giga.nexas.dto.bsdx.grp.groupmap.WazaGroupGrp) bsdxGrp.get("wazagroup");
+        com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp bsdxSpriteGroup =
+                (com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp) bsdxGrp.get("spritegroup");
+
+        com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp.MekaGroup sourceMekaGroup =
+                findMekaGroupByCode(bheMekaGroup, codeName);
+        com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp.WazaGroupEntry sourceWazaGroup =
+                findWazaGroupByCode(bheWazaGroup, codeName);
+        com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp.SpriteGroupEntry sourceSpriteGroup =
+                findSpriteGroupByCode(bheSpriteGroup, codeName);
+
+        com.giga.nexas.dto.bhe.mek.Mek sourceMek = bheMek.get(baseKey);
+        com.giga.nexas.dto.bhe.waz.Waz sourceWaz = bheWaz.get(baseKey);
+        com.giga.nexas.dto.bhe.spm.Spm sourceSpm = bheSpm.get(baseKey);
+        com.giga.nexas.dto.bhe.spm.Spm sourceCSpm = bheSpm.get(cKey);
+        com.giga.nexas.dto.bhe.spm.Spm sourceSSpm = bheSpm.get(sKey);
+        com.giga.nexas.dto.bhe.spm.Spm sourceGSpm = bheSpm.get(gKey);
+        com.giga.nexas.dto.bhe.spm.Spm sourceMSpm = bheSpm.get(mKey);
+
+        if (sourceMek == null || sourceWaz == null || sourceSpm == null) {
+            log.warn("源资源不完整(baseKey={}): mek={}, waz={}, spm={}",
+                    baseKey, sourceMek != null, sourceWaz != null, sourceSpm != null);
+            return;
+        }
+
+        com.giga.nexas.dto.bsdx.spm.Spm mekaPilotSpm = bsdxSpm.get("mekapilot");
+        com.giga.nexas.dto.bsdx.spm.Spm selectMekaMenuMekaSpm = bsdxSpm.get("selectmekamenumeka");
+        com.giga.nexas.dto.bsdx.mek.Mek targetBsdxMek = bsdxMek.get(TARGET_KEY);
+        boolean useTargetSlot = targetBsdxMek != null;
+        String targetSpriteKey = useTargetSlot
+                ? resolveSpriteBaseName(bsdxSpriteGroup, targetBsdxMek, TARGET_KEY)
+                : baseKey;
+
+        TransMekaResult result = TransMeka.process(
+                sourceMek,
+                sourceWaz,
+                sourceSpm,
+                sourceCSpm,
+                sourceSSpm,
+                sourceGSpm,
+                sourceMSpm,
+
+                sourceBatvoice,
+                bsdxBatVoice,
+
+                sourceMekaGroup,
+                sourceWazaGroup,
+                sourceSpriteGroup,
+                bheSpriteGroup,
+                bsdxMekaGroup,
+                bsdxWazaGroup,
+                bsdxSpriteGroup,
+                bsdxWaz,
+
+                mekaPilotSpm,
+                selectMekaMenuMekaSpm,
+                selectMekaMenuDat,
+                targetBsdxMek,
+                TARGET_CODE_NAME,
+                KEEP_TARGET_KEY);
+
+        // 3.回写到 BSDX Map（保持内存一致），同时只输出本次变更，避免写出全部 spm
+        if (result != null) {
+            if (result.getBsdxMeka() != null) {
+                if (useTargetSlot) {
+                    result.getBsdxMeka().setFileName(TARGET_KEY);
+                }
+                bsdxMek.put(useTargetSlot ? TARGET_KEY : baseKey, result.getBsdxMeka());
+            }
+            if (result.getBsdxWaz() != null) {
+                if (useTargetSlot) {
+                    result.getBsdxWaz().setFileName(TARGET_KEY);
+                }
+                bsdxWaz.put(useTargetSlot ? TARGET_KEY : baseKey, result.getBsdxWaz());
+            }
+            if (result.getBsdxSpm() != null) {
+                bsdxSpm.put(useTargetSlot ? targetSpriteKey : baseKey, result.getBsdxSpm());
+            }
+            if (!useTargetSlot && result.getBsdxCSpm() != null) {
+                bsdxSpm.put(cKey, result.getBsdxCSpm());
+            }
+            if (!useTargetSlot && result.getBsdxSSpm() != null) {
+                bsdxSpm.put(sKey, result.getBsdxSSpm());
+            }
+            if (!useTargetSlot && result.getBsdxGSpm() != null) {
+                bsdxSpm.put(gKey, result.getBsdxGSpm());
+            }
+            if (!useTargetSlot && result.getBsdxMSpm() != null) {
+                bsdxSpm.put(mKey, result.getBsdxMSpm());
+            }
+            if (result.getBsdxMekaPilotSpm() != null) {
+                bsdxSpm.put("mekapilot", result.getBsdxMekaPilotSpm());
+            }
+            if (result.getBsdxSelectMekaMenuMekaSpm() != null) {
+                bsdxSpm.put("selectmekamenumeka", result.getBsdxSelectMekaMenuMekaSpm());
+            }
+        }
+
+        // 4.输出变更文件（grp/mek/waz/spm）
+        Map<String, com.giga.nexas.dto.bsdx.grp.Grp> outputGrp = new HashMap<>();
+        outputGrp.put("batvoice", bsdxBatVoice);
+        outputGrp.put("mekagroup", bsdxMekaGroup);
+        outputGrp.put("wazagroup", bsdxWazaGroup);
+        outputGrp.put("spritegroup", bsdxSpriteGroup);
+
+        Map<String, com.giga.nexas.dto.bsdx.mek.Mek> outputMek = new HashMap<>();
+        if (result != null && result.getBsdxMeka() != null) {
+            outputMek.put(useTargetSlot ? TARGET_KEY : baseKey, result.getBsdxMeka());
+        }
+
+        Map<String, com.giga.nexas.dto.bsdx.waz.Waz> outputWaz = new HashMap<>();
+        if (result != null && result.getBsdxWaz() != null) {
+            outputWaz.put(useTargetSlot ? TARGET_KEY : baseKey, result.getBsdxWaz());
+        }
+
+        Map<String, com.giga.nexas.dto.bsdx.spm.Spm> outputSpm = new HashMap<>();
+        if (result != null && result.getBsdxSpm() != null) {
+            outputSpm.put(useTargetSlot ? targetSpriteKey : baseKey, result.getBsdxSpm());
+        }
+        if (!useTargetSlot && result != null && result.getBsdxCSpm() != null) {
+            outputSpm.put(cKey, result.getBsdxCSpm());
+        }
+        if (!useTargetSlot && result != null && result.getBsdxSSpm() != null) {
+            outputSpm.put(sKey, result.getBsdxSSpm());
+        }
+        if (!useTargetSlot && result != null && result.getBsdxGSpm() != null) {
+            outputSpm.put(gKey, result.getBsdxGSpm());
+        }
+        if (!useTargetSlot && result != null && result.getBsdxMSpm() != null) {
+            outputSpm.put(mKey, result.getBsdxMSpm());
+        }
+        if (result != null && result.getBsdxMekaPilotSpm() != null) {
+            outputSpm.put("mekapilot", result.getBsdxMekaPilotSpm());
+        }
+        if (result != null && result.getBsdxSelectMekaMenuMekaSpm() != null) {
+            outputSpm.put("selectmekamenumeka", result.getBsdxSelectMekaMenuMekaSpm());
+        }
+
+        TransMekaOutputWriter outputWriter = new TransMekaOutputWriter();
+        outputWriter.writeOutputs(outputDir, outputGrp, outputMek, outputWaz, outputSpm);
+
+        if (COPY_STATIC_ASSETS) {
+            StaticAssetCopier assetCopier = new StaticAssetCopier();
+            Map<String, com.giga.nexas.dto.bsdx.grp.Grp> assetGrp = new HashMap<>();
+            if (result != null && result.getBsdxBatVoiceGroup() != null) {
+                BatVoiceGrp batVoiceGrp = new BatVoiceGrp();
+                batVoiceGrp.getVoiceList().add(result.getBsdxBatVoiceGroup());
+                assetGrp.put("batvoice", batVoiceGrp);
+            }
+            // 仅复制 BHE 来源的 spm 静态资源，避免搜索 BSDX 自带图片
+            Map<String, com.giga.nexas.dto.bsdx.spm.Spm> assetSpm = new HashMap<>();
+            if (result != null) {
+                putIfPresent(assetSpm, baseKey, result.getBsdxSpm());
+                putIfPresent(assetSpm, cKey, result.getBsdxCSpm());
+                putIfPresent(assetSpm, sKey, result.getBsdxSSpm());
+                putIfPresent(assetSpm, gKey, result.getBsdxGSpm());
+                putIfPresent(assetSpm, mKey, result.getBsdxMSpm());
+            }
+            assetCopier.copyAssets(outputDir, STATIC_ASSET_ROOT, assetSpm, assetGrp);
+        }
+
+        // 打包
+        String packLog = PacUtil.pack(outputPath, "4");
+        log.info("outputPath === {}", packLog);
+
+        // 统一输出包名：<outputDir>.pacNew -> Update3_<baseKey>.pac
+        Path pacNew = outputDir.resolveSibling(outputDir.getFileName().toString() + ".pacNew");
+        Path updatePac = outputDir.resolveSibling("Update3_" + baseKey + ".pac");
+        if (Files.exists(pacNew)) {
+            Files.move(pacNew, updatePac, StandardCopyOption.REPLACE_EXISTING);
+            log.info("✅ pac renamed: {} -> {}", pacNew.getFileName(), updatePac.getFileName());
+        } else {
+            log.warn("⚠️ pac not found: {}", pacNew);
+        }
+    }
+
+    private com.giga.nexas.dto.bhe.grp.groupmap.BatVoiceGrp.BatVoiceGroup findBatVoiceGroupByCode(
+            com.giga.nexas.dto.bhe.grp.groupmap.BatVoiceGrp grp,
+            String codeName
+    ) {
+        if (grp == null || grp.getVoiceList() == null || codeName == null) {
+            return null;
+        }
+        for (com.giga.nexas.dto.bhe.grp.groupmap.BatVoiceGrp.BatVoiceGroup group : grp.getVoiceList()) {
+            if (group == null || group.getExistFlag() == null || group.getExistFlag() == 0) {
+                continue;
+            }
+            String code = group.getCharacterCodeName();
+            if (code != null && codeName.equalsIgnoreCase(code.trim())) {
+                return group;
+            }
+        }
+        log.warn("未找到 BatVoiceGroup: codeName={}", codeName);
+        return null;
+    }
+
+    private com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp.MekaGroup findMekaGroupByCode(
+            com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp grp,
+            String codeName
+    ) {
+        if (grp == null || grp.getMekaList() == null || codeName == null) {
+            return null;
+        }
+        for (com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp.MekaGroup group : grp.getMekaList()) {
+            if (group == null || group.getExistFlag() == null || group.getExistFlag() == 0) {
+                continue;
+            }
+            if (codeName.equalsIgnoreCase(group.getMekaCodeName())) {
+                return group;
+            }
+        }
+        log.warn("未找到 MekaGroup: codeName={}", codeName);
+        return null;
+    }
+
+    private com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp.WazaGroupEntry findWazaGroupByCode(
+            com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp grp,
+            String codeName
+    ) {
+        if (grp == null || grp.getWazaList() == null || codeName == null) {
+            return null;
+        }
+        for (com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp.WazaGroupEntry entry : grp.getWazaList()) {
+            if (entry == null || entry.getExistFlag() == null || entry.getExistFlag() == 0) {
+                continue;
+            }
+            if (codeName.equalsIgnoreCase(entry.getWazaCodeName())) {
+                return entry;
+            }
+        }
+        log.warn("未找到 WazaGroup: codeName={}", codeName);
+        return null;
+    }
+
+    private com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp.SpriteGroupEntry findSpriteGroupByCode(
+            com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp grp,
+            String codeName
+    ) {
+        if (grp == null || grp.getSpriteList() == null || codeName == null) {
+            return null;
+        }
+        for (com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp.SpriteGroupEntry entry : grp.getSpriteList()) {
+            if (entry == null || entry.getExistFlag() == null || entry.getExistFlag() == 0) {
+                continue;
+            }
+            if (codeName.equalsIgnoreCase(entry.getSpriteCodeName())) {
+                return entry;
+            }
+        }
+        log.warn("未找到 SpriteGroup: codeName={}", codeName);
+        return null;
+    }
+
+    private String normalizeKey(String key) {
+        return key == null ? "" : key.trim().toLowerCase();
+    }
+
+    private String normalizeCode(String codeName) {
+        return codeName == null ? "" : codeName.trim().toUpperCase();
+    }
+
+    private String variantKey(String prefix, String baseKey) {
+        if (prefix == null || baseKey == null || baseKey.isEmpty()) {
+            return baseKey;
+        }
+        return prefix + baseKey;
+    }
+
+    private static final class MekaSource {
+        private final String baseKey;
+        private final String codeName;
+
+        private MekaSource(String baseKey, String codeName) {
+            this.baseKey = baseKey;
+            this.codeName = codeName;
+        }
     }
 
 }
