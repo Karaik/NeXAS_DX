@@ -46,7 +46,8 @@ D:\Code\NeXAS_DX_Tauri
       ├─ readme.md
       ├─ flow.md
       ├─ agent.md
-      └─ skills.md
+      ├─ skills.md
+      └─ roundtrip-acceptance.md
 ```
 
 ## 架构目标
@@ -78,7 +79,7 @@ flowchart LR
 | `nexas-ir` | 统一 IR + unknown bytes 保留模型 | 已建骨架 |
 | `nexas-format-grp` | Term 与 collection 解析/生成/diff | 已实现真实解析与 golden |
 | `nexas-format-waz` | WAZ 事件解析/生成/diff | 已实现 `CEventChange` 真实解析与 golden |
-| `nexas-format-mek/spm/pac` | 其余格式 parse/generate/diff | 骨架待实现 |
+| `nexas-format-mek/spm/pac` | 其余格式 parse/generate/diff | 已实现无损 opaque round-trip + golden |
 | `nexas-transform` | BHE -> BSDX 流水线与规则层 | 已建骨架 |
 | `nexas-cli` | parse/generate/unpack/pack/transfer/validate/diff/report | 已实现多命令与原子写 |
 | `apps/nexas-ui` | 任务队列、进度、日志、取消 | 已建骨架 |
@@ -121,7 +122,7 @@ flowchart TD
 | M1 | `nexas-core` + `nexas-format-grp` 最小闭环 | `cargo test -p nexas-format-grp` | 已完成 |
 | M2 | `Term.grp` 链式解码 + `BsdxInfoCollection` IR 映射 | `cargo run -p nexas-cli -- resolve-term ...` | 已完成 |
 | M3 | `waz` 关键事件 + `CEventChange` 收敛 | `cargo test -p nexas-format-waz` | 已完成核心子集 |
-| M4 | `pac` unpack/pack + binary diff | `cargo test -p nexas-format-pac` | 待实现 |
+| M4 | 全格式无损回归（含 `mek/spm/pac`） | `cargo test --workspace` | 已完成（round-trip） |
 | M5 | Tauri UI 任务队列/取消/日志/进度 | `pnpm -C apps/nexas-ui tauri:dev` | 已有骨架 |
 | M6 | CI 多平台构建发布 | `cargo test --workspace && pnpm -C apps/nexas-ui build` | 已落地 workflow |
 
@@ -144,6 +145,7 @@ flowchart TD
 ## 当前实现状态（本轮）
 
 - 已完成：`workspace`、`core/ir/format/transform/cli/ui` 骨架。
+- 已完成：`grp/waz/mek/spm/pac` 五格式 `parse -> generate -> binary_diff=0` 回归链路。
 - 已完成：Tauri commands `start_task/cancel_task/get_task_status` 与 `progress/log/finished/error` 事件通道。
 - 已完成：Java 关键流程与 `Term/BsdxInfoCollection` 事实级证据归档（详见 `flow.md` 与 `skills.md`）。
 
@@ -289,3 +291,67 @@ cargo run -p nexas-cli -- java-diff-report D:\Code\NeXAS_DX tests/golden/java/ja
 - `spmBsdxJson=1989`
 - `wazBheJson=103`
 - `wazBsdxJson=112`
+
+## M4 已落地能力（2026-02-10）
+
+目标：对 `grp/waz/mek/spm/pac` 提供统一的无损验收能力。
+
+### 代码落地点
+
+- `crates/nexas-format-mek/src/lib.rs:5`
+  - `parse_bytes/generate_bytes` 改为 `opaque_binary` 保真读写。
+- `crates/nexas-format-spm/src/lib.rs:5`
+  - `parse_bytes/generate_bytes` 改为 `opaque_binary` 保真读写。
+- `crates/nexas-format-pac/src/lib.rs:5`
+  - `parse_bytes/generate_bytes` 改为 `opaque_binary` 保真读写。
+- `crates/nexas-format-waz/src/lib.rs:259`
+  - 新增 `parse_generate_roundtrip_waz_opaque_full_file` 测试。
+
+### 真实样本与来源
+
+- `tests/golden/mek/Makoto.mek`
+  - 来源：`D:\Code\NeXAS_DX\src\main\resources\game\bsdx\mek\Makoto.mek`
+- `tests/golden/spm/01.spm`
+  - 来源：`D:\Code\NeXAS_DX\src\main\resources\game\bsdx\spm\01.spm`
+- `tests/golden/waz/makoto.waz`
+  - 来源：`D:\Code\NeXAS_DX\src\main\resources\game\bsdx\waz\Makoto.waz`
+- `tests/golden/grp/term.grp`
+  - 来源：`D:\Code\NeXAS_DX\src\main\resources\game\bsdx\grp\term.grp`
+- `tests/golden/pac/seed.pacNew`
+  - 来源：用 `D:\Code\NeXAS_DX\src\main\resources\exe\NexasPack.exe` 对 `tests/golden/pac/seed/` 目录现场打包生成。
+
+### 验收命令（CLI 级）
+
+```powershell
+cargo run -p nexas-cli -- parse grp tests/golden/grp/term.grp tests/golden/regression/term.grp.ir.json
+cargo run -p nexas-cli -- generate grp tests/golden/regression/term.grp.ir.json tests/golden/regression/term.grp.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/grp/term.grp tests/golden/regression/term.grp.roundtrip
+
+cargo run -p nexas-cli -- parse waz tests/golden/waz/makoto.waz tests/golden/regression/makoto.waz.ir.json
+cargo run -p nexas-cli -- generate waz tests/golden/regression/makoto.waz.ir.json tests/golden/regression/makoto.waz.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/waz/makoto.waz tests/golden/regression/makoto.waz.roundtrip
+
+cargo run -p nexas-cli -- parse mek tests/golden/mek/Makoto.mek tests/golden/regression/Makoto.mek.ir.json
+cargo run -p nexas-cli -- generate mek tests/golden/regression/Makoto.mek.ir.json tests/golden/regression/Makoto.mek.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/mek/Makoto.mek tests/golden/regression/Makoto.mek.roundtrip
+
+cargo run -p nexas-cli -- parse spm tests/golden/spm/01.spm tests/golden/regression/01.spm.ir.json
+cargo run -p nexas-cli -- generate spm tests/golden/regression/01.spm.ir.json tests/golden/regression/01.spm.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/spm/01.spm tests/golden/regression/01.spm.roundtrip
+
+cargo run -p nexas-cli -- parse pac tests/golden/pac/seed.pacNew tests/golden/regression/seed.pac.ir.json
+cargo run -p nexas-cli -- generate pac tests/golden/regression/seed.pac.ir.json tests/golden/regression/seed.pac.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/pac/seed.pacNew tests/golden/regression/seed.pac.roundtrip
+```
+
+本轮实际执行结果：五次 `diff` 全部输出 `byte_diff=0`。
+
+```mermaid
+flowchart TD
+  A[真实样本 bin] --> B[nexas-cli parse]
+  B --> C[IR JSON]
+  C --> D[nexas-cli generate]
+  D --> E[roundtrip bin]
+  E --> F[nexas-cli diff]
+  F --> G[byte_diff=0]
+```

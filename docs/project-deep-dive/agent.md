@@ -119,7 +119,7 @@ flowchart LR
 
 - `TODO`：把 `ProgramMaterial.grp` 三段数组的业务语义绑定到具体事件类型。
 - `TODO`：将 `int2` 语义从“统计推断”提升为“行为验证”。
-- `TODO`：补齐 `nexas-format-*` 真实解析逻辑与 golden 测试。
+- `TODO`：补齐 `mek/spm/pac/waz` 的语义级解析逻辑（当前已具备无损 opaque round-trip）。
 
 ## 11. M1 验收基准（已执行）
 
@@ -216,3 +216,36 @@ cargo run -p nexas-cli -- java-diff-report D:\Code\NeXAS_DX tests/golden/java/ja
 
 - 差分报告中 `git_tracked_changes` 是否为空需明确记录。
 - `resource_json_dirs` 计数变更必须回填到 `readme.md`。
+
+## 16. 五格式无损验收基准（新增）
+
+验收命令：
+
+```powershell
+cargo test --workspace
+
+cargo run -p nexas-cli -- parse grp tests/golden/grp/term.grp tests/golden/regression/term.grp.ir.json
+cargo run -p nexas-cli -- generate grp tests/golden/regression/term.grp.ir.json tests/golden/regression/term.grp.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/grp/term.grp tests/golden/regression/term.grp.roundtrip
+
+cargo run -p nexas-cli -- parse waz tests/golden/waz/makoto.waz tests/golden/regression/makoto.waz.ir.json
+cargo run -p nexas-cli -- generate waz tests/golden/regression/makoto.waz.ir.json tests/golden/regression/makoto.waz.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/waz/makoto.waz tests/golden/regression/makoto.waz.roundtrip
+
+cargo run -p nexas-cli -- parse mek tests/golden/mek/Makoto.mek tests/golden/regression/Makoto.mek.ir.json
+cargo run -p nexas-cli -- generate mek tests/golden/regression/Makoto.mek.ir.json tests/golden/regression/Makoto.mek.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/mek/Makoto.mek tests/golden/regression/Makoto.mek.roundtrip
+
+cargo run -p nexas-cli -- parse spm tests/golden/spm/01.spm tests/golden/regression/01.spm.ir.json
+cargo run -p nexas-cli -- generate spm tests/golden/regression/01.spm.ir.json tests/golden/regression/01.spm.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/spm/01.spm tests/golden/regression/01.spm.roundtrip
+
+cargo run -p nexas-cli -- parse pac tests/golden/pac/seed.pacNew tests/golden/regression/seed.pac.ir.json
+cargo run -p nexas-cli -- generate pac tests/golden/regression/seed.pac.ir.json tests/golden/regression/seed.pac.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/pac/seed.pacNew tests/golden/regression/seed.pac.roundtrip
+```
+
+通过标准：
+
+- 所有单元测试通过。
+- 五个 `diff` 命令全部输出 `byte_diff=0`。

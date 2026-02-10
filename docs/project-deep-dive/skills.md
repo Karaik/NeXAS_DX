@@ -230,3 +230,29 @@ flowchart LR
 - 最大目录：
   - `spmBsdxJson=1989`
   - `spmBheJson=748`
+
+## 15. 五格式无损回归技能（新增）
+
+目标：确保 `grp/waz/mek/spm/pac` 都满足 `parse -> generate -> binary_diff=0`。
+
+样本来源：
+
+- GRP: `D:\Code\NeXAS_DX\src\main\resources\game\bsdx\grp\term.grp`
+- WAZ: `D:\Code\NeXAS_DX\src\main\resources\game\bsdx\waz\Makoto.waz`
+- MEK: `D:\Code\NeXAS_DX\src\main\resources\game\bsdx\mek\Makoto.mek`
+- SPM: `D:\Code\NeXAS_DX\src\main\resources\game\bsdx\spm\01.spm`
+- PAC: `tests/golden/pac/seed.pacNew`（由 `NexasPack.exe` 打包 `tests/golden/pac/seed/` 得到）
+
+命令模板：
+
+- `cargo run -p nexas-cli -- parse <fmt> <input> <ir.json>`
+- `cargo run -p nexas-cli -- generate <fmt> <ir.json> <roundtrip.bin>`
+- `cargo run -p nexas-cli -- diff <input> <roundtrip.bin>`
+
+验收阈值：
+
+- 每个样本 `byte_diff=0`。
+
+注意：
+
+- 目前 `mek/spm/pac` 是 `opaque_binary` 保真实现，语义字段仍待补齐。

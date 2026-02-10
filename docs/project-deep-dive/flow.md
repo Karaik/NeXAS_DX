@@ -357,3 +357,54 @@ flowchart LR
 - `git_head=b0e323b`
 - `git_tracked_changes=[]`
 - `resource_json_total_files=3235`
+
+## 12. 五格式无损回归流程（本轮新增）
+
+目标：对 `grp/waz/mek/spm/pac` 执行统一的 `parse -> generate -> diff`，且 `byte_diff=0`。
+
+真实样本：
+
+- `tests/golden/grp/term.grp`
+- `tests/golden/waz/makoto.waz`
+- `tests/golden/mek/Makoto.mek`
+- `tests/golden/spm/01.spm`
+- `tests/golden/pac/seed.pacNew`
+
+PAC 样本来源：
+
+- 由 `D:\Code\NeXAS_DX\src\main\resources\exe\NexasPack.exe` 对 `tests/golden/pac/seed` 目录打包生成。
+
+```mermaid
+flowchart LR
+  A1[grp sample] --> P1[parse grp] --> G1[generate grp] --> D1[diff=0]
+  A2[waz sample] --> P2[parse waz] --> G2[generate waz] --> D2[diff=0]
+  A3[mek sample] --> P3[parse mek] --> G3[generate mek] --> D3[diff=0]
+  A4[spm sample] --> P4[parse spm] --> G4[generate spm] --> D4[diff=0]
+  A5[pac sample] --> P5[parse pac] --> G5[generate pac] --> D5[diff=0]
+```
+
+验收命令：
+
+```powershell
+cargo run -p nexas-cli -- parse grp tests/golden/grp/term.grp tests/golden/regression/term.grp.ir.json
+cargo run -p nexas-cli -- generate grp tests/golden/regression/term.grp.ir.json tests/golden/regression/term.grp.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/grp/term.grp tests/golden/regression/term.grp.roundtrip
+
+cargo run -p nexas-cli -- parse waz tests/golden/waz/makoto.waz tests/golden/regression/makoto.waz.ir.json
+cargo run -p nexas-cli -- generate waz tests/golden/regression/makoto.waz.ir.json tests/golden/regression/makoto.waz.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/waz/makoto.waz tests/golden/regression/makoto.waz.roundtrip
+
+cargo run -p nexas-cli -- parse mek tests/golden/mek/Makoto.mek tests/golden/regression/Makoto.mek.ir.json
+cargo run -p nexas-cli -- generate mek tests/golden/regression/Makoto.mek.ir.json tests/golden/regression/Makoto.mek.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/mek/Makoto.mek tests/golden/regression/Makoto.mek.roundtrip
+
+cargo run -p nexas-cli -- parse spm tests/golden/spm/01.spm tests/golden/regression/01.spm.ir.json
+cargo run -p nexas-cli -- generate spm tests/golden/regression/01.spm.ir.json tests/golden/regression/01.spm.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/spm/01.spm tests/golden/regression/01.spm.roundtrip
+
+cargo run -p nexas-cli -- parse pac tests/golden/pac/seed.pacNew tests/golden/regression/seed.pac.ir.json
+cargo run -p nexas-cli -- generate pac tests/golden/regression/seed.pac.ir.json tests/golden/regression/seed.pac.roundtrip
+cargo run -p nexas-cli -- diff tests/golden/pac/seed.pacNew tests/golden/regression/seed.pac.roundtrip
+```
+
+本轮执行结果：五次 `diff` 均输出 `byte_diff=0`。
