@@ -6,6 +6,8 @@ import com.giga.nexas.bhe2bsdx.steps.TransMekaResult;
 import com.giga.nexas.bhe2bsdx.steps.StaticAssetCopier;
 import com.giga.nexas.bhe2bsdx.steps.WazConverter;
 import com.giga.nexas.dto.ResponseDTO;
+import com.giga.nexas.transfer.bhe2bsdx.Bhe2BsdxBatchRunner;
+import com.giga.nexas.transfer.bhe2bsdx.Bhe2BsdxConfig;
 
 import com.giga.nexas.service.BheBinService;
 import com.giga.nexas.service.BsdxBinService;
@@ -50,6 +52,16 @@ public class TransferTest {
     private static final Logger log = LoggerFactory.getLogger(TransferTest.class);
     private final BsdxBinService bsdxBinService = new BsdxBinService();
     private final BheBinService bheBinService = new BheBinService();
+
+    /**
+     * 调用正式批处理工具（src/main 下的 Bhe2BsdxBatchRunner）。
+     * 使用默认配置，支持 -Dtransfer.sources / -Dtransfer.limit 过滤。
+     */
+    @Test
+    public void testBatchRunner() throws Exception {
+        Bhe2BsdxConfig config = Bhe2BsdxConfig.defaults();
+        new Bhe2BsdxBatchRunner(config).run();
+    }
 
     /**
      * 移植用，pipeline模拟
