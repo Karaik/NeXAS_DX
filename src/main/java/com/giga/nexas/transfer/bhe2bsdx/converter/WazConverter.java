@@ -9,6 +9,7 @@ import com.giga.nexas.exception.OperationException;
 import com.giga.nexas.util.InfoCollectionMapper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +22,11 @@ import java.util.Map;
 public class WazConverter {
 
     public Waz convert(com.giga.nexas.dto.bhe.waz.Waz bheWaz) {
-        return convert(bheWaz, null, null);
+        return convert(bheWaz, null, null, null);
     }
 
     public Waz convert(com.giga.nexas.dto.bhe.waz.Waz bheWaz, WazSequenceSanitizer sanitizer) {
-        return convert(bheWaz, sanitizer, null);
+        return convert(bheWaz, sanitizer, null, null);
     }
 
     public Waz convert(
@@ -33,11 +34,20 @@ public class WazConverter {
             WazSequenceSanitizer sanitizer,
             Map<Integer, Integer> spriteIndexMap
     ) {
+        return convert(bheWaz, sanitizer, spriteIndexMap, null);
+    }
+
+    public Waz convert(
+            com.giga.nexas.dto.bhe.waz.Waz bheWaz,
+            WazSequenceSanitizer sanitizer,
+            Map<Integer, Integer> spriteIndexMap,
+            SeGroupIndexMapper.SeGroupMap seGroupMap
+    ) {
         Waz bsdxWaz = new Waz();
         if (bheWaz == null) {
             return bsdxWaz;
         }
-        processWazaSkillUnitCollection(bsdxWaz, bheWaz, spriteIndexMap);
+        processWazaSkillUnitCollection(bsdxWaz, bheWaz, spriteIndexMap, seGroupMap);
         if (sanitizer != null) {
             sanitizer.sanitize(bsdxWaz);
         }
@@ -48,7 +58,8 @@ public class WazConverter {
     private void processWazaSkillUnitCollection(
             com.giga.nexas.dto.bsdx.waz.Waz bsdxWaz,
             com.giga.nexas.dto.bhe.waz.Waz bheWaz,
-            Map<Integer, Integer> spriteIndexMap
+            Map<Integer, Integer> spriteIndexMap,
+            SeGroupIndexMapper.SeGroupMap seGroupMap
     ) {
         bsdxWaz.setFileName(bheWaz.getFileName());
         bsdxWaz.setExtensionName(bheWaz.getExtensionName());
@@ -165,6 +176,7 @@ public class WazConverter {
                             BeanUtil.copyProperties(srcInfo, ev);
                         } else if (dstInfo instanceof CEventSe ev) {
                             BeanUtil.copyProperties(srcInfo, ev);
+                            remapSeEvent(ev, seGroupMap);
                         } else if (dstInfo instanceof CEventTouch ev) {
                             BeanUtil.copyProperties(srcInfo, ev);
                         } else if (dstInfo instanceof CEventEffect ev) {
@@ -273,6 +285,32 @@ public class WazConverter {
         if (mapped != null) {
             ev.setSpmFileSequence(mapped);
         }
+    }
+
+    private void remapSeEvent(CEventSe ev, SeGroupIndexMapper.SeGroupMap seGroupMap) {
+        if (ev == null) {
+            return;
+        }
+        List<byte[]> sourceBlocks = ev.getByteDataList();
+        if (sourceBlocks == null || sourceBlocks.isEmpty()) {
+            ev.setByteDataList(new ArrayList<>());
+            ev.setCount(0);
+            return;
+        }
+        List<byte[]> remappedBlocks = new ArrayList<>(sourceBlocks.size());
+        for (byte[] source : sourceBlocks) {
+            if (source == null) {
+                remappedBlocks.add(new byte[0]);
+                continue;
+            }
+            byte[] copied = Arrays.copyOf(source, source.length);
+            if (seGroupMap != null) {
+                seGroupMap.remapBlockInPlace(copied);
+            }
+            remappedBlocks.add(copied);
+        }
+        ev.setByteDataList(remappedBlocks);
+        ev.setCount(remappedBlocks.size());
     }
 
     // bhe -> bsdx

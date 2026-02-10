@@ -23,6 +23,7 @@ public class TransMekaPipeline {
     private final BatVoiceConverter batVoiceConverter = new BatVoiceConverter();
     private final GrpRegistryUpdater grpRegistryUpdater = new GrpRegistryUpdater();
     private final SpriteGroupIndexMapper spriteGroupIndexMapper = new SpriteGroupIndexMapper();
+    private final SeGroupIndexMapper seGroupIndexMapper = new SeGroupIndexMapper();
     private final MekConverter mekConverter = new MekConverter();
     private final WazConverter wazConverter = new WazConverter();
     private final SpmConverter spmConverter = new SpmConverter();
@@ -131,6 +132,11 @@ public class TransMekaPipeline {
             );
         }
         result.setSpriteIndexMap(spriteIndexMap);
+        SeGroupIndexMapper.SeGroupMap seGroupMap = seGroupIndexMapper.build(
+                request.getBheSeGroup(),
+                request.getBsdxSeGroup(),
+                request.getSeGroupAppendIndex()
+        );
 
         // Step4: 转换核心资源（mek/waz/spm）
         int voiceGroupCount = request.getBsdxBatVoice() != null
@@ -138,7 +144,7 @@ public class TransMekaPipeline {
                 : 0;
         result.setBsdxMeka(mekConverter.convert(request.getBheMek(), spriteIndexMap, voiceGroupCount));
         WazSequenceSanitizer sanitizer = WazSequenceSanitizer.fromBsdxWaz(request.getBsdxWazRegistry());
-        result.setBsdxWaz(wazConverter.convert(request.getBheWaz(), sanitizer, spriteIndexMap));
+        result.setBsdxWaz(wazConverter.convert(request.getBheWaz(), sanitizer, spriteIndexMap, seGroupMap));
         result.setBsdxSpm(spmConverter.convert(request.getBheSpm()));
         result.setBsdxCSpm(spmConverter.convert(request.getBheCSpm()));
         result.setBsdxSSpm(spmConverter.convert(request.getBheSSpm()));

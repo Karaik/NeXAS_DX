@@ -94,12 +94,16 @@ public class Bhe2BsdxSingleRunner {
                 (com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp) bheGrp.get("wazagroup");
         com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp bheSpriteGroup =
                 (com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp) bheGrp.get("spritegroup");
+        com.giga.nexas.dto.bhe.grp.groupmap.SeGroupGrp bheSeGroup =
+                (com.giga.nexas.dto.bhe.grp.groupmap.SeGroupGrp) bheGrp.get("segroup");
         com.giga.nexas.dto.bsdx.grp.groupmap.MekaGroupGrp bsdxMekaGroup =
                 (com.giga.nexas.dto.bsdx.grp.groupmap.MekaGroupGrp) bsdxGrp.get("mekagroup");
         com.giga.nexas.dto.bsdx.grp.groupmap.WazaGroupGrp bsdxWazaGroup =
                 (com.giga.nexas.dto.bsdx.grp.groupmap.WazaGroupGrp) bsdxGrp.get("wazagroup");
         com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp bsdxSpriteGroup =
                 (com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp) bsdxGrp.get("spritegroup");
+        com.giga.nexas.dto.bsdx.grp.groupmap.SeGroupGrp bsdxSeGroup =
+                (com.giga.nexas.dto.bsdx.grp.groupmap.SeGroupGrp) bsdxGrp.get("segroup");
 
         com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp.MekaGroup sourceMekaGroup =
                 discovery.findMekaGroupByCode(bheMekaGroup, codeName);
@@ -151,9 +155,11 @@ public class Bhe2BsdxSingleRunner {
                 sourceWazaGroup,
                 sourceSpriteGroup,
                 bheSpriteGroup,
+                bheSeGroup,
                 bsdxMekaGroup,
                 bsdxWazaGroup,
                 bsdxSpriteGroup,
+                bsdxSeGroup,
                 bsdxWaz,
 
                 mekaPilotSpm,
@@ -206,6 +212,9 @@ public class Bhe2BsdxSingleRunner {
         outputGrp.put("mekagroup", bsdxMekaGroup);
         outputGrp.put("wazagroup", bsdxWazaGroup);
         outputGrp.put("spritegroup", bsdxSpriteGroup);
+        if (bsdxSeGroup != null) {
+            outputGrp.put("segroup", bsdxSeGroup);
+        }
 
         Map<String, com.giga.nexas.dto.bsdx.mek.Mek> outputMek = new HashMap<>();
         if (result != null && result.getBsdxMeka() != null) {

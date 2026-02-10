@@ -328,5 +328,5 @@ flowchart TB
 ## 11. 待解决
 
 - **wazagroup.param**：BHE 与 BSDX 中同名参数的数值含义不一致，当前直接拷贝可能导致武装行为异常
-- **segroup**：音效组（SE Group）尚未纳入映射流程，移植后的机体可能缺少部分音效
+- **segroup**：已接入 `seFileName` 驱动的索引映射（BHE -> BSDX），并在目标组 `index=11` 自动追加缺失项；`WAZ.CEventSe.byteDataList` 的前 8 字节 `(group,seq)` 会同步重写
 - **skillInfoUnknownList**：WAZ 槽位映射中部分技能信息槽位被丢弃，可能影响技能描述显示

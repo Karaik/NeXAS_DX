@@ -32,9 +32,11 @@ public class TransMeka {
             com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp.WazaGroupEntry bheWazaGroup,
             com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp.SpriteGroupEntry bheSpriteGroupEntry,
             com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp bheSpriteGroup,
+            com.giga.nexas.dto.bhe.grp.groupmap.SeGroupGrp bheSeGroup,
             MekaGroupGrp bsdxMekaGroup,
             WazaGroupGrp bsdxWazaGroup,
             SpriteGroupGrp bsdxSpriteGroup,
+            com.giga.nexas.dto.bsdx.grp.groupmap.SeGroupGrp bsdxSeGroup,
             java.util.Map<String, com.giga.nexas.dto.bsdx.waz.Waz> bsdxWazRegistry,
 
             com.giga.nexas.dto.bsdx.spm.Spm mekaPilotSpm,
@@ -48,8 +50,8 @@ public class TransMeka {
         TransMekaRequest request = TransMekaRequest.fromLegacy(
                 bheMek, bheWaz, bheSpm, bheCSpm, bheSSpm, bheGSpm, bheMSpm,
                 bheBatVoiceGroup, bsdxBatVoice,
-                bheMekaGroup, bheWazaGroup, bheSpriteGroupEntry, bheSpriteGroup,
-                bsdxMekaGroup, bsdxWazaGroup, bsdxSpriteGroup, bsdxWazRegistry,
+                bheMekaGroup, bheWazaGroup, bheSpriteGroupEntry, bheSpriteGroup, bheSeGroup,
+                bsdxMekaGroup, bsdxWazaGroup, bsdxSpriteGroup, bsdxSeGroup, bsdxWazRegistry,
                 mekaPilotSpm, selectMekaMenuMekaSpm, selectMekaMenuDat,
                 targetBsdxMek, targetCodeName, keepTargetKey
         );

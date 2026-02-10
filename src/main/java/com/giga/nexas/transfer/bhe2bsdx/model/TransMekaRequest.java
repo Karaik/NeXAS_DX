@@ -29,13 +29,16 @@ public class TransMekaRequest {
     private com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp.WazaGroupEntry bheWazaGroup;
     private com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp.SpriteGroupEntry bheSpriteGroupEntry;
     private com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp bheSpriteGroup;
+    private com.giga.nexas.dto.bhe.grp.groupmap.SeGroupGrp bheSeGroup;
 
     // ===== BSDX 目标注册表/容器 =====
     private BatVoiceGrp bsdxBatVoice;
     private MekaGroupGrp bsdxMekaGroup;
     private WazaGroupGrp bsdxWazaGroup;
     private SpriteGroupGrp bsdxSpriteGroup;
+    private com.giga.nexas.dto.bsdx.grp.groupmap.SeGroupGrp bsdxSeGroup;
     private java.util.Map<String, com.giga.nexas.dto.bsdx.waz.Waz> bsdxWazRegistry;
+    private int seGroupAppendIndex = 11;
 
     // ===== BSDX 目标槽位（默认使用 Nanoha） =====
     private com.giga.nexas.dto.bsdx.mek.Mek targetBsdxMek;
@@ -66,9 +69,11 @@ public class TransMekaRequest {
             com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp.WazaGroupEntry bheWazaGroup,
             com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp.SpriteGroupEntry bheSpriteGroupEntry,
             com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp bheSpriteGroup,
+            com.giga.nexas.dto.bhe.grp.groupmap.SeGroupGrp bheSeGroup,
             MekaGroupGrp bsdxMekaGroup,
             WazaGroupGrp bsdxWazaGroup,
             SpriteGroupGrp bsdxSpriteGroup,
+            com.giga.nexas.dto.bsdx.grp.groupmap.SeGroupGrp bsdxSeGroup,
             java.util.Map<String, com.giga.nexas.dto.bsdx.waz.Waz> bsdxWazRegistry,
             Spm mekaPilotSpm,
             Spm selectMekaMenuMekaSpm,
@@ -91,9 +96,11 @@ public class TransMekaRequest {
         request.setBheWazaGroup(bheWazaGroup);
         request.setBheSpriteGroupEntry(bheSpriteGroupEntry);
         request.setBheSpriteGroup(bheSpriteGroup);
+        request.setBheSeGroup(bheSeGroup);
         request.setBsdxMekaGroup(bsdxMekaGroup);
         request.setBsdxWazaGroup(bsdxWazaGroup);
         request.setBsdxSpriteGroup(bsdxSpriteGroup);
+        request.setBsdxSeGroup(bsdxSeGroup);
         request.setBsdxWazRegistry(bsdxWazRegistry);
         request.setMekaPilotSpm(mekaPilotSpm);
         request.setSelectMekaMenuMekaSpm(selectMekaMenuMekaSpm);

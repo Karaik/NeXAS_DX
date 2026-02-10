@@ -195,7 +195,7 @@ flowchart LR
 
 - `MekVoiceInfo.groupId`: BHE范围6-62 > BSDX组数30
 - `wazagroup.param`: BHE/BSDX同名参数不一致
-- `segroup`: 未纳入映射流程
+- `segroup`: 已纳入映射流程，按 `seFileName` 映射并自动补齐到 BSDX `segroup[11]`；`CEventSe.byteDataList` 的 `(group,seq)` 引用会重写
 - `skillInfoUnknownList`: 部分槽位被丢弃
 
 ---
