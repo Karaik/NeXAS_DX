@@ -481,3 +481,52 @@ sequenceDiagram
 
 - `segroup` 不再是“未映射状态”。
 - `CEventSe` 的索引引用在转换后与 BSDX `segroup` 对齐。
+
+## 附录：tky.pac 人工修正包差异门禁（2026-02-12 复核）
+
+本节把“人工修正包 vs Java 迁移输出”的对照，固化为迁移流程门禁步骤。
+
+数据来源：
+
+- `src/main/resources/tky.pac`
+- `target/tky_pac_analysis/tky`
+- `src/main/resources/testBhe/tsukuyomi`
+- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/tky.pac.report.json`
+
+复核命令：
+
+```powershell
+mvn -q "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testBatchRunner" "-Dtransfer.sources=tsukuyomi" test
+```
+
+统计结果：
+
+- `manualCount=120`
+- `generatedCount=107`
+- `onlyInManualCount=16`
+- `onlyInGeneratedCount=3`
+- `commonCount=104`
+- `sameHashCount=90`
+- `diffHashCount=14`
+
+迁移流程门禁：
+
+```mermaid
+flowchart LR
+  A[TransferTest.testBatchRunner] --> B[Bhe2BsdxBatchRunner.run]
+  B --> C[Bhe2BsdxSingleRunner.run]
+  C --> D[TransMekaPipeline + DependencyCollector + AssetCopier]
+  D --> E[输出 testBhe/tsukuyomi]
+  F[解包 tky.pac 到 target/tky_pac_analysis/tky] --> G[文件名对齐]
+  E --> G
+  G --> H[SHA256 对照]
+  H --> I[onlyInManual / onlyInGenerated / diffHash]
+  I --> J[更新 report + 文档 + 下一轮定位点]
+```
+
+流程定位点：
+
+1. 依赖闭包：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransferDependencyCollector.java:42`
+2. `segroup` 映射：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/SeGroupIndexMapper.java:22`
+3. `CEventSe` 写回：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/WazConverter.java:290`
+4. 静态资源收敛：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/StaticAssetCopier.java:29`
