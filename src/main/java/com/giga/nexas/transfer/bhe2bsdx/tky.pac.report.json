@@ -1,32 +1,31 @@
-﻿{
-    "generatedAt":  "2026-02-12 01:00:40",
+{
+    "generatedAt":  "2026-02-12 01:17:32",
     "pacPath":  "D:\\Code\\NeXAS_DX\\src\\main\\resources\\tky.pac",
     "pacSize":  13018652,
     "unpackDir":  "D:\\Code\\NeXAS_DX\\target\\tky_pac_analysis\\tky",
     "unpackFileCount":  120,
     "unpackTotalBytes":  16079825,
     "unpackExtCounts":  {
-                            ".grp":  5,
-                            ".mek":  1,
                             ".ogg":  62,
-                            ".png":  35,
+                            ".grp":  5,
                             ".spm":  12,
-                            ".waz":  5
+                            ".waz":  5,
+                            ".png":  35,
+                            ".mek":  1
                         },
     "comparedTransferDir":  "D:\\Code\\NeXAS_DX\\src\\main\\resources\\testBhe\\tsukuyomi",
-    "transferFileCount":  107,
-    "transferTotalBytes":  14489457,
+    "transferFileCount":  108,
+    "transferTotalBytes":  15006317,
     "transferExtCounts":  {
                               ".grp":  5,
-                              ".mek":  1,
-                              ".ogg":  55,
-                              ".png":  27,
                               ".spm":  15,
-                              ".waz":  4
+                              ".waz":  5,
+                              ".png":  27,
+                              ".mek":  1,
+                              ".ogg":  55
                           },
     "onlyInTky":  [
                       "b6_hit03.ogg",
-                      "Bomb.waz",
                       "bomb_011_0001.png",
                       "bomb_066_0001.png",
                       "door_largemetal_open10.ogg",
@@ -47,11 +46,12 @@
                            "fire.spm",
                            "smoke.spm"
                        ],
-    "commonCount":  104,
+    "commonCount":  105,
     "sameHashCount":  90,
-    "diffHashCount":  14,
+    "diffHashCount":  15,
     "differentHashFiles":  [
                                "bomb.spm",
+                               "Bomb.waz",
                                "C_zako_021a.spm",
                                "Effect.waz",
                                "link.spm",

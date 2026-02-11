@@ -5,7 +5,7 @@
 本文件用于确认两件事：
 
 1. Java 迁移主流程是否按预期执行，并且可追溯到具体代码位置。
-2. 你的人工修正包与当前迁移产物的真实差异是什么，并把差异反映到迁移流程门禁中。
+2. 人工修正包与当前迁移产物的真实差异，并把差异反映到迁移流程门禁。
 
 ---
 
@@ -22,56 +22,31 @@
 
 入口与调度：
 
-- `src/test/java/com/giga/nexas/bhe2bsdx/TransferTest.java:61`
+- `src/test/java/com/giga/nexas/bhe2bsdx/TransferTest.java`
   - `testBatchRunner()`
-- `src/test/java/com/giga/nexas/bhe2bsdx/TransferTest.java:63`
-  - `new Bhe2BsdxBatchRunner(config).run()`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxBatchRunner.java:23`
+- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxBatchRunner.java`
   - `run()`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxBatchRunner.java:41`
   - `singleRunner.run(source)`
 
 单机体迁移主链：
 
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java:37`
+- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java`
   - `run(MekaSource source)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java:56`
   - `prepareOutputDir(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransMekaPipeline.java:35`
+  - `includeBombWazWhenBombSpritePresent(...)`
+- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransMekaPipeline.java`
   - `execute(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransMekaPipeline.java:145`
-  - `seGroupIndexMapper.build(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransMekaPipeline.java:157`
-  - `wazConverter.convert(..., seGroupMap)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/WazConverter.java:290`
+- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/WazConverter.java`
   - `remapSeEvent(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/WazConverter.java:308`
-  - `seGroupMap.remapBlockInPlace(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java:209`
-  - `dependencyCollector.collectWazOutputMap(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java:216`
-  - `dependencyCollector.collectSpmOutputMap(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java:247`
-  - `outputWriter.writeOutputs(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java:271`
-  - `assetCopier.copyAssets(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java:274`
-  - `PacUtil.pack(...)`
-
-依赖闭包与静态资源收敛：
-
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransferDependencyCollector.java:42`
+- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransferDependencyCollector.java`
   - `collectWazOutputMap(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransferDependencyCollector.java:50`
   - `collectSpmOutputMap(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransferDependencyCollector.java:115`
-  - `ArrayDeque` + `visitedRefs` 依赖闭包
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/StaticAssetCopier.java:29`
+- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/StaticAssetCopier.java`
   - `copyAssets(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/StaticAssetCopier.java:161`
-  - `collectReferencedImageNo(...)`
-- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/StaticAssetCopier.java:187`
-  - `collectReferencedPageNo(...)`
+- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransMekaOutputWriter.java`
+  - `writeOutputs(...)`
+- `src/main/java/com/giga/nexas/util/PacUtil.java`
+  - `pack(...)`
 
 ```mermaid
 flowchart TD
@@ -84,9 +59,10 @@ flowchart TD
   E2 --> E3[remapSeEvent/remapBlockInPlace]
   C --> F[TransferDependencyCollector.collectWazOutputMap]
   C --> G[TransferDependencyCollector.collectSpmOutputMap]
-  C --> H[TransMekaOutputWriter.writeOutputs]
-  C --> I[StaticAssetCopier.copyAssets]
-  C --> J[PacUtil.pack]
+  C --> H[includeBombWazWhenBombSpritePresent]
+  C --> I[TransMekaOutputWriter.writeOutputs]
+  C --> J[StaticAssetCopier.copyAssets]
+  C --> K[PacUtil.pack]
 ```
 
 ---
@@ -98,80 +74,86 @@ flowchart TD
 执行命令：
 
 ```powershell
-mvn -q "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testBatchRunner,com.giga.nexas.transfer.bhe2bsdx.converter.TransferDependencyCollectorTest,com.giga.nexas.transfer.bhe2bsdx.converter.StaticAssetCopierTest,com.giga.nexas.transfer.bhe2bsdx.converter.SeGroupRealDataValidationTest" "-Dtransfer.sources=tsukuyomi" test
+mvn -q test
 ```
 
-关键结果（日志实测）：
+关键结果（实测）：
 
-- 仅迁移 `tsukuyomi`，批处理成功 `Success: 1, Failed: 0, Total: 1`
+- 全量测试通过（Exit 0）
 - `segroup mapping appended 644 missing items into BSDX group 11`
-- 输出计数：`grp=5, mek=1, waz=4, spm=15`
-- 静态资源复制：`总计=372, 复制=82, 缺失=290`
-- `SeGroupRealDataValidationTest` 结果：
-  - `checkedPairsInSeGroup=1526`
-  - `changedPairsInSeGroup=1526`
-  - `checkedBlocks=7599`
-  - `changedBlocks=7599`
-  - `skippedUnknownPairs=0`
+- `Success: 1, Failed: 0, Total: 1`（`tsukuyomi` 定向批处理）
+- 迁移输出（`tky.pac.report.json`）：`grp=5, mek=1, waz=5, spm=15`
+- 静态资源复制日志：`总计=372, 复制=82, 缺失=290, 重名=0`
 
 ### 4.2 人工修正包 vs 迁移输出差异复核
 
-执行命令（独立 hash 计算，不依赖现有 report）：
+执行方式（独立 hash 计算，不依赖旧 report）：
 
 ```powershell
-$manual='d:\Code\NeXAS_DX\target\tky_pac_analysis\tky'
-$gen='d:\Code\NeXAS_DX\src\main\resources\testBhe\tsukuyomi'
-# 递归文件名对齐 + SHA256 对照
+$manual='D:\Code\NeXAS_DX\target\tky_pac_analysis\tky'
+$gen='D:\Code\NeXAS_DX\src\main\resources\testBhe\tsukuyomi'
+# 文件名对齐 + SHA256 对照
 ```
 
 实测统计：
 
 - `manualCount=120`
-- `generatedCount=107`
-- `onlyInManualCount=16`
+- `generatedCount=108`
+- `onlyInManualCount=15`
 - `onlyInGeneratedCount=3`
-- `commonCount=104`
+- `commonCount=105`
 - `sameHashCount=90`
-- `diffHashCount=14`
+- `diffHashCount=15`
 
 差异清单：
 
-- `onlyInManual`（16）：
-  - `Bomb.waz`
+- `onlyInManual`（15）：
   - `b6_hit03.ogg`
+  - `bomb_011_0001.png`
+  - `bomb_066_0001.png`
   - `door_largemetal_open10.ogg`
   - `gun_ammoout_scifi1.ogg`
   - `magic_glow1.ogg`
-  - `menu_magic02.ogg`
-  - `RE_Iron04b.ogg`
-  - `zoom_sniperscope_in.ogg`
-  - `bomb_011_0001.png`
-  - `bomb_066_0001.png`
   - `mark_etc014_0001.png`
+  - `menu_magic02.ogg`
   - `pic_134_0001.png`
   - `pic_142_0001.png`
+  - `RE_Iron04b.ogg`
   - `tama_123_0001.png`
   - `tama_energy021_0001.png`
   - `tama_energy034_0001.png`
+  - `zoom_sniperscope_in.ogg`
 - `onlyInGenerated`（3）：
   - `c_tsukuyomi.spm`
   - `fire.spm`
   - `smoke.spm`
-- `diffHashFiles`（14）：
-  - `nanoha.mek`
-  - `nanoha.waz`
+- `diffHashFiles`（15）：
+  - `Bomb.waz`
+  - `C_zako_021a.spm`
   - `Effect.waz`
   - `SeGroup.grp`
-  - `wazagroup.grp`
-  - `bomb.spm`
-  - `C_zako_021a.spm`
-  - `link.spm`
-  - `mark.spm`
-  - `pic.spm`
-  - `tama.spm`
   - `Tama03.waz`
   - `Tama05.waz`
+  - `bomb.spm`
+  - `link.spm`
+  - `mark.spm`
+  - `nanoha.mek`
+  - `nanoha.waz`
+  - `pic.spm`
+  - `tama.spm`
+  - `wazagroup.grp`
   - `zako_021a.spm`
+
+关键样本对照：
+
+| 文件 | manual size | generated size | manual sha256 | generated sha256 |
+|---|---:|---:|---|---|
+| `Bomb.waz` | 520995 | 516860 | `73D5868A1EEECAE9D1241A058D5BDA3495911058A542A4AED7C73A0EBBCE2AE7` | `737C114D7F6F521830D559F7BAF60B8E66B21D7FB61A66541A117EF65D4B49E4` |
+| `SeGroup.grp` | 66416 | 66171 | `2BE79B41E961EF78DF42A372D0E8FD2907B0832F06E301EF305A9BB0F8AB12FB` | `3087E55E8B88204F1CEE6859C9D477C760CE45360006E5532A65FD7C4DA8404E` |
+| `wazagroup.grp` | 3911 | 3911 | `3E77C4B33C0C67ADFBAEB690AB156E73320899F0E006E853912B938239EBEB4D` | `8A9C391426C8C6DD2C45BE56550A0532F23381AFED5A7DF79D7A2ADAE10CF761` |
+| `nanoha.waz` | 110839 | 111241 | `AEC7AF0725300181849F446510289C917F0AC1B6171FE80FF8397DEDBE572EDD` | `FEECF356AB623E09198B77816F834FDE448587BAFC4C55FDF319E35CE36E4D52` |
+| `nanoha.mek` | 41077 | 53401 | `609AB01D5DC88DFAC3DC029C33572CC308CCB0E155357B079F0296532D85590B` | `239E73A6A38FD9B1775D4C39019EE02019853C3557063288CE45879AC55D7A46` |
+| `m_tsukuyomi.spm` | 166 | 166 | `9C6B2D97C577ACAB148AC6400FFC6EC0645968C8BB6283F9F17B0A3FC3403095` | `9C6B2D97C577ACAB148AC6400FFC6EC0645968C8BB6283F9F17B0A3FC3403095` |
 
 ---
 
@@ -179,19 +161,21 @@ $gen='d:\Code\NeXAS_DX\src\main\resources\testBhe\tsukuyomi'
 
 ### 5.1 已落地并生效
 
-1. 输出文件从“主文件直写”调整为“依赖闭包输出”。
-2. `segroup` 映射在主链接入，并写回 `CEventSe.byteDataList` 前 8 字节（group/seq）。
-3. 静态资源从“全量 imageData”收敛到 `anim -> pat -> page -> chip.imageNo` 引用链，越界时 fallback。
-4. 每次迁移前清理输出目录，防止历史文件污染本轮差异。
+1. 输出文件由依赖闭包控制（`collectWazOutputMap` / `collectSpmOutputMap`）。
+2. `segroup` 映射主链接入，并写回 `CEventSe.byteDataList` 前 8 字节（group/seq）。
+3. 静态资源从全量目录收敛到引用链采集（`anim -> pat -> page -> chip.imageNo`）并复制。
+4. 每次迁移前清理输出目录，防止历史文件污染。
+5. 当输出中存在 `bomb.spm` 且缺失 `bomb.waz` 时，自动补入 `bomb.waz`（`includeBombWazWhenBombSpritePresent(...)`）。
 
-### 5.2 已确认但仍未完全闭环
+### 5.2 当前未闭环项
 
-1. 人工修正包中的 `Bomb.waz` 与多项 `ogg/png` 仍未进入当前迁移输出。
-2. `diffHashCount=14` 仍需要按文件粒度继续做字段级二进制对照，区分“语义等价差异”和“运行行为差异”。
+1. `Bomb.waz` 已进入输出集合，但二进制内容仍与人工包不同（已转为 `diffHashFiles`）。
+2. 仍有 15 项 `onlyInManual`（主要是 `ogg/png`）未被当前链路纳入。
+3. `diffHashCount=15` 需要继续按字段级二进制对照，区分“语义等价差异”与“运行行为差异”。
 
 ---
 
-## 6. 迁移流程门禁（已写入执行口径）
+## 6. 迁移流程门禁（执行口径）
 
 ```mermaid
 flowchart LR
@@ -208,7 +192,7 @@ flowchart LR
 门禁规则（当前）：
 
 1. `onlyInGenerated` 仅允许预期文件：`c_tsukuyomi.spm`、`fire.spm`、`smoke.spm`。
-2. `onlyInManual` 和 `diffHashFiles` 变化时，必须追加一条“来源定位说明”（对应到主链节点或外部资源缺失）。
+2. `onlyInManual` 和 `diffHashFiles` 变化时，必须追加“来源定位说明”（对应主链节点或外部资源缺失）。
 3. 更新 `tky.pac.report.json` 时，必须同步更新本文件与 `docs/project-deep-dive/tky-pac-analysis.md`。
 
 ---
@@ -218,5 +202,4 @@ flowchart LR
 - `src/main/java/com/giga/nexas/transfer/bhe2bsdx/tky.pac.report.json`
 - `docs/project-deep-dive/tky-pac-analysis.md`
 - `docs/project-deep-dive/flow.md`
-- `D:\Code\NeXAS_DX_Tauri\docs/project-deep-dive/tky-pac-analysis.md`
-
+- `D:\Code\NeXAS_DX_Tauri\docs\project-deep-dive/tky-pac-analysis.md`

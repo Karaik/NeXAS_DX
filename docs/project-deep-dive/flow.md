@@ -496,26 +496,29 @@ sequenceDiagram
 复核命令：
 
 ```powershell
-mvn -q "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testBatchRunner" "-Dtransfer.sources=tsukuyomi" test
+mvn -q test
 ```
 
 统计结果：
 
 - `manualCount=120`
-- `generatedCount=107`
-- `onlyInManualCount=16`
+- `generatedCount=108`
+- `onlyInManualCount=15`
 - `onlyInGeneratedCount=3`
-- `commonCount=104`
+- `commonCount=105`
 - `sameHashCount=90`
-- `diffHashCount=14`
+- `diffHashCount=15`
 
-迁移流程门禁：
+关键变化：
+
+- `Bomb.waz` 已从 `onlyInManual` 转为 `diffHashFiles`。
+- `onlyInManual` 现为 15 项（`ogg/png`）。
 
 ```mermaid
 flowchart LR
   A[TransferTest.testBatchRunner] --> B[Bhe2BsdxBatchRunner.run]
   B --> C[Bhe2BsdxSingleRunner.run]
-  C --> D[TransMekaPipeline + DependencyCollector + AssetCopier]
+  C --> D[TransMekaPipeline + DependencyCollector + includeBombWazWhenBombSpritePresent + AssetCopier]
   D --> E[输出 testBhe/tsukuyomi]
   F[解包 tky.pac 到 target/tky_pac_analysis/tky] --> G[文件名对齐]
   E --> G
@@ -526,7 +529,8 @@ flowchart LR
 
 流程定位点：
 
-1. 依赖闭包：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransferDependencyCollector.java:42`
-2. `segroup` 映射：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/SeGroupIndexMapper.java:22`
-3. `CEventSe` 写回：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/WazConverter.java:290`
-4. 静态资源收敛：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/StaticAssetCopier.java:29`
+1. 依赖闭包：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransferDependencyCollector.java`
+2. `bomb.waz` 补入：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java` 的 `includeBombWazWhenBombSpritePresent(...)`
+3. `segroup` 映射：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/SeGroupIndexMapper.java`
+4. `CEventSe` 写回：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/WazConverter.java`
+5. 静态资源收敛：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/StaticAssetCopier.java`

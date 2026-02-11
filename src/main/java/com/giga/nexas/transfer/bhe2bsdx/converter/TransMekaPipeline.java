@@ -10,16 +10,16 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 杩佺Щ娴佺▼缂栨帓鍣細鎸夋楠ゆ墽琛屽苟浜у嚭缁撴灉銆?
+ * Migration pipeline orchestrator: executes each step and returns converted results.
  *
- * 娴佺▼锛堟枃瀛楁祦绋嬪浘锛夛細
- * 杈撳叆(BHE: mek/waz/spm/grp/batvoice)
- * -> Step1: BatVoice 娣辨嫹璐濆苟鍐欏叆鐩爣妲戒綅锛堥粯璁?Nanoha锛?
- * -> Step2: grp 瀵归綈锛堢洰鏍囨Ы浣嶆浛鎹㈡垨 upsert锛夊苟鐢熸垚绱㈠紩
- * -> Step3: spritegroup 绱㈠紩鏄犲皠(BHE index -> BSDX index)
- * -> Step4: 璧勬簮杞崲(mek/waz/spm锛屽惈 hitbox)
- * -> Step5: 鍥炲啓 MekBasicInfo 鐨?waz/spm 绱㈠紩
- * -> Step6: UI SPM 鎸傛帴锛堟浛鎹?Nanoha 妲戒綅锛?
+ * Flow:
+ * input(BHE: mek/waz/spm/grp/batvoice)
+ * -> Step1: copy BatVoice into target slot (default Nanoha slot)
+ * -> Step2: align grp registries (replace target slot or upsert) and build indices
+ * -> Step3: build spritegroup index map (BHE index -> BSDX index)
+ * -> Step4: convert core resources (mek/waz/spm, including hitbox data)
+ * -> Step5: write back waz/spm indices into MekBasicInfo
+ * -> Step6: attach UI SPM replacement for target slot
  */
 public class TransMekaPipeline {
 
@@ -42,7 +42,7 @@ public class TransMekaPipeline {
         boolean keepTargetKey = request.isKeepTargetKey();
         boolean useTargetSlot = request.getTargetBsdxMek() != null && targetCode != null;
 
-        // Step1: batvoice 娣辨嫹璐濆苟鍐欏叆鐩爣妲戒綅锛堥粯璁?Nanoha锛?
+        // Step1: copy batvoice into target slot (default Nanoha)
         if (request.getBheBatVoiceGroup() != null && request.getBsdxBatVoice() != null) {
             if (useTargetSlot) {
                 int batVoiceIndex = findBatVoiceGroupIndex(request.getBsdxBatVoice(), targetCode);
@@ -65,7 +65,7 @@ public class TransMekaPipeline {
             }
         }
 
-        // Step2: grp 瀵归綈锛岃繑鍥炴渶缁堝簭鍙凤紙绱㈠紩鐢ㄤ簬 mek/waz/spm 瀵归綈锛?
+        // Step2: align grp and return final sequence indices for mek/waz/spm
         if (useTargetSlot) {
             int mekaIndex = grpRegistryUpdater.findMekaGroupIndexByCode(request.getBsdxMekaGroup(), targetCode);
             if (mekaIndex >= 0) {
@@ -109,8 +109,8 @@ public class TransMekaPipeline {
             );
         }
 
-        // Step3: spritegroup 鏄犲皠锛圔HE 绱㈠紩 -> BSDX 绱㈠紩锛?
-        // 鍏堜粠 BHE mek 鐨?materialBlock 鎶藉彇闇€瑕佺殑 spritegroup 绱㈠紩锛屽啀鎸?BHE grp 閲嶅缓鍒?BSDX
+        // Step3: spritegroup mapping (BHE index -> BSDX index)
+        // Collect required sprite indices from BHE mek/waz, then map into BSDX grp.
         Map<Integer, Integer> spriteIndexMap = new java.util.HashMap<>();
         Set<Integer> requiredSpriteIndices = new java.util.HashSet<>();
         requiredSpriteIndices.addAll(spriteGroupIndexMapper.collectRequiredIndicesFromMek(request.getBheMek()));
@@ -148,7 +148,7 @@ public class TransMekaPipeline {
                 request.getSeGroupAppendIndex()
         );
 
-        // Step4: 杞崲鏍稿績璧勬簮锛坢ek/waz/spm锛?
+        // Step4: convert core resources (mek/waz/spm)
         int voiceGroupCount = request.getBsdxBatVoice() != null
                 ? request.getBsdxBatVoice().getVoiceList().size()
                 : 0;
@@ -161,10 +161,10 @@ public class TransMekaPipeline {
         result.setBsdxGSpm(spmConverter.convert(request.getBheGSpm()));
         result.setBsdxMSpm(spmConverter.convert(request.getBheMSpm()));
 
-        // Step5: 鍥炲啓 mek 鍐呴儴鐨?waz/spm 绱㈠紩
+        // Step5: write back waz/spm indices into mek basic info
         alignMekIndex(result.getBsdxMeka(), result.getWazaGroupIndex(), result.getSpriteGroupIndex());
 
-        // Step6: UI 璧勬簮琛ㄦ寕鎺ワ紙鐢?tsukuyomi 鏇挎崲 nanoha 妲戒綅锛屼究浜庢祴璇曪級
+        // Step6: attach UI resources by replacing the Nanoha slot with transfer output
         UiSpmReplacer.UiSpmReplaceResult uiReplaceResult = uiSpmReplacer.replaceTargetSlotUiSpm(
                 request.getMekaPilotSpm(),
                 request.getSelectMekaMenuMekaSpm(),

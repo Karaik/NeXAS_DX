@@ -12,37 +12,33 @@
 ## 本次复核命令
 
 ```powershell
-mvn -q "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testBatchRunner,com.giga.nexas.transfer.bhe2bsdx.converter.TransferDependencyCollectorTest,com.giga.nexas.transfer.bhe2bsdx.converter.StaticAssetCopierTest,com.giga.nexas.transfer.bhe2bsdx.converter.SeGroupRealDataValidationTest" "-Dtransfer.sources=tsukuyomi" test
+mvn -q test
 ```
 
 ## 本次实测结论
 
 - `manualCount=120`
-- `generatedCount=107`
-- `onlyInManualCount=16`
+- `generatedCount=108`
+- `onlyInManualCount=15`
 - `onlyInGeneratedCount=3`
-- `commonCount=104`
+- `commonCount=105`
 - `sameHashCount=90`
-- `diffHashCount=14`
+- `diffHashCount=15`
 
 关键差异：
 
-- `onlyInManual` 含 `Bomb.waz`、多项 `ogg/png`
+- `onlyInManual` 主要是 `ogg/png` 静态资源（15 项）
 - `onlyInGenerated` 固定为 `c_tsukuyomi.spm`、`fire.spm`、`smoke.spm`
-- `diffHashFiles` 14 项，核心包括 `nanoha.mek`、`nanoha.waz`、`SeGroup.grp`、`wazagroup.grp`
+- `Bomb.waz` 已不在 `onlyInManual`，已进入 `diffHashFiles`
+- `diffHashFiles` 15 项，核心包括 `Bomb.waz`、`nanoha.mek`、`nanoha.waz`、`SeGroup.grp`、`wazagroup.grp`
 
 ## 已确认的迁移流程反映点
 
-1. 主链入口以 `TransferTest.testBatchRunner()` 为准：`src/test/java/com/giga/nexas/bhe2bsdx/TransferTest.java:61`
-2. 依赖闭包输出在 `Bhe2BsdxSingleRunner` 接入：
-   - `collectWazOutputMap`：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java:209`
-   - `collectSpmOutputMap`：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java:216`
-3. `segroup` 映射写回 `CEventSe`：
-   - 映射构建：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/SeGroupIndexMapper.java:22`
-   - 事件重写：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/WazConverter.java:290`
-4. 静态资源收敛复制：
-   - 入口：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/StaticAssetCopier.java:29`
-   - 引用链：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/StaticAssetCopier.java:161`
+1. 主链入口：`src/test/java/com/giga/nexas/bhe2bsdx/TransferTest.java`
+2. 依赖闭包：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransferDependencyCollector.java`
+3. `bomb.waz` 补入点：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java` 的 `includeBombWazWhenBombSpritePresent(...)`
+4. `segroup` 映射写回：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/SeGroupIndexMapper.java` + `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/WazConverter.java`
+5. 静态资源收敛复制：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/StaticAssetCopier.java`
 
 ## 门禁流程图
 
@@ -55,4 +51,3 @@ flowchart LR
   E --> F[onlyInManual/onlyInGenerated/diffHash]
   F --> G[更新报告与迁移流程文档]
 ```
-

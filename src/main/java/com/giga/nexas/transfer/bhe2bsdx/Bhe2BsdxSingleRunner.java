@@ -242,6 +242,7 @@ public class Bhe2BsdxSingleRunner {
         if (result != null && result.getBsdxSelectMekaMenuMekaSpm() != null) {
             outputSpm.put("selectmekamenumeka", result.getBsdxSelectMekaMenuMekaSpm());
         }
+        includeBombWazWhenBombSpritePresent(outputWaz, outputSpm, bsdxWaz);
 
         TransMekaOutputWriter outputWriter = new TransMekaOutputWriter();
         outputWriter.writeOutputs(outputDir, outputGrp, outputMek, outputWaz, outputSpm);
@@ -352,5 +353,22 @@ public class Bhe2BsdxSingleRunner {
             return baseKey;
         }
         return prefix + baseKey;
+    }
+
+    private void includeBombWazWhenBombSpritePresent(
+            Map<String, com.giga.nexas.dto.bsdx.waz.Waz> outputWaz,
+            Map<String, com.giga.nexas.dto.bsdx.spm.Spm> outputSpm,
+            Map<String, com.giga.nexas.dto.bsdx.waz.Waz> registryWaz
+    ) {
+        if (outputWaz == null || outputSpm == null || registryWaz == null) {
+            return;
+        }
+        if (!outputSpm.containsKey("bomb") || outputWaz.containsKey("bomb")) {
+            return;
+        }
+        com.giga.nexas.dto.bsdx.waz.Waz bomb = registryWaz.get("bomb");
+        if (bomb != null) {
+            outputWaz.put("bomb", bomb);
+        }
     }
 }
