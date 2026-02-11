@@ -12,15 +12,16 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 /**
- * 静态资源复制：
- * - 从 spm/grp 里抽取资源文件名（图片/语音）
- * - 从指定资源目录中查找并复制到 output 根目录
+ * Static asset copy:
+ * - Extract required names from spm/grp.
+ * - Find matching files under asset root and copy to output.
  */
 @Slf4j
 public class StaticAssetCopier {
@@ -32,19 +33,19 @@ public class StaticAssetCopier {
             return;
         }
         if (!Files.exists(assetRoot)) {
-            log.warn("静态资源目录不存在: {}", assetRoot);
+            log.warn("static asset root not found: {}", assetRoot);
             return;
         }
         try {
             Files.createDirectories(outputDir);
         } catch (IOException e) {
-            log.warn("无法创建输出目录: {}", outputDir, e);
+            log.warn("failed to create output dir: {}", outputDir, e);
             return;
         }
 
         Map<String, String> requiredNames = collectRequiredNames(spmMap, grpMap);
         if (requiredNames.isEmpty()) {
-            log.info("静态资源列表为空，跳过复制");
+            log.info("static asset list is empty, skip copy");
             return;
         }
 
@@ -64,24 +65,24 @@ public class StaticAssetCopier {
             }
             if (matches == null || matches.isEmpty()) {
                 missing++;
-                log.warn("静态资源未找到: {}", fileName);
+                log.warn("static asset not found: {}", fileName);
                 continue;
             }
             if (matches.size() > 1) {
                 duplicated++;
-                log.warn("静态资源存在多个同名文件: {} -> {}{}", fileName, matches.size(),
+                log.warn("multiple static assets matched: {} -> {}{}", fileName, matches.size(),
                         baseMatched ? " (base)" : "");
             }
             Path source = chooseBestMatch(fileName, matches);
             if (source == null) {
                 missing++;
-                log.warn("静态资源未找到(无法选择匹配项): {}", fileName);
+                log.warn("static asset not found(no preferred match): {}", fileName);
                 continue;
             }
             String targetName = resolveTargetName(fileName, source);
             if (targetName == null || targetName.isEmpty()) {
                 missing++;
-                log.warn("静态资源目标名为空: {}", fileName);
+                log.warn("static asset target name is empty: {}", fileName);
                 continue;
             }
             Path target = outputDir.resolve(targetName);
@@ -89,11 +90,11 @@ public class StaticAssetCopier {
                 Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
                 copied++;
             } catch (IOException e) {
-                log.warn("复制静态资源失败: {}", fileName, e);
+                log.warn("copy static asset failed: {}", fileName, e);
             }
         }
 
-        log.info("静态资源复制完成: 总计={}, 复制={}, 缺失={}, 重名={}",
+        log.info("static asset copy done: total={}, copied={}, missing={}, duplicated={}",
                 requiredNames.size(), copied, missing, duplicated);
     }
 
@@ -113,15 +114,113 @@ public class StaticAssetCopier {
     }
 
     private void collectFromSpm(Map<String, String> required, Spm spm) {
-        if (spm == null || spm.getImageData() == null) {
+        if (spm == null || spm.getImageData() == null || spm.getImageData().isEmpty()) {
             return;
         }
-        for (Spm.SPMImageData image : spm.getImageData()) {
+        List<Spm.SPMImageData> imageDataList = spm.getImageData();
+        LinkedHashSet<Integer> referencedImageNo = collectReferencedImageNo(spm);
+        if (referencedImageNo.isEmpty()) {
+            for (Spm.SPMImageData image : imageDataList) {
+                if (image == null) {
+                    continue;
+                }
+                String name = normalizeFileName(image.getImageName());
+                putRequired(required, name);
+            }
+            return;
+        }
+
+        boolean hasOutOfRange = false;
+        for (Integer imageNo : referencedImageNo) {
+            if (imageNo == null || imageNo < 0) {
+                continue;
+            }
+            if (imageNo >= imageDataList.size()) {
+                hasOutOfRange = true;
+                continue;
+            }
+            Spm.SPMImageData image = imageDataList.get(imageNo);
             if (image == null) {
                 continue;
             }
             String name = normalizeFileName(image.getImageName());
             putRequired(required, name);
+        }
+        if (hasOutOfRange) {
+            log.warn("SPM imageNo out of range, fallback to full imageData set");
+            for (Spm.SPMImageData image : imageDataList) {
+                if (image == null) {
+                    continue;
+                }
+                String name = normalizeFileName(image.getImageName());
+                putRequired(required, name);
+            }
+        }
+    }
+
+    private LinkedHashSet<Integer> collectReferencedImageNo(Spm spm) {
+        LinkedHashSet<Integer> imageNoSet = new LinkedHashSet<>();
+        if (spm == null || spm.getPageData() == null || spm.getPageData().isEmpty()) {
+            return imageNoSet;
+        }
+
+        List<Spm.SPMPageData> pageData = spm.getPageData();
+        LinkedHashSet<Integer> pageNoSet = new LinkedHashSet<>();
+        collectReferencedPageNo(spm, pageNoSet);
+
+        if (pageNoSet.isEmpty()) {
+            for (int i = 0; i < pageData.size(); i++) {
+                pageNoSet.add(i);
+            }
+        }
+
+        for (Integer pageNo : pageNoSet) {
+            if (pageNo == null || pageNo < 0 || pageNo >= pageData.size()) {
+                continue;
+            }
+            Spm.SPMPageData page = pageData.get(pageNo);
+            collectImageNoFromPage(page, imageNoSet);
+        }
+        return imageNoSet;
+    }
+
+    private void collectReferencedPageNo(Spm spm, LinkedHashSet<Integer> pageNoSet) {
+        if (spm == null || pageNoSet == null || spm.getAnimData() == null) {
+            return;
+        }
+        int patPageNum = spm.getPatPageNum() == null ? 0 : Math.max(spm.getPatPageNum(), 0);
+        for (Spm.SPMAnimData animData : spm.getAnimData()) {
+            if (animData == null || animData.getPatData() == null) {
+                continue;
+            }
+            for (Spm.SPMPatData patData : animData.getPatData()) {
+                if (patData == null || patData.getPageNo() == null) {
+                    continue;
+                }
+                List<Integer> pageNoList = patData.getPageNo();
+                int max = patPageNum > 0 ? Math.min(patPageNum, pageNoList.size()) : pageNoList.size();
+                for (int i = 0; i < max; i++) {
+                    Integer pageNo = pageNoList.get(i);
+                    if (pageNo != null && pageNo >= 0) {
+                        pageNoSet.add(pageNo);
+                    }
+                }
+            }
+        }
+    }
+
+    private void collectImageNoFromPage(Spm.SPMPageData page, LinkedHashSet<Integer> imageNoSet) {
+        if (page == null || page.getChipData() == null || imageNoSet == null) {
+            return;
+        }
+        for (Spm.SPMChipData chipData : page.getChipData()) {
+            if (chipData == null || chipData.getImageNo() == null) {
+                continue;
+            }
+            Integer imageNo = chipData.getImageNo();
+            if (imageNo >= 0) {
+                imageNoSet.add(imageNo);
+            }
         }
     }
 
@@ -196,7 +295,7 @@ public class StaticAssetCopier {
                     .filter(Files::isRegularFile)
                     .forEach(index::add);
         } catch (IOException e) {
-            log.warn("扫描静态资源目录失败: {}", root, e);
+            log.warn("scan static asset root failed: {}", root, e);
         }
         return index;
     }

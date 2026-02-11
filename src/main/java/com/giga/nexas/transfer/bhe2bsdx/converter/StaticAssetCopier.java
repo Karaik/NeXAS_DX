@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -113,15 +114,113 @@ public class StaticAssetCopier {
     }
 
     private void collectFromSpm(Map<String, String> required, Spm spm) {
-        if (spm == null || spm.getImageData() == null) {
+        if (spm == null || spm.getImageData() == null || spm.getImageData().isEmpty()) {
             return;
         }
-        for (Spm.SPMImageData image : spm.getImageData()) {
+        List<Spm.SPMImageData> imageDataList = spm.getImageData();
+        LinkedHashSet<Integer> referencedImageNo = collectReferencedImageNo(spm);
+        if (referencedImageNo.isEmpty()) {
+            for (Spm.SPMImageData image : imageDataList) {
+                if (image == null) {
+                    continue;
+                }
+                String name = normalizeFileName(image.getImageName());
+                putRequired(required, name);
+            }
+            return;
+        }
+
+        boolean hasOutOfRange = false;
+        for (Integer imageNo : referencedImageNo) {
+            if (imageNo == null || imageNo < 0) {
+                continue;
+            }
+            if (imageNo >= imageDataList.size()) {
+                hasOutOfRange = true;
+                continue;
+            }
+            Spm.SPMImageData image = imageDataList.get(imageNo);
             if (image == null) {
                 continue;
             }
             String name = normalizeFileName(image.getImageName());
             putRequired(required, name);
+        }
+        if (hasOutOfRange) {
+            log.warn("SPM imageNo out of range, fallback to full imageData set");
+            for (Spm.SPMImageData image : imageDataList) {
+                if (image == null) {
+                    continue;
+                }
+                String name = normalizeFileName(image.getImageName());
+                putRequired(required, name);
+            }
+        }
+    }
+
+    private LinkedHashSet<Integer> collectReferencedImageNo(Spm spm) {
+        LinkedHashSet<Integer> imageNoSet = new LinkedHashSet<>();
+        if (spm == null || spm.getPageData() == null || spm.getPageData().isEmpty()) {
+            return imageNoSet;
+        }
+
+        List<Spm.SPMPageData> pageData = spm.getPageData();
+        LinkedHashSet<Integer> pageNoSet = new LinkedHashSet<>();
+        collectReferencedPageNo(spm, pageNoSet);
+
+        if (pageNoSet.isEmpty()) {
+            for (int i = 0; i < pageData.size(); i++) {
+                pageNoSet.add(i);
+            }
+        }
+
+        for (Integer pageNo : pageNoSet) {
+            if (pageNo == null || pageNo < 0 || pageNo >= pageData.size()) {
+                continue;
+            }
+            Spm.SPMPageData page = pageData.get(pageNo);
+            collectImageNoFromPage(page, imageNoSet);
+        }
+        return imageNoSet;
+    }
+
+    private void collectReferencedPageNo(Spm spm, LinkedHashSet<Integer> pageNoSet) {
+        if (spm == null || pageNoSet == null || spm.getAnimData() == null) {
+            return;
+        }
+        int patPageNum = spm.getPatPageNum() == null ? 0 : Math.max(spm.getPatPageNum(), 0);
+        for (Spm.SPMAnimData animData : spm.getAnimData()) {
+            if (animData == null || animData.getPatData() == null) {
+                continue;
+            }
+            for (Spm.SPMPatData patData : animData.getPatData()) {
+                if (patData == null || patData.getPageNo() == null) {
+                    continue;
+                }
+                List<Integer> pageNoList = patData.getPageNo();
+                int max = patPageNum > 0 ? Math.min(patPageNum, pageNoList.size()) : pageNoList.size();
+                for (int i = 0; i < max; i++) {
+                    Integer pageNo = pageNoList.get(i);
+                    if (pageNo != null && pageNo >= 0) {
+                        pageNoSet.add(pageNo);
+                    }
+                }
+            }
+        }
+    }
+
+    private void collectImageNoFromPage(Spm.SPMPageData page, LinkedHashSet<Integer> imageNoSet) {
+        if (page == null || page.getChipData() == null || imageNoSet == null) {
+            return;
+        }
+        for (Spm.SPMChipData chipData : page.getChipData()) {
+            if (chipData == null || chipData.getImageNo() == null) {
+                continue;
+            }
+            Integer imageNo = chipData.getImageNo();
+            if (imageNo >= 0) {
+                imageNoSet.add(imageNo);
+            }
         }
     }
 

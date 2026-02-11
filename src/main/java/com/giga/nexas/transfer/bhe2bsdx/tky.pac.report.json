@@ -1,0 +1,69 @@
+{
+    "generatedAt":  "2026-02-12 00:29:33",
+    "pacPath":  "D:\\Code\\NeXAS_DX\\src\\main\\resources\\tky.pac",
+    "pacSize":  13018652,
+    "unpackDir":  "D:\\Code\\NeXAS_DX\\target\\tky_pac_analysis\\tky",
+    "unpackFileCount":  120,
+    "unpackTotalBytes":  16079825,
+    "unpackExtCounts":  {
+                            ".grp":  5,
+                            ".mek":  1,
+                            ".ogg":  62,
+                            ".png":  35,
+                            ".spm":  12,
+                            ".waz":  5
+                        },
+    "comparedTransferDir":  "D:\\Code\\NeXAS_DX\\src\\main\\resources\\testBhe\\tsukuyomi",
+    "transferFileCount":  107,
+    "transferTotalBytes":  14489457,
+    "transferExtCounts":  {
+                              ".grp":  5,
+                              ".mek":  1,
+                              ".ogg":  55,
+                              ".png":  27,
+                              ".spm":  15,
+                              ".waz":  4
+                          },
+    "onlyInTky":  [
+                      "b6_hit03.ogg",
+                      "Bomb.waz",
+                      "bomb_011_0001.png",
+                      "bomb_066_0001.png",
+                      "door_largemetal_open10.ogg",
+                      "gun_ammoout_scifi1.ogg",
+                      "magic_glow1.ogg",
+                      "mark_etc014_0001.png",
+                      "menu_magic02.ogg",
+                      "pic_134_0001.png",
+                      "pic_142_0001.png",
+                      "RE_Iron04b.ogg",
+                      "tama_123_0001.png",
+                      "tama_energy021_0001.png",
+                      "tama_energy034_0001.png",
+                      "zoom_sniperscope_in.ogg"
+                  ],
+    "onlyInTransfer":  [
+                           "c_tsukuyomi.spm",
+                           "fire.spm",
+                           "smoke.spm"
+                       ],
+    "commonCount":  104,
+    "sameHashCount":  90,
+    "diffHashCount":  14,
+    "differentHashFiles":  [
+                               "bomb.spm",
+                               "C_zako_021a.spm",
+                               "Effect.waz",
+                               "link.spm",
+                               "mark.spm",
+                               "nanoha.mek",
+                               "nanoha.waz",
+                               "pic.spm",
+                               "SeGroup.grp",
+                               "tama.spm",
+                               "Tama03.waz",
+                               "Tama05.waz",
+                               "wazagroup.grp",
+                               "zako_021a.spm"
+                           ]
+}

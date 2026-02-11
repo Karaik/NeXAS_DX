@@ -35,16 +35,16 @@ import java.util.Set;
 public class TransferTest {
 
     private static final Path OUTPUT_DIR = Paths.get("src/main/resources/testBhe");
-    // 静态资源来源目录（按需修改）
-    private static final Path STATIC_ASSET_ROOT = Paths.get("D:\\BaiduNetdiskDownload\\bsdx_bhe\\bheAll");
+    // 闂堟瑦鈧浇绁┃鎰降濠ф劗娲拌ぐ鏇礄閹稿娓舵穱顔芥暭閿?
+    private static final Path STATIC_ASSET_ROOT = Paths.get("D:\\BDY\\bsdx_bhe\\bhe_resources");
     private static final boolean COPY_STATIC_ASSETS = true;
-    // 自动发现源机体时使用（根据 mekBheJson 目录名）
+    // 閼奉亜濮╅崣鎴犲箛濠ф劖婧€娴ｆ挻妞傛担璺ㄦ暏閿涘牊鐗撮幑?mekBheJson 閻╊喖缍嶉崥宥忕礆
     private static final Path BHE_MEK_JSON_DIR = Paths.get("src/main/resources/mekBheJson");
 
-    // ===== 可配置项（把原先写死的 tsukuyomi 相关配置挪到这里） =====
-    // 源机体：如果这里为空，会自动根据 mekBheJson 目录名发现全部机体
+    // ===== 閸欘垶鍘ょ純顕€銆嶉敍鍫熷Ω閸樼喎鍘涢崘娆愵劥閻?tsukuyomi 閻╃鍙ч柊宥囩枂閹割亜鍩屾潻娆撳櫡閿?=====
+    // 濠ф劖婧€娴ｆ搫绱版俊鍌涚亯鏉╂瑩鍣锋稉铏光敄閿涘奔绱伴懛顏勫З閺嶈宓?mekBheJson 閻╊喖缍嶉崥宥呭絺閻滄澘鍙忛柈銊︽簚娴?
     private static final List<MekaSource> SOURCE_MEKA_LIST = List.of();
-    // 目标槽位（默认替换 Nanoha）
+    // 閻╊喗鐖ｅΣ鎴掔秴閿涘牓绮拋銈嗘禌閹?Nanoha閿?
     private static final String TARGET_KEY = "nanoha";
     private static final String TARGET_CODE_NAME = "NANOHA";
     private static final boolean KEEP_TARGET_KEY = true;
@@ -54,8 +54,8 @@ public class TransferTest {
     private final BheBinService bheBinService = new BheBinService();
 
     /**
-     * 调用正式批处理工具（src/main 下的 Bhe2BsdxBatchRunner）。
-     * 使用默认配置，支持 -Dtransfer.sources / -Dtransfer.limit 过滤。
+     * 鐠嬪啰鏁ゅ锝呯础閹电懓顦╅悶鍡椾紣閸忓嚖绱檚rc/main 娑撳娈?Bhe2BsdxBatchRunner閿涘鈧?
+     * 娴ｈ法鏁ゆ妯款吇闁板秶鐤嗛敍灞炬暜閹?-Dtransfer.sources / -Dtransfer.limit 鏉╁洦鎶ら妴?
      */
     @Test
     public void testBatchRunner() throws Exception {
@@ -64,7 +64,7 @@ public class TransferTest {
     }
 
     /**
-     * 移植用，pipeline模拟
+     * 缁夌粯顦查悽顭掔礉pipeline濡剝瀚?
      */
     @Test
     public void testPipeline() throws Exception {
@@ -76,11 +76,11 @@ public class TransferTest {
         sources = applyRuntimeFilters(sources);
 
         if (sources == null || sources.isEmpty()) {
-            log.warn("未发现可用源机体，跳过转换。");
+            log.warn("No available source meka found, skip transfer.");
             return;
         }
 
-        log.info("本次转换源机体数量: {}", sources.size());
+        log.info("閺堫剚顐兼潪顒佸床濠ф劖婧€娴ｆ挻鏆熼柌? {}", sources.size());
         for (MekaSource source : sources) {
             runSingleSourcePipeline(source);
         }
@@ -89,7 +89,7 @@ public class TransferTest {
     private List<MekaSource> discoverSourcesFromMekJson() throws IOException {
         List<MekaSource> sources = new ArrayList<>();
         if (!Files.isDirectory(BHE_MEK_JSON_DIR)) {
-            log.warn("mekBheJson 目录不存在: {}", BHE_MEK_JSON_DIR.toAbsolutePath());
+            log.warn("mekBheJson 閻╊喖缍嶆稉宥呯摠閸? {}", BHE_MEK_JSON_DIR.toAbsolutePath());
             return sources;
         }
 
@@ -109,7 +109,7 @@ public class TransferTest {
 
                 String codeName = codeNameMap.get(baseKey);
                 if (codeName == null || codeName.isBlank()) {
-                    log.warn("跳过未匹配 codeName 的机体: baseKey={}", baseKey);
+                    log.warn("鐠哄疇绻冮張顏勫爱闁?codeName 閻ㄥ嫭婧€娴? baseKey={}", baseKey);
                     continue;
                 }
                 sources.add(new MekaSource(baseKey, codeName));
@@ -117,7 +117,7 @@ public class TransferTest {
         }
 
         sources.sort(Comparator.comparing(s -> s.baseKey));
-        log.info("自动发现源机体: {} 个 (来自 {})", sources.size(), BHE_MEK_JSON_DIR);
+        log.info("閼奉亜濮╅崣鎴犲箛濠ф劖婧€娴? {} 娑?(閺夈儴鍤?{})", sources.size(), BHE_MEK_JSON_DIR);
         return sources;
     }
 
@@ -144,8 +144,7 @@ public class TransferTest {
                         filtered.add(source);
                     }
                 }
-                log.info("运行时过滤生效 transfer.sources={}, 命中 {} 个",
-                        allowList, filtered.size());
+                log.info("Applied transfer.sources filter: {}, remaining={}", allowList, filtered.size());
             }
         }
 
@@ -155,10 +154,10 @@ public class TransferTest {
                 int limit = Integer.parseInt(limitProp.trim());
                 if (limit > 0 && filtered.size() > limit) {
                     filtered = new ArrayList<>(filtered.subList(0, limit));
-                    log.info("运行时限制生效 transfer.limit={}, 截断后 {} 个", limit, filtered.size());
+                    log.info("Applied transfer.limit filter: {}, remaining={}", limit, filtered.size());
                 }
             } catch (NumberFormatException e) {
-                log.warn("transfer.limit 不是有效整数: {}", limitProp);
+                log.warn("transfer.limit 娑撳秵妲搁張澶嬫櫏閺佸瓨鏆? {}", limitProp);
             }
         }
 
@@ -172,7 +171,7 @@ public class TransferTest {
         com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp bheMekaGroup =
                 (com.giga.nexas.dto.bhe.grp.groupmap.MekaGroupGrp) bheGrp.get("mekagroup");
         if (bheMekaGroup == null || bheMekaGroup.getMekaList() == null) {
-            log.warn("无法载入 BHE MekaGroup，自动发现将返回空列表。");
+            log.warn("BHE MekaGroup is missing, fallback source discovery by codeName map skipped.");
             return codeNameMap;
         }
 
@@ -192,7 +191,7 @@ public class TransferTest {
             }
         }
 
-        log.info("载入 BHE 机体 codeName 映射: {} 个", codeNameMap.size());
+        log.info("Discovered BHE codeName map entries: {}", codeNameMap.size());
         return codeNameMap;
     }
 
@@ -202,31 +201,31 @@ public class TransferTest {
         String bheWazJsonName = "tkytama.waz.json";
         Path bheWazJsonPath = resourceDir.resolve(bheWazJsonName);
 
-        // 1. 读取 BHE WAZ JSON
+        // 1. 鐠囪褰?BHE WAZ JSON
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper()
                 .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         String jsonStr = Files.readString(bheWazJsonPath);
         com.giga.nexas.dto.bhe.waz.Waz bheWaz = mapper.readValue(jsonStr, com.giga.nexas.dto.bhe.waz.Waz.class);
-        log.info("✅ BHE WAZ loaded: {}, skills={}", bheWaz.getFileName(), bheWaz.getSkillList().size());
+        log.info("閴?BHE WAZ loaded: {}, skills={}", bheWaz.getFileName(), bheWaz.getSkillList().size());
 
-        // 2. 转换为 BSDX WAZ
+        // 2. 鏉烆剚宕叉稉?BSDX WAZ
         WazConverter wazConverter = new WazConverter();
         com.giga.nexas.dto.bsdx.waz.Waz bsdxWaz = wazConverter.convert(bheWaz);
         bsdxWaz.setFileName(bheWaz.getFileName());
         bsdxWaz.setExtensionName("waz");
-        log.info("✅ BSDX WAZ converted: {}, skills={}", bsdxWaz.getFileName(), bsdxWaz.getSkillList().size());
+        log.info("閴?BSDX WAZ converted: {}, skills={}", bsdxWaz.getFileName(), bsdxWaz.getSkillList().size());
 
-        // 3. 输出到同一目录
+        // 3. 鏉堟挸鍤崚鏉挎倱娑撯偓閻╊喖缍?
         String outputName = bheWazJsonName.replace(".waz.json", ".bsdx.waz.json");
         Path outputPath = resourceDir.resolve(outputName);
         String outputJson = cn.hutool.json.JSONUtil.toJsonPrettyStr(bsdxWaz);
         Files.writeString(outputPath, outputJson);
-        log.info("✅ BSDX WAZ JSON written: {}", outputPath);
+        log.info("閴?BSDX WAZ JSON written: {}", outputPath);
 
-        // 4. 验证：用 BSDX 解析器读取生成的 JSON
+        // 4. 妤犲矁鐦夐敍姘辨暏 BSDX 鐟欙絾鐎介崳銊嚢閸欐牜鏁撻幋鎰畱 JSON
         String bsdxJsonStr = Files.readString(outputPath);
         com.giga.nexas.dto.bsdx.waz.Waz verifyWaz = mapper.readValue(bsdxJsonStr, com.giga.nexas.dto.bsdx.waz.Waz.class);
-        log.info("✅ BSDX WAZ verified: {}, skills={}", verifyWaz.getFileName(), verifyWaz.getSkillList().size());
+        log.info("閴?BSDX WAZ verified: {}, skills={}", verifyWaz.getFileName(), verifyWaz.getSkillList().size());
     }
 
     private String resolveSpriteBaseName(
@@ -280,7 +279,7 @@ public class TransferTest {
                     com.giga.nexas.dto.bsdx.grp.Grp grp = (com.giga.nexas.dto.bsdx.grp.Grp) dto.getData();
                     grpMap.put(baseName, grp);
                 } catch (Exception e) {
-                    log.warn("❌ Failed to parse bsdxGrp: {}", fileName);
+                    log.warn("閴?Failed to parse bsdxGrp: {}", fileName);
                 }
             }
         }
@@ -300,7 +299,7 @@ public class TransferTest {
                     com.giga.nexas.dto.bhe.grp.Grp grp = (com.giga.nexas.dto.bhe.grp.Grp) dto.getData();
                     grpMap.put(baseName, grp);
                 } catch (Exception e) {
-                    log.warn("❌ Failed to parse bheGrp: {}", fileName);
+                    log.warn("閴?Failed to parse bheGrp: {}", fileName);
                 }
             }
         }
@@ -324,7 +323,7 @@ public class TransferTest {
                     com.giga.nexas.dto.bsdx.mek.Mek mek = (com.giga.nexas.dto.bsdx.mek.Mek) dto.getData();
                     mekMap.put(baseName, mek);
                 } catch (Exception e) {
-                    log.warn("❌ Failed to parse bsdxMek: {}", fileName);
+                    log.warn("閴?Failed to parse bsdxMek: {}", fileName);
                 }
             }
         }
@@ -344,7 +343,7 @@ public class TransferTest {
                     com.giga.nexas.dto.bhe.mek.Mek mek = (com.giga.nexas.dto.bhe.mek.Mek) dto.getData();
                     mekMap.put(baseName, mek);
                 } catch (Exception e) {
-                    log.warn("❌ Failed to parse bheMek: {}", fileName);
+                    log.warn("閴?Failed to parse bheMek: {}", fileName);
                 }
             }
         }
@@ -368,7 +367,7 @@ public class TransferTest {
                     com.giga.nexas.dto.bsdx.waz.Waz waz = (com.giga.nexas.dto.bsdx.waz.Waz) dto.getData();
                     wazMap.put(baseName, waz);
                 } catch (Exception e) {
-                    log.warn("❌ Failed to parse bsdxWaz: {}", fileName);
+                    log.warn("閴?Failed to parse bsdxWaz: {}", fileName);
                 }
             }
         }
@@ -388,7 +387,7 @@ public class TransferTest {
                     com.giga.nexas.dto.bhe.waz.Waz waz = (com.giga.nexas.dto.bhe.waz.Waz) dto.getData();
                     wazMap.put(baseName, waz);
                 } catch (Exception e) {
-                    log.warn("❌ Failed to parse bheWaz: {}", fileName);
+                    log.warn("閴?Failed to parse bheWaz: {}", fileName);
                 }
             }
         }
@@ -397,7 +396,7 @@ public class TransferTest {
     }
 
     // spm
-    // spm在多个版本中无差异，但已经确定2.0.0在bhe中多了关于hitbox的信息，变得更复杂了
+    // spm閸︺劌顦挎稉顏嗗閺堫兛鑵戦弮鐘叉▕瀵偊绱濇担鍡楀嚒缂佸繒鈥樼€?.0.0閸︹暈he娑擃厼顦挎禍鍡楀彠娴滃穻itbox閻ㄥ嫪淇婇幁顖ょ礉閸欐ê绶遍弴鏉戭槻閺夊倷绨?
     private static final Path BSDX_SPM_DIR = Paths.get("src/main/resources/game/bsdx/spm");
     private static final Path BHE_SPM_DIR = Paths.get("src/main/resources/game/bhe/spm");
     private Map<String, com.giga.nexas.dto.bsdx.spm.Spm> registerBsdxSpm() throws IOException {
@@ -413,7 +412,7 @@ public class TransferTest {
                     com.giga.nexas.dto.bsdx.spm.Spm spm = (com.giga.nexas.dto.bsdx.spm.Spm) dto.getData();
                     spmMap.put(baseName, spm);
                 } catch (Exception e) {
-                    log.warn("❌ Failed to parse bsdxSpm: {}", fileName);
+                    log.warn("閴?Failed to parse bsdxSpm: {}", fileName);
                 }
             }
         }
@@ -433,7 +432,7 @@ public class TransferTest {
                     com.giga.nexas.dto.bhe.spm.Spm spm = (com.giga.nexas.dto.bhe.spm.Spm) dto.getData();
                     spmMap.put(baseName, spm);
                 } catch (Exception e) {
-                    log.warn("❌ Failed to parse bheSpm: {}", fileName);
+                    log.warn("閴?Failed to parse bheSpm: {}", fileName);
                 }
             }
         }
@@ -442,7 +441,7 @@ public class TransferTest {
     }
 
     // dat
-    // dat无差别，全为csv
+    // dat閺冪姴妯婇崚顐礉閸忋劋璐焎sv
     private static final Path BSDX_DAT_DIR = Paths.get("src/main/resources/game/bsdx/dat");
     private Dat loadBsdxDat(String fileName) throws IOException {
         Path path = BSDX_DAT_DIR.resolve(fileName);
@@ -450,7 +449,7 @@ public class TransferTest {
             ResponseDTO<?> dto = bsdxBinService.parse(path.toString(), "windows-31j");
             return (Dat) dto.getData();
         } catch (Exception e) {
-            log.warn("❌ Failed to parse bsdxDat: {}", fileName);
+            log.warn("閴?Failed to parse bsdxDat: {}", fileName);
             return null;
         }
     }
@@ -490,7 +489,7 @@ public class TransferTest {
         String baseKey = normalizeKey(source.baseKey);
         String codeName = normalizeCode(source.codeName);
         if (baseKey.isEmpty() || codeName.isEmpty()) {
-            log.warn("源机体配置无效: baseKey={}, codeName={}", source.baseKey, source.codeName);
+            log.warn("濠ф劖婧€娴ｆ捇鍘ょ純顔芥￥閺? baseKey={}, codeName={}", source.baseKey, source.codeName);
             return;
         }
 
@@ -502,10 +501,10 @@ public class TransferTest {
         Path outputDir = OUTPUT_DIR.resolve(baseKey);
         String outputPath = outputDir.toAbsolutePath().toString();
 
-        log.info("========== 开始转换: baseKey={}, codeName={}, outputDir={} ==========",
+        log.info("========== 瀵偓婵娴嗛幑? baseKey={}, codeName={}, outputDir={} ==========",
                 baseKey, codeName, outputDir);
 
-        // 1.注册全部所需文件资源（每个源机体都重新注册，保证基线干净）
+        // 1.濞夈劌鍞介崗銊╁劥閹碘偓闂団偓閺傚洣娆㈢挧鍕爱閿涘牊鐦℃稉顏呯爱閺堣桨缍嬮柈浠嬪櫢閺傜増鏁為崘宀嬬礉娣囨繆鐦夐崺铏瑰殠楠炴彃鍣ｉ敍?
         Map<String, com.giga.nexas.dto.bsdx.grp.Grp> bsdxGrp = registerBsdxGrp();
         Map<String, com.giga.nexas.dto.bhe.grp.Grp> bheGrp = registerBheGrp();
         Map<String, com.giga.nexas.dto.bsdx.mek.Mek> bsdxMek = registerBsdxMek();
@@ -516,7 +515,7 @@ public class TransferTest {
         Map<String, com.giga.nexas.dto.bhe.spm.Spm> bheSpm = registerBheSpm();
         Dat selectMekaMenuDat = loadBsdxDat("SelectMekaMenu.dat");
 
-        // 2.抽出移植目标
+        // 2.閹惰棄鍤粔缁橆槻閻╊喗鐖?
         com.giga.nexas.dto.bhe.grp.groupmap.BatVoiceGrp bheBatVoice =
                 (com.giga.nexas.dto.bhe.grp.groupmap.BatVoiceGrp) bheGrp.get("batvoice");
         com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp bsdxBatVoice =
@@ -557,7 +556,7 @@ public class TransferTest {
         com.giga.nexas.dto.bhe.spm.Spm sourceMSpm = bheSpm.get(mKey);
 
         if (sourceMek == null || sourceWaz == null || sourceSpm == null) {
-            log.warn("源资源不完整(baseKey={}): mek={}, waz={}, spm={}",
+            log.warn("濠ф劘绁┃鎰瑝鐎瑰本鏆?baseKey={}): mek={}, waz={}, spm={}",
                     baseKey, sourceMek != null, sourceWaz != null, sourceSpm != null);
             return;
         }
@@ -600,7 +599,7 @@ public class TransferTest {
                 TARGET_CODE_NAME,
                 KEEP_TARGET_KEY);
 
-        // 3.回写到 BSDX Map（保持内存一致），同时只输出本次变更，避免写出全部 spm
+        // 3.閸ョ偛鍟撻崚?BSDX Map閿涘牅绻氶幐浣稿敶鐎涙ü绔撮懛杈剧礆閿涘苯鎮撻弮璺哄涧鏉堟挸鍤張顒侇偧閸欐ɑ娲块敍宀勪缉閸忓秴鍟撻崙鍝勫弿闁?spm
         if (result != null) {
             if (result.getBsdxMeka() != null) {
                 if (useTargetSlot) {
@@ -637,7 +636,7 @@ public class TransferTest {
             }
         }
 
-        // 4.输出变更文件（grp/mek/waz/spm）
+        // 4.鏉堟挸鍤崣妯绘纯閺傚洣娆㈤敍鍧搑p/mek/waz/spm閿?
         Map<String, com.giga.nexas.dto.bsdx.grp.Grp> outputGrp = new HashMap<>();
         outputGrp.put("batvoice", bsdxBatVoice);
         outputGrp.put("mekagroup", bsdxMekaGroup);
@@ -691,7 +690,7 @@ public class TransferTest {
                 batVoiceGrp.getVoiceList().add(result.getBsdxBatVoiceGroup());
                 assetGrp.put("batvoice", batVoiceGrp);
             }
-            // 仅复制 BHE 来源的 spm 静态资源，避免搜索 BSDX 自带图片
+            // 娴犲懎顦查崚?BHE 閺夈儲绨惃?spm 闂堟瑦鈧浇绁┃鎰剁礉闁灝鍘ら幖婊呭偍 BSDX 閼奉亜鐢崶鍓у
             Map<String, com.giga.nexas.dto.bsdx.spm.Spm> assetSpm = new HashMap<>();
             if (result != null) {
                 putIfPresent(assetSpm, baseKey, result.getBsdxSpm());
@@ -703,18 +702,18 @@ public class TransferTest {
             assetCopier.copyAssets(outputDir, STATIC_ASSET_ROOT, assetSpm, assetGrp);
         }
 
-        // 打包
+        // 閹垫挸瀵?
         String packLog = PacUtil.pack(outputPath, "4");
         log.info("outputPath === {}", packLog);
 
-        // 统一输出包名：<outputDir>.pacNew -> Update3_<baseKey>.pac
+        // 缂佺喍绔存潏鎾冲毉閸栧懎鎮曢敍?outputDir>.pacNew -> Update3_<baseKey>.pac
         Path pacNew = outputDir.resolveSibling(outputDir.getFileName().toString() + ".pacNew");
         Path updatePac = outputDir.resolveSibling("Update3_" + baseKey + ".pac");
         if (Files.exists(pacNew)) {
             Files.move(pacNew, updatePac, StandardCopyOption.REPLACE_EXISTING);
-            log.info("✅ pac renamed: {} -> {}", pacNew.getFileName(), updatePac.getFileName());
+            log.info("閴?pac renamed: {} -> {}", pacNew.getFileName(), updatePac.getFileName());
         } else {
-            log.warn("⚠️ pac not found: {}", pacNew);
+            log.warn("閳跨媴绗?pac not found: {}", pacNew);
         }
     }
 
@@ -734,7 +733,7 @@ public class TransferTest {
                 return group;
             }
         }
-        log.warn("未找到 BatVoiceGroup: codeName={}", codeName);
+        log.warn("閺堫亝澹橀崚?BatVoiceGroup: codeName={}", codeName);
         return null;
     }
 
@@ -753,7 +752,7 @@ public class TransferTest {
                 return group;
             }
         }
-        log.warn("未找到 MekaGroup: codeName={}", codeName);
+        log.warn("閺堫亝澹橀崚?MekaGroup: codeName={}", codeName);
         return null;
     }
 
@@ -772,7 +771,7 @@ public class TransferTest {
                 return entry;
             }
         }
-        log.warn("未找到 WazaGroup: codeName={}", codeName);
+        log.warn("閺堫亝澹橀崚?WazaGroup: codeName={}", codeName);
         return null;
     }
 
@@ -791,7 +790,7 @@ public class TransferTest {
                 return entry;
             }
         }
-        log.warn("未找到 SpriteGroup: codeName={}", codeName);
+        log.warn("閺堫亝澹橀崚?SpriteGroup: codeName={}", codeName);
         return null;
     }
 
@@ -821,3 +820,4 @@ public class TransferTest {
     }
 
 }
+

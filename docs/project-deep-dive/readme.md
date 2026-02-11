@@ -1,4 +1,4 @@
-﻿# NeXAS DX 重构总览（Rust + Tauri）
+# NeXAS DX 重构总览（Rust + Tauri）
 
 ## 文档定位
 本文件是 `D:\Code\NeXAS_DX_Tauri` 的总设计说明，目标是把 `D:\Code\NeXAS_DX` 的 Java 工程迁移为可长期演进的 Rust + Tauri 工程。
@@ -75,14 +75,14 @@ flowchart LR
 
 | 组件 | 职责 | 当前状态 |
 |---|---|---|
-| `nexas-core` | endian/错误/原子写/cancel token | 已建骨架 |
-| `nexas-ir` | 统一 IR + unknown bytes 保留模型 | 已建骨架 |
+| `nexas-core` | endian/错误/原子写/cancel token | 已实现并稳定 |
+| `nexas-ir` | 统一 IR + unknown bytes 保留模型 | 已实现并稳定 |
 | `nexas-format-grp` | Term 与 collection 解析/生成/diff | 已实现真实解析与 golden |
 | `nexas-format-waz` | WAZ 事件解析/生成/diff | 已实现 `CEventChange` 真实解析与 golden |
 | `nexas-format-mek/spm/pac` | 其余格式 parse/generate/diff | 已实现无损 opaque round-trip + golden |
-| `nexas-transform` | BHE -> BSDX 流水线与规则层 | 已建骨架 |
-| `nexas-cli` | parse/generate/unpack/pack/transfer/validate/diff/report | 已实现多命令与原子写 |
-| `apps/nexas-ui` | 任务队列、进度、日志、取消 | 已建骨架 |
+| `nexas-transform` | BHE -> BSDX 流水线与规则层 | 已实现阶段流 + segroup 映射规则 |
+| `nexas-cli` | parse/generate/unpack/pack/transfer/validate/diff/report | 已实现多命令、原子写、`--force` 覆盖保护 |
+| `apps/nexas-ui` | 任务队列、进度、日志、取消 | 已实现真实任务执行（非模拟） |
 
 ## CLI 命令定义
 
@@ -102,18 +102,24 @@ flowchart TD
   C --> JDR[java-diff-report]
 ```
 
-- `parse --format <waz|mek|spm|grp|pac> <input> <output>`
-- `generate --format <waz|mek|spm|grp|pac> <input-ir> <output-bin>`
-- `unpack <input-pac> <output-dir>`
-- `pack <input-dir> <output-pac>`
-- `transfer <bhe-root> <bsdx-root> <output-root>`
+- `parse --format <waz|mek|spm|grp|pac> <input> <output> [--force]`
+- `generate --format <waz|mek|spm|grp|pac> <input-ir> <output-bin> [--force]`
+- `unpack <input-pac> <output-dir> [--force]`
+- `pack <input-dir|ir.json|payload.bin> <output-pac> [--force]`
+- `transfer <bhe-root> <bsdx-root> <output-root> [--force]`
 - `validate <left> <right>`
 - `diff <left> <right>`
-- `resolve-term <term.grp> <collection.json> [output.json]`
-- `inspect-collection <input.bin> --offset <n> [output.json]`
-- `inspect-ceventchange <input.waz> --offset <n> [--term-grp <term.grp>] [output.json]`
-- `waz-int2-report <wazBsdxJsonDir> [--waz-dir <wazDir>] [--term-grp <term.grp>] [--verify-limit <n>] [output.json]`
-- `java-diff-report <javaRoot> [output.json]`
+- `resolve-term <term.grp> <collection.json> [output.json] [--force]`
+- `inspect-collection <input.bin> --offset <n> [output.json] [--force]`
+- `inspect-ceventchange <input.waz> --offset <n> [--term-grp <term.grp>] [output.json] [--force]`
+- `waz-int2-report <wazBsdxJsonDir> [--waz-dir <wazDir>] [--term-grp <term.grp>] [--verify-limit <n>] [output.json] [--force]`
+- `java-diff-report <javaRoot> [output.json] [--force]`
+
+`unpack` 输出：
+
+- `ir.json`：PAC 的无损 IR。
+- `payload.bin`：原始二进制副本。
+- `manifest.json`：来源与路径元数据。
 
 ## 里程碑计划与验收命令
 
@@ -123,7 +129,7 @@ flowchart TD
 | M2 | `Term.grp` 链式解码 + `BsdxInfoCollection` IR 映射 | `cargo run -p nexas-cli -- resolve-term ...` | 已完成 |
 | M3 | `waz` 关键事件 + `CEventChange` 收敛 | `cargo test -p nexas-format-waz` | 已完成核心子集 |
 | M4 | 全格式无损回归（含 `mek/spm/pac`） | `cargo test --workspace` | 已完成（round-trip） |
-| M5 | Tauri UI 任务队列/取消/日志/进度 | `pnpm -C apps/nexas-ui tauri:dev` | 已有骨架 |
+| M5 | Tauri UI 任务队列/取消/日志/进度 | `pnpm -C apps/nexas-ui tauri:dev` | 已完成（真实任务） |
 | M6 | CI 多平台构建发布 | `cargo test --workspace && pnpm -C apps/nexas-ui build` | 已落地 workflow |
 
 ## 风险清单
@@ -136,18 +142,74 @@ flowchart TD
 | 大文件性能 | `resources` 7000+ 文件规模 | 流式读写 + 并发 + 可取消 |
 | 覆盖风险 | 输出写盘阶段 | 原子写 + `.bak` + `--force` |
 
+## 文档需求核对矩阵（2026-02-11）
+
+| 需求项 | 状态 | 证据（文档） | 备注 |
+|---|---|---|---|
+| 真实仓库目录与模块说明 | 已完成 | `docs/project-deep-dive/readme.md`、`docs/project-deep-dive/java-sync-status.md` | 含目录树与资源计数 |
+| 从入口到产物的关键流程图 | 已完成 | `docs/project-deep-dive/flow.md` | 以 `TransferTest.java` 为起点 |
+| 数据模型/IR 设计图 | 已完成 | `docs/project-deep-dive/readme.md` | 含 `nexas-ir` 与 unknown bytes 保真 |
+| 格式解析/生成链路图（waz/mek/spm/grp/pac） | 已完成 | `docs/project-deep-dive/readme.md`、`docs/project-deep-dive/flow.md` | 含 CLI 与 format crate 映射 |
+| 测试策略与 golden 策略 | 已完成 | `docs/project-deep-dive/agent.md`、`docs/project-deep-dive/roundtrip-acceptance.md` | 含 `golden/smoke/full` |
+| 错误处理与日志策略 | 已完成 | `docs/project-deep-dive/agent.md`、`docs/project-deep-dive/readme.md` | 错误分级 + 任务日志事件 |
+| 性能策略（并发/流式/可取消） | 已完成 | `docs/project-deep-dive/readme.md`、`docs/project-deep-dive/flow.md` | 当前未引入持久缓存 |
+| 安全策略（原子写/覆盖保护） | 已完成 | `docs/project-deep-dive/agent.md`、`docs/project-deep-dive/readme.md` | `--force` 与 atomic write |
+| 安全策略（路径遍历硬约束） | 待补 | `docs/project-deep-dive/agent.md` | 需补充统一路径规范化与白名单边界 |
+| 真实样本案例（Term.grp + BsdxInfoCollection） | 已完成 | `docs/project-deep-dive/flow.md`、`docs/project-deep-dive/skills.md` | 含真实 offset/bytes/语义 |
+| Milestone + 验收命令 + 风险清单 | 已完成 | `docs/project-deep-dive/readme.md` | 命令可直接执行 |
+
 ## 实时维护约定
 
 - 每次更新 docs 必须附“证据索引”节。
 - 每次改动一个里程碑，都要同步更新本目录四份文档。
-- 若发现结论无法从源码/样本复核，直接标记 `TODO(证据不足)`。
+- 若发现结论暂时无法从源码/样本复核，统一标记为“待补证据”。
 
-## 当前实现状态（本轮）
+## 当前实现状态
 
-- 已完成：`workspace`、`core/ir/format/transform/cli/ui` 骨架。
+- 已完成：`workspace`、`core/ir/format/transform/cli/ui` 全链路可运行。
 - 已完成：`grp/waz/mek/spm/pac` 五格式 `parse -> generate -> binary_diff=0` 回归链路。
-- 已完成：Tauri commands `start_task/cancel_task/get_task_status` 与 `progress/log/finished/error` 事件通道。
+- 已完成：Tauri commands `start_task/cancel_task/get_task_status`，且支持 `parse/generate/diff/validate/transfer` 真实执行。
+- 已完成：写入类任务强制覆盖保护（CLI `--force`；UI `force=true`）。
 - 已完成：Java 关键流程与 `Term/BsdxInfoCollection` 事实级证据归档（详见 `flow.md` 与 `skills.md`）。
+
+## M5 真实任务执行证据（2026-02-10）
+
+代码落点：
+
+- `apps/nexas-ui/src-tauri/src/commands.rs:110`
+  - `start_task`：异步任务创建 + 状态机写回。
+- `apps/nexas-ui/src-tauri/src/commands.rs:206`
+  - `run_task`：`parse/generate/diff/validate/transfer` 分发。
+- `apps/nexas-ui/src-tauri/src/commands.rs:334`
+  - `run_transfer_task`：接入 `nexas_transform::transfer_bhe_to_bsdx` 与进度上报。
+- `apps/nexas-ui/src-tauri/src/commands.rs:388`
+  - `parse_task_format`：UI 参数映射到五格式解析器。
+- `apps/nexas-ui/src-tauri/src/commands.rs:443`
+  - `ensure_output_file_safe`：覆盖保护（`force=false` 时拒绝覆盖）。
+- `apps/nexas-ui/src/main.ts:26`
+  - 前端任务面板：任务类型、格式、`aux_input`、`force` 控件。
+
+```mermaid
+sequenceDiagram
+  participant UI as apps/nexas-ui/src/main.ts
+  participant CMD as start_task
+  participant RT as run_task
+  participant FMT as nexas-format-*
+  participant TF as nexas-transform
+  participant IO as atomic_write
+
+  UI->>CMD: invoke(start_task, request)
+  CMD->>RT: spawn_blocking(run_task)
+  alt parse/generate/diff/validate
+    RT->>FMT: parse/generate/byte_diff
+    RT->>IO: write output (force guard)
+  else transfer
+    RT->>TF: transfer_bhe_to_bsdx
+    TF-->>CMD: progress events
+  end
+  CMD-->>UI: progress/log/finished/error
+  UI->>CMD: cancel_task(task_id)
+```
 
 ## M1 已落地能力（2026-02-10）
 
@@ -246,7 +308,7 @@ flowchart LR
 - `tests/golden/waz/makoto.waz`
   - 回归测试使用的真实样本二进制。
 - `tests/golden/java/java_diff_report.json`
-  - Java 仓库差分报告（git 状态 + 资源目录统计 + 文档清单）。
+  - Java 仓库状态扫描报告（git 状态 + 资源目录统计 + 文档清单）。
 
 ### CI/CD 已落地配置
 
@@ -266,9 +328,9 @@ flowchart TD
   G --> H[tauri-action upload release assets]
 ```
 
-### Java 更新差分（本轮）
+### Java 同步状态（当前记录）
 
-差分命令：
+扫描命令：
 
 ```powershell
 cargo run -p nexas-cli -- java-diff-report D:\Code\NeXAS_DX tests/golden/java/java_diff_report.json
@@ -277,7 +339,7 @@ cargo run -p nexas-cli -- java-diff-report D:\Code\NeXAS_DX tests/golden/java/ja
 关键结论：
 
 - Java 仓库 `git head = b0e323b`，`tracked changes = 0`。
-- 新增未跟踪目录集中在 `docs/project-deep-dive` 与 `src/main/resources/*Json`。
+- 未跟踪目录集中在 `docs/project-deep-dive` 与 `src/main/resources/*Json`。
 - JSON 资源总量：`3235` 文件。
 
 目录计数：
@@ -305,7 +367,13 @@ cargo run -p nexas-cli -- java-diff-report D:\Code\NeXAS_DX tests/golden/java/ja
 - `crates/nexas-format-pac/src/lib.rs:5`
   - `parse_bytes/generate_bytes` 改为 `opaque_binary` 保真读写。
 - `crates/nexas-format-waz/src/lib.rs:259`
-  - 新增 `parse_generate_roundtrip_waz_opaque_full_file` 测试。
+  - 包含 `parse_generate_roundtrip_waz_opaque_full_file` 测试。
+- `crates/nexas-cli/src/main.rs`
+  - 新增 `regression_roundtrip_golden_matrix`（五格式 golden 自动回归）。
+  - 新增 `regression_roundtrip_bsdx_smoke_if_java_repo_present`（Java 真实资源 smoke 回归）。
+  - 新增 `regression_roundtrip_bsdx_full_if_java_repo_present`（Java 真实资源全量回归，`--ignored`）。
+- `crates/nexas-format-grp/src/lib.rs`
+  - `read_count` 增加计数上界校验，避免非 `term.grp` 输入触发异常内存申请。
 
 ### 真实样本与来源
 
@@ -344,7 +412,16 @@ cargo run -p nexas-cli -- generate pac tests/golden/regression/seed.pac.ir.json 
 cargo run -p nexas-cli -- diff tests/golden/pac/seed.pacNew tests/golden/regression/seed.pac.roundtrip
 ```
 
-本轮实际执行结果：五次 `diff` 全部输出 `byte_diff=0`。
+实际执行结果：五次 `diff` 全部输出 `byte_diff=0`。
+
+### 验收命令（测试级自动回归）
+
+```powershell
+cargo test -p nexas-cli regression_roundtrip_golden_matrix
+cargo test -p nexas-cli regression_roundtrip_bsdx_smoke_if_java_repo_present
+set NEXAS_JAVA_ROOT=D:\Code\NeXAS_DX
+cargo test -p nexas-cli regression_roundtrip_bsdx_full_if_java_repo_present -- --ignored --nocapture
+```
 
 ```mermaid
 flowchart TD
@@ -354,4 +431,38 @@ flowchart TD
   D --> E[roundtrip bin]
   E --> F[nexas-cli diff]
   F --> G[byte_diff=0]
+```
+
+## DX_re 同步修正（2026-02-10）
+
+### Java 侧落点（可溯源）
+
+- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/SeGroupIndexMapper.java`
+- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransMekaPipeline.java`
+- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/WazConverter.java`
+- `src/main/java/com/giga/nexas/transfer/bhe2bsdx/Bhe2BsdxSingleRunner.java`
+
+### Tauri 侧落点（可溯源）
+
+- `crates/nexas-transform/src/lib.rs`
+- `crates/nexas-transform/Cargo.toml`
+
+### 映射关系图
+
+```mermaid
+flowchart LR
+  BHE["BHE segroup.grp.json"] --> MAP["seFileName 映射"]
+  BSDX["BSDX segroup.grp.json"] --> MAP
+  MAP --> APPEND["缺失项追加到 bsdx[11]"]
+  MAP --> PAIR["(bheGroup,bheSeq)->(bsdxGroup,bsdxSeq)"]
+  PAIR --> WAZ["CEventSe.byteDataList"]
+  WAZ --> OUT["重写前 8 字节(group,seq)"]
+```
+
+### 本次执行命令
+
+```bash
+mvn -q test
+mvn -q "-Dtest=com.giga.nexas.transfer.bhe2bsdx.converter.SeGroupIndexMapperTest" test
+cargo test --workspace
 ```

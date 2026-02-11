@@ -1,6 +1,7 @@
 package com.giga.nexas.transfer.bhe2bsdx.converter;
 
 import com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp;
+import com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp;
 import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.transfer.bhe2bsdx.model.TransMekaRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.TransMekaResult;
@@ -9,16 +10,16 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 迁移流程编排器：按步骤执行并产出结果。
+ * 杩佺Щ娴佺▼缂栨帓鍣細鎸夋楠ゆ墽琛屽苟浜у嚭缁撴灉銆?
  *
- * 流程（文字流程图）：
- * 输入(BHE: mek/waz/spm/grp/batvoice)
- * -> Step1: BatVoice 深拷贝并写入目标槽位（默认 Nanoha）
- * -> Step2: grp 对齐（目标槽位替换或 upsert）并生成索引
- * -> Step3: spritegroup 索引映射(BHE index -> BSDX index)
- * -> Step4: 资源转换(mek/waz/spm，含 hitbox)
- * -> Step5: 回写 MekBasicInfo 的 waz/spm 索引
- * -> Step6: UI SPM 挂接（替换 Nanoha 槽位）
+ * 娴佺▼锛堟枃瀛楁祦绋嬪浘锛夛細
+ * 杈撳叆(BHE: mek/waz/spm/grp/batvoice)
+ * -> Step1: BatVoice 娣辨嫹璐濆苟鍐欏叆鐩爣妲戒綅锛堥粯璁?Nanoha锛?
+ * -> Step2: grp 瀵归綈锛堢洰鏍囨Ы浣嶆浛鎹㈡垨 upsert锛夊苟鐢熸垚绱㈠紩
+ * -> Step3: spritegroup 绱㈠紩鏄犲皠(BHE index -> BSDX index)
+ * -> Step4: 璧勬簮杞崲(mek/waz/spm锛屽惈 hitbox)
+ * -> Step5: 鍥炲啓 MekBasicInfo 鐨?waz/spm 绱㈠紩
+ * -> Step6: UI SPM 鎸傛帴锛堟浛鎹?Nanoha 妲戒綅锛?
  */
 public class TransMekaPipeline {
 
@@ -41,7 +42,7 @@ public class TransMekaPipeline {
         boolean keepTargetKey = request.isKeepTargetKey();
         boolean useTargetSlot = request.getTargetBsdxMek() != null && targetCode != null;
 
-        // Step1: batvoice 深拷贝并写入目标槽位（默认 Nanoha）
+        // Step1: batvoice 娣辨嫹璐濆苟鍐欏叆鐩爣妲戒綅锛堥粯璁?Nanoha锛?
         if (request.getBheBatVoiceGroup() != null && request.getBsdxBatVoice() != null) {
             if (useTargetSlot) {
                 int batVoiceIndex = findBatVoiceGroupIndex(request.getBsdxBatVoice(), targetCode);
@@ -64,7 +65,7 @@ public class TransMekaPipeline {
             }
         }
 
-        // Step2: grp 对齐，返回最终序号（索引用于 mek/waz/spm 对齐）
+        // Step2: grp 瀵归綈锛岃繑鍥炴渶缁堝簭鍙凤紙绱㈠紩鐢ㄤ簬 mek/waz/spm 瀵归綈锛?
         if (useTargetSlot) {
             int mekaIndex = grpRegistryUpdater.findMekaGroupIndexByCode(request.getBsdxMekaGroup(), targetCode);
             if (mekaIndex >= 0) {
@@ -108,11 +109,12 @@ public class TransMekaPipeline {
             );
         }
 
-        // Step3: spritegroup 映射（BHE 索引 -> BSDX 索引）
-        // 先从 BHE mek 的 materialBlock 抽取需要的 spritegroup 索引，再按 BHE grp 重建到 BSDX
+        // Step3: spritegroup 鏄犲皠锛圔HE 绱㈠紩 -> BSDX 绱㈠紩锛?
+        // 鍏堜粠 BHE mek 鐨?materialBlock 鎶藉彇闇€瑕佺殑 spritegroup 绱㈠紩锛屽啀鎸?BHE grp 閲嶅缓鍒?BSDX
         Map<Integer, Integer> spriteIndexMap = new java.util.HashMap<>();
-        Set<Integer> requiredSpriteIndices =
-                spriteGroupIndexMapper.collectRequiredIndicesFromMek(request.getBheMek());
+        Set<Integer> requiredSpriteIndices = new java.util.HashSet<>();
+        requiredSpriteIndices.addAll(spriteGroupIndexMapper.collectRequiredIndicesFromMek(request.getBheMek()));
+        requiredSpriteIndices.addAll(spriteGroupIndexMapper.collectRequiredIndicesFromWaz(request.getBheWaz()));
         if (useTargetSlot) {
             spriteIndexMap = spriteGroupIndexMapper.buildMapByName(
                     request.getBheSpriteGroup(),
@@ -126,6 +128,12 @@ public class TransMekaPipeline {
             if (bheSpriteIndex >= 0 && result.getSpriteGroupIndex() >= 0) {
                 spriteIndexMap.put(bheSpriteIndex, result.getSpriteGroupIndex());
             }
+            fillMissingSpriteMappings(
+                    spriteIndexMap,
+                    requiredSpriteIndices,
+                    result.getSpriteGroupIndex(),
+                    request.getBsdxSpriteGroup()
+            );
         } else {
             spriteIndexMap = spriteGroupIndexMapper.buildMap(
                     request.getBheSpriteGroup(),
@@ -140,7 +148,7 @@ public class TransMekaPipeline {
                 request.getSeGroupAppendIndex()
         );
 
-        // Step4: 转换核心资源（mek/waz/spm）
+        // Step4: 杞崲鏍稿績璧勬簮锛坢ek/waz/spm锛?
         int voiceGroupCount = request.getBsdxBatVoice() != null
                 ? request.getBsdxBatVoice().getVoiceList().size()
                 : 0;
@@ -153,11 +161,11 @@ public class TransMekaPipeline {
         result.setBsdxGSpm(spmConverter.convert(request.getBheGSpm()));
         result.setBsdxMSpm(spmConverter.convert(request.getBheMSpm()));
 
-        // Step5: 回写 mek 内部的 waz/spm 索引
+        // Step5: 鍥炲啓 mek 鍐呴儴鐨?waz/spm 绱㈠紩
         alignMekIndex(result.getBsdxMeka(), result.getWazaGroupIndex(), result.getSpriteGroupIndex());
 
-        // Step6: UI 资源表挂接（用 tsukuyomi 替换 nanoha 槽位，便于测试）
-        UiSpmReplacer.UiSpmReplaceResult uiReplaceResult = uiSpmReplacer.replaceNanohaWithTsukuyomi(
+        // Step6: UI 璧勬簮琛ㄦ寕鎺ワ紙鐢?tsukuyomi 鏇挎崲 nanoha 妲戒綅锛屼究浜庢祴璇曪級
+        UiSpmReplacer.UiSpmReplaceResult uiReplaceResult = uiSpmReplacer.replaceTargetSlotUiSpm(
                 request.getMekaPilotSpm(),
                 request.getSelectMekaMenuMekaSpm(),
                 result.getBsdxMSpm(),
@@ -165,6 +173,8 @@ public class TransMekaPipeline {
                 request.getSelectMekaMenuDat(),
                 request.getBsdxMekaGroup(),
                 result.getBsdxMeka(),
+                request.getTargetBsdxMek(),
+                targetCode,
                 keepTargetKey
         );
         if (uiReplaceResult.isMekaPilotReplaced()) {
@@ -231,6 +241,63 @@ public class TransMekaPipeline {
             }
         }
         return -1;
+    }
+
+    private void fillMissingSpriteMappings(
+            Map<Integer, Integer> spriteIndexMap,
+            Set<Integer> requiredSpriteIndices,
+            int targetSpriteIndex,
+            SpriteGroupGrp bsdxSpriteGroup
+    ) {
+        if (requiredSpriteIndices == null || requiredSpriteIndices.isEmpty()) {
+            return;
+        }
+        if (spriteIndexMap == null) {
+            return;
+        }
+
+        for (Integer bheIndex : requiredSpriteIndices) {
+            if (bheIndex == null || bheIndex < 0 || spriteIndexMap.containsKey(bheIndex)) {
+                continue;
+            }
+            Integer fallback = resolveFallbackSpriteIndex(bheIndex, targetSpriteIndex, bsdxSpriteGroup);
+            if (fallback != null && fallback >= 0) {
+                spriteIndexMap.put(bheIndex, fallback);
+            }
+        }
+    }
+
+    private Integer resolveFallbackSpriteIndex(int bheIndex, int targetSpriteIndex, SpriteGroupGrp bsdxSpriteGroup) {
+        if (hasValidSpriteEntry(bsdxSpriteGroup, targetSpriteIndex)) {
+            return targetSpriteIndex;
+        }
+        if (hasValidSpriteEntry(bsdxSpriteGroup, bheIndex)) {
+            return bheIndex;
+        }
+        return firstValidSpriteIndex(bsdxSpriteGroup);
+    }
+
+    private boolean hasValidSpriteEntry(SpriteGroupGrp bsdxSpriteGroup, int index) {
+        if (bsdxSpriteGroup == null || bsdxSpriteGroup.getSpriteList() == null || index < 0) {
+            return false;
+        }
+        if (index >= bsdxSpriteGroup.getSpriteList().size()) {
+            return false;
+        }
+        SpriteGroupGrp.SpriteGroupEntry entry = bsdxSpriteGroup.getSpriteList().get(index);
+        return entry != null && entry.getExistFlag() != null && entry.getExistFlag() != 0;
+    }
+
+    private Integer firstValidSpriteIndex(SpriteGroupGrp bsdxSpriteGroup) {
+        if (bsdxSpriteGroup == null || bsdxSpriteGroup.getSpriteList() == null) {
+            return null;
+        }
+        for (int i = 0; i < bsdxSpriteGroup.getSpriteList().size(); i++) {
+            if (hasValidSpriteEntry(bsdxSpriteGroup, i)) {
+                return i;
+            }
+        }
+        return null;
     }
 
     private BatVoiceGrp.BatVoiceGroup mergeBatVoiceGroup(

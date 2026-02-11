@@ -1,4 +1,4 @@
-﻿# 端到端流程与证据图（Flow）
+# 端到端流程与证据图（Flow）
 
 ## 1. Java 现有迁移主链（事实图）
 
@@ -127,33 +127,69 @@ flowchart TD
 - list1[0] 相同主链，但 `int2=0`。
 - list2[0] 为 `int1=16, types=[0,1], param=[0], int2=0`。
 
-## 6. 新架构运行流
+## 6. 新架构运行流（已落地）
 
 ```mermaid
 sequenceDiagram
   participant UI as Tauri UI
-  participant CMD as Tauri Command
-  participant TF as nexas-transform
+  participant CMD as start_task
+  participant RT as run_task
+  participant TF as nexas-transform::transfer_bhe_to_bsdx
   participant FMT as nexas-format-*
   participant IO as nexas-core::atomic_write
 
-  UI->>CMD: start_task(kind,input,output)
-  CMD->>TF: transfer_bhe_to_bsdx(...)
-  TF->>FMT: parse bytes -> IR
-  TF->>TF: apply rule set (versioned)
-  TF->>FMT: IR -> generate bytes
-  FMT->>IO: atomic_write(tmp -> fsync -> rename)
-  TF-->>CMD: progress/log/finished
+  UI->>CMD: start_task(kind,input,output,aux_input,format,force)
+  CMD->>RT: dispatch by kind
+  alt parse/generate/diff/validate
+    RT->>FMT: parse/generate/binary_diff
+    RT->>IO: write output (force guard)
+  else transfer
+    RT->>TF: transfer_bhe_to_bsdx(...)
+    TF-->>RT: progress
+  end
+  RT-->>CMD: message/error
   CMD-->>UI: event stream
   UI->>CMD: cancel_task(task_id)
 ```
 
+实现证据：
+
+- `apps/nexas-ui/src-tauri/src/commands.rs:206` `run_task`
+- `apps/nexas-ui/src-tauri/src/commands.rs:227` `run_parse_task`
+- `apps/nexas-ui/src-tauri/src/commands.rs:257` `run_generate_task`
+- `apps/nexas-ui/src-tauri/src/commands.rs:287` `run_diff_task`
+- `apps/nexas-ui/src-tauri/src/commands.rs:334` `run_transfer_task`
+
 ## 7. 当前缺口
 
-- `TODO(证据不足)`：`ProgramMaterial.grp.array1/array2/array3` 的业务语义尚未在 Java 业务层找到直接消费点。
-- `TODO(证据不足)`：`int2` 在 `CEventChange` 内的具体运算语义（AND/OR/NOT）需结合运行时行为或更多反汇编证据。
+- 待补证据：`ProgramMaterial.grp.array1/array2/array3` 的业务语义尚未在 Java 业务层找到直接消费点。
+- 待补证据：`int2` 在 `CEventChange` 内的具体运算语义（AND/OR/NOT）需结合运行时行为或更多反汇编证据。
 
 ## 8. 已落地 CLI 流程（真实执行）
+
+### 8.0 写入安全与打包流程
+
+实现证据：
+
+- `crates/nexas-cli/src/main.rs:564` `ensure_output_file_safe`
+- `crates/nexas-cli/src/main.rs:582` `ensure_output_dir_safe`
+- `crates/nexas-cli/src/main.rs:607` `run_unpack`
+- `crates/nexas-cli/src/main.rs:633` `run_pack`
+
+规则：
+
+- 输出路径已存在时，必须显式 `--force`。
+- `unpack` 生成 `ir.json + payload.bin + manifest.json`。
+- `pack` 支持三类输入：`payload.bin`、`ir.json`、原始二进制文件。
+
+```mermaid
+flowchart LR
+  A[pack/unpack request] --> B{output exists?}
+  B -->|yes + no force| C[reject]
+  B -->|yes + force| D[allow]
+  B -->|no| D
+  D --> E[atomic_write tmp -> fsync -> rename]
+```
 
 ### 8.1 `resolve-term`（Term 路径解码）
 
@@ -257,7 +293,7 @@ flowchart LR
   F --> G[next SkillInfoUnknown.offset]
 ```
 
-## 10. 新增命令流程
+## 10. 命令流程
 
 ### 10.1 `inspect-ceventchange`
 
@@ -324,7 +360,7 @@ flowchart TD
   G --> H[waz_int2_report.json]
 ```
 
-## 11. Java 增量差分流程（本轮新增）
+## 11. Java 状态扫描流程
 
 命令：
 
@@ -352,13 +388,13 @@ flowchart LR
   D --> E
 ```
 
-本轮报告事实：
+报告事实：
 
 - `git_head=b0e323b`
 - `git_tracked_changes=[]`
 - `resource_json_total_files=3235`
 
-## 12. 五格式无损回归流程（本轮新增）
+## 12. 五格式无损回归流程
 
 目标：对 `grp/waz/mek/spm/pac` 执行统一的 `parse -> generate -> diff`，且 `byte_diff=0`。
 
@@ -407,4 +443,41 @@ cargo run -p nexas-cli -- generate pac tests/golden/regression/seed.pac.ir.json 
 cargo run -p nexas-cli -- diff tests/golden/pac/seed.pacNew tests/golden/regression/seed.pac.roundtrip
 ```
 
-本轮执行结果：五次 `diff` 均输出 `byte_diff=0`。
+执行结果：五次 `diff` 均输出 `byte_diff=0`。
+
+测试级自动回归命令：
+
+```powershell
+cargo test -p nexas-cli regression_roundtrip_golden_matrix
+cargo test -p nexas-cli regression_roundtrip_bsdx_smoke_if_java_repo_present
+set NEXAS_JAVA_ROOT=D:\Code\NeXAS_DX
+cargo test -p nexas-cli regression_roundtrip_bsdx_full_if_java_repo_present -- --ignored --nocapture
+```
+
+本次执行结果：`smoke/full` 均通过。
+
+## 12. DX_re 同步链路（segroup + CEventSe）
+
+源码证据：
+
+- Java 映射器：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/SeGroupIndexMapper.java`
+- Java 接线：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/TransMekaPipeline.java`
+- Java 重写点：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/WazConverter.java`
+- Rust 同步：`crates/nexas-transform/src/lib.rs`
+
+```mermaid
+sequenceDiagram
+  participant B as BHE segroup
+  participant D as BSDX segroup
+  participant M as SeGroupMap
+  participant W as CEventSe.byteDataList
+  B->>M: build by seFileName
+  D->>M: existing index table
+  M->>D: append missing to group[11]
+  M->>W: remap (group,seq) in first 8 bytes
+```
+
+结论：
+
+- `segroup` 不再是“未映射状态”。
+- `CEventSe` 的索引引用在转换后与 BSDX `segroup` 对齐。

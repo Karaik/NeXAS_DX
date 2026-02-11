@@ -1,4 +1,4 @@
-﻿# 项目知识库（Skills）
+# 项目知识库（Skills）
 
 ## 1. 格式词典
 
@@ -211,7 +211,7 @@ flowchart LR
 - `CEventChange` 对象结束后，通常紧跟 unit 内的 `count2`（4 字节），不是对象字段。
 - 因此“下一个对象 offset - 当前 offset”可能比对象自身长度多 4 字节。
 
-## 14. Java 更新差分快照技能
+## 14. Java 仓库状态扫描技能
 
 命令：
 
@@ -224,14 +224,14 @@ flowchart LR
 - `resource_json_dirs[*].file_count`
 - `doc_files[*].exists`
 
-本轮快照：
+当前记录：
 
 - `resource_json_total_files=3235`
 - 最大目录：
   - `spmBsdxJson=1989`
   - `spmBheJson=748`
 
-## 15. 五格式无损回归技能（新增）
+## 15. 五格式无损回归技能
 
 目标：确保 `grp/waz/mek/spm/pac` 都满足 `parse -> generate -> binary_diff=0`。
 
@@ -248,6 +248,9 @@ flowchart LR
 - `cargo run -p nexas-cli -- parse <fmt> <input> <ir.json>`
 - `cargo run -p nexas-cli -- generate <fmt> <ir.json> <roundtrip.bin>`
 - `cargo run -p nexas-cli -- diff <input> <roundtrip.bin>`
+- `cargo test -p nexas-cli regression_roundtrip_golden_matrix`
+- `cargo test -p nexas-cli regression_roundtrip_bsdx_smoke_if_java_repo_present`
+- `cargo test -p nexas-cli regression_roundtrip_bsdx_full_if_java_repo_present -- --ignored --nocapture`
 
 验收阈值：
 
@@ -256,3 +259,63 @@ flowchart LR
 注意：
 
 - 目前 `mek/spm/pac` 是 `opaque_binary` 保真实现，语义字段仍待补齐。
+- `grp` 对非 `term.grp` 输入已加计数上界保护，防止异常计数触发内存崩溃。
+
+## 16. segroup 映射技能
+
+触发背景：`DX_re` 脚本指出 `CEventSe.byteDataList` 里的 `(group,seq)` 需要按 `segroup` 做 BHE -> BSDX 重映射。
+
+落地规则：
+
+- 以 `seFileName` 作为主键匹配。
+- BSDX 不存在时，自动追加到 `segroup[11]`。
+- 重写 `CEventSe.byteDataList` 每个 16-byte 块前 8 字节（`group` + `seq`）。
+
+实现位置：
+
+- Java：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/SeGroupIndexMapper.java`
+- Java：`src/main/java/com/giga/nexas/transfer/bhe2bsdx/converter/WazConverter.java`
+- Rust：`crates/nexas-transform/src/lib.rs`
+
+```mermaid
+flowchart LR
+  A[seFileName] --> B[build mapping]
+  B --> C[append missing -> bsdx[11]]
+  B --> D[rewrite CEventSe bytes]
+```
+
+## 17. Tauri 任务执行技能
+
+触发背景：UI 需要从“演示任务”升级为“真实执行任务”，并保持 Core/UI 解耦。
+
+任务类型：
+
+- `parse`：按格式读取二进制并输出 IR JSON。
+- `generate`：读取 IR JSON 生成二进制。
+- `diff`：比较 `input` 与 `aux_input`，输出 `byte_diff` 报告。
+- `validate`：比较并要求 `byte_diff=0`。
+- `transfer`：调用 `nexas-transform` 执行 BHE -> BSDX 流程。
+
+实现位置：
+
+- `apps/nexas-ui/src-tauri/src/commands.rs:206` `run_task`
+- `apps/nexas-ui/src-tauri/src/commands.rs:334` `run_transfer_task`
+- `apps/nexas-ui/src/main.ts:26` 任务参数面板（`kind/format/aux_input/force`）
+
+安全策略：
+
+- CLI：`--force` 才允许覆盖已有输出。
+- UI：`force=true` 才允许覆盖已有输出。
+
+```mermaid
+flowchart TD
+  A[UI request] --> B[start_task]
+  B --> C[run_task]
+  C -->|parse/generate| D[nexas-format-*]
+  C -->|diff/validate| E[byte_diff]
+  C -->|transfer| F[nexas-transform]
+  D --> G[atomic_write]
+  E --> G
+  F --> G
+  G --> H[progress/log/finished]
+```

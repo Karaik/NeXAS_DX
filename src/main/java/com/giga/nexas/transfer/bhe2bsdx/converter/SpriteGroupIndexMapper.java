@@ -188,6 +188,42 @@ public class SpriteGroupIndexMapper {
         return indices;
     }
 
+    public java.util.Set<Integer> collectRequiredIndicesFromWaz(com.giga.nexas.dto.bhe.waz.Waz bheWaz) {
+        java.util.Set<Integer> indices = new java.util.HashSet<>();
+        if (bheWaz == null || bheWaz.getSkillList() == null) {
+            return indices;
+        }
+
+        for (com.giga.nexas.dto.bhe.waz.Waz.Skill skill : bheWaz.getSkillList()) {
+            if (skill == null || skill.getPhasesInfo() == null) {
+                continue;
+            }
+            for (com.giga.nexas.dto.bhe.waz.Waz.Skill.SkillPhase phase : skill.getPhasesInfo()) {
+                if (phase == null || phase.getSkillUnitCollection() == null) {
+                    continue;
+                }
+                for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.SkillUnit unit : phase.getSkillUnitCollection()) {
+                    if (unit == null || unit.getSkillInfoObjectList() == null) {
+                        continue;
+                    }
+                    for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.SkillInfoObject info
+                            : unit.getSkillInfoObjectList()) {
+                        if (!(info instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventSprite)) {
+                            continue;
+                        }
+                        com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventSprite sprite =
+                                (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventSprite) info;
+                        Integer seq = sprite.getSpmFileSequence();
+                        if (seq != null && seq >= 0) {
+                            indices.add(seq);
+                        }
+                    }
+                }
+            }
+        }
+        return indices;
+    }
+
     private boolean isEmptyEntry(Integer existFlag) {
         return existFlag == null || existFlag == 0;
     }

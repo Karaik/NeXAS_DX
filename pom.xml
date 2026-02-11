@@ -178,6 +178,8 @@
                         <include>**/bsdx/TestMek.java</include>
                         <include>**/bsdx/TestSpm.java</include>
                         <include>**/bsdx/TestWaz.java</include>
+                        <include>**/transfer/bhe2bsdx/converter/SeGroupIndexMapperTest.java</include>
+                        <include>**/transfer/bhe2bsdx/converter/SeGroupRealDataValidationTest.java</include>
                     </includes>
                 </configuration>
             </plugin>

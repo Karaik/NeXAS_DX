@@ -1,4 +1,4 @@
-﻿# 维护者手册（Agent）
+# 维护者手册（Agent）
 
 ## 1. 目标与边界
 
@@ -72,8 +72,9 @@ flowchart TD
 
 - 统一通过 `nexas_core::atomic_write::atomic_write`。
 - 默认行为：`tmp -> fsync -> rename`。
-- 可选行为：保留 `.bak`。
-- CLI 危险覆盖操作需要 `--force`（待实现）。
+- 可配置行为：保留 `.bak`。
+- CLI 危险覆盖操作必须显式 `--force`，UI 对应 `force=true`。
+- `TODO`：补充统一路径规范化（`canonicalize`）与输出根白名单，避免路径遍历写入。
 
 ## 7. 测试策略
 
@@ -92,7 +93,8 @@ flowchart TD
 
 ### 7.3 任务系统
 
-- `start_task/cancel_task/get_task_status` 命令必须有单元测试与集成测试（待补）。
+- `start_task/cancel_task/get_task_status` 命令已补齐单元测试（`apps/nexas-ui/src-tauri/src/commands.rs`）。
+- 后续仍需补集成测试（启动真实 Tauri runtime 的端到端测试）。
 
 ## 8. 交付流程
 
@@ -120,6 +122,7 @@ flowchart LR
 - `TODO`：把 `ProgramMaterial.grp` 三段数组的业务语义绑定到具体事件类型。
 - `TODO`：将 `int2` 语义从“统计推断”提升为“行为验证”。
 - `TODO`：补齐 `mek/spm/pac/waz` 的语义级解析逻辑（当前已具备无损 opaque round-trip）。
+- `TODO`：补齐 Tauri command 集成测试（真实窗口生命周期 + 任务事件总线）。
 
 ## 11. M1 验收基准（已执行）
 
@@ -149,10 +152,10 @@ cargo clippy --workspace --all-targets --no-deps
   - `words[1].i32_le=3`（`typeList.count`）
   - `words[10].i32_le=1`（`int2`）
 
-## 12. 维护动作约束（新增）
+## 12. 维护动作约束
 
-- 修改任何解析器时，必须同步更新对应 golden 样本或说明不变原因。
-- 若新增“语义推断”，必须在 `skills.md` 标注 `verified` 或 `inferred`。
+- 变更任何解析器时，必须同步更新对应 golden 样本或说明不变原因。
+- 若引入“语义推断”，必须在 `skills.md` 标注 `verified` 或 `inferred`。
 - 每个里程碑至少保留一个“真实 offset + 原始 bytes + 解析值”的可复现样例。
 
 ## 13. M2/M3 验收基准（已执行）
@@ -199,7 +202,7 @@ flowchart LR
   F --> G[tauri action upload]
 ```
 
-## 15. Java 同步约束（新增）
+## 15. Java 同步约束
 
 当 Java 仓库出现资源或文档更新时，先执行：
 
@@ -214,10 +217,10 @@ cargo run -p nexas-cli -- java-diff-report D:\Code\NeXAS_DX tests/golden/java/ja
 
 验收口径：
 
-- 差分报告中 `git_tracked_changes` 是否为空需明确记录。
+- 状态扫描报告中 `git_tracked_changes` 是否为空需明确记录。
 - `resource_json_dirs` 计数变更必须回填到 `readme.md`。
 
-## 16. 五格式无损验收基准（新增）
+## 16. 五格式无损验收基准
 
 验收命令：
 
@@ -243,9 +246,28 @@ cargo run -p nexas-cli -- diff tests/golden/spm/01.spm tests/golden/regression/0
 cargo run -p nexas-cli -- parse pac tests/golden/pac/seed.pacNew tests/golden/regression/seed.pac.ir.json
 cargo run -p nexas-cli -- generate pac tests/golden/regression/seed.pac.ir.json tests/golden/regression/seed.pac.roundtrip
 cargo run -p nexas-cli -- diff tests/golden/pac/seed.pacNew tests/golden/regression/seed.pac.roundtrip
+
+cargo test -p nexas-cli regression_roundtrip_golden_matrix
+cargo test -p nexas-cli regression_roundtrip_bsdx_smoke_if_java_repo_present
+set NEXAS_JAVA_ROOT=D:\Code\NeXAS_DX
+cargo test -p nexas-cli regression_roundtrip_bsdx_full_if_java_repo_present -- --ignored --nocapture
 ```
 
 通过标准：
 
 - 所有单元测试通过。
 - 五个 `diff` 命令全部输出 `byte_diff=0`。
+- `nexas-cli` 的 `golden/smoke/full` 回归测试全部通过。
+- `grp` 解析对异常计数输入不崩溃（回退 `opaque_binary` 路径）。
+
+## 17. DX_re 同步约束
+
+- `segroup` 与 `CEventSe` 必须联动维护：
+  - 映射键：`seFileName`
+  - 追加组：BSDX `segroup[11]`
+  - 字节重写位：`CEventSe.byteDataList` 前 8 字节（小端 `i32 group + i32 seq`）
+- 禁止仅复制 `CEventSe` 原始 bytes 而不重写索引，否则会出现音效缺失或错位。
+- 变更后必须至少执行：
+  - `mvn -q test`
+  - `mvn -q "-Dtest=com.giga.nexas.transfer.bhe2bsdx.converter.SeGroupIndexMapperTest" test`
+  - `cargo test --workspace`

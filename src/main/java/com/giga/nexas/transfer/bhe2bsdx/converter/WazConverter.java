@@ -134,7 +134,7 @@ public class WazConverter {
                                 ev.setInt3(0);
                                 ev.setInt4(0);
                                 for (var unit : srcBhe.getUnitList()) {
-                                    // 修复：只取 buffer == 0 的数据
+                                    // Use only the unit where buffer == 0.
                                     if (unit.getBuffer() == 0) {
                                         if (unit.getData() instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventVal v) {
                                             ev.setInt1(v.getInt1() != null ? v.getInt1() : 0);
@@ -233,7 +233,7 @@ public class WazConverter {
                             throw new OperationException(500, "error");
                         }
 
-                        // 修复 BHE/BSDX InfoCollection 名称不一致导致的空列表
+                        // Bridge BHE/BSDX InfoCollection naming mismatch before copy.
                         InfoCollectionMapper.copyBheToBsdx(srcInfo, dstInfo);
 
                         // 槽位号同步 + 恢复正确的 BSDX typeId

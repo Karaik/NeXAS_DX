@@ -10,16 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * UI SPM 替换器：
- * - 把 BSDX 的 Nanoha 槽位替换为 Tsukuyomi（便于测试，不追加索引）。
- * - 目前覆盖 MekaPilot / SelectMekaMenuMeka 两个表。
- */
 @Slf4j
 public class UiSpmReplacer {
 
-    private static final String TARGET_PILOT_NAME = "菜ノ葉";
-    private static final String TARGET_MEKA_CODE = "NANOHA";
+    private static final String DEFAULT_TARGET_PILOT_NAME = "菜ノ葉";
+    private static final String DEFAULT_TARGET_MEKA_CODE = "NANOHA";
 
     @Data
     public static class UiSpmReplaceResult {
@@ -29,30 +24,35 @@ public class UiSpmReplacer {
         private int selectMekaMenuAnimIndex = -1;
     }
 
-    public UiSpmReplaceResult replaceNanohaWithTsukuyomi(
+    public UiSpmReplaceResult replaceTargetSlotUiSpm(
             Spm mekaPilotSpm,
             Spm selectMekaMenuMekaSpm,
-            Spm tsukuyomiMSpm,
-            Spm tsukuyomiSSpm,
+            Spm sourceMSpm,
+            Spm sourceSSpm,
             Dat selectMekaMenuDat,
             MekaGroupGrp bsdxMekaGroup,
-            Mek tsukuyomiMek,
+            Mek sourceMek,
+            Mek targetMek,
+            String targetCodeName,
             boolean keepTargetKey
     ) {
         UiSpmReplaceResult result = new UiSpmReplaceResult();
+        String resolvedTargetCode = normalizeCode(targetCodeName, DEFAULT_TARGET_MEKA_CODE);
+        String targetPilotName = resolveTargetPilotName(targetMek, DEFAULT_TARGET_PILOT_NAME);
 
-        // Step6-1: MekaPilot.spm -> 用 tsukuyomi 的 m_spm 替换 Nanoha
-        if (mekaPilotSpm != null && tsukuyomiMSpm != null) {
-            int animIndex = findAnimIndexByName(mekaPilotSpm, TARGET_PILOT_NAME);
+        if (mekaPilotSpm != null && sourceMSpm != null) {
+            int animIndex = findAnimIndexByName(mekaPilotSpm, targetPilotName);
+            if (animIndex < 0 && !DEFAULT_TARGET_PILOT_NAME.equals(targetPilotName)) {
+                animIndex = findAnimIndexByName(mekaPilotSpm, DEFAULT_TARGET_PILOT_NAME);
+            }
             if (animIndex >= 0) {
                 List<Integer> pageIndices = collectPageIndices(mekaPilotSpm.getAnimData().get(animIndex));
                 int imageIndex = resolveTargetImageIndex(mekaPilotSpm, pageIndices);
                 if (!pageIndices.isEmpty()) {
-                    replacePages(mekaPilotSpm, pageIndices, tsukuyomiMSpm, imageIndex);
-                    replaceImageName(mekaPilotSpm, imageIndex, firstImageName(tsukuyomiMSpm));
-                    // keepTargetKey=true 时保留 Nanoha 的 animName 作为 key
+                    replacePages(mekaPilotSpm, pageIndices, sourceMSpm, imageIndex);
+                    replaceImageName(mekaPilotSpm, imageIndex, firstImageName(sourceMSpm));
                     if (!keepTargetKey) {
-                        String pilotName = extractPilotName(tsukuyomiMek);
+                        String pilotName = extractPilotName(sourceMek);
                         if (!pilotName.isEmpty()) {
                             mekaPilotSpm.getAnimData().get(animIndex).setAnimName(pilotName);
                         }
@@ -62,24 +62,23 @@ public class UiSpmReplacer {
                     log.info("Step6: MekaPilot 替换完成 (animIndex={})", animIndex);
                 }
             } else {
-                log.warn("Step6: MekaPilot 未找到 Nanoha animName={}", TARGET_PILOT_NAME);
+                log.warn("Step6: MekaPilot 未找到目标 animName={}", targetPilotName);
             }
         }
 
-        // Step6-2: SelectMekaMenuMeka.spm -> 根据 dat 定位 Nanoha 槽位再替换
-        if (selectMekaMenuMekaSpm != null && tsukuyomiSSpm != null) {
-            int nanohaMekaIndex = findMekaIndexByCode(bsdxMekaGroup, TARGET_MEKA_CODE);
-            Integer animIndex = resolveSelectMenuAnimIndex(selectMekaMenuDat, nanohaMekaIndex);
+        if (selectMekaMenuMekaSpm != null && sourceSSpm != null) {
+            int targetMekaIndex = findMekaIndexByCode(bsdxMekaGroup, resolvedTargetCode);
+            Integer animIndex = resolveSelectMenuAnimIndex(selectMekaMenuDat, targetMekaIndex);
             if (animIndex != null && animIndex >= 0
                     && animIndex < safeSize(selectMekaMenuMekaSpm.getAnimData())) {
                 Spm.SPMAnimData animData = selectMekaMenuMekaSpm.getAnimData().get(animIndex);
                 List<Integer> pageIndices = collectPageIndices(animData);
                 int imageIndex = resolveTargetImageIndex(selectMekaMenuMekaSpm, pageIndices);
                 if (!pageIndices.isEmpty()) {
-                    replacePages(selectMekaMenuMekaSpm, pageIndices, tsukuyomiSSpm, imageIndex);
-                    replaceImageName(selectMekaMenuMekaSpm, imageIndex, firstImageName(tsukuyomiSSpm));
+                    replacePages(selectMekaMenuMekaSpm, pageIndices, sourceSSpm, imageIndex);
+                    replaceImageName(selectMekaMenuMekaSpm, imageIndex, firstImageName(sourceSSpm));
                     if (!keepTargetKey) {
-                        String menuName = buildSelectMenuName(tsukuyomiMek);
+                        String menuName = buildSelectMenuName(sourceMek);
                         if (!menuName.isEmpty()) {
                             animData.setAnimName(menuName);
                         }
@@ -89,7 +88,7 @@ public class UiSpmReplacer {
                     log.info("Step6: SelectMekaMenuMeka 替换完成 (animIndex={})", animIndex);
                 }
             } else {
-                log.warn("Step6: SelectMekaMenuMeka 未找到 Nanoha 对应 animIndex (mekaIndex={})", nanohaMekaIndex);
+                log.warn("Step6: SelectMekaMenuMeka 未找到目标 animIndex (mekaIndex={})", targetMekaIndex);
             }
         }
 
@@ -348,7 +347,7 @@ public class UiSpmReplacer {
         }
         String roma = joinNonEmpty(pilotRoma, mekaRoma);
         if (!roma.isEmpty()) {
-            builder.append("\uff1a").append(roma);
+            builder.append("：").append(roma);
         }
         builder.append("\r");
         return builder.toString();
@@ -366,6 +365,21 @@ public class UiSpmReplacer {
 
     private String safeTrim(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private String normalizeCode(String code, String fallback) {
+        if (code == null || code.isBlank()) {
+            return fallback;
+        }
+        return code.trim().toUpperCase();
+    }
+
+    private String resolveTargetPilotName(Mek targetMek, String fallback) {
+        if (targetMek == null || targetMek.getMekBasicInfo() == null) {
+            return fallback;
+        }
+        String pilotName = safeTrim(targetMek.getMekBasicInfo().getPilotNameKanji());
+        return pilotName.isEmpty() ? fallback : pilotName;
     }
 
     private Integer toInt(Object value) {
