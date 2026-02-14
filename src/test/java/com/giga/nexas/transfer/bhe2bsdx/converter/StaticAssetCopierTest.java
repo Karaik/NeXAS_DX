@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -61,6 +62,35 @@ class StaticAssetCopierTest {
         assertTrue(Files.exists(outputDir.resolve("a.png")));
         assertTrue(Files.exists(outputDir.resolve("b.png")));
         assertTrue(Files.exists(outputDir.resolve("c.png")));
+    }
+
+    @Test
+    void copyAssets_shouldUseActionGroupFilterWhenProvided() throws Exception {
+        Path assetRoot = tempDir.resolve("assets3");
+        Path outputDir = tempDir.resolve("out3");
+        Files.createDirectories(assetRoot);
+        Files.writeString(assetRoot.resolve("a.png"), "a");
+        Files.writeString(assetRoot.resolve("b.png"), "b");
+        Files.writeString(assetRoot.resolve("c.png"), "c");
+
+        Spm spm = new Spm();
+        spm.setImageData(List.of(image("a.png"), image("b.png"), image("c.png")));
+        spm.setPageData(List.of(pageWithImageNo(0), pageWithImageNo(1), pageWithImageNo(2)));
+        spm.setPatPageNum(1);
+        spm.setAnimData(List.of(animWithPageNo(0), animWithPageNo(1), animWithPageNo(2)));
+
+        StaticAssetCopier copier = new StaticAssetCopier();
+        copier.copyAssets(
+                outputDir,
+                assetRoot,
+                Map.of("demo", spm),
+                Map.of(),
+                Map.of("demo", Set.of(1))
+        );
+
+        assertFalse(Files.exists(outputDir.resolve("a.png")));
+        assertTrue(Files.exists(outputDir.resolve("b.png")));
+        assertFalse(Files.exists(outputDir.resolve("c.png")));
     }
 
     private Spm.SPMImageData image(String name) {

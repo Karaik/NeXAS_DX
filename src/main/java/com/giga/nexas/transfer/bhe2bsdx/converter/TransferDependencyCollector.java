@@ -90,6 +90,25 @@ public class TransferDependencyCollector {
         return indices;
     }
 
+    public Map<String, Set<Integer>> collectSpmActionGroups(
+            Map<String, Waz> wazMap,
+            SpriteGroupGrp spriteGroup
+    ) {
+        LinkedHashMap<String, Set<Integer>> actionGroups = new LinkedHashMap<>();
+        if (wazMap == null || wazMap.isEmpty() || spriteGroup == null) {
+            return actionGroups;
+        }
+        for (Waz waz : wazMap.values()) {
+            if (waz == null || waz.getSkillList() == null) {
+                continue;
+            }
+            for (Waz.Skill skill : waz.getSkillList()) {
+                collectActionGroupsFromSkill(skill, spriteGroup, actionGroups);
+            }
+        }
+        return actionGroups;
+    }
+
     private DependencySnapshot buildSnapshot(
             String mainKey,
             Waz mainWaz,
@@ -178,6 +197,46 @@ public class TransferDependencyCollector {
                                 spriteIndices.add(seq);
                             }
                         }
+                    });
+                }
+            }
+        }
+    }
+
+    private void collectActionGroupsFromSkill(
+            Waz.Skill skill,
+            SpriteGroupGrp spriteGroup,
+            Map<String, Set<Integer>> actionGroups
+    ) {
+        if (skill == null || skill.getPhasesInfo() == null || spriteGroup == null || actionGroups == null) {
+            return;
+        }
+        for (Waz.Skill.SkillPhase phase : skill.getPhasesInfo()) {
+            if (phase == null || phase.getSkillUnitCollection() == null) {
+                continue;
+            }
+            for (SkillUnit unit : phase.getSkillUnitCollection()) {
+                if (unit == null || unit.getSkillInfoObjectList() == null) {
+                    continue;
+                }
+                for (SkillInfoObject info : unit.getSkillInfoObjectList()) {
+                    visitInfo(info, node -> {
+                        if (!(node instanceof CEventSprite sprite)) {
+                            return;
+                        }
+                        Integer sequence = sprite.getSpmFileSequence();
+                        if (sequence == null || sequence < 0) {
+                            return;
+                        }
+                        String spmKey = resolveSpriteSpmKey(spriteGroup, sequence);
+                        if (spmKey == null) {
+                            return;
+                        }
+                        Integer actionGroup = sprite.getActionGroupNumber();
+                        if (actionGroup == null || actionGroup < 0) {
+                            return;
+                        }
+                        actionGroups.computeIfAbsent(spmKey, k -> new LinkedHashSet<>()).add(actionGroup);
                     });
                 }
             }

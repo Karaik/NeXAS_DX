@@ -259,16 +259,7 @@ public class Bhe2BsdxSingleRunner {
                 batVoiceGrp.getVoiceList().add(result.getBsdxBatVoiceGroup());
                 assetGrp.put("batvoice", batVoiceGrp);
             }
-            Map<String, com.giga.nexas.dto.bsdx.spm.Spm> assetSpm = new HashMap<>();
-            if (result != null) {
-                putIfPresent(assetSpm, useTargetSlot ? targetSpriteKey : baseKey, result.getBsdxSpm());
-                putIfPresent(assetSpm, cKey, result.getBsdxCSpm());
-                putIfPresent(assetSpm, sKey, result.getBsdxSSpm());
-                putIfPresent(assetSpm, gKey, result.getBsdxGSpm());
-                putIfPresent(assetSpm, mKey, result.getBsdxMSpm());
-                putIfPresent(assetSpm, "mekapilot", result.getBsdxMekaPilotSpm());
-                putIfPresent(assetSpm, "selectmekamenumeka", result.getBsdxSelectMekaMenuMekaSpm());
-            }
+            Map<String, com.giga.nexas.dto.bsdx.spm.Spm> assetSpm = new LinkedHashMap<>(outputSpm);
             assetCopier.copyAssets(outputDir, staticRoot, assetSpm, assetGrp);
         }
 

@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 静态资源复制：
@@ -29,6 +30,13 @@ public class StaticAssetCopier {
     public void copyAssets(Path outputDir, Path assetRoot,
                            Map<String, Spm> spmMap,
                            Map<String, Grp> grpMap) {
+        copyAssets(outputDir, assetRoot, spmMap, grpMap, null);
+    }
+
+    public void copyAssets(Path outputDir, Path assetRoot,
+                           Map<String, Spm> spmMap,
+                           Map<String, Grp> grpMap,
+                           Map<String, Set<Integer>> spmActionGroups) {
         if (outputDir == null || assetRoot == null) {
             return;
         }
@@ -43,7 +51,7 @@ public class StaticAssetCopier {
             return;
         }
 
-        Map<String, String> requiredNames = collectRequiredNames(spmMap, grpMap);
+        Map<String, String> requiredNames = collectRequiredNames(spmMap, grpMap, spmActionGroups);
         if (requiredNames.isEmpty()) {
             log.info("静态资源列表为空，跳过复制");
             return;
@@ -98,11 +106,15 @@ public class StaticAssetCopier {
                 requiredNames.size(), copied, missing, duplicated);
     }
 
-    private Map<String, String> collectRequiredNames(Map<String, Spm> spmMap, Map<String, Grp> grpMap) {
+    private Map<String, String> collectRequiredNames(
+            Map<String, Spm> spmMap,
+            Map<String, Grp> grpMap,
+            Map<String, Set<Integer>> spmActionGroups
+    ) {
         Map<String, String> required = new LinkedHashMap<>();
         if (spmMap != null) {
-            for (Spm spm : spmMap.values()) {
-                collectFromSpm(required, spm);
+            for (Map.Entry<String, Spm> entry : spmMap.entrySet()) {
+                collectFromSpm(required, normalizeSpmKey(entry.getKey()), entry.getValue(), spmActionGroups);
             }
         }
         if (grpMap != null) {
@@ -113,12 +125,18 @@ public class StaticAssetCopier {
         return required;
     }
 
-    private void collectFromSpm(Map<String, String> required, Spm spm) {
+    private void collectFromSpm(
+            Map<String, String> required,
+            String spmKey,
+            Spm spm,
+            Map<String, Set<Integer>> spmActionGroups
+    ) {
         if (spm == null || spm.getImageData() == null || spm.getImageData().isEmpty()) {
             return;
         }
         List<Spm.SPMImageData> imageDataList = spm.getImageData();
-        LinkedHashSet<Integer> referencedImageNo = collectReferencedImageNo(spm);
+        Set<Integer> actionGroupSet = resolveActionGroups(spmKey, spmActionGroups);
+        LinkedHashSet<Integer> referencedImageNo = collectReferencedImageNo(spm, actionGroupSet);
         if (referencedImageNo.isEmpty()) {
             for (Spm.SPMImageData image : imageDataList) {
                 if (image == null) {
@@ -158,7 +176,7 @@ public class StaticAssetCopier {
         }
     }
 
-    private LinkedHashSet<Integer> collectReferencedImageNo(Spm spm) {
+    private LinkedHashSet<Integer> collectReferencedImageNo(Spm spm, Set<Integer> actionGroupSet) {
         LinkedHashSet<Integer> imageNoSet = new LinkedHashSet<>();
         if (spm == null || spm.getPageData() == null || spm.getPageData().isEmpty()) {
             return imageNoSet;
@@ -166,7 +184,7 @@ public class StaticAssetCopier {
 
         List<Spm.SPMPageData> pageData = spm.getPageData();
         LinkedHashSet<Integer> pageNoSet = new LinkedHashSet<>();
-        collectReferencedPageNo(spm, pageNoSet);
+        collectReferencedPageNo(spm, pageNoSet, actionGroupSet);
 
         if (pageNoSet.isEmpty()) {
             for (int i = 0; i < pageData.size(); i++) {
@@ -184,12 +202,17 @@ public class StaticAssetCopier {
         return imageNoSet;
     }
 
-    private void collectReferencedPageNo(Spm spm, LinkedHashSet<Integer> pageNoSet) {
+    private void collectReferencedPageNo(Spm spm, LinkedHashSet<Integer> pageNoSet, Set<Integer> actionGroupSet) {
         if (spm == null || pageNoSet == null || spm.getAnimData() == null) {
             return;
         }
         int patPageNum = spm.getPatPageNum() == null ? 0 : Math.max(spm.getPatPageNum(), 0);
-        for (Spm.SPMAnimData animData : spm.getAnimData()) {
+        List<Spm.SPMAnimData> animDataList = spm.getAnimData();
+        for (int animIndex = 0; animIndex < animDataList.size(); animIndex++) {
+            if (actionGroupSet != null && !actionGroupSet.isEmpty() && !actionGroupSet.contains(animIndex)) {
+                continue;
+            }
+            Spm.SPMAnimData animData = animDataList.get(animIndex);
             if (animData == null || animData.getPatData() == null) {
                 continue;
             }
@@ -274,6 +297,20 @@ public class StaticAssetCopier {
         }
         String key = name.toLowerCase(Locale.ROOT);
         required.putIfAbsent(key, name);
+    }
+
+    private Set<Integer> resolveActionGroups(String spmKey, Map<String, Set<Integer>> spmActionGroups) {
+        if (spmKey == null || spmActionGroups == null || spmActionGroups.isEmpty()) {
+            return null;
+        }
+        return spmActionGroups.get(spmKey);
+    }
+
+    private String normalizeSpmKey(String key) {
+        if (key == null || key.isBlank()) {
+            return null;
+        }
+        return key.trim().toLowerCase(Locale.ROOT);
     }
 
     private String normalizeFileName(String name) {
