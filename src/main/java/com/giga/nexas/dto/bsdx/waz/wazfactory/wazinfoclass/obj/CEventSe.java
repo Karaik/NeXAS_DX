@@ -20,6 +20,15 @@ public class CEventSe extends SkillInfoObject {
 
     private Integer count;
 
+    /**
+     * 20260331 3
+     * int1：segroup的index
+     * int2：index[int2]
+     * int3：概率（百分数）
+     * int4：？？？（重复几次？）
+     * step1；移植时，bhe的下标，以filename为主，去对应找到bsdx内的正确的 index[int2]（做寻址收束）
+     * step2：将bhe内有，但bsdx内没有的se放入唯一一个空位内，重排+重定向
+     */
     private List<byte[]> byteDataList = new ArrayList<>();
 
     public CEventSe(Integer typeId) {

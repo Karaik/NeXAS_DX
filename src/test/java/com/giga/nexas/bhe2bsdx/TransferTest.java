@@ -195,6 +195,8 @@ public class TransferTest {
         return codeNameMap;
     }
 
+    // todo
+    // 20260331 1 bhe 的所有 *.waz 在这个方法逐个转
     @Test
     public void testTransSingle() throws Exception {
         Path resourceDir = Paths.get("src/main/resources");

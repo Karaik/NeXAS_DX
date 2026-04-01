@@ -306,6 +306,8 @@ public class MekParser implements BheParser<Mek> {
         mekVoiceInfo.builtinEmotionCount = rows - emotionCount;
     }
 
+    // todo
+    // 20260331 2 bhe -> bsdx，常规块（regular）部分直接采用所要移植到目标对象的常规块，后面挂接的部分置空（flag=0）
     private static void parseMekMaterialBlock(Mek mek, byte[] blockBytes) {
         Mek.MekMaterialBlock out = new Mek.MekMaterialBlock();
         BinaryReader reader = new BinaryReader(blockBytes);

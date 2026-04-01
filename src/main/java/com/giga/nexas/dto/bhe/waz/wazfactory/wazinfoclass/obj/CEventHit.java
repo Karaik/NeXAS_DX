@@ -44,7 +44,7 @@ public class CEventHit extends SkillInfoObject {
             new CEventHitType(0xFFFFFFFF, "攻撃力補正：技終了時"), // 20  0x14
             new CEventHitType(0xFFFFFFFF, "自分停止時間"), // 21  0x15
             new CEventHitType(0xFFFFFFFF, "消滅時間"), // 22  0x16
-            new CEventHitType(0x6, "ヒットエフェクト"), // 23  0x17
+            new CEventHitType(0x6, "ヒットエフェクト"), // 23  0x17 20260331 7 todo 弹幕修复
             new CEventHitType(0x27, "のけぞり（地上→地上）"), // 24  0x18
             new CEventHitType(0x27, "のけぞり（空中）"), // 25  0x19
             new CEventHitType(0x27, "のけぞり（空中→地上）"), // 26  0x1A

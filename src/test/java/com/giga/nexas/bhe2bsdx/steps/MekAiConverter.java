@@ -104,20 +104,15 @@ public class MekAiConverter {
         dst.setInt22(src.getInt22());
         dst.setInt23(src.getInt23());
         dst.setInt24(src.getInt24());
-        dst.setInt25(src.getInt25());
-
-        Integer int26 = src.getInt26();
-        // BHE 中不存在 int26，默认填 0 避免写盘崩溃
-        if (int26 == null || int26 == -999) {
-            int26 = 0;
-        }
-        dst.setInt26(int26);
-
-        dst.setShort2(src.getShort2());
-        dst.setInt27(src.getInt27());
-        dst.setInt28(src.getInt28());
-        dst.setShort3(src.getShort3());
-        dst.setShort4(src.getShort4());
+        // todo
+        // 20260331 0
+        dst.setInt25(src.getInt27());
+        dst.setInt26(src.getInt28());
+        dst.setShort2(src.getShort3());
+        dst.setInt27(src.getInt29());
+        dst.setInt28(src.getInt30());
+        dst.setShort3(src.getShort4());
+        dst.setShort4(src.getShort5());
 
         // BsdxInfoCollection 与 BheInfoCollection 结构一致，逐项深拷贝
         List<BsdxInfoCollection> collections = new ArrayList<>();
