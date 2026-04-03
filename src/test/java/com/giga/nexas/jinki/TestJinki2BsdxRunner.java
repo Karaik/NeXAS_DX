@@ -28,5 +28,11 @@ public class TestJinki2BsdxRunner {
         Assertions.assertFalse(result.getImportPlan().getRequiredWazFiles().isEmpty());
         Assertions.assertFalse(result.getImportPlan().getRequiredSpmFiles().isEmpty());
         Assertions.assertFalse(result.getImportPlan().getGrpAppendTargets().isEmpty());
+
+        Assertions.assertNotNull(result.getGrpAppendPlan());
+        Assertions.assertTrue(result.getGrpAppendPlan().getMekaGroupIndex() >= 0);
+        Assertions.assertTrue(result.getGrpAppendPlan().getWazaGroupIndex() >= 0);
+        Assertions.assertTrue(result.getGrpAppendPlan().getSpriteGroupIndex() >= 0);
+        Assertions.assertTrue(result.getGrpAppendPlan().getBatVoiceGroupIndex() >= 0);
     }
 }
