@@ -1,7 +1,10 @@
 package com.giga.nexas.transfer.jinki2bsdx.steps;
 
-import cn.hutool.core.bean.BeanUtil;
+import com.giga.nexas.dto.bsdx.BsdxInfoCollection;
 import com.giga.nexas.dto.bsdx.mek.Mek;
+import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEvent;
+import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEventAttack;
+import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEventMove;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
 import com.giga.nexas.transfer.jinki2bsdx.model.GrpAppendPlan;
 import com.giga.nexas.transfer.jinki2bsdx.model.JinkiPackageBundle;
@@ -15,15 +18,20 @@ import java.util.Map;
 /**
  * 负责重建并回写 Akao.mek。
  *
- * <p>当前实现重点是把 Mek 拆成多个分片入口分别调用重建方法。</p>
- *
- * <p>第一轮真正做语义修改的只有 {@code MekBasicInfo}：</p>
+ * <p>这一层不是“在源对象上打补丁”，而是：</p>
  * <ul>
- *     <li>{@code wazFileSequence}</li>
- *     <li>{@code spmFileSequence}</li>
+ *     <li>先构建 step7 专用上下文</li>
+ *     <li>再创建一个新的目标 Mek 外壳</li>
+ *     <li>最后按 Mek.java 的分片顺序，逐片重建目标对象</li>
  * </ul>
  *
- * <p>其他分片先显式拆出重建方法，当前按“原语义复制/挂接”处理。</p>
+ * <p>当前 step7 已明确会做语义修改的只有 {@code MekBasicInfo}：</p>
+ * <ul>
+ *     <li>{@code wazFileSequence -> 目标 WazaGroup 索引}</li>
+ *     <li>{@code spmFileSequence -> 目标 SpriteGroup 索引}</li>
+ * </ul>
+ *
+ * <p>其他分片当前先做“结构级深拷贝”，不强行改它们的内部语义。</p>
  */
 public class RebindAkaoMekStep {
 
@@ -41,13 +49,13 @@ public class RebindAkaoMekStep {
             return null;
         }
 
-        // Step 7-1: 先根据源 Mek 和 grp 追加结果构建重建上下文。
+        // Step 7-1: 先根据源 Mek 和 step4 的 grp 结果，构建本步专用上下文。
         MekRebindContext context = buildContext(sourceMek, grpAppendPlan);
 
         // Step 7-2: 创建目标 Mek 外壳，只保留最顶层公共信息。
         Mek targetMek = createTargetMekShell(context);
 
-        // Step 7-3: 按 Mek.java 的分片顺序，逐个重建头部信息。
+        // Step 7-3: 重建头部偏移信息。
         targetMek.setMekHead(rebuildMekHead(context));
 
         // Step 7-4: 重建区块大小信息。
@@ -60,22 +68,22 @@ public class RebindAkaoMekStep {
         targetMek.setMekPairBlock(rebuildMekPairBlock(context));
 
         // Step 7-7: 重建武装表。
-        // 当前只复制结构，不改 MekWeaponInfo.wazSequence。
+        // 当前只做结构级深拷贝，不修改 weapon 内部的 wazSequence。
         targetMek.setMekWeaponInfoMap(rebuildWeaponInfoMap(context));
 
         // Step 7-8: 重建 AI 分片。
-        // 当前先保持原语义，不改 CPU 事件内部内容。
+        // 当前显式深拷贝 CPU 事件，但不改变 AI 逻辑语义。
         targetMek.setMekAiInfoList(rebuildAiInfoList(context));
 
         // Step 7-9: 重建 Voice 分片。
-        // 当前先保持原语义，不改 table 里的 groupId。
+        // 当前显式深拷贝，但不改 table 里的 groupId 语义。
         targetMek.setMekVoiceInfo(rebuildMekVoiceInfo(context));
 
         // Step 7-10: 重建 Material 分片。
-        // 当前先按原结构复制，不改 sprite/se/voice 组内引用语义。
+        // 当前显式深拷贝条目和数组，但不改 sprite/se/voice 组内容的语义。
         targetMek.setMekMaterialBlock(rebuildMekMaterialBlock(context));
 
-        // Step 7-11: 对当前已经明确会改的字段做结果校验。
+        // Step 7-11: 对当前已经确定会改的字段做结果校验。
         validateRebindResult(targetMek, context);
         return targetMek;
     }
@@ -98,6 +106,7 @@ public class RebindAkaoMekStep {
 
     private Mek createTargetMekShell(MekRebindContext context) {
         Mek targetMek = new Mek();
+
         if (context.getSourceMek() != null) {
             targetMek.setFileName(context.getSourceMek().getFileName());
             targetMek.setExtensionName(context.getSourceMek().getExtensionName());
@@ -112,7 +121,14 @@ public class RebindAkaoMekStep {
         }
 
         Mek.MekHead target = new Mek.MekHead();
-        BeanUtil.copyProperties(source, target);
+
+        // 这里是纯结构信息，不带索引语义，按字段原样复制。
+        target.setSequence1(source.getSequence1());
+        target.setSequence2(source.getSequence2());
+        target.setSequence3(source.getSequence3());
+        target.setSequence4(source.getSequence4());
+        target.setSequence5(source.getSequence5());
+        target.setSequence6(source.getSequence6());
         return target;
     }
 
@@ -123,7 +139,13 @@ public class RebindAkaoMekStep {
         }
 
         Mek.MekBlocks target = new Mek.MekBlocks();
-        BeanUtil.copyProperties(source, target);
+
+        // 这里也是纯结构尺寸信息，当前不改语义。
+        target.setBodyInfoBlockSize(source.getBodyInfoBlockSize());
+        target.setUnknownInfo1BlockSize(source.getUnknownInfo1BlockSize());
+        target.setWeaponInfoBlockSize(source.getWeaponInfoBlockSize());
+        target.setAiInfoBlockSize(source.getAiInfoBlockSize());
+        target.setVoiceInfoBlockSize(source.getVoiceInfoBlockSize());
         return target;
     }
 
@@ -134,9 +156,35 @@ public class RebindAkaoMekStep {
         }
 
         Mek.MekBasicInfo target = new Mek.MekBasicInfo();
-        BeanUtil.copyProperties(source, target);
 
-        // 当前 step7 第一轮只明确重绑两个顶层外部路由字段。
+        // 先复制所有普通属性字段。
+        target.setMekName(source.getMekName());
+        target.setMekNameEnglish(source.getMekNameEnglish());
+        target.setPilotNameKanji(source.getPilotNameKanji());
+        target.setPilotNameRoma(source.getPilotNameRoma());
+        target.setMekDescription(source.getMekDescription());
+        target.setMekType(source.getMekType());
+        target.setHealthRecovery(source.getHealthRecovery());
+        target.setForceOnKill(source.getForceOnKill());
+        target.setBaseHealth(source.getBaseHealth());
+        target.setEnergyIncreaseLevel1(source.getEnergyIncreaseLevel1());
+        target.setEnergyIncreaseLevel2(source.getEnergyIncreaseLevel2());
+        target.setBoosterLevel(source.getBoosterLevel());
+        target.setBoosterIncreaseLevel(source.getBoosterIncreaseLevel());
+        target.setPermanentArmor(source.getPermanentArmor());
+        target.setComboImpactFactor(source.getComboImpactFactor());
+        target.setFightingAbility(source.getFightingAbility());
+        target.setShootingAbility(source.getShootingAbility());
+        target.setDurability(source.getDurability());
+        target.setMobility(source.getMobility());
+        target.setPhysicsWeight(source.getPhysicsWeight());
+        target.setWalkingSpeed(source.getWalkingSpeed());
+        target.setNormalDashSpeed(source.getNormalDashSpeed());
+        target.setSearchDashSpeed(source.getSearchDashSpeed());
+        target.setBoostDashSpeed(source.getBoostDashSpeed());
+        target.setAutoHoverHeight(source.getAutoHoverHeight());
+
+        // 这里是 step7 当前第一轮真正有语义改动的两个字段。
         target.setWazFileSequence(context.getTargetWazaGroupIndex());
         target.setSpmFileSequence(context.getTargetSpriteGroupIndex());
         return target;
@@ -150,17 +198,21 @@ public class RebindAkaoMekStep {
 
         Mek.MekPairBlock target = new Mek.MekPairBlock();
         List<Mek.MekPairBlock.Pair> pairs = new ArrayList<>();
+
         if (source.getUnkPair() != null) {
             for (Mek.MekPairBlock.Pair pair : source.getUnkPair()) {
                 if (pair == null) {
                     pairs.add(null);
                     continue;
                 }
+
                 Mek.MekPairBlock.Pair copied = new Mek.MekPairBlock.Pair();
-                BeanUtil.copyProperties(pair, copied);
+                copied.setInt1(pair.getInt1());
+                copied.setInt2(pair.getInt2());
                 pairs.add(copied);
             }
         }
+
         target.setUnkPair(pairs);
         return target;
     }
@@ -172,11 +224,39 @@ public class RebindAkaoMekStep {
             return target;
         }
 
-        // 当前这里只做结构级复制。
-        // MekWeaponInfo.wazSequence 仍然解释为 Akao.waz 内部 skill 索引，因此不在 step7 修改。
+        // 当前只做武装对象的结构级深拷贝。
+        // MekWeaponInfo.wazSequence 仍然解释为 Akao.waz 内部 skill 索引，不在 step7 修改。
         for (Map.Entry<Integer, Mek.MekWeaponInfo> entry : source.entrySet()) {
+            Mek.MekWeaponInfo sourceWeapon = entry.getValue();
+            if (sourceWeapon == null) {
+                target.put(entry.getKey(), null);
+                continue;
+            }
+
             Mek.MekWeaponInfo copied = new Mek.MekWeaponInfo();
-            BeanUtil.copyProperties(entry.getValue(), copied);
+            copied.offset = sourceWeapon.offset;
+            copied.setWeaponName(sourceWeapon.getWeaponName());
+            copied.setWeaponSequence(sourceWeapon.getWeaponSequence());
+            copied.setWeaponDescription(sourceWeapon.getWeaponDescription());
+            copied.setSwitchToMekNo(sourceWeapon.getSwitchToMekNo());
+            copied.setWazSequence(sourceWeapon.getWazSequence());
+            copied.setForceCrashAmount(sourceWeapon.getForceCrashAmount());
+            copied.setHeatMaxConsumption(sourceWeapon.getHeatMaxConsumption());
+            copied.setHeatMinConsumption(sourceWeapon.getHeatMinConsumption());
+            copied.setUpgradeExp(sourceWeapon.getUpgradeExp());
+            copied.setStartPointWhenDemonstrate(sourceWeapon.getStartPointWhenDemonstrate());
+            copied.setWeaponCategory(sourceWeapon.getWeaponCategory());
+            copied.setWeaponType(sourceWeapon.getWeaponType());
+            copied.setMeleeSkillFlag(sourceWeapon.getMeleeSkillFlag());
+            copied.setColdWeaponSkillFlag(sourceWeapon.getColdWeaponSkillFlag());
+            copied.setMissileSkillFlag(sourceWeapon.getMissileSkillFlag());
+            copied.setBulletCategorySkillFlag(sourceWeapon.getBulletCategorySkillFlag());
+            copied.setOpticalWeaponSkillFlag(sourceWeapon.getOpticalWeaponSkillFlag());
+            copied.setDroneSkillFlag(sourceWeapon.getDroneSkillFlag());
+            copied.setExplosiveSkillFlag(sourceWeapon.getExplosiveSkillFlag());
+            copied.setDefensiveWeaponSkillFlag(sourceWeapon.getDefensiveWeaponSkillFlag());
+            copied.setWeaponIdentifier(sourceWeapon.getWeaponIdentifier());
+            copied.setWeaponUnknownProperty19(sourceWeapon.getWeaponUnknownProperty19());
             target.put(entry.getKey(), copied);
         }
         return target;
@@ -189,15 +269,141 @@ public class RebindAkaoMekStep {
             return target;
         }
 
-        // 当前先显式拆出 AI 重建入口，但不更改 CPU 事件语义。
-        for (Mek.MekAiInfo aiInfo : source) {
-            if (aiInfo == null) {
+        // 当前 AI 分片也改成显式深拷贝。
+        // 但这里只做“保留原语义”，不改变 CPU 事件内部逻辑。
+        for (Mek.MekAiInfo sourceAiInfo : source) {
+            if (sourceAiInfo == null) {
                 target.add(null);
                 continue;
             }
-            Mek.MekAiInfo copied = new Mek.MekAiInfo();
-            BeanUtil.copyProperties(aiInfo, copied);
-            copied.setCpuEventList(aiInfo.getCpuEventList() == null ? new ArrayList<>() : new ArrayList<>(aiInfo.getCpuEventList()));
+
+            Mek.MekAiInfo copiedAiInfo = new Mek.MekAiInfo();
+            copiedAiInfo.setAiTypeJapanese(sourceAiInfo.getAiTypeJapanese());
+            copiedAiInfo.setAiTypeEnglish(sourceAiInfo.getAiTypeEnglish());
+            copiedAiInfo.setCpuEventList(copyCpuEventList(sourceAiInfo.getCpuEventList()));
+            target.add(copiedAiInfo);
+        }
+        return target;
+    }
+
+    private List<CCpuEvent> copyCpuEventList(List<CCpuEvent> source) {
+        List<CCpuEvent> target = new ArrayList<>();
+        if (source == null) {
+            return target;
+        }
+
+        for (CCpuEvent event : source) {
+            target.add(copyCpuEvent(event));
+        }
+        return target;
+    }
+
+    private CCpuEvent copyCpuEvent(CCpuEvent source) {
+        if (source == null) {
+            return null;
+        }
+
+        // 先根据运行时真实类型创建目标事件对象。
+        CCpuEvent target = createCpuEventByType(source);
+
+        // 先复制 CCpuEvent 共有字段。
+        copyCpuEventBaseFields(source, target);
+
+        // 再复制子类特有字段。
+        if (source instanceof CCpuEventMove sourceMove && target instanceof CCpuEventMove targetMove) {
+            copyCpuEventMoveFields(sourceMove, targetMove);
+        } else if (source instanceof CCpuEventAttack sourceAttack && target instanceof CCpuEventAttack targetAttack) {
+            copyCpuEventAttackFields(sourceAttack, targetAttack);
+        }
+
+        return target;
+    }
+
+    private CCpuEvent createCpuEventByType(CCpuEvent source) {
+        if (source instanceof CCpuEventMove) {
+            return new CCpuEventMove();
+        }
+        if (source instanceof CCpuEventAttack) {
+            return new CCpuEventAttack();
+        }
+        return new CCpuEvent();
+    }
+
+    private void copyCpuEventBaseFields(CCpuEvent source, CCpuEvent target) {
+        target.setType(source.getType());
+        target.setShort1(source.getShort1());
+        target.setInt1(source.getInt1());
+        target.setInt2(source.getInt2());
+        target.setActivationProbability(source.getActivationProbability());
+        target.setActivationProbabilityWhenCounter(source.getActivationProbabilityWhenCounter());
+        target.setInt5(source.getInt5());
+        target.setActivationRangeMin(source.getActivationRangeMin());
+        target.setActivationRangeMax(source.getActivationRangeMax());
+        target.setActivationAngleRangeMin(source.getActivationAngleRangeMin());
+        target.setActivationAngleRangeMax(source.getActivationAngleRangeMax());
+        target.setActivationAltitudeMin(source.getActivationAltitudeMin());
+        target.setActivationAltitudeMax(source.getActivationAltitudeMax());
+        target.setActivationDurabilityMinPercentage(source.getActivationDurabilityMinPercentage());
+        target.setActivationDurabilityMaxPercentage(source.getActivationDurabilityMaxPercentage());
+        target.setInt14(source.getInt14());
+        target.setInt15(source.getInt15());
+        target.setActivationHeatMin(source.getActivationHeatMin());
+        target.setActivationHeatMax(source.getActivationHeatMax());
+        target.setInt18(source.getInt18());
+        target.setInt19(source.getInt19());
+        target.setInt20(source.getInt20());
+        target.setInt21(source.getInt21());
+        target.setInt22(source.getInt22());
+        target.setInt23(source.getInt23());
+        target.setInt24(source.getInt24());
+        target.setInt25(source.getInt25());
+        target.setInt26(source.getInt26());
+        target.setShort2(source.getShort2());
+        target.setInt27(source.getInt27());
+        target.setInt28(source.getInt28());
+        target.setShort3(source.getShort3());
+        target.setShort4(source.getShort4());
+        target.setBsdxInfoCollectionList(copyBsdxInfoCollections(source.getBsdxInfoCollectionList()));
+    }
+
+    private void copyCpuEventMoveFields(CCpuEventMove source, CCpuEventMove target) {
+        target.setMoveType(source.getMoveType());
+        target.setMoveSpeed(source.getMoveSpeed());
+        target.setMoveInertia(source.getMoveInertia());
+        target.setMoveTargetType(source.getMoveTargetType());
+        target.setMoveTargetAngleCorrection(source.getMoveTargetAngleCorrection());
+        target.setViewpointType(source.getViewpointType());
+        target.setViewpointAngleCorrection(source.getViewpointAngleCorrection());
+        target.setJumpType(source.getJumpType());
+        target.setAscentVar1(source.getAscentVar1());
+        target.setAscentVar2(source.getAscentVar2());
+        target.setGenericFlag(source.getGenericFlag());
+        target.setAttackProbabilityCorrection(source.getAttackProbabilityCorrection());
+    }
+
+    private void copyCpuEventAttackFields(CCpuEventAttack source, CCpuEventAttack target) {
+        target.wazaName = source.wazaName;
+        target.setMekWeaponInfoMapNo(source.getMekWeaponInfoMapNo());
+    }
+
+    private List<BsdxInfoCollection> copyBsdxInfoCollections(List<BsdxInfoCollection> source) {
+        List<BsdxInfoCollection> target = new ArrayList<>();
+        if (source == null) {
+            return target;
+        }
+
+        for (BsdxInfoCollection collection : source) {
+            if (collection == null) {
+                target.add(null);
+                continue;
+            }
+            BsdxInfoCollection copied = new BsdxInfoCollection();
+            copied.setInt1(collection.getInt1());
+            copied.setTypeList(collection.getTypeList() == null ? new ArrayList<>() : new ArrayList<>(collection.getTypeList()));
+            copied.setParamList(collection.getParamList() == null ? new ArrayList<>() : new ArrayList<>(collection.getParamList()));
+            copied.setIntList3(collection.getIntList3() == null ? new ArrayList<>() : new ArrayList<>(collection.getIntList3()));
+            copied.setIntList4(collection.getIntList4() == null ? new ArrayList<>() : new ArrayList<>(collection.getIntList4()));
+            copied.setInt2(collection.getInt2());
             target.add(copied);
         }
         return target;
@@ -215,36 +421,66 @@ public class RebindAkaoMekStep {
 
         // emotions 当前做结构级深拷贝。
         List<Mek.MekVoiceInfo.Emotion> emotions = new ArrayList<>();
-        for (Mek.MekVoiceInfo.Emotion emotion : source.getEmotions()) {
-            Mek.MekVoiceInfo.Emotion copied = new Mek.MekVoiceInfo.Emotion();
-            BeanUtil.copyProperties(emotion, copied);
-            emotions.add(copied);
+        if (source.getEmotions() != null) {
+            for (Mek.MekVoiceInfo.Emotion emotion : source.getEmotions()) {
+                if (emotion == null) {
+                    emotions.add(null);
+                    continue;
+                }
+                Mek.MekVoiceInfo.Emotion copied = new Mek.MekVoiceInfo.Emotion();
+                copied.setName(emotion.getName());
+                copied.setToken(emotion.getToken());
+                emotions.add(copied);
+            }
         }
         target.setEmotions(emotions);
 
         // voiceSlots 当前做结构级深拷贝。
         List<Mek.MekVoiceInfo.VoiceSlot> voiceSlots = new ArrayList<>();
-        for (Mek.MekVoiceInfo.VoiceSlot voiceSlot : source.getVoiceSlots()) {
-            Mek.MekVoiceInfo.VoiceSlot copied = new Mek.MekVoiceInfo.VoiceSlot();
-            BeanUtil.copyProperties(voiceSlot, copied);
-            voiceSlots.add(copied);
+        if (source.getVoiceSlots() != null) {
+            for (Mek.MekVoiceInfo.VoiceSlot voiceSlot : source.getVoiceSlots()) {
+                if (voiceSlot == null) {
+                    voiceSlots.add(null);
+                    continue;
+                }
+                Mek.MekVoiceInfo.VoiceSlot copied = new Mek.MekVoiceInfo.VoiceSlot();
+                copied.setName(voiceSlot.getName());
+                copied.setToken(voiceSlot.getToken());
+                voiceSlots.add(copied);
+            }
         }
         target.setVoiceSlots(voiceSlots);
 
         // table 当前也显式重建容器，但不修改 Entry.groupId。
         List<List<List<Mek.MekVoiceInfo.Entry>>> table = new ArrayList<>();
-        for (List<List<Mek.MekVoiceInfo.Entry>> row : source.getTable()) {
-            List<List<Mek.MekVoiceInfo.Entry>> copiedRow = new ArrayList<>();
-            for (List<Mek.MekVoiceInfo.Entry> cell : row) {
-                List<Mek.MekVoiceInfo.Entry> copiedCell = new ArrayList<>();
-                for (Mek.MekVoiceInfo.Entry entry : cell) {
-                    Mek.MekVoiceInfo.Entry copiedEntry = new Mek.MekVoiceInfo.Entry();
-                    BeanUtil.copyProperties(entry, copiedEntry);
-                    copiedCell.add(copiedEntry);
+        if (source.getTable() != null) {
+            for (List<List<Mek.MekVoiceInfo.Entry>> row : source.getTable()) {
+                if (row == null) {
+                    table.add(null);
+                    continue;
                 }
-                copiedRow.add(copiedCell);
+                List<List<Mek.MekVoiceInfo.Entry>> copiedRow = new ArrayList<>();
+                for (List<Mek.MekVoiceInfo.Entry> cell : row) {
+                    if (cell == null) {
+                        copiedRow.add(null);
+                        continue;
+                    }
+                    List<Mek.MekVoiceInfo.Entry> copiedCell = new ArrayList<>();
+                    for (Mek.MekVoiceInfo.Entry entry : cell) {
+                        if (entry == null) {
+                            copiedCell.add(null);
+                            continue;
+                        }
+                        Mek.MekVoiceInfo.Entry copiedEntry = new Mek.MekVoiceInfo.Entry();
+                        copiedEntry.setVoiceType(entry.getVoiceType());
+                        copiedEntry.setGroupId(entry.getGroupId());
+                        copiedEntry.setWeight(entry.getWeight());
+                        copiedCell.add(copiedEntry);
+                    }
+                    copiedRow.add(copiedCell);
+                }
+                table.add(copiedRow);
             }
-            table.add(copiedRow);
         }
         target.setTable(table);
         return target;
