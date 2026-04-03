@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * 负责把包内 JINKI 二进制资源反序列化成内存 DTO 的步骤骨架。
+ * 负责把包内 JINKI 二进制资源反序列化成 DTO。
  */
 public class DeserializeJinkiPackageStep {
 
@@ -47,9 +47,12 @@ public class DeserializeJinkiPackageStep {
             bundle.setWazaGroupGrp(parseRequired(request.getJinkiGrpDir().resolve("WazaGroup.grp"), WazaGroupGrp.class));
 
             bundle.setMekaDat(parseRequired(request.getJinkiDatDir().resolve("Meka.dat"), Dat.class));
-            bundle.setMekaPilotDat(parseRequired(request.getJinkiDatDir().resolve("MekaPilot.dat"), Dat.class));
-            bundle.setAkaoMek(parseRequired(request.getJinkiMekDir().resolve(request.getMekFileName()), Mek.class));
 
+            // JINKI 当前包内可能没有 MekaPilot.dat。
+            // 这层对当前 graft 主链不是硬依赖，所以按可选输入处理。
+            bundle.setMekaPilotDat(parseOptional(request.getJinkiDatDir().resolve("MekaPilot.dat"), Dat.class));
+
+            bundle.setAkaoMek(parseRequired(request.getJinkiMekDir().resolve(request.getMekFileName()), Mek.class));
             bundle.setSpmByFileName(parseAll(request.getJinkiSpmDir(), "*.spm", Spm.class));
             bundle.setWazByFileName(parseAll(request.getJinkiWazDir(), "*.waz", Waz.class));
             return bundle;
@@ -67,6 +70,14 @@ public class DeserializeJinkiPackageStep {
     private <T> T parseRequired(Path path, Class<T> type) throws IOException {
         if (!Files.exists(path)) {
             throw new IllegalStateException("资源文件不存在: " + path);
+        }
+        ResponseDTO<?> dto = bsdxBinService.parse(path.toString(), CHARSET);
+        return type.cast(dto.getData());
+    }
+
+    private <T> T parseOptional(Path path, Class<T> type) throws IOException {
+        if (!Files.exists(path)) {
+            return null;
         }
         ResponseDTO<?> dto = bsdxBinService.parse(path.toString(), CHARSET);
         return type.cast(dto.getData());

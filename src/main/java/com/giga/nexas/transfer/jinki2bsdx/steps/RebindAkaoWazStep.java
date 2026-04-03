@@ -137,6 +137,10 @@ public class RebindAkaoWazStep {
 
         // 把“源侧顶层序号 -> 目标顶层序号”的 sprite 映射预先算好。
         buildSpriteIndexMap(context);
+        context.getSourceToTargetSeGroupIndex().putAll(grpAppendPlan.getSourceSeGroupIndexToTargetIndex());
+        for (Map.Entry<Integer, Map<Integer, Integer>> entry : grpAppendPlan.getSourceSeItemIndexToTargetIndexByGroup().entrySet()) {
+            context.getSourceToTargetSeItemIndexByGroup().put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+        }
         return context;
     }
 
@@ -301,7 +305,7 @@ public class RebindAkaoWazStep {
 
         // 这两类虽然不改索引，但内部是 byte[] 列表，不能直接共享源数组引用。
         if (source instanceof CEventSe se) {
-            return rebuildCEventSe(se);
+            return rebuildCEventSe(se, context);
         }
         if (source instanceof CEventVoice voice) {
             return rebuildCEventVoice(voice, context);
@@ -357,12 +361,13 @@ public class RebindAkaoWazStep {
         return target;
     }
 
-    private CEventSe rebuildCEventSe(CEventSe source) {
+    private CEventSe rebuildCEventSe(CEventSe source, WazRebindContext context) {
         CEventSe target = new CEventSe();
         BeanUtil.copyProperties(source, target);
 
         // 这里的 byteDataList 不能直接复用源数组引用，否则后续改写会串源对象。
         target.setByteDataList(deepCopyByteArrayList(source.getByteDataList()));
+        rewriteSeTargets(target.getByteDataList(), context);
         return target;
     }
 
@@ -481,6 +486,51 @@ public class RebindAkaoWazStep {
         return target;
     }
 
+    private void rewriteSeTargets(List<byte[]> byteDataList, WazRebindContext context) {
+        if (byteDataList == null || context == null) {
+            return;
+        }
+
+        for (byte[] bytes : byteDataList) {
+            if (bytes == null || bytes.length < 8) {
+                continue;
+            }
+
+            int sourceGroupIndex = readLittleEndianInt(bytes, 0);
+            int sourceItemIndex = readLittleEndianInt(bytes, 4);
+            if (sourceGroupIndex < 0 || sourceItemIndex < 0) {
+                continue;
+            }
+
+            Integer targetGroupIndex = context.getSourceToTargetSeGroupIndex().get(sourceGroupIndex);
+            Map<Integer, Integer> itemMap = context.getSourceToTargetSeItemIndexByGroup().get(sourceGroupIndex);
+            Integer targetItemIndex = itemMap == null ? null : itemMap.get(sourceItemIndex);
+
+            if (targetGroupIndex == null || targetItemIndex == null) {
+                throw new IllegalStateException(
+                        "找不到 CEventSe 的目标映射: group=" + sourceGroupIndex + ", item=" + sourceItemIndex
+                );
+            }
+
+            writeLittleEndianInt(bytes, 0, targetGroupIndex);
+            writeLittleEndianInt(bytes, 4, targetItemIndex);
+        }
+    }
+
+    private int readLittleEndianInt(byte[] bytes, int offset) {
+        return (bytes[offset] & 0xFF)
+                | ((bytes[offset + 1] & 0xFF) << 8)
+                | ((bytes[offset + 2] & 0xFF) << 16)
+                | ((bytes[offset + 3] & 0xFF) << 24);
+    }
+
+    private void writeLittleEndianInt(byte[] bytes, int offset, int value) {
+        bytes[offset] = (byte) (value & 0xFF);
+        bytes[offset + 1] = (byte) ((value >>> 8) & 0xFF);
+        bytes[offset + 2] = (byte) ((value >>> 16) & 0xFF);
+        bytes[offset + 3] = (byte) ((value >>> 24) & 0xFF);
+    }
+
     private void rewriteVoiceTargetGroup(List<byte[]> byteDataList, Integer targetGroupIndex) {
         if (byteDataList == null || targetGroupIndex == null || targetGroupIndex < 0) {
             return;
@@ -491,7 +541,7 @@ public class RebindAkaoWazStep {
                 continue;
             }
 
-            // CEventVoice 鐨?12-byte 璁板綍鍓?4 瀛楄妭鏄闊崇粍鍙凤紝鎸夊皬绔洖鍐欍€?
+            // CEventVoice
             bytes[0] = (byte) (targetGroupIndex & 0xFF);
             bytes[1] = (byte) ((targetGroupIndex >>> 8) & 0xFF);
             bytes[2] = (byte) ((targetGroupIndex >>> 16) & 0xFF);

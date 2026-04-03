@@ -2,6 +2,7 @@ package com.giga.nexas.transfer.jinki2bsdx.steps;
 
 import com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.MekaGroupGrp;
+import com.giga.nexas.dto.bsdx.grp.groupmap.SeGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.WazaGroupGrp;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
@@ -11,17 +12,13 @@ import com.giga.nexas.transfer.jinki2bsdx.model.JinkiImportPlan;
 import com.giga.nexas.transfer.jinki2bsdx.model.JinkiPackageBundle;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
- * 负责把 AKAO 相关顶层条目追加进 BSDX grp 容器。
- *
- * <p>当前策略：</p>
- * <ul>
- *     <li>如果 BSDX 已经存在同 codeName 的目标条目，直接复用现有索引</li>
- *     <li>如果 BSDX 不存在该条目，则直接尾插到列表末尾</li>
- *     <li>不再占用 {@code existFlag=0} 的空槽</li>
- * </ul>
+ * 负责把当前机体资源链真正挂进 BSDX 基线，并产出最终的“源 -> 目标”结果表。
  */
 public class AppendGrpEntriesStep {
 
@@ -31,64 +28,190 @@ public class AppendGrpEntriesStep {
             BsdxBaselineBundle bsdxBaseline,
             JinkiImportPlan importPlan
     ) {
-        validateInputs(request, jinkiPackage, bsdxBaseline);
+        validateInputs(request, jinkiPackage, bsdxBaseline, importPlan);
 
         GrpAppendPlan plan = new GrpAppendPlan();
 
-        // 1. 从 JINKI 的 MekaGroup 中取出 AKAO 源条目。
+        // 1. 先落主机体入口。
         MekaGroupGrp.MekaGroup sourceMeka = findRequiredMekaGroup(
                 jinkiPackage.getMekaGroupGrp(),
                 request.getMekaCodeName()
         );
-
-        // 2. 把 AKAO meka 注册项写入 BSDX 的 MekaGroup，拿到最终目标索引。
         plan.setMekaGroupIndex(upsertMekaGroup(bsdxBaseline.getMekaGroupGrp(), sourceMeka));
 
-        // 3. 从 JINKI 的 WazaGroup 中取出 AKAO 源条目。
-        WazaGroupGrp.WazaGroupEntry sourceWaza = findRequiredWazaGroup(
+        // 2. 再落主 waz 入口。
+        WazaGroupGrp.WazaGroupEntry sourceMainWaz = findRequiredWazaGroup(
                 jinkiPackage.getWazaGroupGrp(),
                 request.getWazCodeName()
         );
+        plan.setWazaGroupIndex(upsertWazaGroup(bsdxBaseline.getWazaGroupGrp(), sourceMainWaz));
+        Integer sourceMainWazIndex = importPlan.getSourceWazIndexByFileName().get(normalizeFileName(request.getWazFileName()));
+        if (sourceMainWazIndex != null) {
+            plan.getSourceWazGroupIndexToTargetIndex().put(sourceMainWazIndex, plan.getWazaGroupIndex());
+        }
+        importPlan.getTargetWazIndexByFileName().put(normalizeFileName(request.getWazFileName()), plan.getWazaGroupIndex());
 
-        // 4. 把 AKAO waza 注册项写入 BSDX 的 WazaGroup，拿到最终目标索引。
-        plan.setWazaGroupIndex(upsertWazaGroup(bsdxBaseline.getWazaGroupGrp(), sourceWaza));
-
-        // 5. 从 JINKI 的 SpriteGroup 中取出 0001 -> moribito_2.spm 这条主 sprite 源条目。
-        SpriteGroupGrp.SpriteGroupEntry sourceSprite = findRequiredSpriteGroup(
+        // 3. 再落主 sprite 入口。
+        SpriteGroupGrp.SpriteGroupEntry sourceMainSprite = findRequiredSpriteGroup(
                 jinkiPackage.getSpriteGroupGrp(),
                 request.getSpriteCodeName(),
                 request.getSpriteFileName()
         );
+        plan.setSpriteGroupIndex(upsertSpriteGroup(bsdxBaseline.getSpriteGroupGrp(), sourceMainSprite));
+        Integer sourceMainSpriteIndex = importPlan.getSourceSpriteIndexByFileName().get(normalizeFileName(request.getSpriteFileName()));
+        if (sourceMainSpriteIndex != null) {
+            plan.getSourceSpriteGroupIndexToTargetIndex().put(sourceMainSpriteIndex, plan.getSpriteGroupIndex());
+        }
+        importPlan.getTargetSpriteIndexByFileName().put(normalizeFileName(request.getSpriteFileName()), plan.getSpriteGroupIndex());
 
-        // 6. 把主 sprite 条目写入 BSDX 的 SpriteGroup，拿到最终目标索引。
-        plan.setSpriteGroupIndex(upsertSpriteGroup(bsdxBaseline.getSpriteGroupGrp(), sourceSprite));
-
-        // 7. 从 JINKI 的 BatVoice 中取出 AKAO 语音组。
+        // 4. 再落主语音组入口。
         BatVoiceGrp.BatVoiceGroup sourceBatVoice = findRequiredBatVoiceGroup(
                 jinkiPackage.getBatVoiceGrp(),
                 request.getMekaCodeName()
         );
-
-        // 8. 把 AKAO 语音组写入 BSDX 的 BatVoice，拿到最终目标索引。
         plan.setBatVoiceGroupIndex(upsertBatVoiceGroup(bsdxBaseline.getBatVoiceGrp(), sourceBatVoice));
+
+        // 5. 落当前机体通过 CEventWazaSelect 用到的辅助 waz 链。
+        appendReferencedWazGroups(jinkiPackage, bsdxBaseline, importPlan, plan);
+
+        // 6. 落当前机体通过 CEventSprite 用到的辅助 sprite 链。
+        appendReferencedSpriteGroups(jinkiPackage, bsdxBaseline, importPlan, plan);
+
+        // 7. 落当前机体通过 CEventSe 用到的 se 组和组内条目链。
+        appendReferencedSeChain(jinkiPackage, bsdxBaseline, importPlan, plan);
 
         return plan;
     }
 
-    private void validateInputs(
-            AkaoGraftRequest request,
+    private void appendReferencedWazGroups(
             JinkiPackageBundle jinkiPackage,
-            BsdxBaselineBundle bsdxBaseline
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiImportPlan importPlan,
+            GrpAppendPlan plan
     ) {
-        if (request == null) {
-            throw new IllegalArgumentException("AkaoGraftRequest 不能为空");
+        for (Map.Entry<Integer, String> entry : importPlan.getReferencedSourceWazFileNameByGroupIndex().entrySet()) {
+            Integer sourceIndex = entry.getKey();
+            if (plan.getSourceWazGroupIndexToTargetIndex().containsKey(sourceIndex)) {
+                continue;
+            }
+
+            WazaGroupGrp.WazaGroupEntry sourceEntry = requireSourceWazaGroupByIndex(
+                    jinkiPackage.getWazaGroupGrp(),
+                    sourceIndex
+            );
+            int targetIndex = upsertWazaGroup(bsdxBaseline.getWazaGroupGrp(), sourceEntry);
+            plan.getSourceWazGroupIndexToTargetIndex().put(sourceIndex, targetIndex);
+            importPlan.getTargetWazIndexByFileName().put(normalizeFileName(entry.getValue()), targetIndex);
         }
-        if (jinkiPackage == null) {
-            throw new IllegalArgumentException("JinkiPackageBundle 不能为空");
+    }
+
+    private void appendReferencedSpriteGroups(
+            JinkiPackageBundle jinkiPackage,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiImportPlan importPlan,
+            GrpAppendPlan plan
+    ) {
+        for (Map.Entry<Integer, String> entry : importPlan.getReferencedSourceSpriteFileNameByGroupIndex().entrySet()) {
+            Integer sourceIndex = entry.getKey();
+            if (plan.getSourceSpriteGroupIndexToTargetIndex().containsKey(sourceIndex)) {
+                continue;
+            }
+
+            SpriteGroupGrp.SpriteGroupEntry sourceEntry = requireSourceSpriteGroupByIndex(
+                    jinkiPackage.getSpriteGroupGrp(),
+                    sourceIndex
+            );
+            int targetIndex = upsertSpriteGroup(bsdxBaseline.getSpriteGroupGrp(), sourceEntry);
+            plan.getSourceSpriteGroupIndexToTargetIndex().put(sourceIndex, targetIndex);
+            importPlan.getTargetSpriteIndexByFileName().put(normalizeFileName(entry.getValue()), targetIndex);
         }
-        if (bsdxBaseline == null) {
-            throw new IllegalArgumentException("BsdxBaselineBundle 不能为空");
+    }
+
+    private void appendReferencedSeChain(
+            JinkiPackageBundle jinkiPackage,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiImportPlan importPlan,
+            GrpAppendPlan plan
+    ) {
+        for (Map.Entry<Integer, List<Integer>> entry : importPlan.getReferencedSourceSeItemIndicesByGroupIndex().entrySet()) {
+            Integer sourceGroupIndex = entry.getKey();
+
+            SeGroupGrp.SeGroupGroup sourceGroup = requireSourceSeGroupByIndex(
+                    jinkiPackage.getSeGroupGrp(),
+                    sourceGroupIndex
+            );
+
+            int targetGroupIndex = upsertSeGroup(bsdxBaseline.getSeGroupGrp(), sourceGroup);
+            plan.getSourceSeGroupIndexToTargetIndex().put(sourceGroupIndex, targetGroupIndex);
+
+            SeGroupGrp.SeGroupGroup targetGroup = bsdxBaseline.getSeGroupGrp().getSeList().get(targetGroupIndex);
+            for (Integer sourceItemIndex : entry.getValue()) {
+                SeGroupGrp.SeGroupItem sourceItem = requireSourceSeItemByIndex(sourceGroup, sourceItemIndex);
+                int targetItemIndex = upsertSeItem(targetGroup, sourceItem);
+                plan.getSourceSeItemIndexToTargetIndexByGroup()
+                        .computeIfAbsent(sourceGroupIndex, key -> new LinkedHashMap<>())
+                        .put(sourceItemIndex, targetItemIndex);
+            }
         }
+    }
+
+    private int upsertMekaGroup(MekaGroupGrp targetGroup, MekaGroupGrp.MekaGroup sourceEntry) {
+        int existingIndex = findMekaGroupIndex(targetGroup, sourceEntry.getMekaCodeName());
+        if (existingIndex >= 0) {
+            return existingIndex;
+        }
+        targetGroup.getMekaList().add(copyMekaGroup(sourceEntry));
+        return targetGroup.getMekaList().size() - 1;
+    }
+
+    private int upsertWazaGroup(WazaGroupGrp targetGroup, WazaGroupGrp.WazaGroupEntry sourceEntry) {
+        int existingIndex = findWazaGroupIndex(targetGroup, sourceEntry);
+        if (existingIndex >= 0) {
+            return existingIndex;
+        }
+        targetGroup.getWazaList().add(copyWazaGroup(sourceEntry));
+        return targetGroup.getWazaList().size() - 1;
+    }
+
+    private int upsertSpriteGroup(SpriteGroupGrp targetGroup, SpriteGroupGrp.SpriteGroupEntry sourceEntry) {
+        int existingIndex = findSpriteGroupIndex(targetGroup, sourceEntry);
+        if (existingIndex >= 0) {
+            return existingIndex;
+        }
+        targetGroup.getSpriteList().add(copySpriteGroup(sourceEntry));
+        return targetGroup.getSpriteList().size() - 1;
+    }
+
+    private int upsertBatVoiceGroup(BatVoiceGrp targetGroup, BatVoiceGrp.BatVoiceGroup sourceEntry) {
+        int existingIndex = findBatVoiceGroupIndex(targetGroup, sourceEntry.getCharacterCodeName());
+        if (existingIndex >= 0) {
+            return existingIndex;
+        }
+        targetGroup.getVoiceList().add(copyBatVoiceGroup(sourceEntry));
+        return targetGroup.getVoiceList().size() - 1;
+    }
+
+    private int upsertSeGroup(SeGroupGrp targetGroup, SeGroupGrp.SeGroupGroup sourceEntry) {
+        int existingIndex = findSeGroupIndex(targetGroup, sourceEntry);
+        if (existingIndex >= 0) {
+            return existingIndex;
+        }
+        targetGroup.getSeList().add(copySeGroupShell(sourceEntry));
+        return targetGroup.getSeList().size() - 1;
+    }
+
+    private int upsertSeItem(SeGroupGrp.SeGroupGroup targetGroup, SeGroupGrp.SeGroupItem sourceItem) {
+        if (targetGroup.getSeItems() == null) {
+            targetGroup.setSeItems(new ArrayList<>());
+        }
+
+        int existingIndex = findSeItemIndex(targetGroup, sourceItem);
+        if (existingIndex >= 0) {
+            return existingIndex;
+        }
+
+        targetGroup.getSeItems().add(copySeItem(sourceItem));
+        return targetGroup.getSeItems().size() - 1;
     }
 
     private MekaGroupGrp.MekaGroup findRequiredMekaGroup(MekaGroupGrp group, String codeName) {
@@ -156,40 +279,48 @@ public class AppendGrpEntriesStep {
         throw new IllegalStateException("JINKI BatVoice 中找不到目标条目: " + codeName);
     }
 
-    private int upsertMekaGroup(MekaGroupGrp targetGroup, MekaGroupGrp.MekaGroup sourceEntry) {
-        int existingIndex = findMekaGroupIndex(targetGroup, sourceEntry.getMekaCodeName());
-        if (existingIndex >= 0) {
-            return existingIndex;
+    private WazaGroupGrp.WazaGroupEntry requireSourceWazaGroupByIndex(WazaGroupGrp group, int index) {
+        if (group == null || group.getWazaList() == null || index < 0 || index >= group.getWazaList().size()) {
+            throw new IllegalStateException("源 WazaGroup 索引越界: " + index);
         }
-        targetGroup.getMekaList().add(copyMekaGroup(sourceEntry));
-        return targetGroup.getMekaList().size() - 1;
+        WazaGroupGrp.WazaGroupEntry entry = group.getWazaList().get(index);
+        if (!isExisting(entry == null ? null : entry.getExistFlag())) {
+            throw new IllegalStateException("源 WazaGroup 条目不存在: " + index);
+        }
+        return entry;
     }
 
-    private int upsertWazaGroup(WazaGroupGrp targetGroup, WazaGroupGrp.WazaGroupEntry sourceEntry) {
-        int existingIndex = findWazaGroupIndex(targetGroup, sourceEntry);
-        if (existingIndex >= 0) {
-            return existingIndex;
+    private SpriteGroupGrp.SpriteGroupEntry requireSourceSpriteGroupByIndex(SpriteGroupGrp group, int index) {
+        if (group == null || group.getSpriteList() == null || index < 0 || index >= group.getSpriteList().size()) {
+            throw new IllegalStateException("源 SpriteGroup 索引越界: " + index);
         }
-        targetGroup.getWazaList().add(copyWazaGroup(sourceEntry));
-        return targetGroup.getWazaList().size() - 1;
+        SpriteGroupGrp.SpriteGroupEntry entry = group.getSpriteList().get(index);
+        if (!isExisting(entry == null ? null : entry.getExistFlag())) {
+            throw new IllegalStateException("源 SpriteGroup 条目不存在: " + index);
+        }
+        return entry;
     }
 
-    private int upsertSpriteGroup(SpriteGroupGrp targetGroup, SpriteGroupGrp.SpriteGroupEntry sourceEntry) {
-        int existingIndex = findSpriteGroupIndex(targetGroup, sourceEntry);
-        if (existingIndex >= 0) {
-            return existingIndex;
+    private SeGroupGrp.SeGroupGroup requireSourceSeGroupByIndex(SeGroupGrp group, int index) {
+        if (group == null || group.getSeList() == null || index < 0 || index >= group.getSeList().size()) {
+            throw new IllegalStateException("源 SeGroup 索引越界: " + index);
         }
-        targetGroup.getSpriteList().add(copySpriteGroup(sourceEntry));
-        return targetGroup.getSpriteList().size() - 1;
+        SeGroupGrp.SeGroupGroup entry = group.getSeList().get(index);
+        if (!isExisting(entry == null ? null : entry.getExistFlag())) {
+            throw new IllegalStateException("源 SeGroup 条目不存在: " + index);
+        }
+        return entry;
     }
 
-    private int upsertBatVoiceGroup(BatVoiceGrp targetGroup, BatVoiceGrp.BatVoiceGroup sourceEntry) {
-        int existingIndex = findBatVoiceGroupIndex(targetGroup, sourceEntry.getCharacterCodeName());
-        if (existingIndex >= 0) {
-            return existingIndex;
+    private SeGroupGrp.SeGroupItem requireSourceSeItemByIndex(SeGroupGrp.SeGroupGroup group, int index) {
+        if (group.getSeItems() == null || index < 0 || index >= group.getSeItems().size()) {
+            throw new IllegalStateException("源 SeItem 索引越界: " + index);
         }
-        targetGroup.getVoiceList().add(copyBatVoiceGroup(sourceEntry));
-        return targetGroup.getVoiceList().size() - 1;
+        SeGroupGrp.SeGroupItem entry = group.getSeItems().get(index);
+        if (!isExisting(entry == null ? null : entry.getExistFlag())) {
+            throw new IllegalStateException("源 SeItem 条目不存在: " + index);
+        }
+        return entry;
     }
 
     private int findMekaGroupIndex(MekaGroupGrp group, String codeName) {
@@ -218,7 +349,6 @@ public class AppendGrpEntriesStep {
                 continue;
             }
             if (equalsIgnoreCase(sourceEntry.getWazaCodeName(), entry.getWazaCodeName())
-                    || equalsIgnoreCase(sourceEntry.getWazaName(), entry.getWazaName())
                     || equalsIgnoreCase(sourceEntry.getWazaDisplayName(), entry.getWazaDisplayName())) {
                 return i;
             }
@@ -253,6 +383,40 @@ public class AppendGrpEntriesStep {
                 continue;
             }
             if (equalsIgnoreCase(codeName, entry.getCharacterCodeName())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int findSeGroupIndex(SeGroupGrp group, SeGroupGrp.SeGroupGroup sourceEntry) {
+        if (group == null || group.getSeList() == null) {
+            return -1;
+        }
+        for (int i = 0; i < group.getSeList().size(); i++) {
+            SeGroupGrp.SeGroupGroup entry = group.getSeList().get(i);
+            if (!isExisting(entry == null ? null : entry.getExistFlag())) {
+                continue;
+            }
+            if (equalsIgnoreCase(sourceEntry.getSeTypeCodeName(), entry.getSeTypeCodeName())
+                    || equalsIgnoreCase(sourceEntry.getSeType(), entry.getSeType())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int findSeItemIndex(SeGroupGrp.SeGroupGroup targetGroup, SeGroupGrp.SeGroupItem sourceItem) {
+        if (targetGroup.getSeItems() == null) {
+            return -1;
+        }
+        for (int i = 0; i < targetGroup.getSeItems().size(); i++) {
+            SeGroupGrp.SeGroupItem entry = targetGroup.getSeItems().get(i);
+            if (!isExisting(entry == null ? null : entry.getExistFlag())) {
+                continue;
+            }
+            if (equalsIgnoreCase(sourceItem.getSeItemCodeName(), entry.getSeItemCodeName())
+                    || equalsIgnoreCase(sourceItem.getSeFileName(), entry.getSeFileName())) {
                 return i;
             }
         }
@@ -311,6 +475,44 @@ public class AppendGrpEntriesStep {
         return copied;
     }
 
+    private SeGroupGrp.SeGroupGroup copySeGroupShell(SeGroupGrp.SeGroupGroup sourceEntry) {
+        SeGroupGrp.SeGroupGroup copied = new SeGroupGrp.SeGroupGroup();
+        copied.setExistFlag(1);
+        copied.setSeType(sourceEntry.getSeType());
+        copied.setSeTypeCodeName(sourceEntry.getSeTypeCodeName());
+        copied.setSeItems(new ArrayList<>());
+        return copied;
+    }
+
+    private SeGroupGrp.SeGroupItem copySeItem(SeGroupGrp.SeGroupItem sourceItem) {
+        SeGroupGrp.SeGroupItem copied = new SeGroupGrp.SeGroupItem();
+        copied.setExistFlag(1);
+        copied.setSeItemName(sourceItem.getSeItemName());
+        copied.setSeItemCodeName(sourceItem.getSeItemCodeName());
+        copied.setSeFileName(sourceItem.getSeFileName());
+        return copied;
+    }
+
+    private void validateInputs(
+            AkaoGraftRequest request,
+            JinkiPackageBundle jinkiPackage,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiImportPlan importPlan
+    ) {
+        if (request == null) {
+            throw new IllegalArgumentException("AkaoGraftRequest 不能为空");
+        }
+        if (jinkiPackage == null) {
+            throw new IllegalArgumentException("JinkiPackageBundle 不能为空");
+        }
+        if (bsdxBaseline == null) {
+            throw new IllegalArgumentException("BsdxBaselineBundle 不能为空");
+        }
+        if (importPlan == null) {
+            throw new IllegalArgumentException("JinkiImportPlan 不能为空");
+        }
+    }
+
     private boolean isExisting(Integer existFlag) {
         return existFlag == null || existFlag != 0;
     }
@@ -320,5 +522,12 @@ public class AppendGrpEntriesStep {
             return false;
         }
         return a.trim().equalsIgnoreCase(b.trim());
+    }
+
+    private String normalizeFileName(String fileName) {
+        if (fileName == null) {
+            return "";
+        }
+        return fileName.trim().toLowerCase(Locale.ROOT);
     }
 }

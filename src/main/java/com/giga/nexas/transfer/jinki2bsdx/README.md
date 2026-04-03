@@ -261,3 +261,20 @@ mvn exec:java -Dexec.mainClass="com.giga.nexas.transfer.jinki2bsdx.Jinki2BsdxSin
 - `step8 ImportStaticAssets`
 - `step9 PatchMenuData`
 - `step10` 更通用的容量汇总策略
+
+## 当前修正口径
+
+`step3/4/7` 当前已经按下面这个模型对齐：
+
+1. 先从 `JINKI` 抽出当前机体实际用到的资源链和索引链  
+   当前已覆盖：
+   - `CEventWazaSelect.wazFileNo`
+   - `CEventSprite.spmFileSequence`
+   - `CEventSe` 的 `group/item`
+
+2. 再在 `step4` 对链上的每个资源做“复用还是尾插”的决策
+
+3. 形成统一的 `JINKI源索引 -> BSDX目标索引` 结果表
+
+4. `step6/7` 只按这张结果表做内部重定向  
+   不再把“BSDX 基线旧索引表”直接当成最终目标表
