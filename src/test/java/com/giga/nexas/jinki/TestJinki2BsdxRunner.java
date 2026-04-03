@@ -37,6 +37,11 @@ public class TestJinki2BsdxRunner {
         Assertions.assertTrue(result.getGrpAppendPlan().getSpriteGroupIndex() >= 0);
         Assertions.assertTrue(result.getGrpAppendPlan().getBatVoiceGroupIndex() >= 0);
 
+        Assertions.assertNotNull(result.getSyncedProgramMaterial());
+        Assertions.assertEquals(139, result.getSyncedProgramMaterial().getArray1().size());
+        Assertions.assertEquals(38, result.getSyncedProgramMaterial().getArray2().size());
+        Assertions.assertEquals(31, result.getSyncedProgramMaterial().getArray3().size());
+
         Assertions.assertNotNull(result.getExePatchPlan());
         Assertions.assertTrue(result.getExePatchPlan().isPatched());
         Assertions.assertEquals(104, result.getExePatchPlan().getRequiredMekaCapacity());
