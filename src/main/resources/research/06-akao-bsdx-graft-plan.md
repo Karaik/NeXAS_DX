@@ -235,7 +235,17 @@
 
 ### Step 9. `PatchMenuDataStep`
 
-当前仍是占位。
+当前已经实现最小可执行版：
+
+- 用 `JINKI Meka.dat` 补 `BSDX Meka.dat`
+- 用 `JINKI/外部 MekaPilot.dat` 补 `BSDX MekaPilot.dat`
+- 产物写到 step8 输出目录下的 `dat/`
+
+当前仍未覆盖：
+
+- `SelectMekaMenu.dat`
+- `SelectMekaMenuMeka.spm`
+- `MekaPilot.spm`
 
 ### Step 10. `PatchExeCapacitiesStep`
 
@@ -258,10 +268,10 @@
 - `step6`
 - `step7`
 - `step8`
+- `step9` 的 dat 最小补丁
 
 未完成：
 
-- `step9`
 - `step10` 更通用的统一容量策略
 
 ## 当前建议

@@ -122,8 +122,9 @@ public class Jinki2BsdxSingleRunner {
         }
 
         if (result.getImportedAssetSet() != null) {
-            log.info("imported assets => root={}, mek={}, waz={}, spm={}, audio={}, missing={}",
+            log.info("imported assets => root={}, dat={}, mek={}, waz={}, spm={}, audio={}, missing={}",
                     result.getImportedAssetSet().getOutputRootDir(),
+                    result.getImportedAssetSet().getGeneratedDatFiles().size(),
                     result.getImportedAssetSet().getGeneratedMekFiles().size(),
                     result.getImportedAssetSet().getGeneratedWazFiles().size(),
                     result.getImportedAssetSet().getCopiedSpmFiles().size(),

@@ -1,6 +1,7 @@
 package com.giga.nexas.jinki;
 
 import com.giga.nexas.transfer.jinki2bsdx.Jinki2BsdxSingleRunner;
+import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
@@ -20,7 +21,10 @@ public class TestJinki2BsdxRunner {
 
     @Test
     public void testRunAkaoGraftPipeline() {
-        AkaoGraftResult result = new Jinki2BsdxSingleRunner().run();
+        AkaoGraftRequest request = new AkaoGraftRequest();
+        request.setPatchMenuData(true);
+
+        AkaoGraftResult result = new Jinki2BsdxSingleRunner().run(request);
 
         Assertions.assertNotNull(result);
         Assertions.assertNotNull(result.getJinkiPackage());
@@ -63,9 +67,13 @@ public class TestJinki2BsdxRunner {
         Assertions.assertNotNull(result.getImportedAssetSet());
         Assertions.assertNotNull(result.getImportedAssetSet().getOutputRootDir());
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir()));
+        Assertions.assertFalse(result.getImportedAssetSet().getGeneratedDatFiles().isEmpty());
         Assertions.assertFalse(result.getImportedAssetSet().getGeneratedMekFiles().isEmpty());
         Assertions.assertFalse(result.getImportedAssetSet().getGeneratedWazFiles().isEmpty());
         Assertions.assertFalse(result.getImportedAssetSet().getCopiedSpmFiles().isEmpty());
+
+        Assertions.assertNotNull(result.getPatchedMekaDat());
+        Assertions.assertNotNull(result.getPatchedMekaPilotDat());
 
         Assertions.assertNotNull(result.getExePatchPlan());
         Assertions.assertTrue(result.getExePatchPlan().isPatched());

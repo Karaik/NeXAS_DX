@@ -214,7 +214,19 @@ flowchart TB
 
 ### Step 9. `PatchMenuDataStep`
 
-当前仍是占位。
+当前已经落地为“当前可执行的最小菜单层 dat 补丁”：
+
+- 生成 `Meka.dat`
+- 生成 `MekaPilot.dat`
+- 输出到 step8 的产物目录下的 `dat/`
+
+当前仍未覆盖：
+
+- `SelectMekaMenu.dat`
+- `SelectMekaMenuMeka.spm`
+- `MekaPilot.spm`
+
+也就是说，step9 现在已经能把菜单 dat 链先补起来，但完整菜单 UI 资源链还要后续继续补。
 
 ### Step 10. `PatchExeCapacitiesStep`
 
@@ -264,12 +276,12 @@ mvn exec:java -Dexec.mainClass="com.giga.nexas.transfer.jinki2bsdx.Jinki2BsdxSin
 - `step6`
 - `step7`
 - `step8`
+- `step9` 的 dat 最小补丁
 - `runner`
 - `test` 启动入口
 
 未完成：
 
-- `step9 PatchMenuData`
 - `step10` 更通用的容量汇总策略
 
 ## 当前修正口径
