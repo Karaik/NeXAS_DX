@@ -161,6 +161,53 @@ flowchart LR
 
 ---
 
+## AKAO 迁移分支
+
+`AKAO / moribito_2` 不属于这套 README 上面描述的 `BHE -> BSDX` 转译主线。
+
+它的正确口径是：
+
+- `BSDX-compatible package graft`
+- 也就是把同引擎、不同游戏的 BSDX 同构资源包，作为新角色 graft 到主 BSDX
+
+因此它和 `Tsukuyomi -> Nanoha` 这种“覆盖目标槽位”的流程不同：
+
+1. 它不是从 BHE 语义重编译过来
+2. 它不是默认覆盖旧槽位
+3. 它的目标是 **真追加一个新角色**
+
+当前推荐把 `AKAO` 写成单独 pipeline：
+
+```mermaid
+flowchart TB
+    A[DeserializePackage<br/>game/jinki] --> B[BuildDiffManifest<br/>reuse/import]
+    B --> C[AppendGrpEntries<br/>Meka/Waza/Sprite/BatVoice]
+    C --> D[SyncProgramMaterial]
+    D --> E[RebindMekIndices]
+    E --> F[RebindWazIndices]
+    F --> G[ImportStaticAssets]
+    G --> H[PatchMenuData]
+    H --> I[PatchExeCapacities]
+```
+
+关键区别：
+
+- `AppendGrpEntries` 不是覆盖旧槽位，而是追加 `AKAO` 和 `0001 -> moribito_2.spm`
+- `RebindMekIndices / RebindWazIndices` 不是走 BHE slot map，而是走目标 BSDX 新索引回写
+- `PatchExeCapacities` 第一优先不是 `153`，而是先验证 `103` 这一侧的机体运行时容量
+
+详细方案见：
+
+- `src/main/resources/research/06-akao-bsdx-graft-plan.md`
+
+后续如果要把 `AKAO` 真的写进现有 pipeline 代码，建议新开一条：
+
+- `AkaoGraftPipeline`
+
+而不是把它硬塞进现有 `TransMekaPipeline.execute()` 里混着走。
+
+---
+
 ## 已修复问题
 
 | Bug | 文件:行号 | 问题 | 修复 |

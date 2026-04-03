@@ -9,6 +9,17 @@ import java.util.Set;
 /**
  * 迁移流程编排器：按步骤执行并产出结果。
  *
+ * 注意：
+ * 这条 Pipeline 的语义前提是 `BHE -> BSDX`。
+ * `AKAO / moribito_2` 这类来自同引擎异游戏的 BSDX 资源包，不应直接视为这条流水线的输入。
+ * 对它们更准确的做法是：
+ * 1. 先反序列化 `game/jinki`
+ * 2. 再做 grp 追加与索引重绑
+ * 3. 最后补静态资源与 exe 容量 patch
+ *
+ * 参考：
+ * `src/main/resources/research/06-akao-bsdx-graft-plan.md`
+ *
  * 流程（文字流程图）：
  * 输入(BHE: mek/waz/spm/grp/batvoice)
  * -> Step1: BatVoice 深拷贝并写入目标槽位（默认 Nanoha）
