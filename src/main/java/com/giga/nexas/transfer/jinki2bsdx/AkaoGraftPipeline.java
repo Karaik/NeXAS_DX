@@ -22,7 +22,7 @@ import com.giga.nexas.transfer.jinki2bsdx.steps.SyncProgramMaterialStep;
 /**
  * AKAO / moribito_2 从 JINKI 并入 BSDX 的主流程骨架。
  *
- * <p>当前已落地 step1/2/3/4/5，后续步骤仍是骨架。</p>
+ * <p>当前已落地 step1-7，后续步骤仍在补完中。</p>
  */
 public class AkaoGraftPipeline {
 
@@ -60,33 +60,33 @@ public class AkaoGraftPipeline {
                 appendGrpEntriesStep.appendAkaoBranch(request, jinkiPackage, bsdxBaseline, importPlan);
         result.setGrpAppendPlan(grpAppendPlan);
 
-        // Step 5: 直接对固定 exe 输出 patched 结果。
-        ExePatchPlan exePatchPlan =
-                patchExeCapacitiesStep.patchExeCapacities(request, bsdxBaseline, grpAppendPlan);
-        result.setExePatchPlan(exePatchPlan);
-
-        // Step 6: 同步 ProgramMaterial 外层数组长度。
+        // Step 5: 同步 ProgramMaterial 外层数组长度。
         result.setSyncedProgramMaterial(
                 syncProgramMaterialStep.syncOuterArrays(request, bsdxBaseline, grpAppendPlan)
         );
 
-        // Step 7: 回写 Akao.mek 的外部序号。
+        // Step 6: 回写 Akao.mek 的外部序号。
         result.setReboundAkaoMek(
                 rebindAkaoMekStep.rebindAkaoMek(request, jinkiPackage, grpAppendPlan)
         );
 
-        // Step 8: 回写 Akao.waz 的外部引用。
+        // Step 7: 回写 Akao.waz 的外部引用。
         result.setReboundAkaoWaz(
                 rebindAkaoWazStep.rebindAkaoWaz(request, jinkiPackage, importPlan, grpAppendPlan)
         );
 
-        // Step 9: 整理需要补入的静态资源集合。
+        // Step 8: 整理需要补入的静态资源集合。
         ImportedAssetSet importedAssetSet =
                 importStaticAssetsStep.importAssets(request, jinkiPackage, importPlan);
         result.setImportedAssetSet(importedAssetSet);
 
-        // Step 10: 预留菜单层补丁输出。
+        // Step 9: 预留菜单层补丁输出。
         patchMenuDataStep.patchMenuData(request, jinkiPackage, bsdxBaseline, grpAppendPlan, result);
+
+        // Step 10: 所有前置数据步骤成功后，最后再输出 patched exe。
+        ExePatchPlan exePatchPlan =
+                patchExeCapacitiesStep.patchExeCapacities(request, bsdxBaseline, grpAppendPlan);
+        result.setExePatchPlan(exePatchPlan);
 
         return result;
     }

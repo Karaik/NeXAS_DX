@@ -381,6 +381,21 @@
 
 - `ImportPlan`
 
+当前主链的实际顺序是：
+
+1. `DeserializeJinkiPackageStep`
+2. `LoadBsdxBaselineStep`
+3. `BuildImportPlanStep`
+4. `AppendGrpEntriesStep`
+5. `SyncProgramMaterialStep`
+6. `RebindAkaoMekStep`
+7. `RebindAkaoWazStep`
+8. `ImportStaticAssetsStep`
+9. `PatchMenuDataStep`
+10. `PatchExeCapacitiesStep`
+
+其中 exe patch 已经后置到数据步骤之后执行，避免前面任一步失败时提前产出半成品 exe。
+
 ## 当前 runner 与测试入口
 
 当前可以通过：

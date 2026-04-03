@@ -240,16 +240,18 @@ mvn exec:java -Dexec.mainClass="com.giga.nexas.transfer.jinki2bsdx.Jinki2BsdxSin
 - step1
 - step2
 - step3
+- step4
+- step5
+- step6
 - single runner
 - test 启动入口
 
 当前未完成：
 
-- step4 `AppendGrpEntries`
-- step5 `SyncProgramMaterial`
-- step6 `RebindAkaoMek`
 - step7 `RebindAkaoWaz`
-- step8 以后所有真正写盘逻辑
+- step8 `ImportStaticAssets`
+- step9 `PatchMenuData`
+- step10 `PatchExeCapacities` 的最终汇总策略
 
 ## exe patch 预留
 
