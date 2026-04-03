@@ -25,6 +25,7 @@ public class AkaoGraftRequest {
 
     private Path externalStaticAssetRoot = Paths.get("D:/BDY/NeXAS_Resources/jinki_resources");
     private Path targetExePath = Paths.get("src/main/resources/ida-reverse/BaldrSky.exe");
+    private Path exeOutputDir = Paths.get("src/main/resources/out");
 
     private String mekaCodeName = "AKAO";
     private String wazCodeName = "AKAO";

@@ -13,8 +13,8 @@ import com.giga.nexas.transfer.jinki2bsdx.steps.BuildImportPlanStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.DeserializeJinkiPackageStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.ImportStaticAssetsStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.LoadBsdxBaselineStep;
+import com.giga.nexas.transfer.jinki2bsdx.steps.PatchExeCapacitiesStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.PatchMenuDataStep;
-import com.giga.nexas.transfer.jinki2bsdx.steps.PlanExeCapacityPatchesStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.RebindAkaoMekStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.RebindAkaoWazStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.SyncProgramMaterialStep;
@@ -22,7 +22,7 @@ import com.giga.nexas.transfer.jinki2bsdx.steps.SyncProgramMaterialStep;
 /**
  * AKAO / moribito_2 从 JINKI 并入 BSDX 的主流程骨架。
  *
- * <p>当前已落地 step1/2/3/4，后续步骤仍是骨架。</p>
+ * <p>当前已落地 step1/2/3/4/5，后续步骤仍是骨架。</p>
  */
 public class AkaoGraftPipeline {
 
@@ -30,7 +30,7 @@ public class AkaoGraftPipeline {
     private final LoadBsdxBaselineStep loadBsdxBaselineStep = new LoadBsdxBaselineStep();
     private final BuildImportPlanStep buildImportPlanStep = new BuildImportPlanStep();
     private final AppendGrpEntriesStep appendGrpEntriesStep = new AppendGrpEntriesStep();
-    private final PlanExeCapacityPatchesStep planExeCapacityPatchesStep = new PlanExeCapacityPatchesStep();
+    private final PatchExeCapacitiesStep patchExeCapacitiesStep = new PatchExeCapacitiesStep();
     private final SyncProgramMaterialStep syncProgramMaterialStep = new SyncProgramMaterialStep();
     private final RebindAkaoMekStep rebindAkaoMekStep = new RebindAkaoMekStep();
     private final RebindAkaoWazStep rebindAkaoWazStep = new RebindAkaoWazStep();
@@ -60,9 +60,9 @@ public class AkaoGraftPipeline {
                 appendGrpEntriesStep.appendAkaoBranch(request, jinkiPackage, bsdxBaseline, importPlan);
         result.setGrpAppendPlan(grpAppendPlan);
 
-        // Step 5: 提前规划 exe 容量补丁位点。
+        // Step 5: 直接对固定 exe 输出 patched 结果。
         ExePatchPlan exePatchPlan =
-                planExeCapacityPatchesStep.planCapacityPatches(request, bsdxBaseline, grpAppendPlan);
+                patchExeCapacitiesStep.patchExeCapacities(request, bsdxBaseline, grpAppendPlan);
         result.setExePatchPlan(exePatchPlan);
 
         // Step 6: 同步 ProgramMaterial 外层数组长度。

@@ -5,6 +5,8 @@ import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+
 /**
  * 用于从测试侧直接启动 JINKI -> BSDX 的单机体 runner。
  */
@@ -34,5 +36,12 @@ public class TestJinki2BsdxRunner {
         Assertions.assertTrue(result.getGrpAppendPlan().getWazaGroupIndex() >= 0);
         Assertions.assertTrue(result.getGrpAppendPlan().getSpriteGroupIndex() >= 0);
         Assertions.assertTrue(result.getGrpAppendPlan().getBatVoiceGroupIndex() >= 0);
+
+        Assertions.assertNotNull(result.getExePatchPlan());
+        Assertions.assertTrue(result.getExePatchPlan().isPatched());
+        Assertions.assertEquals(104, result.getExePatchPlan().getRequiredMekaCapacity());
+        Assertions.assertNotNull(result.getExePatchPlan().getOutputExePath());
+        Assertions.assertTrue(Files.exists(result.getExePatchPlan().getOutputExePath()));
+        Assertions.assertFalse(result.getExePatchPlan().getTargetOffsets().isEmpty());
     }
 }

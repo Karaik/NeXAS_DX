@@ -9,9 +9,6 @@ import java.nio.file.Paths;
 
 /**
  * JINKI -> BSDX 的单机体运行入口。
- *
- * <p>当前阶段主要用于跑通 AKAO graft pipeline，
- * 并输出 step1/2/3 的关键摘要信息。</p>
  */
 @Slf4j
 public class Jinki2BsdxSingleRunner {
@@ -60,6 +57,7 @@ public class Jinki2BsdxSingleRunner {
                 request.getExternalStaticAssetRoot()
         ));
         request.setTargetExePath(resolvePathProp("jinki2bsdx.targetExePath", request.getTargetExePath()));
+        request.setExeOutputDir(resolvePathProp("jinki2bsdx.exeOutputDir", request.getExeOutputDir()));
 
         request.setMekaCodeName(resolveStringProp("jinki2bsdx.mekaCodeName", request.getMekaCodeName()));
         request.setWazCodeName(resolveStringProp("jinki2bsdx.wazCodeName", request.getWazCodeName()));
@@ -116,6 +114,11 @@ public class Jinki2BsdxSingleRunner {
         }
 
         if (result.getExePatchPlan() != null) {
+            log.info("exe patch => patched={}, requiredMekaCapacity={}, output={}",
+                    result.getExePatchPlan().isPatched(),
+                    result.getExePatchPlan().getRequiredMekaCapacity(),
+                    result.getExePatchPlan().getOutputExePath());
+            log.info("exe patch offsets => {}", result.getExePatchPlan().getTargetOffsets());
             log.info("exe patch notes => {}", result.getExePatchPlan().getNotes());
         }
     }
