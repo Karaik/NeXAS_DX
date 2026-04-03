@@ -174,7 +174,9 @@
                     <skipTests>false</skipTests>
                     <includes>
                         <include>**/bsdx/TestBin.java</include>
+                        <include>**/bsdx/TestBsdxGrpCatalog.java</include>
                         <include>**/bsdx/TestGrp.java</include>
+                        <include>**/bsdx/TestProgramMaterialRelations.java</include>
                         <include>**/bsdx/TestMek.java</include>
                         <include>**/bsdx/TestSpm.java</include>
                         <include>**/bsdx/TestWaz.java</include>

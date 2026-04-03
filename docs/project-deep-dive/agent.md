@@ -119,7 +119,7 @@ flowchart LR
 
 ## 10. 当前 TODO
 
-- `TODO`：把 `ProgramMaterial.grp` 三段数组的业务语义绑定到具体事件类型。
+- 已确认：`ProgramMaterial.grp` 三段数组的顶层绑定关系已落文档并有真实数据测试校验；详见 `src/main/java/com/giga/nexas/dto/bsdx/grp/groupmap/ProgramMaterialGrp.notes.md` 与 `src/test/java/com/giga/nexas/bsdx/TestProgramMaterialRelations.java`。
 - `TODO`：将 `int2` 语义从“统计推断”提升为“行为验证”。
 - `TODO`：补齐 `mek/spm/pac/waz` 的语义级解析逻辑（当前已具备无损 opaque round-trip）。
 - `TODO`：补齐 Tauri command 集成测试（真实窗口生命周期 + 任务事件总线）。

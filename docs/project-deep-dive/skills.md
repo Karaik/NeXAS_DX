@@ -114,7 +114,7 @@ flowchart TD
 
 ## 8. 待补知识点
 
-- `TODO`：`ProgramMaterial.grp` 的 `array1/array2/array3` 与具体事件字段绑定关系。
+- 已确认：`ProgramMaterial.grp` 的 `array1/array2/array3` 是跨文件索引绑定表；详见 `src/main/java/com/giga/nexas/dto/bsdx/grp/groupmap/ProgramMaterialGrp.notes.md`。
 - `TODO`：`intList3/intList4` 在不同 `int1` 类型下的单位与范围定义。
 
 ## 9. M1 实操样例索引（可复现）

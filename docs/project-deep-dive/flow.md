@@ -162,7 +162,7 @@ sequenceDiagram
 
 ## 7. 当前缺口
 
-- 待补证据：`ProgramMaterial.grp.array1/array2/array3` 的业务语义尚未在 Java 业务层找到直接消费点。
+- 已确认结构关系：`ProgramMaterial.grp.array1 -> SpriteGroup 顶层槽位 / MapGroup 内层索引`，`array2 -> SeGroup 顶层槽位 / SeItem 内层索引`，`array3 -> BatVoice 顶层槽位`；详见 `src/main/java/com/giga/nexas/dto/bsdx/grp/groupmap/ProgramMaterialGrp.notes.md`。
 - 待补证据：`int2` 在 `CEventChange` 内的具体运算语义（AND/OR/NOT）需结合运行时行为或更多反汇编证据。
 
 ## 8. 已落地 CLI 流程（真实执行）
