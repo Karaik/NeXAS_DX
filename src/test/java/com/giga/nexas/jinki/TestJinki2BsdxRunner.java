@@ -42,6 +42,11 @@ public class TestJinki2BsdxRunner {
         Assertions.assertEquals(38, result.getSyncedProgramMaterial().getArray2().size());
         Assertions.assertEquals(31, result.getSyncedProgramMaterial().getArray3().size());
 
+        Assertions.assertNotNull(result.getReboundAkaoMek());
+        Assertions.assertNotNull(result.getReboundAkaoMek().getMekBasicInfo());
+        Assertions.assertEquals(110, result.getReboundAkaoMek().getMekBasicInfo().getWazFileSequence());
+        Assertions.assertEquals(138, result.getReboundAkaoMek().getMekBasicInfo().getSpmFileSequence());
+
         Assertions.assertNotNull(result.getExePatchPlan());
         Assertions.assertTrue(result.getExePatchPlan().isPatched());
         Assertions.assertEquals(104, result.getExePatchPlan().getRequiredMekaCapacity());
