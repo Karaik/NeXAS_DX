@@ -2,7 +2,7 @@ package com.giga.nexas.transfer.jinki2bsdx.steps;
 
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
 import com.giga.nexas.transfer.jinki2bsdx.model.ImportedAssetSet;
-import com.giga.nexas.transfer.jinki2bsdx.model.JinkiDiffManifest;
+import com.giga.nexas.transfer.jinki2bsdx.model.JinkiImportPlan;
 import com.giga.nexas.transfer.jinki2bsdx.model.JinkiPackageBundle;
 
 /**
@@ -13,8 +13,16 @@ public class ImportStaticAssetsStep {
     public ImportedAssetSet importAssets(
             AkaoGraftRequest request,
             JinkiPackageBundle jinkiPackage,
-            JinkiDiffManifest diffManifest
+            JinkiImportPlan importPlan
     ) {
-        return new ImportedAssetSet();
+        ImportedAssetSet importedAssetSet = new ImportedAssetSet();
+        if (importPlan == null) {
+            return importedAssetSet;
+        }
+
+        importedAssetSet.getWazFiles().addAll(importPlan.getRequiredWazFiles());
+        importedAssetSet.getSpmFiles().addAll(importPlan.getRequiredSpmFiles());
+        importedAssetSet.getAuxiliaryFiles().addAll(importPlan.getRequiredMekFiles());
+        return importedAssetSet;
     }
 }

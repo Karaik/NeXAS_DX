@@ -3,7 +3,7 @@ package com.giga.nexas.transfer.jinki2bsdx.steps;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
 import com.giga.nexas.transfer.jinki2bsdx.model.GrpAppendPlan;
-import com.giga.nexas.transfer.jinki2bsdx.model.JinkiDiffManifest;
+import com.giga.nexas.transfer.jinki2bsdx.model.JinkiImportPlan;
 import com.giga.nexas.transfer.jinki2bsdx.model.JinkiPackageBundle;
 
 /**
@@ -14,7 +14,7 @@ public class RebindAkaoWazStep {
     public Waz rebindAkaoWaz(
             AkaoGraftRequest request,
             JinkiPackageBundle jinkiPackage,
-            JinkiDiffManifest diffManifest,
+            JinkiImportPlan importPlan,
             GrpAppendPlan grpAppendPlan
     ) {
         return jinkiPackage != null ? jinkiPackage.getWazByFileName().get(request.getWazFileName()) : null;

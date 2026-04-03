@@ -14,7 +14,7 @@ public class AkaoGraftResult {
 
     private JinkiPackageBundle jinkiPackage;
     private BsdxBaselineBundle bsdxBaseline;
-    private JinkiDiffManifest diffManifest;
+    private JinkiImportPlan importPlan;
     private GrpAppendPlan grpAppendPlan;
     private ProgramMaterialGrp syncedProgramMaterial;
     private Mek reboundAkaoMek;

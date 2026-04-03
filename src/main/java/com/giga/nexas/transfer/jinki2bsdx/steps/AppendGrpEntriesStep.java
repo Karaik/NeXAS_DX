@@ -3,7 +3,7 @@ package com.giga.nexas.transfer.jinki2bsdx.steps;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
 import com.giga.nexas.transfer.jinki2bsdx.model.BsdxBaselineBundle;
 import com.giga.nexas.transfer.jinki2bsdx.model.GrpAppendPlan;
-import com.giga.nexas.transfer.jinki2bsdx.model.JinkiDiffManifest;
+import com.giga.nexas.transfer.jinki2bsdx.model.JinkiImportPlan;
 import com.giga.nexas.transfer.jinki2bsdx.model.JinkiPackageBundle;
 
 /**
@@ -15,7 +15,7 @@ public class AppendGrpEntriesStep {
             AkaoGraftRequest request,
             JinkiPackageBundle jinkiPackage,
             BsdxBaselineBundle bsdxBaseline,
-            JinkiDiffManifest diffManifest
+            JinkiImportPlan importPlan
     ) {
         return new GrpAppendPlan();
     }
