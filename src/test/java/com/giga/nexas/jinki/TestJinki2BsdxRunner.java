@@ -60,6 +60,13 @@ public class TestJinki2BsdxRunner {
                 collectVoiceGroupIndices(result.getReboundAkaoWaz()).stream().allMatch(index -> index == 30)
         );
 
+        Assertions.assertNotNull(result.getImportedAssetSet());
+        Assertions.assertNotNull(result.getImportedAssetSet().getOutputRootDir());
+        Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir()));
+        Assertions.assertFalse(result.getImportedAssetSet().getGeneratedMekFiles().isEmpty());
+        Assertions.assertFalse(result.getImportedAssetSet().getGeneratedWazFiles().isEmpty());
+        Assertions.assertFalse(result.getImportedAssetSet().getCopiedSpmFiles().isEmpty());
+
         Assertions.assertNotNull(result.getExePatchPlan());
         Assertions.assertTrue(result.getExePatchPlan().isPatched());
         Assertions.assertEquals(104, result.getExePatchPlan().getRequiredMekaCapacity());

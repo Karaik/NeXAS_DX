@@ -200,7 +200,17 @@ flowchart TB
 
 ### Step 8. `ImportStaticAssetsStep`
 
-当前仍是占位。
+当前已经落地为真正的静态资源落盘步骤：
+
+- 把 `step6` 生成的 `Akao.mek` 写入输出目录
+- 把 `step7` 生成的 `Akao.waz` 写入输出目录
+- 把链上其余辅助 `waz` 从包内 `game/jinki/waz` 复制到输出目录
+- 把链上 `spm` 从包内 `game/jinki/spm` 复制到输出目录
+- 从项目外 `jinki_resources` 中补齐当前机体链实际需要的语音和音效文件
+
+输出目录位于：
+
+- `src/main/resources/out/jinki2bsdx_assets_<timestamp>`
 
 ### Step 9. `PatchMenuDataStep`
 
@@ -252,13 +262,13 @@ mvn exec:java -Dexec.mainClass="com.giga.nexas.transfer.jinki2bsdx.Jinki2BsdxSin
 - `step4`
 - `step5`
 - `step6`
-- `step7` 的主装配骨架和关键索引重绑
+- `step7`
+- `step8`
 - `runner`
 - `test` 启动入口
 
 未完成：
 
-- `step8 ImportStaticAssets`
 - `step9 PatchMenuData`
 - `step10` 更通用的容量汇总策略
 

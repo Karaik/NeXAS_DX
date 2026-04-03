@@ -121,6 +121,16 @@ public class Jinki2BsdxSingleRunner {
                             : result.getReboundAkaoWaz().getSkillList().size());
         }
 
+        if (result.getImportedAssetSet() != null) {
+            log.info("imported assets => root={}, mek={}, waz={}, spm={}, audio={}, missing={}",
+                    result.getImportedAssetSet().getOutputRootDir(),
+                    result.getImportedAssetSet().getGeneratedMekFiles().size(),
+                    result.getImportedAssetSet().getGeneratedWazFiles().size(),
+                    result.getImportedAssetSet().getCopiedSpmFiles().size(),
+                    result.getImportedAssetSet().getCopiedAudioFiles().size(),
+                    result.getImportedAssetSet().getMissingAssets().size());
+        }
+
         if (result.getExePatchPlan() != null) {
             log.info("exe patch => patched={}, requiredMekaCapacity={}, output={}",
                     result.getExePatchPlan().isPatched(),

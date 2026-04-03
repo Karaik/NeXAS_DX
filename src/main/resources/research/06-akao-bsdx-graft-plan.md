@@ -224,7 +224,14 @@
 
 ### Step 8. `ImportStaticAssetsStep`
 
-当前仍是占位。
+当前已经实现为真正的落盘步骤：
+
+- 输出目录：`src/main/resources/out/jinki2bsdx_assets_<timestamp>`
+- 写入重绑后的 `Akao.mek`
+- 写入重绑后的 `Akao.waz`
+- 复制链上辅助 `waz`
+- 复制链上 `spm`
+- 从项目外 `jinki_resources` 中补齐当前链需要的语音和音效文件
 
 ### Step 9. `PatchMenuDataStep`
 
@@ -249,11 +256,11 @@
 - `step4`
 - `step5`
 - `step6`
-- `step7` 的主装配骨架和关键索引重绑
+- `step7`
+- `step8`
 
 未完成：
 
-- `step8`
 - `step9`
 - `step10` 更通用的统一容量策略
 

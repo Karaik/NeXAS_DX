@@ -77,7 +77,13 @@ public class AkaoGraftPipeline {
 
         // Step 8: 整理需要补入的静态资源集合。
         ImportedAssetSet importedAssetSet =
-                importStaticAssetsStep.importAssets(request, jinkiPackage, importPlan);
+                importStaticAssetsStep.importAssets(
+                        request,
+                        jinkiPackage,
+                        importPlan,
+                        result.getReboundAkaoMek(),
+                        result.getReboundAkaoWaz()
+                );
         result.setImportedAssetSet(importedAssetSet);
 
         // Step 9: 预留菜单层补丁输出。
