@@ -20,12 +20,12 @@ import java.util.Map;
  *
  * <p>这一层不是“在源对象上打补丁”，而是：</p>
  * <ul>
- *     <li>先构建 step7 专用上下文</li>
+ *     <li>先构建 step6 专用上下文</li>
  *     <li>再创建一个新的目标 Mek 外壳</li>
  *     <li>最后按 Mek.java 的分片顺序，逐片重建目标对象</li>
  * </ul>
  *
- * <p>当前 step7 已明确会做语义修改的只有 {@code MekBasicInfo}：</p>
+ * <p>当前 step6 已明确会做语义修改的只有 {@code MekBasicInfo}：</p>
  * <ul>
  *     <li>{@code wazFileSequence -> 目标 WazaGroup 索引}</li>
  *     <li>{@code spmFileSequence -> 目标 SpriteGroup 索引}</li>
@@ -49,41 +49,41 @@ public class RebindAkaoMekStep {
             return null;
         }
 
-        // Step 7-1: 先根据源 Mek 和 step4 的 grp 结果，构建本步专用上下文。
+        // Step 6-1: 先根据源 Mek 和 step4 的 grp 结果，构建本步专用上下文。
         MekRebindContext context = buildContext(sourceMek, grpAppendPlan);
 
-        // Step 7-2: 创建目标 Mek 外壳，只保留最顶层公共信息。
+        // Step 6-2: 创建目标 Mek 外壳，只保留最顶层公共信息。
         Mek targetMek = createTargetMekShell(context);
 
-        // Step 7-3: 重建头部偏移信息。
+        // Step 6-3: 重建头部偏移信息。
         targetMek.setMekHead(rebuildMekHead(context));
 
-        // Step 7-4: 重建区块大小信息。
+        // Step 6-4: 重建区块大小信息。
         targetMek.setMekBlocks(rebuildMekBlocks(context));
 
-        // Step 7-5: 重建并真正回写 MekBasicInfo 的顶层外部索引。
+        // Step 6-5: 重建并真正回写 MekBasicInfo 的顶层外部索引。
         targetMek.setMekBasicInfo(rebuildMekBasicInfo(context));
 
-        // Step 7-6: 重建 pair block。
+        // Step 6-6: 重建 pair block。
         targetMek.setMekPairBlock(rebuildMekPairBlock(context));
 
-        // Step 7-7: 重建武装表。
+        // Step 6-7: 重建武装表。
         // 当前只做结构级深拷贝，不修改 weapon 内部的 wazSequence。
         targetMek.setMekWeaponInfoMap(rebuildWeaponInfoMap(context));
 
-        // Step 7-8: 重建 AI 分片。
+        // Step 6-8: 重建 AI 分片。
         // 当前显式深拷贝 CPU 事件，但不改变 AI 逻辑语义。
         targetMek.setMekAiInfoList(rebuildAiInfoList(context));
 
-        // Step 7-9: 重建 Voice 分片。
+        // Step 6-9: 重建 Voice 分片。
         // 当前显式深拷贝，但不改 table 里的 groupId 语义。
         targetMek.setMekVoiceInfo(rebuildMekVoiceInfo(context));
 
-        // Step 7-10: 重建 Material 分片。
+        // Step 6-10: 重建 Material 分片。
         // 当前显式深拷贝条目和数组，但不改 sprite/se/voice 组内容的语义。
         targetMek.setMekMaterialBlock(rebuildMekMaterialBlock(context));
 
-        // Step 7-11: 对当前已经确定会改的字段做结果校验。
+        // Step 6-11: 对当前已经确定会改的字段做结果校验。
         validateRebindResult(targetMek, context);
         return targetMek;
     }
@@ -184,7 +184,7 @@ public class RebindAkaoMekStep {
         target.setBoostDashSpeed(source.getBoostDashSpeed());
         target.setAutoHoverHeight(source.getAutoHoverHeight());
 
-        // 这里是 step7 当前第一轮真正有语义改动的两个字段。
+        // 这里是 step6 当前第一轮真正有语义改动的两个字段。
         target.setWazFileSequence(context.getTargetWazaGroupIndex());
         target.setSpmFileSequence(context.getTargetSpriteGroupIndex());
         return target;
@@ -225,7 +225,7 @@ public class RebindAkaoMekStep {
         }
 
         // 当前只做武装对象的结构级深拷贝。
-        // MekWeaponInfo.wazSequence 仍然解释为 Akao.waz 内部 skill 索引，不在 step7 修改。
+        // MekWeaponInfo.wazSequence 仍然解释为 Akao.waz 内部 skill 索引，不在 step6 修改。
         for (Map.Entry<Integer, Mek.MekWeaponInfo> entry : source.entrySet()) {
             Mek.MekWeaponInfo sourceWeapon = entry.getValue();
             if (sourceWeapon == null) {
@@ -544,13 +544,13 @@ public class RebindAkaoMekStep {
 
     private void validateRebindResult(Mek targetMek, MekRebindContext context) {
         if (targetMek == null || targetMek.getMekBasicInfo() == null) {
-            throw new IllegalStateException("step7 重建后的 MekBasicInfo 不能为空");
+            throw new IllegalStateException("step6 重建后的 MekBasicInfo 不能为空");
         }
         if (!Integer.valueOf(context.getTargetWazaGroupIndex()).equals(targetMek.getMekBasicInfo().getWazFileSequence())) {
-            throw new IllegalStateException("step7 wazFileSequence 回写失败");
+            throw new IllegalStateException("step6 wazFileSequence 回写失败");
         }
         if (!Integer.valueOf(context.getTargetSpriteGroupIndex()).equals(targetMek.getMekBasicInfo().getSpmFileSequence())) {
-            throw new IllegalStateException("step7 spmFileSequence 回写失败");
+            throw new IllegalStateException("step6 spmFileSequence 回写失败");
         }
     }
 }

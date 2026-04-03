@@ -26,6 +26,8 @@ public class JinkiImportPlan {
 
     private Map<String, Integer> sourceSpriteIndexByFileName = new LinkedHashMap<>();
     private Map<String, Integer> sourceWazIndexByFileName = new LinkedHashMap<>();
+    private Map<String, Integer> targetSpriteIndexByFileName = new LinkedHashMap<>();
+    private Map<String, Integer> targetWazIndexByFileName = new LinkedHashMap<>();
 
     private List<String> notes = new ArrayList<>();
 }

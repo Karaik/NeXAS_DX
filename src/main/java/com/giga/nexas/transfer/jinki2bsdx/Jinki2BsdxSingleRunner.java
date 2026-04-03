@@ -113,6 +113,14 @@ public class Jinki2BsdxSingleRunner {
                     result.getGrpAppendPlan().getBatVoiceGroupIndex());
         }
 
+        if (result.getReboundAkaoWaz() != null) {
+            log.info("rebound waz => fileName={}, skillCount={}",
+                    result.getReboundAkaoWaz().getFileName(),
+                    result.getReboundAkaoWaz().getSkillList() == null
+                            ? 0
+                            : result.getReboundAkaoWaz().getSkillList().size());
+        }
+
         if (result.getExePatchPlan() != null) {
             log.info("exe patch => patched={}, requiredMekaCapacity={}, output={}",
                     result.getExePatchPlan().isPatched(),

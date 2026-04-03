@@ -2,34 +2,17 @@
 
 ## 定位
 
-这个包负责把 `AKAO / moribito_2` 这条 JINKI 资源链正式并入 BSDX。
+这个包负责把 `AKAO / moribito_2` 从 `JINKI` 并入 `BSDX`。
 
-它不是 `BHE -> BSDX` 转译。
-它的正确定位是同引擎资源 graft：
+它不是 `BHE -> BSDX` 的语义转译，而是同引擎资源 graft：
 
 - 源包：`src/main/resources/game/jinki`
 - 目标包：`src/main/resources/game/bsdx`
-- 核心问题：资源闭包导入、grp 追加、索引重绑、运行时容量 patch
-
-## 为什么独立于 `bhe2bsdx`
-
-`bhe2bsdx` 解决的是跨游戏语义转译。
-
-`jinki2bsdx` 解决的是：
-
-- 不做 BHE 语义转译
-- 不使用 BHE slot map
-- 不默认替换旧槽位
-- 目标是把新机体真正追加进 BSDX
-
-所以项目结构上必须独立：
-
-- `transfer/bhe2bsdx`
-- `transfer/jinki2bsdx`
+- 核心问题：资源闭包导入、`grp` 顶层追加、内部索引重绑、最终 exe 容量 patch
 
 ## 规范输入
 
-当前这条 pipeline 的规范输入只认项目包内资源：
+当前 pipeline 只认包内资源：
 
 - `src/main/resources/game/jinki/grp`
 - `src/main/resources/game/jinki/dat`
@@ -41,36 +24,15 @@
 
 - `D:\BDY\NeXAS_Resources\jinki_resources`
 
-当前不作为 pipeline 输入，只在后续补静态资源时作为补充源。
+当前不作为 pipeline 主输入，只在后续补静态资源时作为补充源。
 
-## 当前最小资源闭包
+## 当前最小闭包
 
-### grp
-
-- `BatVoice.grp`
-- `MekaGroup.grp`
-- `SeGroup.grp`
-- `SpriteGroup.grp`
-- `WazaGroup.grp`
-
-### dat
-
-- `Meka.dat`
-- `MekaPilot.dat`
-
-### mek
+`mek`
 
 - `Akao.mek`
 
-### spm
-
-- `moribito_2.spm`
-- `C_moribito_2.spm`
-- `G_moribito_2.spm`
-- `M_moribito_2.spm`
-- `Fire.spm`
-
-### waz
+`waz`
 
 - `Akao.waz`
 - `Bomb.waz`
@@ -81,108 +43,94 @@
 - `Tama04.waz`
 - `Tama05.waz`
 
+`spm`
+
+- `moribito_2.spm`
+- `C_moribito_2.spm`
+- `G_moribito_2.spm`
+- `M_moribito_2.spm`
+- `Fire.spm`
+
+`grp`
+
+- `BatVoice.grp`
+- `MekaGroup.grp`
+- `SeGroup.grp`
+- `SpriteGroup.grp`
+- `WazaGroup.grp`
+
+`dat`
+
+- `Meka.dat`
+- `MekaPilot.dat`
+
 ## 核心事实
 
-### 1. `AKAO` 的主 SPM 不是 `AKAO.spm`
+### 1. AKAO 的主 SPM 不是 `AKAO.spm`
 
-当前已经确认：
+当前迁移主链使用的是：
 
-- `Akao.mek.mekBasicInfo.spmFileSequence = 133`
-- JINKI 的 `SpriteGroup` 中，`moribito_2.spm` 才是 AKAO 的主机体精灵链入口
+- `SpriteGroup` 内的 `0001 -> moribito_2.spm`
 
-所以迁移时不能追加：
+因此迁移时不能追加 `AKAO -> akao.spm`，而是要把 `moribito_2.spm` 这条注册链挂进 BSDX。
 
-- `AKAO -> akao.spm`
+### 2. `Akao.mek` 和 `Akao.waz` 都要重绑
 
-正确做法是追加：
+`Akao.mek` 当前确认要改：
 
-- `0001 -> moribito_2.spm`
+- `mekBasicInfo.wazFileSequence`
+- `mekBasicInfo.spmFileSequence`
 
-### 2. `Akao.mek` 和 `Akao.waz` 都必须重绑
+`Akao.waz` 当前确认要改：
 
-最少要处理：
+- `CEventWazaSelect.wazFileNo`
+- `CEventSprite.spmFileSequence`
 
-- `Akao.mek.mekBasicInfo.wazFileSequence`
-- `Akao.mek.mekBasicInfo.spmFileSequence`
-- `Akao.waz` 外部 `spmFileSequence`
-- `Akao.waz` 外部 `wazFileNo`
+说明：
 
-补充：
-
-- `MekWeaponInfo.wazSequence` 指向的是 `Akao.waz` 内部 skill 索引
-- 它不是 `WazaGroup.grp` 顶层索引
+- `CEventWazaSelect.wazSequenceNo` 仍然解释为目标 `waz` 文件内部的 skill 索引
+- `MekWeaponInfo.wazSequence` 仍然解释为 `Akao.waz` 内部 skill 索引
 
 ### 3. `ProgramMaterial.grp` 必须同步
 
 当前已经确认：
 
-- `ProgramMaterial.array1` 跟 `SpriteGroup` 顶层长度一致
-- `ProgramMaterial.array2` 跟 `SeGroup` 顶层长度一致
-- `ProgramMaterial.array3` 跟 `BatVoice` 顶层长度一致
+- `ProgramMaterial.array1` 对齐 `SpriteGroup`
+- `ProgramMaterial.array2` 对齐 `SeGroup`
+- `ProgramMaterial.array3` 对齐 `BatVoice`
 
-所以只要 AKAO 迁移追加了：
-
-- 新 `SpriteGroup` 条目
-- 新 `BatVoice` 条目
-
-就必须同步补：
-
-- `ProgramMaterial.array1`
-- `ProgramMaterial.array3`
+因此这次追加 `SpriteGroup` 和 `BatVoice` 顶层条目之后，必须同步补外层长度。
 
 ## 当前主链
 
 ```mermaid
 flowchart TB
-    A[DeserializePackage<br/>game/jinki] --> B[LoadBsdxBaseline]
-    B --> C[BuildImportPlan]
-    C --> D[AppendGrpEntries]
-    D --> E[SyncProgramMaterial]
-    E --> F[RebindMekIndices]
-    F --> G[RebindWazIndices]
-    G --> H[ImportStaticAssets]
-    H --> I[PatchMenuData]
-    I --> J[PatchExeCapacities]
+    A[Step1 DeserializeJinkiPackage] --> B[Step2 LoadBsdxBaseline]
+    B --> C[Step3 BuildImportPlan]
+    C --> D[Step4 AppendGrpEntries]
+    D --> E[Step5 SyncProgramMaterial]
+    E --> F[Step6 RebindAkaoMek]
+    F --> G[Step7 RebindAkaoWaz]
+    G --> H[Step8 ImportStaticAssets]
+    H --> I[Step9 PatchMenuData]
+    I --> J[Step10 PatchExeCapacities]
 ```
 
-## Step 1
+## 当前步骤说明
 
-反序列化 JINKI 包内的：
+### Step 1. `DeserializeJinkiPackageStep`
 
-- grp
-- dat
-- mek
-- spm
-- waz
+反序列化包内 `JINKI` 资源，输出 `JinkiPackageBundle`。
 
-输出到 `JinkiPackageBundle`。
+### Step 2. `LoadBsdxBaselineStep`
 
-## Step 2
+加载 `BSDX` 基线资源，输出 `BsdxBaselineBundle`。
 
-加载 BSDX 基线容器：
+### Step 3. `BuildImportPlanStep`
 
-- grp
-- dat
-- mek
-- spm
-- waz
-- `ProgramMaterial.grp`
+不再做文件级 diff，而是直接生成 `JinkiImportPlan`。
 
-输出到 `BsdxBaselineBundle`。
-
-## Step 3
-
-不再做文件级 diff。
-
-当前 step3 的职责已经改成：
-
-- 生成 `JinkiImportPlan`
-- 默认把 JINKI 闭包整体视为导入输入
-- 明确后面有哪些 grp 追加目标
-- 明确后面有哪些 mek/waz 重绑目标
-- 记录 JINKI 侧当前的源索引，方便后面真正做重绑
-
-当前这一步输出的重点是：
+当前会输出：
 
 - `requiredMekFiles`
 - `requiredWazFiles`
@@ -191,73 +139,125 @@ flowchart TB
 - `programMaterialSyncTargets`
 - `mekRebindTargets`
 - `wazRebindTargets`
+- `sourceSpriteIndexByFileName`
+- `sourceWazIndexByFileName`
+- `targetSpriteIndexByFileName`
+- `targetWazIndexByFileName`
 
-## 为什么不再做 diff
+其中最后四组映射，是 `step7` 做 `waz` 内部重绑时的直接输入。
 
-对 AKAO 这条线来说，文件级 diff 没有实际意义。
+### Step 4. `AppendGrpEntriesStep`
 
-原因是：
+当前策略：
 
-- 当前迁移前提就是以 `jinki` 作为真源
-- 目标是“真追加 graft”，不是最大化复用主 BSDX loose file
-- 同名资源即使存在，也默认不能信任
-- 实测结果也已经验证，当前这批资源实际上全部会走导入
+- 同名就复用
+- 否则尾插
+- 不占 `existFlag=0` 空槽
 
-所以 step3 继续保留成 `diff/reuse-import manifest` 只会误导流程。
+当前 `AKAO` 这条线跑出的目标索引是：
 
-## 当前运行方式
+- `MekaGroup = 103`
+- `WazaGroup = 110`
+- `SpriteGroup = 138`
+- `BatVoice = 30`
 
-当前可以通过：
+### Step 5. `SyncProgramMaterialStep`
+
+当前只同步外层长度：
+
+- `array1 -> SpriteGroup.size()`
+- `array2 -> SeGroup.size()`
+- `array3 -> BatVoice.size()`
+
+### Step 6. `RebindAkaoMekStep`
+
+当前已经按 `Mek` 分片重建，并且真正回写了：
+
+- `mekBasicInfo.wazFileSequence`
+- `mekBasicInfo.spmFileSequence`
+
+其余分片当前是“显式深拷贝，保留原语义”，没有贸然改绑。
+
+### Step 7. `RebindAkaoWazStep`
+
+当前已经按 `Waz -> Skill -> Phase -> Unit -> Object` 的层级重建。
+
+已实现的关键点：
+
+- 主装配器 + 上下文对象
+- `Skill / Phase / Unit` 全量重建
+- `SkillInfoUnknown` 重建
+- `CEventWazaSelect.wazFileNo` 重绑到目标 `WazaGroup` 索引
+- `CEventSprite.spmFileSequence` 重绑到目标 `SpriteGroup` 索引
+- `CEventEffect`、`CEventEscape`、`CEventCamera` 这类带 `*UnitList` 的对象，内部 `data` 递归重建
+- `CEventSe` / `CEventVoice` 的 `byte[]` 列表做数组级复制
+
+当前设计原则：
+
+- 不是只做一层深拷贝
+- 会递归进入嵌套 unit 的 `data`
+- 只对已经确认语义的外部编号做回写
+
+### Step 8. `ImportStaticAssetsStep`
+
+当前仍是占位。
+
+### Step 9. `PatchMenuDataStep`
+
+当前仍是占位。
+
+### Step 10. `PatchExeCapacitiesStep`
+
+当前采取固定绝对偏移 patch：
+
+- 先把 exe 读成 `byte[]`
+- 按固定偏移覆写
+- 产出到 `src/main/resources/out`
+- 文件名格式：`原名_时间戳.exe`
+
+注意：
+
+- 这个步骤现在已经后移到主链末尾
+- 只有前置数据步骤都跑完之后，才会输出 patched exe
+
+## 运行方式
+
+主入口：
 
 - `com.giga.nexas.transfer.jinki2bsdx.Jinki2BsdxSingleRunner`
 
-直接启动。
-
-### main 方式
+直接运行：
 
 ```java
 Jinki2BsdxSingleRunner.main(args);
 ```
 
-### Maven 方式
+Maven 运行：
 
 ```bash
 mvn exec:java -Dexec.mainClass="com.giga.nexas.transfer.jinki2bsdx.Jinki2BsdxSingleRunner"
 ```
 
-## 当前测试入口
-
-当前测试侧可以通过：
+## 测试入口
 
 - `src/test/java/com/giga/nexas/jinki/TestJinki2BsdxRunner.java`
 
-直接拉起 runner。
-
 ## 当前状态
 
-当前已完成：
+已完成：
 
-- step1
-- step2
-- step3
-- step4
-- step5
-- step6
-- single runner
-- test 启动入口
+- `step1`
+- `step2`
+- `step3`
+- `step4`
+- `step5`
+- `step6`
+- `step7` 的主装配骨架和关键索引重绑
+- `runner`
+- `test` 启动入口
 
-当前未完成：
+未完成：
 
-- step7 `RebindAkaoWaz`
-- step8 `ImportStaticAssets`
-- step9 `PatchMenuData`
-- step10 `PatchExeCapacities` 的最终汇总策略
-
-## exe patch 预留
-
-真正的新机体追加必须始终预留 exe patch。
-
-当前已确认方向：
-
-- `153` 是武装页那一侧的硬上限，但不是 AKAO 当前第一优先阻塞
-- 对 AKAO 这种新机体 graft，更应优先关注机体侧 `103` 这组容量链
+- `step8 ImportStaticAssets`
+- `step9 PatchMenuData`
+- `step10` 更通用的容量汇总策略
