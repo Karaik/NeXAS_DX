@@ -78,6 +78,10 @@ public class TestJinki2BsdxRunner {
         Assertions.assertNotNull(result.getExePatchPlan());
         Assertions.assertTrue(result.getExePatchPlan().isPatched());
         Assertions.assertEquals(104, result.getExePatchPlan().getRequiredMekaCapacity());
+        Assertions.assertTrue(result.getExePatchPlan().getRequiredWazaCapacity() >= 111);
+        Assertions.assertTrue(result.getExePatchPlan().getRequiredSpriteCapacity() >= 139);
+        Assertions.assertTrue(result.getExePatchPlan().getRequiredBatVoiceCapacity() >= 31);
+        Assertions.assertTrue(result.getExePatchPlan().getRequiredSeCapacity() >= 38);
         Assertions.assertNotNull(result.getExePatchPlan().getOutputExePath());
         Assertions.assertTrue(Files.exists(result.getExePatchPlan().getOutputExePath()));
         Assertions.assertFalse(result.getExePatchPlan().getTargetOffsets().isEmpty());

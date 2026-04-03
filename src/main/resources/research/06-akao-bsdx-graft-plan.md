@@ -249,12 +249,21 @@
 
 ### Step 10. `PatchExeCapacitiesStep`
 
-当前做法是：
+当前已经实现两层能力：
 
-- 把目标 exe 读成 `byte[]`
-- 按固定绝对偏移覆写
-- 输出到 `src/main/resources/out`
-- 文件名格式是 `原名_时间戳.exe`
+1. 先汇总本次迁移后的目标容量
+   - `meka`
+   - `waza`
+   - `sprite`
+   - `batVoice`
+   - `se`
+2. 再对当前已确认的机体侧 `103` 容量链执行固定绝对偏移 patch
+
+当前真正执行 patch 的仍只有：
+
+- 机体侧 `103 -> 当前目标 meka 容量`
+
+其余 `waza/sprite/batVoice/se` 当前只记录需求，不虚构 patch 位点。
 
 ## 当前实现状态
 
@@ -269,10 +278,11 @@
 - `step7`
 - `step8`
 - `step9` 的 dat 最小补丁
+- `step10` 的容量汇总与机体侧 exe patch
 
 未完成：
 
-- `step10` 更通用的统一容量策略
+- 非机体侧 `waza/sprite/batvoice/se` 的 exe patch 位点确认
 
 ## 当前建议
 

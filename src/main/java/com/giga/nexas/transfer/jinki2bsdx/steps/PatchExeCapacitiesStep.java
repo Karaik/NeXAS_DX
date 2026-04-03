@@ -12,9 +12,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * 负责对固定 exe 做容量补丁。
+ * 负责汇总本次迁移后的目标容量，并对当前已经确认的 exe 位点执行 patch。
  *
- * <p>当前实现严格按固定绝对偏移直接覆盖字节，不做模式搜索。</p>
+ * <p>当前已确认并真正执行 patch 的只有机体侧 `103 -> N` 这条链。
+ * 其余 `waza/sprite/batvoice/se` 目前只汇总需求，不虚构 patch 位点。</p>
  */
 public class PatchExeCapacitiesStep {
 
@@ -22,8 +23,7 @@ public class PatchExeCapacitiesStep {
 
     /**
      * 机体侧 103 容量在当前固定 exe 里的两个绝对偏移。
-     *
-     * <p>两处原始指令都是 {@code 6A 67}，也就是 {@code push 103}。</p>
+     * 原始指令都是 {@code 6A 67}，也就是 {@code push 103}。
      */
     private static final int[] MEKA_CAPACITY_PATCH_OFFSETS = {
             0x56CE3,
@@ -41,29 +41,35 @@ public class PatchExeCapacitiesStep {
             return plan;
         }
 
-        int requiredMekaCapacity = resolveRequiredMekaCapacity(bsdxBaseline, grpAppendPlan);
-        plan.setRequiredMekaCapacity(requiredMekaCapacity);
-        plan.getNotes().add("当前按固定绝对偏移直接 patch exe。");
-        plan.getNotes().add("当前只处理机体侧 103 容量链。");
+        // Step 10-1: 先汇总这次迁移后的目标容量。
+        populateRequiredCapacities(plan, bsdxBaseline, grpAppendPlan);
 
-        // 这里 patch 的是 push imm8，所以当前只能安全覆盖到 0..127。
-        if (requiredMekaCapacity < 0 || requiredMekaCapacity > 127) {
-            throw new IllegalStateException("当前 fixed-offset patch 只支持 0..127 的机体容量，实际需求=" + requiredMekaCapacity);
-        }
+        plan.setSourceExePath(request.getTargetExePath());
+        plan.getNotes().add("step10 先汇总本次迁移后的目标容量。");
+        plan.getNotes().add("当前只对机体侧 103 容量链执行固定偏移 patch。");
+        plan.getNotes().add("waza/sprite/batvoice/se 当前仅记录需求，尚未定位稳定 patch 位点。");
 
         Path sourceExe = request.getTargetExePath();
         if (sourceExe == null || !Files.exists(sourceExe)) {
             throw new IllegalStateException("目标 exe 不存在: " + sourceExe);
         }
 
+        // Step 10-2: 当前已确认的机体容量 patch 仍然是 imm8 形式。
+        if (plan.getRequiredMekaCapacity() < 0 || plan.getRequiredMekaCapacity() > 127) {
+            throw new IllegalStateException(
+                    "当前 fixed-offset patch 只支持 0..127 的机体容量，实际需求=" + plan.getRequiredMekaCapacity()
+            );
+        }
+
         try {
             byte[] exeBytes = Files.readAllBytes(sourceExe);
 
-            // 逐个固定偏移做原地覆盖。
+            // Step 10-3: 按固定绝对偏移覆写机体容量位点。
             for (int offset : MEKA_CAPACITY_PATCH_OFFSETS) {
-                applyImm8Patch(exeBytes, offset, 0x67, requiredMekaCapacity, plan);
+                applyImm8Patch(exeBytes, offset, 0x67, plan.getRequiredMekaCapacity(), plan);
             }
 
+            // Step 10-4: 最后写出带时间戳的测试 exe。
             Path outputDir = request.getExeOutputDir();
             Files.createDirectories(outputDir);
             Path outputExe = outputDir.resolve(buildTimestampedExeName(sourceExe));
@@ -78,16 +84,53 @@ public class PatchExeCapacitiesStep {
         }
     }
 
-    private int resolveRequiredMekaCapacity(BsdxBaselineBundle bsdxBaseline, GrpAppendPlan grpAppendPlan) {
-        int byGrpSize = -1;
-        if (bsdxBaseline != null
-                && bsdxBaseline.getMekaGroupGrp() != null
-                && bsdxBaseline.getMekaGroupGrp().getMekaList() != null) {
-            byGrpSize = bsdxBaseline.getMekaGroupGrp().getMekaList().size();
-        }
+    private void populateRequiredCapacities(
+            ExePatchPlan plan,
+            BsdxBaselineBundle bsdxBaseline,
+            GrpAppendPlan grpAppendPlan
+    ) {
+        plan.setRequiredMekaCapacity(resolveGroupSize(
+                bsdxBaseline == null ? null : bsdxBaseline.getMekaGroupGrp() == null ? null : bsdxBaseline.getMekaGroupGrp().getMekaList(),
+                grpAppendPlan == null ? null : grpAppendPlan.getMekaGroupIndex()
+        ));
+        plan.setRequiredWazaCapacity(resolveGroupSize(
+                bsdxBaseline == null ? null : bsdxBaseline.getWazaGroupGrp() == null ? null : bsdxBaseline.getWazaGroupGrp().getWazaList(),
+                grpAppendPlan == null || grpAppendPlan.getSourceWazGroupIndexToTargetIndex().isEmpty()
+                        ? null
+                        : maxValue(grpAppendPlan.getSourceWazGroupIndexToTargetIndex()) 
+        ));
+        plan.setRequiredSpriteCapacity(resolveGroupSize(
+                bsdxBaseline == null ? null : bsdxBaseline.getSpriteGroupGrp() == null ? null : bsdxBaseline.getSpriteGroupGrp().getSpriteList(),
+                grpAppendPlan == null || grpAppendPlan.getSourceSpriteGroupIndexToTargetIndex().isEmpty()
+                        ? null
+                        : maxValue(grpAppendPlan.getSourceSpriteGroupIndexToTargetIndex())
+        ));
+        plan.setRequiredBatVoiceCapacity(resolveGroupSize(
+                bsdxBaseline == null ? null : bsdxBaseline.getBatVoiceGrp() == null ? null : bsdxBaseline.getBatVoiceGrp().getVoiceList(),
+                grpAppendPlan == null ? null : grpAppendPlan.getBatVoiceGroupIndex()
+        ));
+        plan.setRequiredSeCapacity(resolveGroupSize(
+                bsdxBaseline == null ? null : bsdxBaseline.getSeGroupGrp() == null ? null : bsdxBaseline.getSeGroupGrp().getSeList(),
+                grpAppendPlan == null || grpAppendPlan.getSourceSeGroupIndexToTargetIndex().isEmpty()
+                        ? null
+                        : maxValue(grpAppendPlan.getSourceSeGroupIndexToTargetIndex())
+        ));
+    }
 
-        int byAppendPlan = grpAppendPlan != null ? grpAppendPlan.getMekaGroupIndex() + 1 : -1;
-        return Math.max(byGrpSize, byAppendPlan);
+    private int resolveGroupSize(java.util.List<?> list, Integer maxIndex) {
+        int bySize = list == null ? -1 : list.size();
+        int byIndex = maxIndex == null ? -1 : maxIndex + 1;
+        return Math.max(bySize, byIndex);
+    }
+
+    private int maxValue(java.util.Map<Integer, Integer> map) {
+        int max = -1;
+        for (Integer value : map.values()) {
+            if (value != null && value > max) {
+                max = value;
+            }
+        }
+        return max;
     }
 
     private void applyImm8Patch(

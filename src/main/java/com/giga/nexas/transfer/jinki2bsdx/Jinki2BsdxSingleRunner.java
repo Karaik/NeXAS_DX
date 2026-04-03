@@ -133,9 +133,13 @@ public class Jinki2BsdxSingleRunner {
         }
 
         if (result.getExePatchPlan() != null) {
-            log.info("exe patch => patched={}, requiredMekaCapacity={}, output={}",
+            log.info("exe patch => patched={}, meka={}, waza={}, sprite={}, batVoice={}, se={}, output={}",
                     result.getExePatchPlan().isPatched(),
                     result.getExePatchPlan().getRequiredMekaCapacity(),
+                    result.getExePatchPlan().getRequiredWazaCapacity(),
+                    result.getExePatchPlan().getRequiredSpriteCapacity(),
+                    result.getExePatchPlan().getRequiredBatVoiceCapacity(),
+                    result.getExePatchPlan().getRequiredSeCapacity(),
                     result.getExePatchPlan().getOutputExePath());
             log.info("exe patch offsets => {}", result.getExePatchPlan().getTargetOffsets());
             log.info("exe patch notes => {}", result.getExePatchPlan().getNotes());
