@@ -26,6 +26,7 @@ public class AkaoGraftRequest {
     private Path externalStaticAssetRoot = Paths.get("D:/BDY/NeXAS_Resources/jinki_resources");
     private Path targetExePath = Paths.get("src/main/resources/ida-reverse/BaldrSky.exe");
     private Path exeOutputDir = Paths.get("src/main/resources/out");
+    private String pacCompressMode = "4";
 
     private String mekaCodeName = "AKAO";
     private String wazCodeName = "AKAO";
@@ -33,7 +34,8 @@ public class AkaoGraftRequest {
     private String spriteFileName = "moribito_2.spm";
     private String mekFileName = "Akao.mek";
     private String wazFileName = "Akao.waz";
+    private Integer fixedMekaGroupIndex = 32;
 
-    private boolean patchMenuData;
+    private boolean patchMenuData = true;
     private boolean planExeCapacityPatch = true;
 }

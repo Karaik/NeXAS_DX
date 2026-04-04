@@ -41,7 +41,17 @@
 
 ---
 
-## BHE→BSDX 移植流水线
+## JINKI→BSDX AKAO Graft Pipeline
+- **入口**：`com.giga.nexas.jinki.TestJinki2BsdxRunner#testRunAkaoGraftPipeline`
+- **作用**：将 JINKI（Baldr Heart）的 AKAO 机体移植到 BSDX（Baldr Sky DX），通过 `AkaoGraftPipeline`（11 步流水线）完成资源 diff、索引重绑、菜单 patch、exe patch 和 pac 封包。
+- **输出目录**：`src/main/resources/out`（含 `Update3.pac`、patched exe、所有 GRP/DAT/MEK/WAZ/SPM）
+- **注意事项**
+  - 流水线会读取 JINKI 和 BSDX 双侧的 grp/mek/waz/spm/dat 全套资源，内存需求较高。
+  - 辅助 waz（弹幕/特效类 Tama01-05、Effect.waz 等）仅做 `Files.copy` 原样复制，其内部不递归重绑索引（已确认辅助 waz 内部无交叉引用）。
+  - `AkaoGraftRequest.planExeCapacityPatch` 默认为 true，但当前验证策略下机体容量数学条件不满足，不会触发实际 exe patch 写入。
+  - 测试断言包含：mekaIndex=32、SpriteGroup=139、BatVoice=30、SelectMekaMenu 行数不变、exe 未实际 patch 等硬编码值，若基线数据变更需同步更新。
+
+---
 - **入口**：`com.giga.nexas.bhe2bsdx.TransferTest#testPipeline`
 - **作用**：注册 BHE/BSDX 全部 grp/mek/waz/spm，挑选 Tsukuyomi 机体执行 `TransMeka.process`，写出变更文件并执行 `PacUtil.pack`。
 - **注意事项**

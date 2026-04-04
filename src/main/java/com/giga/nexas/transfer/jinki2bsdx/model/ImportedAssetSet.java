@@ -15,9 +15,11 @@ public class ImportedAssetSet {
     private Path outputRootDir;
 
     private List<Path> generatedDatFiles = new ArrayList<>();
+    private List<Path> generatedGrpFiles = new ArrayList<>();
     private List<Path> generatedMekFiles = new ArrayList<>();
     private List<Path> generatedWazFiles = new ArrayList<>();
     private List<Path> copiedSpmFiles = new ArrayList<>();
+    private List<Path> copiedImageFiles = new ArrayList<>();
     private List<Path> copiedAudioFiles = new ArrayList<>();
 
     private List<String> spmFiles = new ArrayList<>();

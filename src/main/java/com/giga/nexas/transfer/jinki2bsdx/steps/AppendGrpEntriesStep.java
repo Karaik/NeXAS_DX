@@ -18,7 +18,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * 负责把当前机体资源链真正挂进 BSDX 基线，并产出最终的“源 -> 目标”结果表。
+ * 负责把当前机体资源链真正挂进 BSDX 基线，并产出最终的源到目标映射表。
  */
 public class AppendGrpEntriesStep {
 
@@ -32,14 +32,14 @@ public class AppendGrpEntriesStep {
 
         GrpAppendPlan plan = new GrpAppendPlan();
 
-        // 1. 先落主机体入口。
+        // 1. 先挂主机体入口。
         MekaGroupGrp.MekaGroup sourceMeka = findRequiredMekaGroup(
                 jinkiPackage.getMekaGroupGrp(),
                 request.getMekaCodeName()
         );
-        plan.setMekaGroupIndex(upsertMekaGroup(bsdxBaseline.getMekaGroupGrp(), sourceMeka));
+        plan.setMekaGroupIndex(upsertMekaGroup(request, bsdxBaseline.getMekaGroupGrp(), sourceMeka));
 
-        // 2. 再落主 waz 入口。
+        // 2. 再挂主 waz 入口。
         WazaGroupGrp.WazaGroupEntry sourceMainWaz = findRequiredWazaGroup(
                 jinkiPackage.getWazaGroupGrp(),
                 request.getWazCodeName()
@@ -48,10 +48,10 @@ public class AppendGrpEntriesStep {
         Integer sourceMainWazIndex = importPlan.getSourceWazIndexByFileName().get(normalizeFileName(request.getWazFileName()));
         if (sourceMainWazIndex != null) {
             plan.getSourceWazGroupIndexToTargetIndex().put(sourceMainWazIndex, plan.getWazaGroupIndex());
+            importPlan.getTargetWazIndexByFileName().put(normalizeFileName(request.getWazFileName()), plan.getWazaGroupIndex());
         }
-        importPlan.getTargetWazIndexByFileName().put(normalizeFileName(request.getWazFileName()), plan.getWazaGroupIndex());
 
-        // 3. 再落主 sprite 入口。
+        // 3. 再挂主 sprite 入口。
         SpriteGroupGrp.SpriteGroupEntry sourceMainSprite = findRequiredSpriteGroup(
                 jinkiPackage.getSpriteGroupGrp(),
                 request.getSpriteCodeName(),
@@ -61,23 +61,24 @@ public class AppendGrpEntriesStep {
         Integer sourceMainSpriteIndex = importPlan.getSourceSpriteIndexByFileName().get(normalizeFileName(request.getSpriteFileName()));
         if (sourceMainSpriteIndex != null) {
             plan.getSourceSpriteGroupIndexToTargetIndex().put(sourceMainSpriteIndex, plan.getSpriteGroupIndex());
+            importPlan.getTargetSpriteIndexByFileName().put(normalizeFileName(request.getSpriteFileName()), plan.getSpriteGroupIndex());
         }
-        importPlan.getTargetSpriteIndexByFileName().put(normalizeFileName(request.getSpriteFileName()), plan.getSpriteGroupIndex());
 
-        // 4. 再落主语音组入口。
-        BatVoiceGrp.BatVoiceGroup sourceBatVoice = findRequiredBatVoiceGroup(
+        // 4. 再挂 AKAO 的语音组入口。
+        IndexedBatVoiceGroup sourceBatVoice = findRequiredBatVoiceGroup(
                 jinkiPackage.getBatVoiceGrp(),
                 request.getMekaCodeName()
         );
-        plan.setBatVoiceGroupIndex(upsertBatVoiceGroup(bsdxBaseline.getBatVoiceGrp(), sourceBatVoice));
+        plan.setBatVoiceGroupIndex(upsertBatVoiceGroup(bsdxBaseline.getBatVoiceGrp(), sourceBatVoice.group()));
+        plan.getSourceBatVoiceGroupIndexToTargetIndex().put(sourceBatVoice.index(), plan.getBatVoiceGroupIndex());
 
-        // 5. 落当前机体通过 CEventWazaSelect 用到的辅助 waz 链。
+        // 5. 挂当前机体通过 CEventWazaSelect 用到的辅助 waz 链。
         appendReferencedWazGroups(jinkiPackage, bsdxBaseline, importPlan, plan);
 
-        // 6. 落当前机体通过 CEventSprite 用到的辅助 sprite 链。
+        // 6. 挂当前机体通过 CEventSprite 用到的辅助 sprite 链。
         appendReferencedSpriteGroups(jinkiPackage, bsdxBaseline, importPlan, plan);
 
-        // 7. 落当前机体通过 CEventSe 用到的 se 组和组内条目链。
+        // 7. 挂当前机体通过 CEventSe 用到的 se 组和组内条目链。
         appendReferencedSeChain(jinkiPackage, bsdxBaseline, importPlan, plan);
 
         return plan;
@@ -155,7 +156,17 @@ public class AppendGrpEntriesStep {
         }
     }
 
-    private int upsertMekaGroup(MekaGroupGrp targetGroup, MekaGroupGrp.MekaGroup sourceEntry) {
+    private int upsertMekaGroup(
+            AkaoGraftRequest request,
+            MekaGroupGrp targetGroup,
+            MekaGroupGrp.MekaGroup sourceEntry
+    ) {
+        Integer fixedIndex = request == null ? null : request.getFixedMekaGroupIndex();
+        if (fixedIndex != null && fixedIndex >= 0 && fixedIndex < targetGroup.getMekaList().size()) {
+            targetGroup.getMekaList().set(fixedIndex, copyMekaGroup(sourceEntry));
+            return fixedIndex;
+        }
+
         int existingIndex = findMekaGroupIndex(targetGroup, sourceEntry.getMekaCodeName());
         if (existingIndex >= 0) {
             return existingIndex;
@@ -264,16 +275,17 @@ public class AppendGrpEntriesStep {
         throw new IllegalStateException("JINKI SpriteGroup 中找不到目标条目: " + codeName + " -> " + fileName);
     }
 
-    private BatVoiceGrp.BatVoiceGroup findRequiredBatVoiceGroup(BatVoiceGrp group, String codeName) {
+    private IndexedBatVoiceGroup findRequiredBatVoiceGroup(BatVoiceGrp group, String codeName) {
         if (group == null || group.getVoiceList() == null) {
             throw new IllegalStateException("JINKI BatVoice 不存在");
         }
-        for (BatVoiceGrp.BatVoiceGroup entry : group.getVoiceList()) {
+        for (int i = 0; i < group.getVoiceList().size(); i++) {
+            BatVoiceGrp.BatVoiceGroup entry = group.getVoiceList().get(i);
             if (!isExisting(entry == null ? null : entry.getExistFlag())) {
                 continue;
             }
             if (equalsIgnoreCase(codeName, entry.getCharacterCodeName())) {
-                return entry;
+                return new IndexedBatVoiceGroup(i, entry);
             }
         }
         throw new IllegalStateException("JINKI BatVoice 中找不到目标条目: " + codeName);
@@ -529,5 +541,8 @@ public class AppendGrpEntriesStep {
             return "";
         }
         return fileName.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private record IndexedBatVoiceGroup(int index, BatVoiceGrp.BatVoiceGroup group) {
     }
 }

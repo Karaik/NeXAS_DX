@@ -1,119 +1,32 @@
 # 06. AKAO 并入 BSDX 的迁移方案
 
-## 目标
+## 当前目标
 
-本方案讨论的不是 `BHE -> BSDX` 转译，而是把 `JINKI` 里的 `AKAO / moribito_2` 作为同引擎资源，正式 graft 到 `BSDX`。
+把 `AKAO / moribito_2` 作为一条完整资源链，从 `JINKI` graft 到 `BSDX`，最终输出可打包的 `Update3.pac`。
 
-这件事的本质是：
+## 当前规则
 
-- 以 `game/jinki` 作为真源
-- 把 `AKAO` 作为新角色追加进 `BSDX`
-- 对 `grp`、`mek`、`waz`、`ProgramMaterial`、exe 容量链做联动处理
+当前迁移模型已经对齐为：
 
-## 输入源
+1. 先从 `Akao.waz` 中抽当前机体真实使用到的资源链和索引链
+2. 再对链上的每个资源做“复用还是尾插”的决策
+3. 形成统一的 `JINKI源索引 -> BSDX目标索引`
+4. `mek / waz` 内部只消费这张结果表做重定向
 
-当前 pipeline 的正式输入只认包内资源：
+当前测试侧还额外有一个重要前提：
 
-- `src/main/resources/game/jinki/grp`
-- `src/main/resources/game/jinki/dat`
-- `src/main/resources/game/jinki/mek`
-- `src/main/resources/game/jinki/spm`
-- `src/main/resources/game/jinki/waz`
+- `AKAO` 不再占用新的 `MekaGroup[103]`
+- 当前测试侧临时复用旧槽位 `MekaGroup[32]`
+- 目的不是最终设计，而是先验证“自然进入选人界面的闪退是否来自 meka 顶层索引 103 踩到 exe 固定边界”
 
-项目外资源：
-
-- `D:\BDY\NeXAS_Resources\jinki_resources`
-
-当前只作为后续静态资源补充源，不作为主迁移 pipeline 输入。
-
-## 最小迁移闭包
-
-`mek`
-
-- `Akao.mek`
-
-`waz`
-
-- `Akao.waz`
-- `Bomb.waz`
-- `Effect.waz`
-- `Tama01.waz`
-- `Tama02.waz`
-- `Tama03.waz`
-- `Tama04.waz`
-- `Tama05.waz`
-
-`spm`
-
-- `moribito_2.spm`
-- `C_moribito_2.spm`
-- `G_moribito_2.spm`
-- `M_moribito_2.spm`
-- `Fire.spm`
-
-`grp`
-
-- `MekaGroup.grp`
-- `WazaGroup.grp`
-- `SpriteGroup.grp`
-- `BatVoice.grp`
-- `SeGroup.grp`
-
-`dat`
-
-- `Meka.dat`
-- `MekaPilot.dat`
-
-## 关键结论
-
-### 1. `AKAO` 的主 sprite 入口是 `moribito_2.spm`
-
-迁移时不能追加 `AKAO -> akao.spm`。
-
-正确做法是：
-
-- 在 `SpriteGroup` 里挂 `0001 -> moribito_2.spm`
-- 然后把 `Akao.mek` 和 `Akao.waz` 里引用主 sprite 的位置重绑到新的目标 sprite 索引
-
-### 2. `Mek` 和 `Waz` 的重绑层次不同
-
-`Akao.mek` 当前已经确认要改：
-
-- `mekBasicInfo.wazFileSequence`
-- `mekBasicInfo.spmFileSequence`
-
-`Akao.waz` 当前已经确认要改：
+当前已纳入链分析的对象：
 
 - `CEventWazaSelect.wazFileNo`
 - `CEventSprite.spmFileSequence`
+- `CEventSe.group/item`
+- `CEventVoice`
 
-说明：
-
-- `MekWeaponInfo.wazSequence` 仍然解释为 `Akao.waz` 内部 skill 索引
-- `CEventWazaSelect.wazSequenceNo` 仍然解释为目标 `waz` 文件内部 skill 索引
-
-### 3. `ProgramMaterial` 只先同步外层长度
-
-当前这条 `AKAO` 线需要同步：
-
-- `ProgramMaterial.array1`
-- `ProgramMaterial.array3`
-
-第一轮目标不是填业务值，而是先保证长度与 `SpriteGroup` / `BatVoice` 对齐。
-
-### 4. exe patch 要留到主链最后
-
-原因：
-
-- 前面的 `grp / mek / waz / ProgramMaterial` 仍然可能失败
-- 如果 exe 提前落盘，会留下“看起来像成功产物”的半成品
-
-当前已经改成：
-
-- 前置数据链成功后
-- 最后一步才输出 patched exe
-
-## 正式主链
+## 当前主链
 
 1. `DeserializeJinkiPackageStep`
 2. `LoadBsdxBaselineStep`
@@ -125,193 +38,175 @@
 8. `ImportStaticAssetsStep`
 9. `PatchMenuDataStep`
 10. `PatchExeCapacitiesStep`
+11. `PackUpdatePacStep`
 
-## 各步骤职责
-
-### Step 1. `DeserializeJinkiPackageStep`
-
-把 `game/jinki` 里的 `grp/dat/mek/spm/waz` 反序列化成 `JinkiPackageBundle`。
-
-### Step 2. `LoadBsdxBaselineStep`
-
-把 `game/bsdx` 的基线资源载入为 `BsdxBaselineBundle`，供后面追加和重绑使用。
-
-### Step 3. `BuildImportPlanStep`
-
-这一层已经不是 diff。
-
-它的职责是生成 `JinkiImportPlan`，明确：
-
-- 本次必须导入的 `mek/waz/spm` 文件闭包
-- 后面要追加哪些 `grp` 顶层条目
-- 后面要同步哪些 `ProgramMaterial` 外层数组
-- 后面要重绑哪些 `mek/waz` 字段
-- JINKI 源侧 `sprite/waz` 索引映射
-- BSDX 基线侧 `sprite/waz` 索引映射
-
-这里特别重要的是：
-
-- `sourceWazIndexByFileName`
-- `targetWazIndexByFileName`
-- `sourceSpriteIndexByFileName`
-- `targetSpriteIndexByFileName`
-
-因为 `step7` 的 `CEventWazaSelect / CEventSprite` 重绑，就直接吃这四组数据。
-
-### Step 4. `AppendGrpEntriesStep`
-
-当前策略：
-
-- 同名就复用
-- 否则尾插
-- 不占 `existFlag=0` 空槽
-
-当前 `AKAO` 跑出来的目标索引是：
-
-- `MekaGroup = 103`
-- `WazaGroup = 110`
-- `SpriteGroup = 138`
-- `BatVoice = 30`
+## 当前实现状态
 
 ### Step 5. `SyncProgramMaterialStep`
 
-当前只同步外层长度：
+当前已经不是只补长度。
 
-- `array1 -> SpriteGroup.size()`
-- `array2 -> SeGroup.size()`
-- `array3 -> BatVoice.size()`
+现在的行为是：
 
-### Step 6. `RebindAkaoMekStep`
+- 先把 `array1 / array2 / array3` 外层长度追平到当前 `grp` 大小
+- 再优先用外部真源 `ProgramMaterial.grp` 补能安全映射的 `values`
 
-当前做法是“总装配器 + 分片重建器”。
+当前已做：
 
-已经真正回写：
+- `array2` 按 `SeGroup.group/item` 映射回写
+- `array3` 按 `BatVoice` 组映射回写
+- `array1` 只在安全场景下同步  
+  原因：`array1.values[*]` 绑定的是 `MapGroup`，当前尚未建立 `MapGroup` 迁移映射
 
-- `mekBasicInfo.wazFileSequence -> 110`
-- `mekBasicInfo.spmFileSequence -> 138`
+对当前 AKAO 真源再核过一遍后，可以补充一个当前结论：
 
-其他分片当前保持：
-
-- 显式深拷贝
-- 保留原语义
-- 不在没有证据时乱改内部编号
-
-### Step 7. `RebindAkaoWazStep`
-
-这一层现在已经不是简单占位，而是：
-
-- 先构建 `WazRebindContext`
-- 再按 `Waz -> Skill -> Phase -> Unit -> Object` 逐层重建
-- 对叶子对象和带嵌套 unit 的对象分开处理
-
-当前已经明确处理的重绑点：
-
-- `CEventWazaSelect.wazFileNo`
-- `CEventSprite.spmFileSequence`
-
-当前已经明确处理的深层结构点：
-
-- `SkillInfoUnknown`
-- `CEventSe.byteDataList`
-- `CEventVoice.byteDataList`
-- 所有带 `*UnitList` 的对象，都会递归重建内部 `data`
-
-这一步的关键原则是：
-
-- 不能只做深拷贝
-- 必须递归进入 `CEventEffect` 一类对象内部的 `data`
-- 只对已经确认语义的外部编号做重绑
+- `JINKI` 真源里 `moribito_2.spm` 对应的 `ProgramMaterial.array1[33].values = []`
+- 所以当前迁移后 `ProgramMaterial.array1[138] = []` 是正确结果
+- 也就是说，`array1.values[*]` 的完整 `MapGroup` 映射在“当前 AKAO 这一次 graft”里不是阻塞项
 
 ### Step 8. `ImportStaticAssetsStep`
 
-当前已经实现为真正的落盘步骤：
+当前已经实现：
 
 - 输出目录：`src/main/resources/out/jinki2bsdx_assets_<timestamp>`
+- 所有资源平铺到输出根目录
 - 写入重绑后的 `Akao.mek`
 - 写入重绑后的 `Akao.waz`
+- 写入修改后的：
+  - `MekaGroup.grp`
+  - `WazaGroup.grp`
+  - `SpriteGroup.grp`
+  - `BatVoice.grp`
+  - `SeGroup.grp`
+  - `ProgramMaterial.grp`
 - 复制链上辅助 `waz`
 - 复制链上 `spm`
-- 从项目外 `jinki_resources` 中补齐当前链需要的语音和音效文件
+- 按 `spm.imageData` 补齐当前链引用的图像资源
+- 只复制当前链真实关联的语音和音效
+
+当前实测现状：
+
+- 仍有 `21` 个图像缺失
+- 这 `21` 张图已经确认是原始游戏资源本身就缺，当前按“原版缺口”处理
 
 ### Step 9. `PatchMenuDataStep`
 
-当前已经实现最小可执行版：
+当前已实现完整菜单链补丁：
 
-- 用 `JINKI Meka.dat` 补 `BSDX Meka.dat`
-- 用 `JINKI/外部 MekaPilot.dat` 补 `BSDX MekaPilot.dat`
-- 产物写到 step8 输出目录下的 `dat/`
+- `Meka.dat`
+- `MekaPilot.dat`
+- `SelectMekaMenu.dat`
+- `MekaPilot.spm`
+- `SelectMekaMenuMeka.spm`
+- 菜单图像：
+  - `M_moribito_2.png`
+  - `MG_moribito_2.png`
+  - `SG_moribito_2.png`
 
-当前仍未覆盖：
+当前已验证的实际结果：
 
 - `SelectMekaMenu.dat`
+  - 当前测试侧不再增加第 `71` 个可见槽
+  - 而是复用第 `25` 个可见槽
+  - 也就是 `SelectMekaMenu.dat[24] = [32, 18, 108]`
+  - 槽位位置不变，但这个槽现在绑定到 `MekaGroup[32] = AKAO`
+- `MekaPilot.dat`
+  - 当前测试侧也不再新增 pilot 行
+  - 复用原来的 `MekaPilot.dat[29] = [32]`
 - `SelectMekaMenuMeka.spm`
+  - 当前测试侧复用原来的 `anim[18]`
+  - `anim[18]` 的菜单图已经替成 AKAO
 - `MekaPilot.spm`
+  - 当前测试侧复用原来的 `anim[29]`
+  - `anim[29]` 的 pilot 图已经替成 AKAO
 
 ### Step 10. `PatchExeCapacitiesStep`
 
-当前已经实现两层能力：
+当前已实现两层能力：
 
-1. 先汇总本次迁移后的目标容量
+1. 汇总本次迁移后的目标容量：
    - `meka`
    - `waza`
    - `sprite`
    - `batVoice`
    - `se`
-2. 再对当前已确认的机体侧 `103` 容量链执行固定绝对偏移 patch
+   - `selectMekaMenuRows`
+2. 对 `54F570` 里 `SelectMekaMenu` 的固定 `70` 项上界执行 patch
 
-当前真正执行 patch 的仍只有：
+当前测试侧由于不再增加第 `71` 个可见槽，所以：
 
-- 机体侧 `103 -> 当前目标 meka 容量`
+- `0x14F21F` 本轮保持原值
+- 当前产物 `exe patch = false`
 
-其余 `waza/sprite/batVoice/se` 当前只记录需求，不虚构 patch 位点。
+当前已确认并默认禁用的位点：
 
-## 当前实现状态
+- `0x56CE3`
+- `0x56F9A`
 
-已完成：
+禁用原因已经通过实机矩阵确认：
 
-- `step1`
-- `step2`
-- `step3`
-- `step4`
-- `step5`
-- `step6`
-- `step7`
-- `step8`
-- `step9` 的 dat 最小补丁
-- `step10` 的容量汇总与机体侧 exe patch
+- `baseline`：能正常启动
+- `pac_only`：能正常启动
+- `meka_only(只打两处 103 -> 104)`：10 秒内退出，留下 `ConfigNG.dat`，`exitCode = 0xC0000417`
+- `menu_only`：能正常启动
+- `menu_plus_pac`：能正常启动
 
-未完成：
+还没解决的部分：
 
-- 非机体侧 `waza/sprite/batvoice/se` 的 exe patch 位点确认
+- `meka / waza / sprite / batVoice / se / selectMekaMenuRows`
+  - 都只汇总需求
+  - 未写入 exe
+- `SpriteGroup.grp / BatVoice.grp / SeGroup.grp / ProgramMaterial.grp` 的顶层数量读取，本次复查后确认是动态按文件 count 读入
+- 所以当前没有证据表明“这四份 grp 的顶层条目数”还需要单独加新的 exe patch
+- `SelectMekaMenu` 当前项目号是 `697..766`
+- `7A5320` 里：
+  - `767..772` 仍然是 generic virtual dispatch
+  - `773..784` 已经属于别的菜单对象分支
+- 所以当前把“已审安全范围”保守卡在 `76` 项
+- 超过 `76` 的可见选机项，pipeline 现在会直接报错，要求继续补 switch/object-id 审计
 
-## 当前建议
+### Step 11. `PackUpdatePacStep`
 
-下一步优先级：
+当前已实现：
 
-1. 继续把 `step7` 里更多已证实的外部编号点补齐
-2. 再接 `step8` 静态资源落盘
-3. 然后做 `step9` 菜单层补丁
+- 对 step8/9 的输出根目录执行 `PacUtil.pack()`
+- 输出：`src/main/resources/out/Update3.pac`
 
-不建议当前回头把 `step7` 改成大杂烩式硬改。
-应该继续保持：
+## 当前 review 结论
 
-- 主装配器明确
-- 每一层都能看出改了什么
-- 对没有证据的字段暂时不动
+### 已确认跟上的部分
 
-## 当前修正口径
+- 修改后的 `grp` 现在已经真正写进产物
+- `ProgramMaterial.grp` 现在已经不是只补外层长度
+- `step8/9/10/11` 已经在同一条链上连通
+- `step9` 的菜单 dat/spm/UI 图片已经跟上
+- `step10` 的 `54F570` 菜单 70 项上界位点已经补上
+- `step10` 的两处 meka patch 已经通过矩阵验证为有害，并从默认产物中移除
+- `Update3.pac` 已能生成
 
-当前 `step3/4/7` 已按下面这个迁移模型修正：
+### 当前仍存在的严重问题
 
-1. 从 `JINKI` 的 `Akao.waz` 中抽出当前机体实际使用的资源链  
-   当前已覆盖：
-   - `wazFileNo`
-   - `spmFileSequence`
-   - `CEventSe` 的 `segroup/item`
+- 非机体侧 `grp` 相关 exe 位点尚未确认完
+- `ProgramMaterial.array1.values[*]` 还没有做成通用 `MapGroup` 映射器
+- `SelectMekaMenu` 当前只审到了 `76` 项，可继续扩，但必须先补 `773+` 之后的 switch/object-id 链
+- `meka 103 -> 104` 的安全扩容位点还没找到，现有两处位点已经确认不能直接用
 
-2. 在 `step4` 上对链上的每个资源做“复用或尾插”的决策
+## 本轮新增结论
 
-3. 生成统一的 `JINKI源索引 -> BSDX目标索引` 结果表
+这轮进一步收敛出来的核心问题是：
 
-4. `step6/7` 只消费这张结果表做重定向  
-   不再直接把 BSDX 基线旧索引表当成最终目标表
+- 即使把 AKAO 放到菜单槽里，只要底层仍然使用新的 `mekaIndex = 103`
+- 真实选人路径仍然高度可疑会踩到 exe 内部与 meka 顶层索引相关的固定边界
+
+所以当前测试侧进一步改成：
+
+- 菜单槽仍然复用第 `25` 个可见槽
+- `MekaGroup` 也同步复用旧索引 `32`
+- 不再让 AKAO 出现在新的 `mekaIndex = 103`
+
+这版的动态验证结果是：
+
+- 强制进入选机菜单时，`objectId 721 -> mekaIndex 32`
+- 同时 `MekaGroup[32] = AKAO`
+
+也就是说，当前测试方向已经从“修菜单显示槽”推进到“连 meka 顶层索引一起复用”，用来验证自然选人闪退是否来自 `103` 这一层。

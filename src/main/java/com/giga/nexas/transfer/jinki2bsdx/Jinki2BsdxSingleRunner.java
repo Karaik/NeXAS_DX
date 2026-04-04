@@ -58,6 +58,7 @@ public class Jinki2BsdxSingleRunner {
         ));
         request.setTargetExePath(resolvePathProp("jinki2bsdx.targetExePath", request.getTargetExePath()));
         request.setExeOutputDir(resolvePathProp("jinki2bsdx.exeOutputDir", request.getExeOutputDir()));
+        request.setPacCompressMode(resolveStringProp("jinki2bsdx.pacCompressMode", request.getPacCompressMode()));
 
         request.setMekaCodeName(resolveStringProp("jinki2bsdx.mekaCodeName", request.getMekaCodeName()));
         request.setWazCodeName(resolveStringProp("jinki2bsdx.wazCodeName", request.getWazCodeName()));
@@ -122,27 +123,37 @@ public class Jinki2BsdxSingleRunner {
         }
 
         if (result.getImportedAssetSet() != null) {
-            log.info("imported assets => root={}, dat={}, mek={}, waz={}, spm={}, audio={}, missing={}",
+            log.info("imported assets => root={}, grp={}, dat={}, mek={}, waz={}, spm={}, image={}, audio={}, missing={}",
                     result.getImportedAssetSet().getOutputRootDir(),
+                    result.getImportedAssetSet().getGeneratedGrpFiles().size(),
                     result.getImportedAssetSet().getGeneratedDatFiles().size(),
                     result.getImportedAssetSet().getGeneratedMekFiles().size(),
                     result.getImportedAssetSet().getGeneratedWazFiles().size(),
                     result.getImportedAssetSet().getCopiedSpmFiles().size(),
+                    result.getImportedAssetSet().getCopiedImageFiles().size(),
                     result.getImportedAssetSet().getCopiedAudioFiles().size(),
                     result.getImportedAssetSet().getMissingAssets().size());
         }
 
         if (result.getExePatchPlan() != null) {
-            log.info("exe patch => patched={}, meka={}, waza={}, sprite={}, batVoice={}, se={}, output={}",
+            log.info("exe patch => patched={}, meka={}, waza={}, sprite={}, batVoice={}, se={}, selectMenuRows={}, output={}",
                     result.getExePatchPlan().isPatched(),
                     result.getExePatchPlan().getRequiredMekaCapacity(),
                     result.getExePatchPlan().getRequiredWazaCapacity(),
                     result.getExePatchPlan().getRequiredSpriteCapacity(),
                     result.getExePatchPlan().getRequiredBatVoiceCapacity(),
                     result.getExePatchPlan().getRequiredSeCapacity(),
+                    result.getExePatchPlan().getRequiredSelectMekaMenuRows(),
                     result.getExePatchPlan().getOutputExePath());
             log.info("exe patch offsets => {}", result.getExePatchPlan().getTargetOffsets());
             log.info("exe patch notes => {}", result.getExePatchPlan().getNotes());
+        }
+
+        if (result.getPacPackPlan() != null) {
+            log.info("pack update pac => packed={}, source={}, output={}",
+                    result.getPacPackPlan().isPacked(),
+                    result.getPacPackPlan().getSourceFolder(),
+                    result.getPacPackPlan().getOutputPacPath());
         }
     }
 

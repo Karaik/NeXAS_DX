@@ -50,10 +50,15 @@ public class LoadBsdxBaselineStep {
 
             bundle.setMekaDat(parseRequired(request.getBsdxDatDir().resolve("Meka.dat"), Dat.class));
             bundle.setMekaPilotDat(parseRequired(request.getBsdxDatDir().resolve("MekaPilot.dat"), Dat.class));
+            bundle.setSelectMekaMenuDat(parseRequired(request.getBsdxDatDir().resolve("SelectMekaMenu.dat"), Dat.class));
 
             bundle.setMekByFileName(parseAll(request.getBsdxMekDir(), "*.mek", Mek.class));
             bundle.setSpmByFileName(parseAll(request.getBsdxSpmDir(), "*.spm", Spm.class));
             bundle.setWazByFileName(parseAll(request.getBsdxWazDir(), "*.waz", Waz.class));
+
+            // 菜单链不是靠 grp 自动推导出来的，所以这里单独把基线 UI 资源抓出来。
+            bundle.setMekaPilotSpm(bundle.getSpmByFileName().get("MekaPilot.spm"));
+            bundle.setSelectMekaMenuMekaSpm(bundle.getSpmByFileName().get("SelectMekaMenuMeka.spm"));
             return bundle;
         } catch (IOException e) {
             throw new IllegalStateException("加载 BSDX 基线资源失败", e);

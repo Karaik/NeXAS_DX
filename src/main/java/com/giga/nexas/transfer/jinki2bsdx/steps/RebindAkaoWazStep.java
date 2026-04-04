@@ -35,6 +35,9 @@ import java.util.Map;
  * <ul>
  *     <li>{@link CEventWazaSelect#wazFileNo}：改成迁移到 BSDX 之后的目标 waz 顶层索引</li>
  *     <li>{@link CEventSprite#spmFileSequence}：改成迁移到 BSDX 之后的目标 sprite 顶层索引</li>
+ *     <li>{@link CEventSe#seGroupIndex}：改成迁移到 BSDX 之后的目标 SeGroup 顶层索引</li>
+ *     <li>{@link CEventSe#seItemIndex}：改成迁移到 BSDX 之后的目标 SeItem 索引（group 内偏移）</li>
+ *     <li>{@link CEventVoice} 的 {@code byteDataList}：每 12-byte 段的前 4 字节（语音组索引）改为 AKAO 目标语音组索引</li>
  * </ul>
  *
  * <p>同时，像 {@code CEventEffect} 这类带嵌套 unit 列表的对象，
@@ -141,6 +144,8 @@ public class RebindAkaoWazStep {
         for (Map.Entry<Integer, Map<Integer, Integer>> entry : grpAppendPlan.getSourceSeItemIndexToTargetIndexByGroup().entrySet()) {
             context.getSourceToTargetSeItemIndexByGroup().put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
         }
+        // BatVoiceGroup 源→目标映射：用于 CEventVoice 的 group 重绑
+        context.getSourceToTargetBatVoiceGroupIndex().putAll(grpAppendPlan.getSourceBatVoiceGroupIndexToTargetIndex());
         return context;
     }
 
@@ -377,7 +382,7 @@ public class RebindAkaoWazStep {
 
         // Voice 的内部 12-byte 段同样要做数组级复制。
         target.setByteDataList(deepCopyByteArrayList(source.getByteDataList()));
-        rewriteVoiceTargetGroup(target.getByteDataList(), context.getTargetMainBatVoiceGroupIndex());
+        rewriteVoiceTargetGroup(target.getByteDataList(), context);
         return target;
     }
 
@@ -531,21 +536,38 @@ public class RebindAkaoWazStep {
         bytes[offset + 3] = (byte) ((value >>> 24) & 0xFF);
     }
 
-    private void rewriteVoiceTargetGroup(List<byte[]> byteDataList, Integer targetGroupIndex) {
-        if (byteDataList == null || targetGroupIndex == null || targetGroupIndex < 0) {
+    /**
+     * 重写 CEventVoice 每个 12-byte 段的前 4 字节（BatVoiceGroup 全局索引）。
+     * <p>
+     * 逻辑与 {@link #rewriteSeTargets} 一致：先读源侧 group index，
+     * 再从 sourceToTargetBatVoiceGroupIndex 映射表中查出目标 index 后覆写。
+     * </p>
+     */
+    private void rewriteVoiceTargetGroup(List<byte[]> byteDataList, WazRebindContext context) {
+        if (byteDataList == null || context == null) {
             return;
         }
 
+        Map<Integer, Integer> batVoiceGroupMap = context.getSourceToTargetBatVoiceGroupIndex();
         for (byte[] bytes : byteDataList) {
             if (bytes == null || bytes.length < 4) {
                 continue;
             }
 
-            // CEventVoice
-            bytes[0] = (byte) (targetGroupIndex & 0xFF);
-            bytes[1] = (byte) ((targetGroupIndex >>> 8) & 0xFF);
-            bytes[2] = (byte) ((targetGroupIndex >>> 16) & 0xFF);
-            bytes[3] = (byte) ((targetGroupIndex >>> 24) & 0xFF);
+            int sourceGroupIndex = readLittleEndianInt(bytes, 0);
+            if (sourceGroupIndex < 0) {
+                // -1 / 0xFFFFFFFF 表示无效/默认，跳过
+                continue;
+            }
+
+            Integer targetGroupIndex = batVoiceGroupMap.get(sourceGroupIndex);
+            if (targetGroupIndex == null) {
+                throw new IllegalStateException(
+                        "找不到 CEventVoice 的 BatVoiceGroup 目标映射: sourceGroup=" + sourceGroupIndex
+                );
+            }
+
+            writeLittleEndianInt(bytes, 0, targetGroupIndex);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.giga.nexas.transfer.jinki2bsdx.steps;
 
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
+import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
 import com.giga.nexas.transfer.jinki2bsdx.model.BsdxBaselineBundle;
 import com.giga.nexas.transfer.jinki2bsdx.model.ExePatchPlan;
 import com.giga.nexas.transfer.jinki2bsdx.model.GrpAppendPlan;
@@ -12,70 +13,72 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * 负责汇总本次迁移后的目标容量，并对当前已经确认的 exe 位点执行 patch。
+ * 负责汇总本轮迁移后的 exe 容量需求，并视情况写入已确认的固定偏移 patch。
  *
- * <p>当前已确认并真正执行 patch 的只有机体侧 `103 -> N` 这条链。
- * 其余 `waza/sprite/batvoice/se` 目前只汇总需求，不虚构 patch 位点。</p>
+ * <p>当前验证策略复用旧 mekaIndex=32，不走 103 -> 104 扩容路线，
+ * 所以 {@link AkaoGraftRequest#isPlanExeCapacityPatch()} 默认为 true 进入本 step，
+ * 但机体容量的数学条件不满足时不会触发实际 patch 写入。</p>
+ *
+ * <p>目前已实现写入的 patch 位点仅限 SelectMekaMenu 行数上界（IMM32 0x14F21F）；
+ * waza/sprite/batvoice/se 的容量需求仅记录在 {@link ExePatchPlan} 中，尚未写固定偏移。</p>
  */
 public class PatchExeCapacitiesStep {
 
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS");
-
-    /**
-     * 机体侧 103 容量在当前固定 exe 里的两个绝对偏移。
-     * 原始指令都是 {@code 6A 67}，也就是 {@code push 103}。
-     */
-    private static final int[] MEKA_CAPACITY_PATCH_OFFSETS = {
-            0x56CE3,
-            0x56F9A
-    };
+    private static final int BASELINE_VISIBLE_SELECT_MEKA_MENU_ROWS = 70;
+    private static final int MAX_AUDITED_SELECT_MEKA_MENU_ROWS = 76;
+    private static final int SELECT_MEKA_MENU_ROW_LIMIT_IMM32_OFFSET = 0x14F21F;
 
     public ExePatchPlan patchExeCapacities(
             AkaoGraftRequest request,
             BsdxBaselineBundle bsdxBaseline,
-            GrpAppendPlan grpAppendPlan
+            GrpAppendPlan grpAppendPlan,
+            AkaoGraftResult result
     ) {
         ExePatchPlan plan = new ExePatchPlan();
-
         if (request == null || !request.isPlanExeCapacityPatch()) {
             return plan;
         }
 
-        // Step 10-1: 先汇总这次迁移后的目标容量。
         populateRequiredCapacities(plan, bsdxBaseline, grpAppendPlan);
+        populateRequiredMenuCapacities(plan, bsdxBaseline, result);
 
         plan.setSourceExePath(request.getTargetExePath());
         plan.getNotes().add("step10 先汇总本次迁移后的目标容量。");
-        plan.getNotes().add("当前只对机体侧 103 容量链执行固定偏移 patch。");
-        plan.getNotes().add("waza/sprite/batvoice/se 当前仅记录需求，尚未定位稳定 patch 位点。");
+        plan.getNotes().add("当前验证策略复用旧 mekaIndex=32，机体容量数学条件不满足，不会触发实际 patch 写入。");
+        plan.getNotes().add("waza/sprite/batvoice/se 当前仅记录容量需求，尚未写固定偏移 patch。");
+        plan.getNotes().add("SelectMekaMenu 当前仍保守审到 76 个可见槽；超过 76 需要继续审 switch/object-id。");
 
         Path sourceExe = request.getTargetExePath();
         if (sourceExe == null || !Files.exists(sourceExe)) {
             throw new IllegalStateException("目标 exe 不存在: " + sourceExe);
         }
 
-        // Step 10-2: 当前已确认的机体容量 patch 仍然是 imm8 形式。
-        if (plan.getRequiredMekaCapacity() < 0 || plan.getRequiredMekaCapacity() > 127) {
-            throw new IllegalStateException(
-                    "当前 fixed-offset patch 只支持 0..127 的机体容量，实际需求=" + plan.getRequiredMekaCapacity()
-            );
-        }
-
         try {
             byte[] exeBytes = Files.readAllBytes(sourceExe);
 
-            // Step 10-3: 按固定绝对偏移覆写机体容量位点。
-            for (int offset : MEKA_CAPACITY_PATCH_OFFSETS) {
-                applyImm8Patch(exeBytes, offset, 0x67, plan.getRequiredMekaCapacity(), plan);
+            if (plan.getRequiredSelectMekaMenuRows() > 0) {
+                int targetMaxOffset = Math.max(0, (plan.getRequiredSelectMekaMenuRows() - 1) * 12);
+                if (targetMaxOffset != 0x33C) {
+                    applyImm32Patch(
+                            exeBytes,
+                            SELECT_MEKA_MENU_ROW_LIMIT_IMM32_OFFSET,
+                            0x33C,
+                            targetMaxOffset,
+                            "SelectMekaMenu row upper-bound",
+                            plan
+                    );
+                } else {
+                    plan.getNotes().add("SelectMekaMenu 当前仍保持 70 个可见槽，本轮不需要改 0x14F21F。");
+                }
             }
 
-            // Step 10-4: 最后写出带时间戳的测试 exe。
             Path outputDir = request.getExeOutputDir();
             Files.createDirectories(outputDir);
             Path outputExe = outputDir.resolve(buildTimestampedExeName(sourceExe));
             Files.write(outputExe, exeBytes);
 
-            plan.setPatched(true);
+            plan.setPatched(!plan.getTargetOffsets().isEmpty());
             plan.setOutputExePath(outputExe);
             plan.getNotes().add("patched exe 已写出到 resources/out。");
             return plan;
@@ -97,7 +100,7 @@ public class PatchExeCapacitiesStep {
                 bsdxBaseline == null ? null : bsdxBaseline.getWazaGroupGrp() == null ? null : bsdxBaseline.getWazaGroupGrp().getWazaList(),
                 grpAppendPlan == null || grpAppendPlan.getSourceWazGroupIndexToTargetIndex().isEmpty()
                         ? null
-                        : maxValue(grpAppendPlan.getSourceWazGroupIndexToTargetIndex()) 
+                        : maxValue(grpAppendPlan.getSourceWazGroupIndexToTargetIndex())
         ));
         plan.setRequiredSpriteCapacity(resolveGroupSize(
                 bsdxBaseline == null ? null : bsdxBaseline.getSpriteGroupGrp() == null ? null : bsdxBaseline.getSpriteGroupGrp().getSpriteList(),
@@ -117,6 +120,30 @@ public class PatchExeCapacitiesStep {
         ));
     }
 
+    private void populateRequiredMenuCapacities(
+            ExePatchPlan plan,
+            BsdxBaselineBundle bsdxBaseline,
+            AkaoGraftResult result
+    ) {
+        int baselineRows = bsdxBaseline == null || bsdxBaseline.getSelectMekaMenuDat() == null || bsdxBaseline.getSelectMekaMenuDat().getData() == null
+                ? -1
+                : bsdxBaseline.getSelectMekaMenuDat().getData().size();
+        int patchedRows = result == null || result.getPatchedSelectMekaMenuDat() == null || result.getPatchedSelectMekaMenuDat().getData() == null
+                ? -1
+                : result.getPatchedSelectMekaMenuDat().getData().size();
+
+        int appendedRows = baselineRows >= 0 && patchedRows >= baselineRows ? patchedRows - baselineRows : 0;
+        plan.setRequiredSelectMekaMenuRows(BASELINE_VISIBLE_SELECT_MEKA_MENU_ROWS + appendedRows);
+
+        if (plan.getRequiredSelectMekaMenuRows() > MAX_AUDITED_SELECT_MEKA_MENU_ROWS) {
+            throw new IllegalStateException(
+                    "当前只审到 SelectMekaMenu 可见 " + MAX_AUDITED_SELECT_MEKA_MENU_ROWS
+                            + " 项，实际需求 " + plan.getRequiredSelectMekaMenuRows()
+                            + "，需要先继续做 switch/object-id 审计"
+            );
+        }
+    }
+
     private int resolveGroupSize(java.util.List<?> list, Integer maxIndex) {
         int bySize = list == null ? -1 : list.size();
         int byIndex = maxIndex == null ? -1 : maxIndex + 1;
@@ -133,45 +160,58 @@ public class PatchExeCapacitiesStep {
         return max;
     }
 
-    private void applyImm8Patch(
+    private void applyImm32Patch(
             byte[] exeBytes,
             int offset,
-            int expectedImm8,
-            int targetImm8,
+            int expectedImm32,
+            int targetImm32,
+            String label,
             ExePatchPlan plan
     ) {
-        if (offset < 0 || offset + 1 >= exeBytes.length) {
+        if (offset < 0 || offset + 3 >= exeBytes.length) {
             throw new IllegalStateException(String.format("patch 偏移越界: 0x%06X", offset));
         }
-        if ((exeBytes[offset] & 0xFF) != 0x6A) {
-            throw new IllegalStateException(String.format("patch 偏移不是 push imm8: 0x%06X", offset));
-        }
 
-        int current = exeBytes[offset + 1] & 0xFF;
-        if (current != expectedImm8 && current != targetImm8) {
+        int current = readLittleEndianInt(exeBytes, offset);
+        if (current != expectedImm32 && current != targetImm32) {
             throw new IllegalStateException(String.format(
-                    "patch 偏移原值不符合预期: 0x%06X current=0x%02X expected=0x%02X target=0x%02X",
+                    "patch 偏移原值不符合预期: 0x%06X current=0x%08X expected=0x%08X target=0x%08X",
                     offset,
                     current,
-                    expectedImm8,
-                    targetImm8
+                    expectedImm32,
+                    targetImm32
             ));
         }
 
-        exeBytes[offset + 1] = (byte) targetImm8;
+        writeLittleEndianInt(exeBytes, offset, targetImm32);
         plan.getTargetOffsets().add(String.format(
-                "0x%06X: 6A %02X -> 6A %02X",
+                "0x%06X: %s 0x%08X -> 0x%08X",
                 offset,
+                label,
                 current,
-                targetImm8
+                targetImm32
         ));
+    }
+
+    private int readLittleEndianInt(byte[] bytes, int offset) {
+        return (bytes[offset] & 0xFF)
+                | ((bytes[offset + 1] & 0xFF) << 8)
+                | ((bytes[offset + 2] & 0xFF) << 16)
+                | ((bytes[offset + 3] & 0xFF) << 24);
+    }
+
+    private void writeLittleEndianInt(byte[] bytes, int offset, int value) {
+        bytes[offset] = (byte) (value & 0xFF);
+        bytes[offset + 1] = (byte) ((value >>> 8) & 0xFF);
+        bytes[offset + 2] = (byte) ((value >>> 16) & 0xFF);
+        bytes[offset + 3] = (byte) ((value >>> 24) & 0xFF);
     }
 
     private String buildTimestampedExeName(Path sourceExe) {
         String fileName = sourceExe.getFileName().toString();
         int dot = fileName.lastIndexOf('.');
-        String base = dot >= 0 ? fileName.substring(0, dot) : fileName;
+        String baseName = dot >= 0 ? fileName.substring(0, dot) : fileName;
         String ext = dot >= 0 ? fileName.substring(dot) : ".exe";
-        return base + "_" + LocalDateTime.now().format(TS) + ext;
+        return baseName + "_" + LocalDateTime.now().format(TS) + ext;
     }
 }

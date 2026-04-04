@@ -21,6 +21,7 @@ public class GrpAppendPlan {
 
     private Map<Integer, Integer> sourceWazGroupIndexToTargetIndex = new LinkedHashMap<>();
     private Map<Integer, Integer> sourceSpriteGroupIndexToTargetIndex = new LinkedHashMap<>();
+    private Map<Integer, Integer> sourceBatVoiceGroupIndexToTargetIndex = new LinkedHashMap<>();
     private Map<Integer, Integer> sourceSeGroupIndexToTargetIndex = new LinkedHashMap<>();
     private Map<Integer, Map<Integer, Integer>> sourceSeItemIndexToTargetIndexByGroup = new LinkedHashMap<>();
 }

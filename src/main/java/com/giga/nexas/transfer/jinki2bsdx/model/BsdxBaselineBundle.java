@@ -30,8 +30,12 @@ public class BsdxBaselineBundle {
 
     private Dat mekaDat;
     private Dat mekaPilotDat;
+    private Dat selectMekaMenuDat;
 
     private Map<String, Mek> mekByFileName = new LinkedHashMap<>();
     private Map<String, Spm> spmByFileName = new LinkedHashMap<>();
     private Map<String, Waz> wazByFileName = new LinkedHashMap<>();
+
+    private Spm mekaPilotSpm;
+    private Spm selectMekaMenuMekaSpm;
 }

@@ -60,7 +60,9 @@ public class BuildImportPlanStep {
         spmFiles.sort(String.CASE_INSENSITIVE_ORDER);
         importPlan.getRequiredSpmFiles().addAll(spmFiles);
 
-        // 5. 从 Akao.waz 里抽出真正会用到的外部 waz / sprite / se 索引链。
+        // 5. 从 Akao.waz（仅主 waz，不递归进辅助 waz）里抽出真正会用到的外部 waz / sprite / se 索引链。
+        //    辅助 waz（弹幕/特效类）内部没有 CEventWazaSelect/CEventSprite/CEventSe/CEventVoice 交叉引用，
+        //    因此不需要递归收集。如果未来引入有内部引用链的辅助 waz，此处需要改为广度优先遍历。
         collectReferencedChainFromAkaoWaz(request, jinkiPackage, importPlan);
 
         // 6. 以“当前机体自己的资源链”为中心，形成这次迁移要处理的对象清单。
@@ -95,7 +97,7 @@ public class BuildImportPlanStep {
         importPlan.getWazRebindTargets().add("CEventSprite.spmFileSequence");
         importPlan.getWazRebindTargets().add("CEventSe.seGroupIndex");
         importPlan.getWazRebindTargets().add("CEventSe.seItemIndex");
-        importPlan.getWazRebindTargets().add("CEventVoice.groupIndex 统一指向 AKAO 目标语音组");
+        importPlan.getWazRebindTargets().add("CEventVoice.byteDataList 前4字节（语音组索引）统一指向 AKAO 目标语音组");
 
         // 9. 补几条说明，避免后续再回到文件级 diff 叙事。
         importPlan.getNotes().add("step3 当前生成的是当前机体资源链计划，不再做文件级 diff。");

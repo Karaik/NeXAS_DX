@@ -3,6 +3,7 @@ package com.giga.nexas.transfer.jinki2bsdx.model;
 import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.dto.bsdx.grp.groupmap.ProgramMaterialGrp;
 import com.giga.nexas.dto.bsdx.mek.Mek;
+import com.giga.nexas.dto.bsdx.spm.Spm;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import lombok.Data;
 
@@ -22,5 +23,9 @@ public class AkaoGraftResult {
     private ImportedAssetSet importedAssetSet;
     private Dat patchedMekaDat;
     private Dat patchedMekaPilotDat;
+    private Dat patchedSelectMekaMenuDat;
+    private Spm patchedMekaPilotSpm;
+    private Spm patchedSelectMekaMenuMekaSpm;
     private ExePatchPlan exePatchPlan;
+    private PacPackPlan pacPackPlan;
 }
