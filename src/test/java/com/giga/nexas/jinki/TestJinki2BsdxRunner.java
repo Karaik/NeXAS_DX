@@ -44,7 +44,7 @@ public class TestJinki2BsdxRunner {
         Assertions.assertFalse(result.getImportPlan().getRequiredWazFiles().isEmpty());
         Assertions.assertFalse(result.getImportPlan().getRequiredSpmFiles().isEmpty());
 
-        Assertions.assertEquals(32, result.getGrpAppendPlan().getMekaGroupIndex());
+        Assertions.assertEquals(103, result.getGrpAppendPlan().getMekaGroupIndex());
         Assertions.assertTrue(result.getGrpAppendPlan().getWazaGroupIndex() >= 0);
         Assertions.assertTrue(result.getGrpAppendPlan().getSpriteGroupIndex() >= 0);
         Assertions.assertTrue(result.getGrpAppendPlan().getBatVoiceGroupIndex() >= 0);
@@ -89,7 +89,7 @@ public class TestJinki2BsdxRunner {
         );
 
         Assertions.assertFalse(result.getExePatchPlan().isPatched());
-        Assertions.assertEquals(103, result.getExePatchPlan().getRequiredMekaCapacity());
+        Assertions.assertEquals(104, result.getExePatchPlan().getRequiredMekaCapacity());
         Assertions.assertTrue(result.getExePatchPlan().getRequiredWazaCapacity() >= 111);
         Assertions.assertTrue(result.getExePatchPlan().getRequiredSpriteCapacity() >= 139);
         Assertions.assertTrue(result.getExePatchPlan().getRequiredBatVoiceCapacity() >= 31);

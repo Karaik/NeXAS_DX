@@ -34,7 +34,7 @@ public class AkaoGraftRequest {
     private String spriteFileName = "moribito_2.spm";
     private String mekFileName = "Akao.mek";
     private String wazFileName = "Akao.waz";
-    private Integer fixedMekaGroupIndex = 32;
+    private Integer fixedMekaGroupIndex = null;
 
     private boolean patchMenuData = true;
     private boolean planExeCapacityPatch = true;
