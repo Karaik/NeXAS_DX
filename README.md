@@ -123,7 +123,7 @@ For detailed documentation, see [`src/test/java/com/giga/nexas/bhe2bsdx/README.m
 
 - Default charset: `windows-31j` (Japanese Shift-JIS)
 - JSON/DTOs must include `extensionName` for adapter dispatch
-- Tests assume path `D:\A\NeXAS_DX`; adjust or create symlink if different
+- Tests assume path `D:\Code\NeXAS_DX`; adjust or create symlink if different
 - `develop` branch has latest code; releases are from `main` only
 
 ---

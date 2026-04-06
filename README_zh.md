@@ -123,7 +123,7 @@ mvn "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testPipeline" test
 
 - 默认字符集：`windows-31j`（日语 Shift-JIS）
 - JSON/DTO 必须包含 `extensionName`，适配器靠它分派
-- 测试假定路径为 `D:\A\NeXAS_DX`；若不同请修改常量或创建符号链接
+- 测试假定路径为 `D:\Code\NeXAS_DX`；若不同请修改常量或创建符号链接
 - `develop` 分支有最新代码；release 仅在 `main` 进行
 
 ---
