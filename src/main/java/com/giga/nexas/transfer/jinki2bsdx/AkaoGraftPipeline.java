@@ -15,6 +15,7 @@ import com.giga.nexas.transfer.jinki2bsdx.steps.DeserializeJinkiPackageStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.ImportStaticAssetsStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.LoadBsdxBaselineStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.PackUpdatePacStep;
+import com.giga.nexas.transfer.jinki2bsdx.steps.PadBaselineMekMaterialStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.PatchExeCapacitiesStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.PatchMenuDataStep;
 import com.giga.nexas.transfer.jinki2bsdx.steps.RebindAkaoMekStep;
@@ -35,6 +36,7 @@ public class AkaoGraftPipeline {
     private final RebindAkaoWazStep rebindAkaoWazStep = new RebindAkaoWazStep();
     private final ImportStaticAssetsStep importStaticAssetsStep = new ImportStaticAssetsStep();
     private final PatchMenuDataStep patchMenuDataStep = new PatchMenuDataStep();
+    private final PadBaselineMekMaterialStep padBaselineMekMaterialStep = new PadBaselineMekMaterialStep();
     private final PatchExeCapacitiesStep patchExeCapacitiesStep = new PatchExeCapacitiesStep();
     private final PackUpdatePacStep packUpdatePacStep = new PackUpdatePacStep();
 
@@ -65,6 +67,9 @@ public class AkaoGraftPipeline {
         result.setSyncedProgramMaterial(
                 syncProgramMaterialStep.syncOuterArrays(request, bsdxBaseline, grpAppendPlan)
         );
+
+        // Step 5.5: 补齐所有基线机体的 CMaterial 组数，对齐追加后的 grp。
+        padBaselineMekMaterialStep.padMaterialBlock(bsdxBaseline);
 
         // Step 6: 重绑 Akao.mek。
         result.setReboundAkaoMek(

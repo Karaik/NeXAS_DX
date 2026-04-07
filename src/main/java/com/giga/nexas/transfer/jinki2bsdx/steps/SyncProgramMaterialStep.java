@@ -1,6 +1,7 @@
 package com.giga.nexas.transfer.jinki2bsdx.steps;
 
 import com.giga.nexas.dto.ResponseDTO;
+import com.giga.nexas.dto.bsdx.grp.groupmap.MapGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.ProgramMaterialGrp;
 import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
@@ -24,6 +25,11 @@ import java.util.Set;
  *     <li>先保证 `array1/2/3` 外层长度和当前 grp 顶层长度一致</li>
  *     <li>再优先用外部真源 `ProgramMaterial.grp` 补能安全映射的 `values`</li>
  * </ul>
+ *
+ * <p>同时对 MapGroup.grp 每个 entry 的内部 array1/2/3 做长度 padding。</p>
+ * <p>MapGroup 内部数组与 SpriteGroup/SeGroup/BatVoice 的顶层数量对齐：
+ * array1 = SpriteGroup count, array2 = SeGroup count, array3 = BatVoice count。
+ * 追加新条目到这些 grp 后，MapGroup 每个 entry 都需要同步 padding。</p>
  */
 public class SyncProgramMaterialStep {
 
@@ -67,6 +73,10 @@ public class SyncProgramMaterialStep {
             mergeArray3Values(programMaterialGrp, sourceProgramMaterial, grpAppendPlan);
             mergeArray1ValuesIfSafe(programMaterialGrp, sourceProgramMaterial, grpAppendPlan);
         }
+
+        // Step 5-3: MapGroup.grp 每个 entry 的 array1/2/3 也必须和 SpriteGroup/SeGroup/BatVoice 对齐。
+        // 追加条目后（如 SpriteGroup 138→139, BatVoice 30→31），每个 MapGroup 的内部数组需要同步 padding。
+        padMapGroupInnerArrays(bsdxBaseline);
 
         return programMaterialGrp;
     }
@@ -169,6 +179,54 @@ public class SyncProgramMaterialStep {
 
         while (values.size() < requiredSize) {
             values.add(new ProgramMaterialGrp.IntArray());
+        }
+    }
+
+    /**
+     * 对 MapGroup.grp 每个 entry 的内部 array1/2/3 做长度 padding，对齐到当前 grp 顶层数量。
+     *
+     * <p>对齐关系（每个 MapGroup entry）：</p>
+     * <ul>
+     *     <li>array1.size() == SpriteGroup.spriteList.size()</li>
+     *     <li>array2.size() == SeGroup.seList.size()</li>
+     *     <li>array3.size() == BatVoice.voiceList.size()</li>
+     * </ul>
+     *
+     * <p>追加新条目到 SpriteGroup/BatVoice 等 grp 后，如果 MapGroup 的内部数组长度没有同步，
+     * 引擎加载时会因长度不匹配而崩溃。</p>
+     */
+    private void padMapGroupInnerArrays(BsdxBaselineBundle bsdxBaseline) {
+        if (bsdxBaseline == null || bsdxBaseline.getMapGroupGrp() == null
+                || bsdxBaseline.getMapGroupGrp().getGroupList() == null) {
+            return;
+        }
+
+        int requiredArray1Size = bsdxBaseline.getSpriteGroupGrp() != null
+                && bsdxBaseline.getSpriteGroupGrp().getSpriteList() != null
+                ? bsdxBaseline.getSpriteGroupGrp().getSpriteList().size()
+                : 0;
+        int requiredArray2Size = bsdxBaseline.getSeGroupGrp() != null
+                && bsdxBaseline.getSeGroupGrp().getSeList() != null
+                ? bsdxBaseline.getSeGroupGrp().getSeList().size()
+                : 0;
+        int requiredArray3Size = bsdxBaseline.getBatVoiceGrp() != null
+                && bsdxBaseline.getBatVoiceGrp().getVoiceList() != null
+                ? bsdxBaseline.getBatVoiceGrp().getVoiceList().size()
+                : 0;
+
+        for (MapGroupGrp.MapGroup entry : bsdxBaseline.getMapGroupGrp().getGroupList()) {
+            ensureMapGroupArraySize(entry.getArray1(), requiredArray1Size);
+            ensureMapGroupArraySize(entry.getArray2(), requiredArray2Size);
+            ensureMapGroupArraySize(entry.getArray3(), requiredArray3Size);
+        }
+    }
+
+    private void ensureMapGroupArraySize(List<MapGroupGrp.IntArray> array, int requiredSize) {
+        if (array == null) {
+            return;
+        }
+        while (array.size() < requiredSize) {
+            array.add(new MapGroupGrp.IntArray());
         }
     }
 }

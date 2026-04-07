@@ -72,6 +72,7 @@ AkaoGraftRequest
 
 比 Step 1 多加载的文件：
 - `ProgramMaterial.grp`（JINKI 侧不加载）
+- `MapGroup.grp`（JINKI 侧不加载；每个 entry 内部的 array1/2/3 必须与 SpriteGroup/SeGroup/BatVoice count 对齐）
 - `MekaPilot.dat`（BSDX 侧为必需）
 - `SelectMekaMenu.dat`（菜单链专用）
 - 菜单 UI spm：`MekaPilot.spm`, `SelectMekaMenuMeka.spm`
@@ -119,20 +120,33 @@ MekaGroup 特殊：支持 `fixedMekaGroupIndex` 强制替换指定位置（当�
 
 ### Step 5: SyncProgramMaterialStep
 
-**功能**：同步 `ProgramMaterial.grp` 外层数组长度并补 values。
+**功能**：同步 `ProgramMaterial.grp` 外层数组长度并补 values；同时 padding `MapGroup.grp` 每个 entry 的内部数组。
 
 **输入**：`AkaoGraftRequest`, `BsdxBaselineBundle`, `GrpAppendPlan`
-**输出**：`ProgramMaterialGrp`（就地修改后返回）
+**输出**：`ProgramMaterialGrp`（就地修改后返回），`MapGroupGrp`（就地 padding）
 
-两层策略：
+三层策略：
 1. 先把 `array1/array2/array3` 外层长度追平到当前 GRP 大小
 2. 再用外部真源 `ProgramMaterial.grp` 补能安全映射的 `values`
+3. 对 `MapGroup.grp` 每个 entry 的内部 array1/2/3 做 padding（见下文）
 
 | 数组 | 对应 GRP | 同步方式 |
 |---|---|---|
 | array1 | SpriteGroup (138) | 只做"明确安全"的同步（values 为空或源索引=目标索引时同步） |
 | array2 | SeGroup (38) | 按 SeGroup group/item 映射回写 |
 | array3 | BatVoice (30) | 按 BatVoice 组映射回写 |
+
+**MapGroup.grp 对齐**：
+
+`MapGroup.grp` 每个 entry 内部也有三段数组，长度必须与 SpriteGroup/SeGroup/BatVoice 的顶层数量对齐：
+
+| MapGroup 内部数组 | 对齐目标 | 原始长度 | 追加后长度 |
+|---|---|---|---|
+| array1 | SpriteGroup.spriteList.size() | 138 | 139 |
+| array2 | SeGroup.seList.size() | 38 | 38（不变） |
+| array3 | BatVoice.voiceList.size() | 30 | 31 |
+
+追加新 SpriteGroup/BatVoice 条目后，所有 372 个 MapGroup entry 的对应数组都需要同步 padding，否则引擎加载时会因长度不匹配崩溃。
 
 > **注意**：`array1.values[*]` 绑定的是 `MapGroup` 索引，当前没有建立 MapGroup 迁移映射。
 > AKAO 的 `moribito_2.spm` 对应的 `ProgramMaterial.array1` 的 values 为空，不影响当前 graft。
@@ -177,7 +191,7 @@ MekaGroup 特殊：支持 `fixedMekaGroupIndex` 强制替换指定位置（当�
 **输出目录**：`src/main/resources/out/jinki2bsdx_assets_<timestamp>`
 
 落盘清单：
-- 6 份修改后的 GRP（MekaGroup/WazaGroup/SpriteGroup/BatVoice/SeGroup/ProgramMaterial）
+- 7 份修改后的 GRP（MekaGroup/WazaGroup/SpriteGroup/BatVoice/SeGroup/MapGroup/ProgramMaterial）
 - 重绑后的 `Akao.mek`（通过 `BsdxBinService.generate` 序列化）
 - 重绑后的 `Akao.waz`
 - 辅助 waz 文件（原样 Files.copy，不递归重绑）
@@ -282,6 +296,7 @@ out/
 │   ├── WazaGroup.grp
 │   ├── SpriteGroup.grp
 │   ├── BatVoice.grp
+│   ├── MapGroup.grp
 │   ├── SeGroup.grp
 │   ├── ProgramMaterial.grp
 │   ├── Akao.mek
@@ -340,7 +355,7 @@ out/
 
 ### 已知限制
 
-- `ProgramMaterial.array1.values[*]` 未建立通用 MapGroup 映射（当前 AKAO graft 中不是阻塞项，因为 values 为空）
+- `ProgramMaterial.array1.values[*]` 绑定 MapGroup 索引，当前 AKAO graft 中 values 为空不影响
 - SelectMekaMenu 超过 76 项后需要继续做 switch/object-id 审计
 - 辅助 waz 不递归重绑（当前策略足够，弹幕/特效内部无交叉引用）
 - 存在 2 处可能需要追加的 meka patch 位点（`0x2749EB`, `0x056CE3`），待实机验证确认

@@ -71,6 +71,9 @@ public class ImportStaticAssetsStep {
 
             // Step 8-3: 再把主 mek / waz 产物直接平铺写到根目录。
             writeReboundMek(request, reboundAkaoMek, outputRoot, importedAssetSet);
+
+            // Step 8-3.5: 补齐后的基线机体 .mek 全部写回（grp 追加后 CMaterial 组数需要同步）。
+            writePatchedBaselineMeks(bsdxBaseline, request.getMekFileName(), outputRoot, importedAssetSet);
             writeReboundWaz(request, reboundAkaoWaz, outputRoot, importedAssetSet);
 
             // Step 8-4: 再把辅助 waz 平铺复制到根目录。
@@ -100,6 +103,7 @@ public class ImportStaticAssetsStep {
         writeGrp(outputRoot, "WazaGroup.grp", bsdxBaseline.getWazaGroupGrp(), importedAssetSet);
         writeGrp(outputRoot, "SpriteGroup.grp", bsdxBaseline.getSpriteGroupGrp(), importedAssetSet);
         writeGrp(outputRoot, "BatVoice.grp", bsdxBaseline.getBatVoiceGrp(), importedAssetSet);
+        writeGrp(outputRoot, "MapGroup.grp", bsdxBaseline.getMapGroupGrp(), importedAssetSet);
         writeGrp(outputRoot, "SeGroup.grp", bsdxBaseline.getSeGroupGrp(), importedAssetSet);
         writeGrp(outputRoot, "ProgramMaterial.grp", syncedProgramMaterial != null ? syncedProgramMaterial : bsdxBaseline.getProgramMaterialGrp(), importedAssetSet);
     }
@@ -128,6 +132,39 @@ public class ImportStaticAssetsStep {
         Path output = outputRoot.resolve(request.getMekFileName());
         bsdxBinService.generate(output.toString(), reboundAkaoMek, CHARSET);
         importedAssetSet.getGeneratedMekFiles().add(output);
+    }
+
+    /**
+     * 遍历基线中所有 .mek，将经过 padMaterialBlock 补齐后的产物全部写回输出目录。
+     * 跳过当前机体（已由 writeReboundMek 单独写入），避免覆盖。
+     */
+    private void writePatchedBaselineMeks(
+            BsdxBaselineBundle bsdxBaseline,
+            String currentMekFileName,
+            Path outputRoot,
+            ImportedAssetSet importedAssetSet
+    ) throws IOException {
+        if (bsdxBaseline == null || bsdxBaseline.getMekByFileName() == null) {
+            return;
+        }
+
+        for (Map.Entry<String, Mek> entry : bsdxBaseline.getMekByFileName().entrySet()) {
+            String fileName = entry.getKey();
+            Mek mek = entry.getValue();
+
+            if (mek == null) {
+                continue;
+            }
+
+            // 跳过当前机体的 mek，避免与 writeReboundMek 重复写入
+            if (normalize(fileName).equals(normalize(currentMekFileName))) {
+                continue;
+            }
+
+            Path output = outputRoot.resolve(fileName);
+            bsdxBinService.generate(output.toString(), mek, CHARSET);
+            importedAssetSet.getGeneratedMekFiles().add(output);
+        }
     }
 
     private void writeReboundWaz(

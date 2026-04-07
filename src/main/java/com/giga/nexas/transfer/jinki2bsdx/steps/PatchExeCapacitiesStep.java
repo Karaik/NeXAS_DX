@@ -234,13 +234,15 @@ public class PatchExeCapacitiesStep {
                     MEKA_CAP_SAVE_READ_LOOP3_EXPECTED,
                     MEKA_CAP_SAVE_READ_LOOP3_TARGET,
                     "meka cap save read loop#3: cmp esi,103 -> cmp esi,104 (独立函数 do-while)",
-                    plan);
+                    plan,
+                    true);
             applyImm8Patch(exeBytes,
                     MEKA_CAP_INIT_PREALLOC_OFFSET,
                     MEKA_CAP_INIT_PREALLOC_EXPECTED,
                     MEKA_CAP_INIT_PREALLOC_TARGET,
                     "meka cap init prealloc: push 103 -> push 104 (初始化预分配)",
-                    plan);
+                    plan,
+                    true);
 
             // ── SelectMekaMenu 行数上界 (IMM32, 仅在行数增加时才 patch) ──
             if (plan.getRequiredSelectMekaMenuRows() > 0) {
@@ -279,7 +281,40 @@ public class PatchExeCapacitiesStep {
     /**
      * 应用 IMM8 patch（修改单个字节）。
      * 用于 {@code push imm8}（6A xx）和 {@code cmp reg, imm8}（83 Fx xx）指令。
+     *
+     * @param optional 如果为 true，原值不匹配时仅记录警告而不是抛异常。
      */
+    private void applyImm8Patch(
+            byte[] exeBytes,
+            int offset,
+            int expectedValue,
+            int targetValue,
+            String label,
+            ExePatchPlan plan,
+            boolean optional
+    ) {
+        if (offset < 0 || offset >= exeBytes.length) {
+            throw new IllegalStateException(String.format("imm8 patch 偏移越界: 0x%06X", offset));
+        }
+        int current = exeBytes[offset] & 0xFF;
+        if (current != expectedValue && current != targetValue) {
+            String msg = String.format(
+                    "imm8 patch 偏移原值不符合预期: 0x%06X current=0x%02X expected=0x%02X target=0x%02X (%s)",
+                    offset, current, expectedValue, targetValue, label
+            );
+            if (optional) {
+                plan.getNotes().add("[WARN] " + msg + " — 跳过此 patch");
+                return;
+            }
+            throw new IllegalStateException(msg);
+        }
+        exeBytes[offset] = (byte) (targetValue & 0xFF);
+        plan.getTargetOffsets().add(String.format(
+                "0x%06X: %s 0x%02X -> 0x%02X",
+                offset, label, current, targetValue
+        ));
+    }
+
     private void applyImm8Patch(
             byte[] exeBytes,
             int offset,
@@ -288,21 +323,7 @@ public class PatchExeCapacitiesStep {
             String label,
             ExePatchPlan plan
     ) {
-        if (offset < 0 || offset >= exeBytes.length) {
-            throw new IllegalStateException(String.format("imm8 patch 偏移越界: 0x%06X", offset));
-        }
-        int current = exeBytes[offset] & 0xFF;
-        if (current != expectedValue && current != targetValue) {
-            throw new IllegalStateException(String.format(
-                    "imm8 patch 偏移原值不符合预期: 0x%06X current=0x%02X expected=0x%02X target=0x%02X",
-                    offset, current, expectedValue, targetValue
-            ));
-        }
-        exeBytes[offset] = (byte) (targetValue & 0xFF);
-        plan.getTargetOffsets().add(String.format(
-                "0x%06X: %s 0x%02X -> 0x%02X",
-                offset, label, current, targetValue
-        ));
+        applyImm8Patch(exeBytes, offset, expectedValue, targetValue, label, plan, false);
     }
 
     /**

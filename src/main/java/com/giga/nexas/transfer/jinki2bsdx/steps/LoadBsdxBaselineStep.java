@@ -3,6 +3,7 @@ package com.giga.nexas.transfer.jinki2bsdx.steps;
 import com.giga.nexas.dto.ResponseDTO;
 import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp;
+import com.giga.nexas.dto.bsdx.grp.groupmap.MapGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.MekaGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.ProgramMaterialGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.SeGroupGrp;
@@ -42,6 +43,7 @@ public class LoadBsdxBaselineStep {
             ensureDirectory(request.getBsdxWazDir());
 
             bundle.setBatVoiceGrp(parseRequired(request.getBsdxGrpDir().resolve("BatVoice.grp"), BatVoiceGrp.class));
+            bundle.setMapGroupGrp(parseRequired(request.getBsdxGrpDir().resolve("MapGroup.grp"), MapGroupGrp.class));
             bundle.setMekaGroupGrp(parseRequired(request.getBsdxGrpDir().resolve("MekaGroup.grp"), MekaGroupGrp.class));
             bundle.setProgramMaterialGrp(parseRequired(request.getBsdxGrpDir().resolve("ProgramMaterial.grp"), ProgramMaterialGrp.class));
             bundle.setSeGroupGrp(parseRequired(request.getBsdxGrpDir().resolve("SeGroup.grp"), SeGroupGrp.class));

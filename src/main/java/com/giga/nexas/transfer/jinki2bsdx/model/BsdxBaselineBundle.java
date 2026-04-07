@@ -2,6 +2,7 @@ package com.giga.nexas.transfer.jinki2bsdx.model;
 
 import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp;
+import com.giga.nexas.dto.bsdx.grp.groupmap.MapGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.MekaGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.ProgramMaterialGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.SeGroupGrp;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class BsdxBaselineBundle {
 
     private BatVoiceGrp batVoiceGrp;
+    private MapGroupGrp mapGroupGrp;
     private MekaGroupGrp mekaGroupGrp;
     private ProgramMaterialGrp programMaterialGrp;
     private SeGroupGrp seGroupGrp;

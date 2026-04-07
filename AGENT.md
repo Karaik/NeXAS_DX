@@ -27,6 +27,7 @@
 | `io/BinaryReader|BinaryWriter` & `util/ParserUtil` | 统一的二进制 IO 与 `.dat` 列类型常量 |
 | `transfer/*` & `src/test/java/com/giga/nexas/bhe2bsdx/*` | 移植实验脚手架（Tsukuyomi pipeline 等） |
 | `transfer/jinki2bsdx/*` | **AKAO Graft Pipeline**：JINKI（Baldr Heart）→ BSDX（Baldr Sky DX）机体移植，11 步流水线 |
+| `docs/protocol-notes/` | **引擎协议笔记**：从逆向/动态分析得到的 grp / mek / waz / dat 等文件格式的索引语义与结构约定 |
 | `src/main/resources/game/<engine>` | 真实游戏资产，所有测试基于这些文件 |
 
 ---
