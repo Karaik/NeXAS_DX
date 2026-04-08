@@ -143,14 +143,29 @@ public class PatchExeCapacitiesStep {
     private static final int MEKA_CAP_RESOURCE_CALC_TARGET = 0x68;
 
     /** #7 save read loop#3 (独立函数): cmp esi, 103 → cmp esi, 104 */
-    private static final int MEKA_CAP_SAVE_READ_LOOP3_OFFSET = 0x2749EB;
+    private static final int MEKA_CAP_SAVE_READ_LOOP3_OFFSET = 0x2749ED;
     private static final int MEKA_CAP_SAVE_READ_LOOP3_EXPECTED = 0x67;
     private static final int MEKA_CAP_SAVE_READ_LOOP3_TARGET = 0x68;
 
     /** #8 init prealloc: push 103 → push 104 */
-    private static final int MEKA_CAP_INIT_PREALLOC_OFFSET = 0x056CE3;
+    private static final int MEKA_CAP_INIT_PREALLOC_OFFSET = 0x056CE4;
     private static final int MEKA_CAP_INIT_PREALLOC_EXPECTED = 0x67;
     private static final int MEKA_CAP_INIT_PREALLOC_TARGET = 0x68;
+
+    /** #9 init prealloc alt path: push 103 ↙ push 104 */
+    private static final int MEKA_CAP_INIT_PREALLOC_ALT_OFFSET = 0x056F9B;
+    private static final int MEKA_CAP_INIT_PREALLOC_ALT_EXPECTED = 0x67;
+    private static final int MEKA_CAP_INIT_PREALLOC_ALT_TARGET = 0x68;
+
+    /** #10 save write alt path: push 103 ↙ push 104 */
+    private static final int MEKA_CAP_SAVE_WRITE_ALT_OFFSET = 0x275158;
+    private static final int MEKA_CAP_SAVE_WRITE_ALT_EXPECTED = 0x67;
+    private static final int MEKA_CAP_SAVE_WRITE_ALT_TARGET = 0x68;
+
+    /** #11 standalone prealloc path: push 103 ↙ push 104 */
+    private static final int MEKA_CAP_STANDALONE_PREALLOC_OFFSET = 0x30390A;
+    private static final int MEKA_CAP_STANDALONE_PREALLOC_EXPECTED = 0x67;
+    private static final int MEKA_CAP_STANDALONE_PREALLOC_TARGET = 0x68;
 
     // ── 公开方法 ─────────────────────────────────────────────────────────
 
@@ -182,7 +197,8 @@ public class PatchExeCapacitiesStep {
         populateRequiredMenuCapacities(plan, bsdxBaseline, result);
 
         plan.setSourceExePath(request.getTargetExePath());
-        plan.getNotes().add("step10: patch exe meka capacity 103 -> 104 (8 sites).");
+        plan.getNotes().add("step10: patch exe meka capacity 103 -> 104 (10 active sites, 1 excluded site).");
+        addMekaCapacityPatchRationaleNotes(plan);
 
         Path sourceExe = request.getTargetExePath();
         if (sourceExe == null || !Files.exists(sourceExe)) {
@@ -234,17 +250,29 @@ public class PatchExeCapacitiesStep {
                     MEKA_CAP_SAVE_READ_LOOP3_EXPECTED,
                     MEKA_CAP_SAVE_READ_LOOP3_TARGET,
                     "meka cap save read loop#3: cmp esi,103 -> cmp esi,104 (独立函数 do-while)",
-                    plan,
-                    true);
-            applyImm8Patch(exeBytes,
-                    MEKA_CAP_INIT_PREALLOC_OFFSET,
-                    MEKA_CAP_INIT_PREALLOC_EXPECTED,
-                    MEKA_CAP_INIT_PREALLOC_TARGET,
-                    "meka cap init prealloc: push 103 -> push 104 (初始化预分配)",
-                    plan,
-                    true);
+                    plan);
+            plan.getNotes().add("excluded site @0x056CE4: direct patch causes startup-time c0000417, keep original 103 for now.");
 
             // ── SelectMekaMenu 行数上界 (IMM32, 仅在行数增加时才 patch) ──
+            applyImm8Patch(exeBytes,
+                    MEKA_CAP_INIT_PREALLOC_ALT_OFFSET,
+                    MEKA_CAP_INIT_PREALLOC_ALT_EXPECTED,
+                    MEKA_CAP_INIT_PREALLOC_ALT_TARGET,
+                    "meka cap init prealloc alt: push 103 -> push 104",
+                    plan);
+            applyImm8Patch(exeBytes,
+                    MEKA_CAP_SAVE_WRITE_ALT_OFFSET,
+                    MEKA_CAP_SAVE_WRITE_ALT_EXPECTED,
+                    MEKA_CAP_SAVE_WRITE_ALT_TARGET,
+                    "meka cap save write alt: push 103 -> push 104",
+                    plan);
+            applyImm8Patch(exeBytes,
+                    MEKA_CAP_STANDALONE_PREALLOC_OFFSET,
+                    MEKA_CAP_STANDALONE_PREALLOC_EXPECTED,
+                    MEKA_CAP_STANDALONE_PREALLOC_TARGET,
+                    "meka cap standalone prealloc: push 103 -> push 104",
+                    plan);
+
             if (plan.getRequiredSelectMekaMenuRows() > 0) {
                 int targetMaxOffset = Math.max(0, (plan.getRequiredSelectMekaMenuRows() - 1) * 12);
                 if (targetMaxOffset != 0x33C) {
@@ -434,6 +462,20 @@ public class PatchExeCapacitiesStep {
             }
         }
         return max;
+    }
+
+    private void addMekaCapacityPatchRationaleNotes(ExePatchPlan plan) {
+        plan.getNotes().add("site 1 @0x1E3F40: init allocator, otherwise meka slot 103 is never preallocated.");
+        plan.getNotes().add("site 2 @0x1E3DA2: scene cleanup loop bound, otherwise slot 103 reference counts are never cleared.");
+        plan.getNotes().add("site 3 @0x276427: save-read loop #1, otherwise slot 103 base/type state is never loaded.");
+        plan.getNotes().add("site 4 @0x2762EB: save-read loop #2, otherwise slot 103 detailed state is never loaded.");
+        plan.getNotes().add("site 5 @0x275336: save-write allocator, otherwise slot 103 is missing from save output buffers.");
+        plan.getNotes().add("site 6 @0x063A85: resource-size loop bound, otherwise slot 103 is skipped by aggregate resource accounting.");
+        plan.getNotes().add("site 7 @0x2749ED: save-read loop #3, otherwise a third parallel save-read pass still stops at 102.");
+        plan.getNotes().add("site 8 @0x056CE4: init prealloc path candidate, but currently excluded because patching it causes startup-time c0000417.");
+        plan.getNotes().add("site 9 @0x056F9B: init prealloc alt path, otherwise an alternate init path still allocates only 103 entries.");
+        plan.getNotes().add("site 10 @0x275158: save-write alt path, otherwise an alternate write path still stops at 103.");
+        plan.getNotes().add("site 11 @0x30390A: standalone prealloc path, otherwise another meka-side allocator still uses 103.");
     }
 
     private int readLittleEndianInt(byte[] bytes, int offset) {

@@ -5,6 +5,7 @@ import com.giga.nexas.dto.bsdx.grp.groupmap.MekaGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.SeGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.WazaGroupGrp;
+import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
 import com.giga.nexas.transfer.jinki2bsdx.model.BsdxBaselineBundle;
 import com.giga.nexas.transfer.jinki2bsdx.model.GrpAppendPlan;
@@ -73,7 +74,12 @@ public class AppendGrpEntriesStep {
         plan.getSourceBatVoiceGroupIndexToTargetIndex().put(sourceBatVoice.index(), plan.getBatVoiceGroupIndex());
 
         // 5. 挂当前机体通过 CEventWazaSelect 用到的辅助 waz 链。
-        appendReferencedWazGroups(jinkiPackage, bsdxBaseline, importPlan, plan);
+        // WazaGroup 当前只追加主 AKAO 条目；Akao.waz 里引用到的 0..6 共享辅助 waz 继续复用 BSDX 现有索引。
+        mapReferencedWazGroups(importPlan, plan);
+
+        // 5-1. 主 AKAO 和外部实际引用到的共通 waz，都要把 grp.param 重算到真实 skill 数量。
+        //      当前策略是：主 AKAO 用 JINKI 的 Akao.waz；共享辅助 waz 继续复用 BSDX 现有文件。
+        recalculateReferencedWazaParams(request, jinkiPackage, bsdxBaseline, importPlan, plan);
 
         // 6. 挂当前机体通过 CEventSprite 用到的辅助 sprite 链。
         appendReferencedSpriteGroups(jinkiPackage, bsdxBaseline, importPlan, plan);
@@ -84,26 +90,92 @@ public class AppendGrpEntriesStep {
         return plan;
     }
 
-    private void appendReferencedWazGroups(
-            JinkiPackageBundle jinkiPackage,
-            BsdxBaselineBundle bsdxBaseline,
-            JinkiImportPlan importPlan,
-            GrpAppendPlan plan
-    ) {
+    private void mapReferencedWazGroups(JinkiImportPlan importPlan, GrpAppendPlan plan) {
         for (Map.Entry<Integer, String> entry : importPlan.getReferencedSourceWazFileNameByGroupIndex().entrySet()) {
             Integer sourceIndex = entry.getKey();
             if (plan.getSourceWazGroupIndexToTargetIndex().containsKey(sourceIndex)) {
                 continue;
             }
 
-            WazaGroupGrp.WazaGroupEntry sourceEntry = requireSourceWazaGroupByIndex(
-                    jinkiPackage.getWazaGroupGrp(),
-                    sourceIndex
-            );
-            int targetIndex = upsertWazaGroup(bsdxBaseline.getWazaGroupGrp(), sourceEntry);
-            plan.getSourceWazGroupIndexToTargetIndex().put(sourceIndex, targetIndex);
-            importPlan.getTargetWazIndexByFileName().put(normalizeFileName(entry.getValue()), targetIndex);
+            Integer targetIndex = importPlan.getTargetWazIndexByFileName().get(normalizeFileName(entry.getValue()));
+            if (targetIndex != null && targetIndex >= 0) {
+                plan.getSourceWazGroupIndexToTargetIndex().put(sourceIndex, targetIndex);
+            }
         }
+    }
+
+    private void recalculateReferencedWazaParams(
+            AkaoGraftRequest request,
+            JinkiPackageBundle jinkiPackage,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiImportPlan importPlan,
+            GrpAppendPlan plan
+    ) {
+        WazaGroupGrp targetWazaGroup = bsdxBaseline.getWazaGroupGrp();
+        if (targetWazaGroup == null || targetWazaGroup.getWazaList() == null) {
+            return;
+        }
+
+        // 主 AKAO 条目始终按 JINKI 的 Akao.waz 实际 skill 数量回写。
+        Waz mainWaz = findWazByFileName(jinkiPackage.getWazByFileName(), request.getWazFileName());
+        if (mainWaz != null) {
+            updateWazaParam(targetWazaGroup, plan.getWazaGroupIndex(), countSkills(mainWaz));
+        }
+
+        // 外部引用到的共享辅助 waz，当前继续复用 BSDX 现有文件，所以 param 也按 BSDX 实际文件重算。
+        for (Map.Entry<Integer, String> entry : importPlan.getReferencedSourceWazFileNameByGroupIndex().entrySet()) {
+            Integer sourceIndex = entry.getKey();
+            Integer targetIndex = plan.getSourceWazGroupIndexToTargetIndex().get(sourceIndex);
+            if (targetIndex == null || targetIndex < 0) {
+                continue;
+            }
+
+            // 主 AKAO 已经单独处理过，避免重复覆盖。
+            if (targetIndex == plan.getWazaGroupIndex()) {
+                continue;
+            }
+
+            Waz resolvedWaz = findWazByFileName(bsdxBaseline.getWazByFileName(), entry.getValue());
+            if (resolvedWaz == null) {
+                resolvedWaz = findWazByFileName(jinkiPackage.getWazByFileName(), entry.getValue());
+            }
+            if (resolvedWaz == null) {
+                throw new IllegalStateException("无法找到用于重算 WazaGroup.param 的 waz 文件: " + entry.getValue());
+            }
+
+            updateWazaParam(targetWazaGroup, targetIndex, countSkills(resolvedWaz));
+        }
+    }
+
+    private void updateWazaParam(WazaGroupGrp targetGroup, int targetIndex, int skillCount) {
+        if (targetIndex < 0 || targetIndex >= targetGroup.getWazaList().size()) {
+            throw new IllegalStateException("目标 WazaGroup 索引越界: " + targetIndex);
+        }
+        WazaGroupGrp.WazaGroupEntry targetEntry = targetGroup.getWazaList().get(targetIndex);
+        if (targetEntry == null || !isExisting(targetEntry.getExistFlag())) {
+            throw new IllegalStateException("目标 WazaGroup 条目不存在: " + targetIndex);
+        }
+        targetEntry.setParam(skillCount);
+    }
+
+    private int countSkills(Waz waz) {
+        if (waz == null || waz.getSkillList() == null) {
+            return 0;
+        }
+        return waz.getSkillList().size();
+    }
+
+    private Waz findWazByFileName(Map<String, Waz> wazByFileName, String fileName) {
+        if (wazByFileName == null || wazByFileName.isEmpty()) {
+            return null;
+        }
+        String normalizedTarget = normalizeFileName(fileName);
+        for (Map.Entry<String, Waz> entry : wazByFileName.entrySet()) {
+            if (normalizeFileName(entry.getKey()).equals(normalizedTarget)) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     private void appendReferencedSpriteGroups(

@@ -11,8 +11,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
+import java.util.Locale;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -59,6 +62,7 @@ public class TestJinki2BsdxRunner {
         Assertions.assertFalse(result.getReboundAkaoWaz().getSkillList().isEmpty());
         Assertions.assertFalse(collectVoiceGroupIndices(result.getReboundAkaoWaz()).isEmpty());
         Assertions.assertTrue(collectVoiceGroupIndices(result.getReboundAkaoWaz()).stream().allMatch(index -> index == 30));
+        assertWazaGroupParamsMatchActualWaz(result);
 
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir()));
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("ProgramMaterial.grp")));
@@ -69,10 +73,11 @@ public class TestJinki2BsdxRunner {
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("SelectMekaMenuMeka.spm")));
 
         int mekaIdx = result.getGrpAppendPlan().getMekaGroupIndex();
+        Assertions.assertEquals(200, findSecondColumnValue(result.getPatchedMekaDat(), mekaIdx));
         Assertions.assertTrue(containsSingleColumnRow(result.getPatchedMekaPilotDat(), mekaIdx));
         Assertions.assertEquals(mekaIdx, asInt(result.getPatchedSelectMekaMenuDat().getData().get(24).get(0)));
         Assertions.assertEquals(
-                asInt(result.getBsdxBaseline().getSelectMekaMenuDat().getData().get(24).get(2)),
+                asInt(result.getBsdxBaseline().getSelectMekaMenuDat().getData().get(23).get(2)),
                 asInt(result.getPatchedSelectMekaMenuDat().getData().get(24).get(2))
         );
         Assertions.assertEquals(
@@ -87,6 +92,18 @@ public class TestJinki2BsdxRunner {
                 result.getBsdxBaseline().getSelectMekaMenuMekaSpm().getAnimData().size(),
                 result.getPatchedSelectMekaMenuMekaSpm().getAnimData().size()
         );
+        Assertions.assertTrue(
+                result.getPatchedSelectMekaMenuMekaSpm().getImageData().stream()
+                        .map(image -> image == null || image.getImageName() == null ? "" : image.getImageName().toLowerCase(Locale.ROOT))
+                        .anyMatch("selectmekamenumeka_0011_0001.png"::equals)
+        );
+        Assertions.assertTrue(
+                result.getPatchedSelectMekaMenuMekaSpm().getImageData().stream()
+                        .map(image -> image == null || image.getImageName() == null ? "" : image.getImageName().toLowerCase(Locale.ROOT))
+                        .anyMatch("selectmekamenumeka_0012_0001.png"::equals)
+        );
+        Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("selectmekamenumeka_0011_0001.png")));
+        Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("selectmekamenumeka_0012_0001.png")));
 
         Assertions.assertEquals(104, result.getExePatchPlan().getRequiredMekaCapacity());
         Assertions.assertTrue(result.getExePatchPlan().getRequiredWazaCapacity() >= 111);
@@ -163,10 +180,76 @@ public class TestJinki2BsdxRunner {
                 .anyMatch(row -> !row.isEmpty() && expectedFirst == asInt(row.get(0)));
     }
 
+    private int findSecondColumnValue(com.giga.nexas.dto.bsdx.dat.Dat dat, int expectedFirst) {
+        if (dat == null || dat.getData() == null) {
+            return -1;
+        }
+        for (List<Object> row : dat.getData()) {
+            if (row != null && row.size() > 1 && expectedFirst == asInt(row.get(0))) {
+                return asInt(row.get(1));
+            }
+        }
+        return -1;
+    }
+
     private int asInt(Object value) {
         if (value instanceof Number number) {
             return number.intValue();
         }
         return Integer.parseInt(String.valueOf(value));
+    }
+
+    private void assertWazaGroupParamsMatchActualWaz(AkaoGraftResult result) {
+        Map<Integer, Integer> resolvedTargets = new LinkedHashMap<>(result.getGrpAppendPlan().getSourceWazGroupIndexToTargetIndex());
+
+        // 主 AKAO 自己也纳入统一校验。
+        Integer sourceMainWazIndex = result.getImportPlan().getSourceWazIndexByFileName().get("akao.waz");
+        if (sourceMainWazIndex != null) {
+            resolvedTargets.put(sourceMainWazIndex, result.getGrpAppendPlan().getWazaGroupIndex());
+        }
+
+        for (Map.Entry<Integer, Integer> mapping : resolvedTargets.entrySet()) {
+            Integer sourceIndex = mapping.getKey();
+            Integer targetIndex = mapping.getValue();
+            String sourceFileName = findSourceWazFileName(result, sourceIndex);
+            Assertions.assertNotNull(sourceFileName, "缺少源 Waz 文件名映射: " + sourceIndex);
+
+            Waz actualWaz = findWazByFileName(result.getBsdxBaseline().getWazByFileName(), sourceFileName);
+            if (actualWaz == null) {
+                actualWaz = findWazByFileName(result.getJinkiPackage().getWazByFileName(), sourceFileName);
+            }
+            Assertions.assertNotNull(actualWaz, "缺少用于校验 param 的 Waz 文件: " + sourceFileName);
+
+            int expectedSkillCount = actualWaz.getSkillList() == null ? 0 : actualWaz.getSkillList().size();
+            int actualParam = result.getBsdxBaseline().getWazaGroupGrp().getWazaList().get(targetIndex).getParam();
+            Assertions.assertEquals(
+                    expectedSkillCount,
+                    actualParam,
+                    "WazaGroup.param 与实际 waz 技能数不一致: sourceIndex=" + sourceIndex + ", file=" + sourceFileName + ", targetIndex=" + targetIndex
+            );
+        }
+    }
+
+    private String findSourceWazFileName(AkaoGraftResult result, Integer sourceIndex) {
+        for (Map.Entry<String, Integer> entry : result.getImportPlan().getSourceWazIndexByFileName().entrySet()) {
+            if (Objects.equals(entry.getValue(), sourceIndex)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    private Waz findWazByFileName(Map<String, Waz> wazByFileName, String fileName) {
+        if (wazByFileName == null) {
+            return null;
+        }
+        String normalizedTarget = fileName == null ? "" : fileName.trim().toLowerCase(Locale.ROOT);
+        for (Map.Entry<String, Waz> entry : wazByFileName.entrySet()) {
+            String candidate = entry.getKey() == null ? "" : entry.getKey().trim().toLowerCase(Locale.ROOT);
+            if (candidate.equals(normalizedTarget)) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 }

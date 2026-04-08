@@ -97,16 +97,23 @@ AkaoGraftRequest
 **输入**：`AkaoGraftRequest`, `JinkiPackageBundle`, `BsdxBaselineBundle`, `JinkiImportPlan`
 **输出**：`GrpAppendPlan`
 
+当前这一步对 `WazaGroup` 的处理已经收窄为：
+
+- 只把 `JINKI[110] = AKAO` 这个主条目 append 到 BSDX 末尾
+- `Akao.waz` 里通过 `wazFileNo = 0..6` 引用到的共享辅助 `waz` 继续复用 BSDX 现有索引
+- 不再在 `step4` 扩散追加同名辅助 `WazaGroup` 项
+- 主 `AKAO` 和外部实际引用到的共通 `waz`，都会按最终采用的 `.waz.skillList.size()` 重算 `WazaGroup.param`
+
 7 步挂载流程：
 1. 挂主机体 MekaGroup → `MekaGroup[103]`（append 模式，count 103→104）
-2. 挂主 WazaGroup
+2. 挂主 WazaGroup（只 append `AKAO`）
 3. 挂主 SpriteGroup
 4. 挂 AKAO 的 BatVoiceGroup
-5. 挂辅助 WazaGroup 链
+5. 共享辅助 WazaGroup 保持复用 BSDX 现有索引
 6. 挂辅助 SpriteGroup 链
 7. 挂 SeGroup 组和组内 SeItem 链
 
-**upsert 策略**：先按 codeName/fileName 查找已有条目，存在则复用索引，不存在则尾插。
+**upsert 策略**：先按 codeName/fileName 查找已有条目，存在则复用索引，不存在则尾插。`WazaGroup` 当前特殊：只对主 `AKAO` 条目执行 append，辅助共享 `waz` 不在这一步扩散追加。
 MekaGroup 特殊：支持 `fixedMekaGroupIndex` 强制替换指定位置（当前 `null`，使用默认 append）。
 
 **去重匹配规则**：
@@ -211,9 +218,11 @@ MekaGroup 特殊：支持 `fixedMekaGroupIndex` 强制替换指定位置（当�
 - `SelectMekaMenu.dat[24]` — mekaIndex→103，animIndex 和 state 保持原值
 - `MekaPilot.dat` — 追加一行 `[103]`（AKAO 的 pilot 记录）
 - `Meka.dat` — 追加 AKAO 的机体数据行
-- `MekaPilot.spm` — 替换最后一个 anim（index=68）的图片为 `M_moribito_2.png` 等
-- `SelectMekaMenuMeka.spm` — 替换 anim[94] 的图片为 `C_moribito_2.png`
-- 菜单 UI 图片：`M_moribito_2.png`, `MG_moribito_2.png`, `SG_moribito_2.png` 等
+- `MekaPilot.spm` — 复用目标动画槽位，替换成 AKAO 的 pilot 图
+- `SelectMekaMenuMeka.spm` — 复用目标动画槽位，只修改 `animName`，不再覆盖目标槽位原本的 page/chip/imageName
+- 菜单 UI 图片 — 保留 BSDX 原本的菜单图片命名体系，当前产物应继续带出：
+  - `selectmekamenumeka_0011_0001.png`
+  - `selectmekamenumeka_0012_0001.png`
 
 替换槽位常量：`REPLACE_VISIBLE_SELECT_MENU_SLOT_INDEX = 24`
 

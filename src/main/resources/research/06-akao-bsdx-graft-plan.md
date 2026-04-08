@@ -13,11 +13,18 @@
 3. 形成统一的 `JINKI源索引 -> BSDX目标索引`
 4. `mek / waz` 内部只消费这张结果表做重定向
 
+当前这一步对 `WazaGroup` 的处理已经收窄为：
+
+- 只把 `JINKI[110] = AKAO` 这个主条目 append 到 BSDX 末尾
+- `Akao.waz` 里通过 `wazFileNo = 0..6` 引用到的共享辅助 `waz` 继续复用 BSDX 现有索引
+- 不再在 `step4` 扩散追加同名辅助 `WazaGroup` 项
+- 主 `AKAO` 和外部实际引用到的共通 `waz`，都会按最终采用的 `.waz.skillList.size()` 重算 `WazaGroup.param`
+
 当前测试侧还额外有一个重要前提：
 
-- `AKAO` 不再占用新的 `MekaGroup[103]`
-- 当前测试侧临时复用旧槽位 `MekaGroup[32]`
-- 目的不是最终设计，而是先验证“自然进入选人界面的闪退是否来自 meka 顶层索引 103 踩到 exe 固定边界”
+- `AKAO` 当前仍然 append 到新的 `MekaGroup[103]`
+- 当前测试链也继续验证 `mekaIndex = 103` 的真实运行路径
+- 当前收敛重点不再是“是否复用旧槽位”，而是 `103` 进入选人确认后的后续加载链
 
 当前已纳入链分析的对象：
 
@@ -100,22 +107,24 @@
 - `SelectMekaMenuMeka.spm`
 - 菜单图像：
   - `M_moribito_2.png`
-  - `MG_moribito_2.png`
-  - `SG_moribito_2.png`
+  - `selectmekamenumeka_0011_0001.png`
+  - `selectmekamenumeka_0012_0001.png`
 
 当前已验证的实际结果：
 
 - `SelectMekaMenu.dat`
   - 当前测试侧不再增加第 `71` 个可见槽
   - 而是复用第 `25` 个可见槽
-  - 也就是 `SelectMekaMenu.dat[24] = [32, 18, 108]`
-  - 槽位位置不变，但这个槽现在绑定到 `MekaGroup[32] = AKAO`
+  - 当前这行数据已经改成 `SelectMekaMenu.dat[24] = [103, 18, 108]`
+  - 槽位位置不变，但这个槽现在绑定到 `MekaGroup[103] = AKAO`
 - `MekaPilot.dat`
   - 当前测试侧也不再新增 pilot 行
   - 复用原来的 `MekaPilot.dat[29] = [32]`
 - `SelectMekaMenuMeka.spm`
   - 当前测试侧复用原来的 `anim[18]`
-  - `anim[18]` 的菜单图已经替成 AKAO
+  - `anim[18]` 现在只修改 `animName`
+  - 目标槽位原本的 page/chip/imageName 保持不动
+  - 菜单机体图继续挂在 `selectmekamenumeka_0011_0001.png / selectmekamenumeka_0012_0001.png`
 - `MekaPilot.spm`
   - 当前测试侧复用原来的 `anim[29]`
   - `anim[29]` 的 pilot 图已经替成 AKAO
@@ -201,12 +210,12 @@
 所以当前测试侧进一步改成：
 
 - 菜单槽仍然复用第 `25` 个可见槽
-- `MekaGroup` 也同步复用旧索引 `32`
-- 不再让 AKAO 出现在新的 `mekaIndex = 103`
+- `MekaGroup` 当前仍然使用新的 `103`
+- 当前动态验证已经从“hover 是否崩溃”推进到“confirm 之后的加载链是否还存在 103 相关错位”
 
 这版的动态验证结果是：
 
-- 强制进入选机菜单时，`objectId 721 -> mekaIndex 32`
-- 同时 `MekaGroup[32] = AKAO`
+- 强制进入选机菜单时，AKAO 已经能正常出现在第 25 个可见槽位
+- 当前稳定现象是：hover 不崩，confirm 后崩
 
-也就是说，当前测试方向已经从“修菜单显示槽”推进到“连 meka 顶层索引一起复用”，用来验证自然选人闪退是否来自 `103` 这一层。
+也就是说，当前测试方向已经从“修菜单显示槽”推进到“确认 AKAO 之后的真实加载链”，用来继续验证 `mekaIndex = 103` 进入后是否还有下游数据或容量没对齐。

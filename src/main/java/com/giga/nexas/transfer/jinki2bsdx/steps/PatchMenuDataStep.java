@@ -35,6 +35,7 @@ public class PatchMenuDataStep {
 
     private static final String CHARSET = "windows-31j";
     private static final int REPLACE_VISIBLE_SELECT_MENU_SLOT_INDEX = 24;
+    private static final int SELECT_MENU_STATE_DONOR_ROW_INDEX = 23;
 
     private final BsdxBinService bsdxBinService = new BsdxBinService();
 
@@ -58,9 +59,8 @@ public class PatchMenuDataStep {
 
         Mek menuMek = resolveMenuMek(result, jinkiPackage);
         Spm mekaPilotSourceSpm = loadRequiredExternalSpm(request, buildExternalUiSpmName("M_", request.getSpriteFileName()));
-        Spm selectMenuMekaSourceSpm = loadRequiredExternalSpm(request, buildExternalUiSpmName("G_", request.getSpriteFileName()));
         Spm patchedMekaPilotSpm = patchMekaPilotSpm(bsdxBaseline, mekaPilotSourceSpm, menuMek);
-        Spm patchedSelectMekaMenuMekaSpm = patchSelectMekaMenuMekaSpm(bsdxBaseline, selectMenuMekaSourceSpm, menuMek);
+        Spm patchedSelectMekaMenuMekaSpm = patchSelectMekaMenuMekaSpm(bsdxBaseline, menuMek);
 
         result.setPatchedMekaDat(patchedMekaDat);
         result.setPatchedMekaPilotDat(patchedMekaPilotDat);
@@ -76,8 +76,7 @@ public class PatchMenuDataStep {
                 patchedSelectMekaMenuDat,
                 patchedMekaPilotSpm,
                 patchedSelectMekaMenuMekaSpm,
-                mekaPilotSourceSpm,
-                selectMenuMekaSourceSpm
+                mekaPilotSourceSpm
         );
     }
 
@@ -98,12 +97,16 @@ public class PatchMenuDataStep {
         if (source == null) {
             source = loadExternalOptionalDat(request == null ? null : request.getExternalStaticAssetRoot(), "Meka.dat");
         }
-        Integer sourceMekaIndex = findMekaIndexByCode(jinkiPackage.getMekaGroupGrp(), "AKAO");
-        if (source == null || sourceMekaIndex == null) {
+        if (source == null) {
             return patched;
         }
 
-        List<Object> sourceRow = findFirstRowByFirstColumn(source, sourceMekaIndex);
+        // Meka.dat 的第一列不是 JINKI 当前包内 MekaGroup 的局部槽位号，
+        // 而是更接近“全局机体编号”的字段。
+        // 对 AKAO 来说，JINKI 的 MekaGroup 槽位是 27，但 Meka.dat 里真正对应的行是 [103, 200]，
+        // 如果按 27 去取第 27 行，就会错误取到别的机体配置 [31, 0]。
+        // 这里直接用 JINKI/BSDX 的 Meka.dat 做差，把源侧新增出来的那一行当成 AKAO 的真实配置行。
+        List<Object> sourceRow = resolveSourceOnlyMekaDatRow(source, baseline);
         if (sourceRow == null) {
             return patched;
         }
@@ -114,6 +117,59 @@ public class PatchMenuDataStep {
         }
         appendOrReplaceRowByFirstColumn(patched, grpAppendPlan.getMekaGroupIndex(), targetRow);
         return patched;
+    }
+
+    /**
+     * 从 JINKI 的 Meka.dat 中找出“BSDX 基线里不存在、但 JINKI 多出来”的那一行。
+     *
+     * 当前 AKAO 迁移里，JINKI 相比 BSDX 只多一台机体：
+     * - BSDX 末行: [102, 200]
+     * - JINKI 末行: [103, 200]
+     *
+     * 所以这里应该返回 [103, 200]，而不能按 JINKI MekaGroup 的局部索引 27 去取第 27 行。
+     */
+    private List<Object> resolveSourceOnlyMekaDatRow(Dat source, Dat baseline) {
+        if (source == null || source.getData() == null) {
+            return null;
+        }
+
+        Set<Integer> baselineIds = new LinkedHashSet<>();
+        if (baseline != null && baseline.getData() != null) {
+            for (List<Object> row : baseline.getData()) {
+                Integer id = readFirstColumnAsInt(row);
+                if (id != null) {
+                    baselineIds.add(id);
+                }
+            }
+        }
+
+        List<List<Object>> sourceOnlyRows = new ArrayList<>();
+        for (List<Object> row : source.getData()) {
+            Integer id = readFirstColumnAsInt(row);
+            if (id == null) {
+                continue;
+            }
+            if (!baselineIds.contains(id)) {
+                sourceOnlyRows.add(row);
+            }
+        }
+
+        if (sourceOnlyRows.size() == 1) {
+            return sourceOnlyRows.get(0);
+        }
+
+        // 兜底：如果未来源包里出现多行新增，这里先优先拿编号最大的那一行，
+        // 至少保持“追加新机体时优先吃源侧新增编号”这条策略。
+        List<Object> bestRow = null;
+        Integer bestId = null;
+        for (List<Object> row : sourceOnlyRows) {
+            Integer id = readFirstColumnAsInt(row);
+            if (id != null && (bestId == null || id > bestId)) {
+                bestId = id;
+                bestRow = row;
+            }
+        }
+        return bestRow;
     }
 
     private Dat patchMekaPilotDat(
@@ -183,7 +239,6 @@ public class PatchMenuDataStep {
 
     private Spm patchSelectMekaMenuMekaSpm(
             BsdxBaselineBundle bsdxBaseline,
-            Spm sourceSpm,
             Mek menuMek
     ) {
         if (bsdxBaseline.getSelectMekaMenuMekaSpm() == null) {
@@ -192,8 +247,33 @@ public class PatchMenuDataStep {
 
         ReplacementSlot slot = resolveReplacementSlot(bsdxBaseline);
         Spm target = copySpm(bsdxBaseline.getSelectMekaMenuMekaSpm());
-        replaceTargetUiSpmAnim(target, slot.selectMenuAnimIndex, sourceSpm, buildSelectMenuAnimName(menuMek), false);
+        updateTargetUiSpmAnimName(target, slot.selectMenuAnimIndex, buildStableSelectMenuAnimName(menuMek));
         return target;
+    }
+
+    /**
+     * `SelectMekaMenuMeka.spm` 这里保留 BSDX 目标槽位原本的 page/chip/imageName 结构。
+     * 菜单链只改对应槽位的 animName，不再把 `G_moribito_2.spm` 的图片名覆盖进来。
+     */
+    private void updateTargetUiSpmAnimName(
+            Spm target,
+            int targetAnimIndex,
+            String animName
+    ) {
+        if (target == null || target.getAnimData() == null) {
+            return;
+        }
+        if (targetAnimIndex < 0 || targetAnimIndex >= target.getAnimData().size()) {
+            return;
+        }
+
+        Spm.SPMAnimData targetAnim = target.getAnimData().get(targetAnimIndex);
+        if (targetAnim == null) {
+            return;
+        }
+
+        targetAnim.setAnimName(animName);
+        targetAnim.setNumPat(targetAnim.getPatData() == null ? 0 : targetAnim.getPatData().size());
     }
 
     private void replaceTargetUiSpmAnim(
@@ -357,8 +437,7 @@ public class PatchMenuDataStep {
             Dat patchedSelectMekaMenuDat,
             Spm patchedMekaPilotSpm,
             Spm patchedSelectMekaMenuMekaSpm,
-            Spm mekaPilotSourceSpm,
-            Spm selectMenuMekaSourceSpm
+            Spm mekaPilotSourceSpm
     ) {
         if (importedAssetSet == null || importedAssetSet.getOutputRootDir() == null) {
             return;
@@ -372,7 +451,7 @@ public class PatchMenuDataStep {
             writeSpm(importedAssetSet, "MekaPilot.spm", patchedMekaPilotSpm);
             writeSpm(importedAssetSet, "SelectMekaMenuMeka.spm", patchedSelectMekaMenuMekaSpm);
 
-            copyMenuSpmImages(request, importedAssetSet, mekaPilotSourceSpm, selectMenuMekaSourceSpm);
+            copyMenuSpmImages(request, importedAssetSet, patchedMekaPilotSpm, patchedSelectMekaMenuMekaSpm, mekaPilotSourceSpm);
         } catch (IOException e) {
             throw new IllegalStateException("写出 step9 菜单链产物失败", e);
         }
@@ -516,6 +595,38 @@ public class PatchMenuDataStep {
             builder.append("：").append(roma);
         }
         builder.append("\r");
+        return builder.toString();
+    }
+
+    /**
+     * 菜单机体图当前只需要稳定地把 animName 改成 AKAO 的文本。
+     * 这里不再复用旧的 G_moribito_2.spm 命名格式，避免把错误的图片名链带进来。
+     */
+    private String buildStableSelectMenuAnimName(Mek meka) {
+        if (meka == null || meka.getMekBasicInfo() == null) {
+            return "";
+        }
+
+        String pilot = safeTrim(meka.getMekBasicInfo().getPilotNameKanji());
+        String mekaName = safeTrim(meka.getMekBasicInfo().getMekName());
+        String pilotRoma = safeTrim(meka.getMekBasicInfo().getPilotNameRoma());
+        String mekaRoma = safeTrim(meka.getMekBasicInfo().getMekNameEnglish());
+
+        StringBuilder builder = new StringBuilder();
+        if (!pilot.isEmpty()) {
+            builder.append(pilot);
+        }
+        if (!mekaName.isEmpty()) {
+            if (builder.length() > 0) {
+                builder.append("/");
+            }
+            builder.append(mekaName);
+        }
+
+        String roma = joinNonEmpty(pilotRoma, mekaRoma);
+        if (!roma.isEmpty()) {
+            builder.append("：").append(roma);
+        }
         return builder.toString();
     }
 
@@ -714,6 +825,19 @@ public class PatchMenuDataStep {
         return null;
     }
 
+    /**
+     * 按行索引直接取行，用于 Meka.dat 等行顺序与 Grp 索引一致的场景。
+     */
+    private List<Object> getRowByIndex(Dat dat, int index) {
+        if (dat == null || dat.getData() == null) {
+            return null;
+        }
+        if (index < 0 || index >= dat.getData().size()) {
+            return null;
+        }
+        return dat.getData().get(index);
+    }
+
     private List<Object> findFirstRowByFirstColumn(Dat dat, Integer index) {
         if (dat == null || dat.getData() == null || index == null) {
             return null;
@@ -798,7 +922,7 @@ public class PatchMenuDataStep {
         List<Object> selectRow = selectRows.get(REPLACE_VISIBLE_SELECT_MENU_SLOT_INDEX);
         int sourceMekaIndex = toInt(selectRow.get(0));
         int selectAnimIndex = toInt(selectRow.get(1));
-        int selectState = selectRow.size() > 2 ? toInt(selectRow.get(2)) : 108;
+        int selectState = resolveSelectMenuState(selectRows, selectRow);
 
         int pilotRowIndex = findPilotRowIndex(bsdxBaseline.getMekaPilotDat(), sourceMekaIndex);
         if (pilotRowIndex < 0) {
@@ -813,6 +937,18 @@ public class PatchMenuDataStep {
         slot.pilotRowIndex = pilotRowIndex;
         slot.pilotAnimIndex = pilotRowIndex;
         return slot;
+    }
+
+    private int resolveSelectMenuState(List<List<Object>> selectRows, List<Object> replacementRow) {
+        if (selectRows != null
+                && SELECT_MENU_STATE_DONOR_ROW_INDEX >= 0
+                && SELECT_MENU_STATE_DONOR_ROW_INDEX < selectRows.size()) {
+            List<Object> donorRow = selectRows.get(SELECT_MENU_STATE_DONOR_ROW_INDEX);
+            if (donorRow != null && donorRow.size() > 2) {
+                return toInt(donorRow.get(2));
+            }
+        }
+        return replacementRow != null && replacementRow.size() > 2 ? toInt(replacementRow.get(2)) : 108;
     }
 
     private int findPilotRowIndex(Dat mekaPilotDat, int mekaIndex) {
