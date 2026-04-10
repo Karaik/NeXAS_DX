@@ -152,6 +152,11 @@ public class PatchExeCapacitiesStep {
     private static final int MEKA_CAP_INIT_PREALLOC_EXPECTED = 0x67;
     private static final int MEKA_CAP_INIT_PREALLOC_TARGET = 0x68;
 
+    /** #8b CMekaGroup runtime table init loop bound: 103 * 4336 鈫?104 * 4336 */
+    private static final int MEKA_CAP_RUNTIME_TABLE_LOOP_BOUND_OFFSET = 0x056F45;
+    private static final int MEKA_CAP_RUNTIME_TABLE_LOOP_BOUND_EXPECTED = 0x0006D090; // 4336 * 103
+    private static final int MEKA_CAP_RUNTIME_TABLE_LOOP_BOUND_TARGET = 0x0006E180;   // 4336 * 104
+
     /** #9 init prealloc alt path: push 103 ↙ push 104 */
     private static final int MEKA_CAP_INIT_PREALLOC_ALT_OFFSET = 0x056F9B;
     private static final int MEKA_CAP_INIT_PREALLOC_ALT_EXPECTED = 0x67;
@@ -251,7 +256,18 @@ public class PatchExeCapacitiesStep {
                     MEKA_CAP_SAVE_READ_LOOP3_TARGET,
                     "meka cap save read loop#3: cmp esi,103 -> cmp esi,104 (独立函数 do-while)",
                     plan);
-            plan.getNotes().add("excluded site @0x056CE4: direct patch causes startup-time c0000417, keep original 103 for now.");
+            applyImm8Patch(exeBytes,
+                    MEKA_CAP_INIT_PREALLOC_OFFSET,
+                    MEKA_CAP_INIT_PREALLOC_EXPECTED,
+                    MEKA_CAP_INIT_PREALLOC_TARGET,
+                    "meka cap runtime table prealloc: push 103 -> push 104 (sub_4576F0 / sub_45C5B0)",
+                    plan);
+            applyImm32Patch(exeBytes,
+                    MEKA_CAP_RUNTIME_TABLE_LOOP_BOUND_OFFSET,
+                    MEKA_CAP_RUNTIME_TABLE_LOOP_BOUND_EXPECTED,
+                    MEKA_CAP_RUNTIME_TABLE_LOOP_BOUND_TARGET,
+                    "meka cap runtime table init loop bound: 103*4336 -> 104*4336 (sub_4576F0 cmp edi,0x6D090)",
+                    plan);
 
             // ── SelectMekaMenu 行数上界 (IMM32, 仅在行数增加时才 patch) ──
             applyImm8Patch(exeBytes,
@@ -472,7 +488,8 @@ public class PatchExeCapacitiesStep {
         plan.getNotes().add("site 5 @0x275336: save-write allocator, otherwise slot 103 is missing from save output buffers.");
         plan.getNotes().add("site 6 @0x063A85: resource-size loop bound, otherwise slot 103 is skipped by aggregate resource accounting.");
         plan.getNotes().add("site 7 @0x2749ED: save-read loop #3, otherwise a third parallel save-read pass still stops at 102.");
-        plan.getNotes().add("site 8 @0x056CE4: init prealloc path candidate, but currently excluded because patching it causes startup-time c0000417.");
+        plan.getNotes().add("site 8 @0x056CE4: CMekaGroup runtime table prealloc size, otherwise dword_875F54 is allocated for only 103 meka records.");
+        plan.getNotes().add("site 8b @0x056F45: CMekaGroup runtime table init loop bound, otherwise only 103 * 4336 bytes are initialized and slot 103 never becomes a valid runtime record.");
         plan.getNotes().add("site 9 @0x056F9B: init prealloc alt path, otherwise an alternate init path still allocates only 103 entries.");
         plan.getNotes().add("site 10 @0x275158: save-write alt path, otherwise an alternate write path still stops at 103.");
         plan.getNotes().add("site 11 @0x30390A: standalone prealloc path, otherwise another meka-side allocator still uses 103.");

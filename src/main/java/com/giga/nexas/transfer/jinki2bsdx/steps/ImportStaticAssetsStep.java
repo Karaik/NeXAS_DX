@@ -86,7 +86,7 @@ public class ImportStaticAssetsStep {
             copyRequiredImageFiles(request, jinkiPackage, importPlan, outputRoot, importedAssetSet);
 
             // Step 8-7: 最后只补当前机体链真实关联到的音频，不再整组打包。
-            copyRequiredAudioAssets(request, jinkiPackage, importPlan, reboundAkaoWaz, outputRoot, importedAssetSet);
+            copyRequiredAudioAssets(request, jinkiPackage, importPlan, reboundAkaoMek, reboundAkaoWaz, outputRoot, importedAssetSet);
             return importedAssetSet;
         } catch (IOException e) {
             throw new IllegalStateException("step8 静态资源落盘失败", e);
@@ -283,6 +283,7 @@ public class ImportStaticAssetsStep {
             AkaoGraftRequest request,
             JinkiPackageBundle jinkiPackage,
             JinkiImportPlan importPlan,
+            Mek reboundAkaoMek,
             Waz reboundAkaoWaz,
             Path outputRoot,
             ImportedAssetSet importedAssetSet
@@ -294,7 +295,7 @@ public class ImportStaticAssetsStep {
 
         Set<String> requiredBaseNames = new LinkedHashSet<>();
         requiredBaseNames.addAll(collectRequiredSeBaseNames(jinkiPackage, importPlan));
-        requiredBaseNames.addAll(collectRequiredVoiceBaseNames(jinkiPackage, reboundAkaoWaz, request.getMekaCodeName()));
+        requiredBaseNames.addAll(collectRequiredVoiceBaseNames(jinkiPackage, reboundAkaoMek, reboundAkaoWaz, request.getMekaCodeName()));
 
         if (requiredBaseNames.isEmpty()) {
             return;
@@ -348,11 +349,12 @@ public class ImportStaticAssetsStep {
 
     private Set<String> collectRequiredVoiceBaseNames(
             JinkiPackageBundle jinkiPackage,
+            Mek reboundAkaoMek,
             Waz reboundAkaoWaz,
             String codeName
     ) {
         Set<String> baseNames = new LinkedHashSet<>();
-        if (reboundAkaoWaz == null) {
+        if (reboundAkaoMek == null && reboundAkaoWaz == null) {
             return baseNames;
         }
 
@@ -361,7 +363,10 @@ public class ImportStaticAssetsStep {
             return baseNames;
         }
 
-        List<Integer> usedVoiceIndices = collectUsedVoiceIndices(reboundAkaoWaz);
+        // WAZ 里的 CEventVoice 负责战斗事件链上的显式语音。
+        Set<Integer> usedVoiceIndices = new LinkedHashSet<>(collectUsedVoiceIndices(reboundAkaoWaz));
+        // MEK 里的 MekVoiceInfo 则负责 confirm 后立刻消费的 enter / hurt / combo 等语音表。
+        usedVoiceIndices.addAll(collectUsedMekVoiceIndices(reboundAkaoMek));
         for (Integer index : usedVoiceIndices) {
             if (index == null || index < 0 || index >= akaoVoiceGroup.getVoices().size()) {
                 continue;
@@ -374,6 +379,32 @@ public class ImportStaticAssetsStep {
         }
 
         return baseNames;
+    }
+
+    private Set<Integer> collectUsedMekVoiceIndices(Mek mek) {
+        Set<Integer> indices = new LinkedHashSet<>();
+        if (mek == null || mek.getMekVoiceInfo() == null || mek.getMekVoiceInfo().getTable() == null) {
+            return indices;
+        }
+
+        for (List<List<Mek.MekVoiceInfo.Entry>> row : mek.getMekVoiceInfo().getTable()) {
+            if (row == null) {
+                continue;
+            }
+            for (List<Mek.MekVoiceInfo.Entry> cell : row) {
+                if (cell == null) {
+                    continue;
+                }
+                for (Mek.MekVoiceInfo.Entry entry : cell) {
+                    if (entry == null || entry.getGroupId() == null || entry.getGroupId() < 0) {
+                        continue;
+                    }
+                    indices.add(entry.getGroupId());
+                }
+            }
+        }
+
+        return indices;
     }
 
     private List<Integer> collectUsedVoiceIndices(Waz waz) {

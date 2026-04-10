@@ -131,48 +131,56 @@
 
 ### Step 10. `PatchExeCapacitiesStep`
 
-当前已实现两层能力：
+Step 10 的职责是把 meka 相关运行时容量硬编码从 `103` 放到 `104`，并把容量需求写入 `ExePatchPlan`。
 
-1. 汇总本次迁移后的目标容量：
-   - `meka`
-   - `waza`
-   - `sprite`
-   - `batVoice`
-   - `se`
-   - `selectMekaMenuRows`
-2. 对 `54F570` 里 `SelectMekaMenu` 的固定 `70` 项上界执行 patch
+已纳入 patch 集合的关键位点如下：
 
-当前测试侧由于不再增加第 `71` 个可见槽，所以：
+| # | 偏移 | 说明 |
+|---|---|---|
+| 1 | `0x1E3F40` | init allocator：`push 103 -> 104` |
+| 2 | `0x1E3DA2` | scene cleanup loop bound：`103 -> 104` |
+| 3 | `0x276427` | save read loop#1：`103 -> 104` |
+| 4 | `0x2762EB` | save read loop#2：`103 -> 104` |
+| 5 | `0x275336` | save write allocator：`103 -> 104` |
+| 6 | `0x063A85` | resource calc loop bound：`103 -> 104` |
+| 7 | `0x2749ED` | save read loop#3：`103 -> 104` |
+| 8 | `0x056CE4` | **CMekaGroup runtime table prealloc**：`push 103 -> 104` |
+| 8b | `0x056F45` | **CMekaGroup runtime table init loop bound**：`103 * 4336 -> 104 * 4336` |
+| 9 | `0x056F9B` | init prealloc alt path：`103 -> 104` |
+| 10 | `0x275158` | save write alt path：`103 -> 104` |
+| 11 | `0x30390A` | standalone prealloc path：`103 -> 104` |
 
-- `0x14F21F` 本轮保持原值
-- 当前产物 `exe patch = false`
+其中 `0x056CE4 / 0x056F45` 这一组具有成对约束：
 
-当前已确认并默认禁用的位点：
+- `0x056CE4`
+  - 控制 `dword_875F54` 对应 runtime meka table 的预分配条数
+- `0x056F45`
+  - 控制同一张表的初始化边界：`103 * 4336 -> 104 * 4336`
 
-- `0x56CE3`
-- `0x56F9A`
+这组位点对应的 first fail 现场是：
 
-禁用原因已经通过实机矩阵确认：
+- `BaldrSky+0x1e149d / sub_5E13E0`
+- `currentIndex = 103`
+- `allowedCount = 103`
+- 0-based 合法范围只有 `0..102`
 
-- `baseline`：能正常启动
-- `pac_only`：能正常启动
-- `meka_only(只打两处 103 -> 104)`：10 秒内退出，留下 `ConfigNG.dat`，`exitCode = 0xC0000417`
-- `menu_only`：能正常启动
-- `menu_plus_pac`：能正常启动
+因此这不是资源没进来，而是 runtime meka table 在引擎侧被做成了 103 条。
 
-还没解决的部分：
+`SelectMekaMenu` 行数这边由于不再增加第 `71` 个可见槽，所以：
 
-- `meka / waza / sprite / batVoice / se / selectMekaMenuRows`
-  - 都只汇总需求
-  - 未写入 exe
-- `SpriteGroup.grp / BatVoice.grp / SeGroup.grp / ProgramMaterial.grp` 的顶层数量读取，本次复查后确认是动态按文件 count 读入
-- 所以当前没有证据表明“这四份 grp 的顶层条目数”还需要单独加新的 exe patch
-- `SelectMekaMenu` 当前项目号是 `697..766`
-- `7A5320` 里：
-  - `767..772` 仍然是 generic virtual dispatch
-  - `773..784` 已经属于别的菜单对象分支
-- 所以当前把“已审安全范围”保守卡在 `76` 项
-- 超过 `76` 的可见选机项，pipeline 现在会直接报错，要求继续补 switch/object-id 审计
+- `0x14F21F` 仍保持原值
+- `SelectMekaMenu` 行数上界 patch 不触发
+
+测试锁定点：
+
+- patched exe 中 `0x056CE4 == 0x68`
+- patched exe 中 `0x056F45 == 0x0006E180`
+
+现象落点：
+
+- `dword_875F54` 这条 `103 < 103` 的 first fail 已消失
+- `confirm` 可通过
+- 崩点落到“进入练习模式 / 真正生成机体”这一层
 
 ### Step 11. `PackUpdatePacStep`
 

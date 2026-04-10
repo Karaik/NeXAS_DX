@@ -230,9 +230,9 @@ MekaGroup 特殊：支持 `fixedMekaGroupIndex` 强制替换指定位置（当�
 
 **功能**：patch exe 中的 MekaGroup 容量硬编码上限。
 
-**触发条件**：`request.isPlanExeCapacityPatch() == true`（当前默认开启）
+**触发条件**：`request.isPlanExeCapacityPatch() == true`
 
-当 AKAO 被 append 为 `MekaGroup[103]`（count 从 103→104）时，原版 exe 有 **6 处硬编码的 103** 需要改为 104。所有偏移均为 BaldrSky.exe（4,662,784 字节）的**文件绝对偏移**：
+当 AKAO 被 append 为 `MekaGroup[103]`（count 从 `103 -> 104`）时，meka capacity patch 集合包含以下位点。所有偏移均为 BaldrSky.exe（4,662,784 字节）的**文件绝对偏移**：
 
 | # | 偏移 | 指令 | 函数 | 用途 |
 |---|---|---|---|---|
@@ -242,16 +242,46 @@ MekaGroup 特殊：支持 `fixedMekaGroupIndex` 强制替换指定位置（当�
 | 4 | `0x2762EB` | `cmp esi,103→104` (83 FE 67→68) | sub_676E00 (save read) loop#2 | 存档读取机体状态 |
 | 5 | `0x275336` | `push 103→104` (6A 67→68) | sub_675520 (save write) | 存档写入缓冲区预分配 |
 | 6 | `0x063A85` | `cmp ebx,103→104` (83 FB 67→68) | sub_464630 (resource calc) | 资源大小累加循环 |
+| 7 | `0x2749ED` | `cmp esi,103→104` (83 FE 67→68) | save read loop#3 | 第三条并行 save-read 路径 |
+| 8 | `0x056CE4` | `push 103→104` (6A 67→68) | sub_4576F0 / sub_45C5B0 | **runtime meka table 预分配** |
+| 8b | `0x056F45` | `0x0006D090→0x0006E180` | sub_4576F0 | **runtime meka table 初始化边界：103×4336→104×4336** |
+| 9 | `0x056F9B` | `push 103→104` (6A 67→68) | init alt path | 另一条预分配路径 |
+| 10 | `0x275158` | `push 103→104` (6A 67→68) | save write alt path | 另一条写出路径 |
+| 11 | `0x30390A` | `push 103→104` (6A 67→68) | standalone prealloc | 独立预分配路径 |
 
 **定位方法**：PE section header 被加壳器混淆，无法 VA→file offset 映射。改用函数签名特征（全局变量地址如 dword_876080）在 exe 二进制中搜索，再在函数范围内找 0x67 立即数。
 
-**Patch 类型**：`push imm8`（6A xx）修改 +1 偏移，`cmp reg,imm8`（83 Fx xx）修改 +2 偏移，各改 1 字节。
+**Patch 类型**：
+- `push imm8`（6A xx）修改 +1 偏移
+- `cmp reg,imm8`（83 Fx xx）修改 +2 偏移
+- `imm32`（如 `cmp edi, 0x6D090`）则直接改 4 字节立即数
 
-**SelectMekaMenu patch**：`0x14F21F` 处的 IMM32 patch 保留但当前不触发（原地替换不增加行数，targetMaxOffset==0x33C）。
+**SelectMekaMenu patch**：`0x14F21F` 处的 IMM32 patch 保留；原地替换不增加行数、`targetMaxOffset == 0x33C` 时不触发。
 
 **安全限制**：SelectMekaMenu 可见槽超过 76 项时 pipeline 会报错（objectId 773+ 属于别的菜单分支，需要额外审计）。
 
 **容量汇总**：Step 10 同时汇总 meka/waza/sprite/batVoice/se 五种 GRP 的容量需求，写入 `ExePatchPlan`。
+
+**成对约束**：
+- `0x056CE4`
+  - 控制 `dword_875F54` 对应 runtime meka table 的预分配条数
+- `0x056F45`
+  - 控制同一张表的初始化边界：`103 * 4336 -> 104 * 4336`
+
+**对应 first fail 现场**：
+- `BaldrSky+0x1e149d / sub_5E13E0`
+- `currentIndex = 103`
+- `allowedCount = 103`
+- 0-based 合法范围只有 `0..102`
+
+**测试锁定点**：
+- patched exe 中 `0x056CE4 == 0x68`
+- patched exe 中 `0x056F45 == 0x0006E180`
+
+**现象落点**：
+- `dword_875F54` 这条 `103 < 103` 的 first fail 已消失
+- `confirm` 可通过
+- 崩点落到“进入练习模式 / 真正生成机体”这一层
 
 ### Step 11: PackUpdatePacStep
 

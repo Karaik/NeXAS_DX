@@ -12,6 +12,7 @@ import com.giga.nexas.transfer.jinki2bsdx.model.MekRebindContext;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -101,6 +102,10 @@ public class RebindAkaoMekStep {
         context.setTargetWazaGroupIndex(grpAppendPlan.getWazaGroupIndex());
         context.setTargetSpriteGroupIndex(grpAppendPlan.getSpriteGroupIndex());
         context.setTargetBatVoiceGroupIndex(grpAppendPlan.getBatVoiceGroupIndex());
+        context.getSourceSpriteGroupIndexToTargetIndex().putAll(grpAppendPlan.getSourceSpriteGroupIndexToTargetIndex());
+        context.getSourceBatVoiceGroupIndexToTargetIndex().putAll(grpAppendPlan.getSourceBatVoiceGroupIndexToTargetIndex());
+        context.getSourceSeGroupIndexToTargetIndex().putAll(grpAppendPlan.getSourceSeGroupIndexToTargetIndex());
+        context.getSourceSeItemIndexToTargetIndexByGroup().putAll(grpAppendPlan.getSourceSeItemIndexToTargetIndexByGroup());
         return context;
     }
 
@@ -416,7 +421,7 @@ public class RebindAkaoMekStep {
         }
 
         Mek.MekVoiceInfo target = new Mek.MekVoiceInfo();
-        target.setVersion(source.getVersion());
+        target.setVersion(remapBatVoiceGroupIndex(source.getVersion(), context));
         target.builtinEmotionCount = source.builtinEmotionCount;
 
         // emotions 当前做结构级深拷贝。
@@ -486,6 +491,16 @@ public class RebindAkaoMekStep {
         return target;
     }
 
+    private Integer remapBatVoiceGroupIndex(Integer sourceGroupIndex, MekRebindContext context) {
+        if (sourceGroupIndex == null
+                || context == null
+                || context.getSourceBatVoiceGroupIndexToTargetIndex() == null
+                || context.getSourceBatVoiceGroupIndexToTargetIndex().isEmpty()) {
+            return sourceGroupIndex;
+        }
+        return context.getSourceBatVoiceGroupIndexToTargetIndex().getOrDefault(sourceGroupIndex, sourceGroupIndex);
+    }
+
     private Mek.MekMaterialBlock rebuildMekMaterialBlock(MekRebindContext context) {
         Mek.MekMaterialBlock source = context.getSourceMek().getMekMaterialBlock();
         if (source == null) {
@@ -497,17 +512,20 @@ public class RebindAkaoMekStep {
         target.regularCount = source.regularCount;
 
         // entries 当前显式重建 PluginEntry 容器。
-        target.setEntries(copyPluginEntries(source.getEntries()));
+        target.setEntries(copyPluginEntries(source.getEntries(), context));
 
         // regularEntries 当前显式重建 PluginEntry 容器。
-        target.setRegularEntries(copyPluginEntries(source.getRegularEntries()));
+        target.setRegularEntries(copyPluginEntries(source.getRegularEntries(), context));
 
         // trailingEntries 当前显式重建 PluginEntry 容器。
-        target.setTrailingEntries(copyPluginEntries(source.getTrailingEntries()));
+        target.setTrailingEntries(copyPluginEntries(source.getTrailingEntries(), context));
         return target;
     }
 
-    private List<Mek.MekMaterialBlock.PluginEntry> copyPluginEntries(List<Mek.MekMaterialBlock.PluginEntry> source) {
+    private List<Mek.MekMaterialBlock.PluginEntry> copyPluginEntries(
+            List<Mek.MekMaterialBlock.PluginEntry> source,
+            MekRebindContext context
+    ) {
         List<Mek.MekMaterialBlock.PluginEntry> target = new ArrayList<>();
         if (source == null) {
             return target;
@@ -522,9 +540,9 @@ public class RebindAkaoMekStep {
             Mek.MekMaterialBlock.PluginEntry copied = new Mek.MekMaterialBlock.PluginEntry();
             copied.offset = entry.offset;
             copied.length = entry.length;
-            copied.setSpriteGroups(copyIntArrayGroups(entry.getSpriteGroups()));
-            copied.setSeGroups(copyIntArrayGroups(entry.getSeGroups()));
-            copied.setVoiceGroups(copyIntArrayGroups(entry.getVoiceGroups()));
+            copied.setSpriteGroups(remapSpriteGroups(entry.getSpriteGroups(), context));
+            copied.setSeGroups(remapSeGroups(entry.getSeGroups(), context));
+            copied.setVoiceGroups(remapVoiceGroups(entry.getVoiceGroups(), context));
             target.add(copied);
         }
         return target;
@@ -540,6 +558,131 @@ public class RebindAkaoMekStep {
             target.add(arr == null ? null : arr.clone());
         }
         return target;
+    }
+
+    private List<int[]> remapVoiceGroups(List<int[]> source, MekRebindContext context) {
+        return remapIndexedGroups(source, context, context == null ? null : context.getSourceBatVoiceGroupIndexToTargetIndex(), null);
+    }
+
+    private List<int[]> remapSpriteGroups(List<int[]> source, MekRebindContext context) {
+        return remapIndexedGroups(source, context, context == null ? null : context.getSourceSpriteGroupIndexToTargetIndex(), null);
+    }
+
+    private List<int[]> remapSeGroups(List<int[]> source, MekRebindContext context) {
+        return remapIndexedGroups(
+                source,
+                context,
+                context == null ? null : context.getSourceSeGroupIndexToTargetIndex(),
+                context == null ? null : context.getSourceSeItemIndexToTargetIndexByGroup()
+        );
+    }
+
+    private List<int[]> remapIndexedGroups(
+            List<int[]> source,
+            MekRebindContext context,
+            Map<Integer, Integer> sourceGroupIndexToTargetIndex,
+            Map<Integer, Map<Integer, Integer>> sourceItemIndexToTargetIndexByGroup
+    ) {
+        List<int[]> copied = copyIntArrayGroups(source);
+        if (copied.isEmpty()
+                || context == null
+                || sourceGroupIndexToTargetIndex == null
+                || sourceGroupIndexToTargetIndex.isEmpty()) {
+            return copied;
+        }
+
+        ensureGroupCapacity(copied, requiredGroupCapacity(copied, sourceGroupIndexToTargetIndex));
+
+        for (Map.Entry<Integer, Integer> mapping : sourceGroupIndexToTargetIndex.entrySet()) {
+            Integer sourceGroupIndex = mapping.getKey();
+            Integer targetGroupIndex = mapping.getValue();
+            if (sourceGroupIndex == null || targetGroupIndex == null || sourceGroupIndex < 0 || targetGroupIndex < 0) {
+                continue;
+            }
+            if (sourceGroupIndex >= copied.size()) {
+                continue;
+            }
+
+            int[] sourceItems = copied.get(sourceGroupIndex);
+            if (sourceItems == null || sourceItems.length == 0) {
+                continue;
+            }
+
+            int[] remappedItems = remapGroupItems(
+                    sourceItems,
+                    sourceItemIndexToTargetIndexByGroup == null ? null : sourceItemIndexToTargetIndexByGroup.get(sourceGroupIndex)
+            );
+            if (sourceGroupIndex.equals(targetGroupIndex)) {
+                copied.set(targetGroupIndex, remappedItems);
+                continue;
+            }
+
+            int[] targetItems = targetGroupIndex < copied.size() ? copied.get(targetGroupIndex) : null;
+            copied.set(targetGroupIndex, mergeUniqueItems(targetItems, remappedItems));
+            copied.set(sourceGroupIndex, null);
+        }
+        return copied;
+    }
+
+    private int requiredGroupCapacity(List<int[]> groups, Map<Integer, Integer> sourceToTargetGroupIndex) {
+        int required = groups == null ? 0 : groups.size();
+        if (sourceToTargetGroupIndex == null) {
+            return required;
+        }
+        for (Map.Entry<Integer, Integer> entry : sourceToTargetGroupIndex.entrySet()) {
+            if (entry.getKey() != null) {
+                required = Math.max(required, entry.getKey() + 1);
+            }
+            if (entry.getValue() != null) {
+                required = Math.max(required, entry.getValue() + 1);
+            }
+        }
+        return required;
+    }
+
+    private void ensureGroupCapacity(List<int[]> groups, int requiredSize) {
+        while (groups.size() < requiredSize) {
+            groups.add(null);
+        }
+    }
+
+    private int[] mergeUniqueItems(int[] existing, int[] incoming) {
+        if (existing == null || existing.length == 0) {
+            return incoming == null ? null : incoming.clone();
+        }
+        if (incoming == null || incoming.length == 0) {
+            return existing.clone();
+        }
+
+        LinkedHashSet<Integer> merged = new LinkedHashSet<>();
+        for (int value : existing) {
+            merged.add(value);
+        }
+        for (int value : incoming) {
+            merged.add(value);
+        }
+
+        int[] result = new int[merged.size()];
+        int cursor = 0;
+        for (Integer value : merged) {
+            result[cursor++] = value;
+        }
+        return result;
+    }
+
+    private int[] remapGroupItems(int[] sourceItems, Map<Integer, Integer> sourceItemIndexToTargetIndex) {
+        if (sourceItems == null) {
+            return null;
+        }
+        if (sourceItemIndexToTargetIndex == null || sourceItemIndexToTargetIndex.isEmpty()) {
+            return sourceItems.clone();
+        }
+
+        int[] remapped = new int[sourceItems.length];
+        for (int i = 0; i < sourceItems.length; i++) {
+            remapped[i] = sourceItemIndexToTargetIndex.getOrDefault(sourceItems[i], sourceItems[i]);
+        }
+        return remapped;
     }
 
     private void validateRebindResult(Mek targetMek, MekRebindContext context) {

@@ -1,5 +1,7 @@
 package com.giga.nexas.jinki;
 
+import com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp;
+import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventVoice;
@@ -63,6 +65,10 @@ public class TestJinki2BsdxRunner {
         Assertions.assertFalse(collectVoiceGroupIndices(result.getReboundAkaoWaz()).isEmpty());
         Assertions.assertTrue(collectVoiceGroupIndices(result.getReboundAkaoWaz()).stream().allMatch(index -> index == 30));
         assertWazaGroupParamsMatchActualWaz(result);
+        assertMaterialSpriteGroupsRemapped(result);
+        assertMaterialSeGroupsRemapped(result);
+        assertMaterialVoiceGroupsRemapped(result);
+        assertMekVoiceInfoDefaultGroupRemapped(result);
 
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir()));
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("ProgramMaterial.grp")));
@@ -104,6 +110,10 @@ public class TestJinki2BsdxRunner {
         );
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("selectmekamenumeka_0011_0001.png")));
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("selectmekamenumeka_0012_0001.png")));
+        Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("Akao_0901.ogg")));
+        Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("Akao_0902.ogg")));
+        Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("Akao_0903.ogg")));
+        Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("Akao_0904.ogg")));
 
         Assertions.assertEquals(104, result.getExePatchPlan().getRequiredMekaCapacity());
         Assertions.assertTrue(result.getExePatchPlan().getRequiredWazaCapacity() >= 111);
@@ -114,6 +124,7 @@ public class TestJinki2BsdxRunner {
         // patchMenuData=true 时 exe 有菜单 patch offsets，不为空是预期行为
         Assertions.assertFalse(result.getExePatchPlan().getTargetOffsets().isEmpty());
         Assertions.assertTrue(Files.exists(result.getExePatchPlan().getOutputExePath()));
+        assertExeContainsPatchedMekaRuntimeTableBounds(result);
 
         Assertions.assertTrue(result.getPacPackPlan().isPacked());
         Assertions.assertTrue(Files.exists(result.getPacPackPlan().getOutputPacPath()));
@@ -199,6 +210,360 @@ public class TestJinki2BsdxRunner {
         return Integer.parseInt(String.valueOf(value));
     }
 
+    private void assertMaterialVoiceGroupsRemapped(AkaoGraftResult result) {
+        int targetVoiceGroupIndex = result.getGrpAppendPlan().getBatVoiceGroupIndex();
+        int sourceVoiceGroupIndex = findSourceBatVoiceGroupIndex(result, targetVoiceGroupIndex);
+        BatVoiceGrp.BatVoiceGroup targetVoiceGroup = result.getBsdxBaseline().getBatVoiceGrp().getVoiceList().get(targetVoiceGroupIndex);
+        int legalVoiceCount = targetVoiceGroup.getVoices() == null ? 0 : targetVoiceGroup.getVoices().size();
+
+        Mek sourceMek = result.getJinkiPackage().getAkaoMek();
+        Mek targetMek = result.getReboundAkaoMek();
+        Assertions.assertNotNull(sourceMek);
+        Assertions.assertNotNull(targetMek);
+        Assertions.assertNotNull(sourceMek.getMekMaterialBlock());
+        Assertions.assertNotNull(targetMek.getMekMaterialBlock());
+
+        assertPluginEntryVoiceGroupsRemapped(
+                sourceMek.getMekMaterialBlock().getEntries(),
+                targetMek.getMekMaterialBlock().getEntries(),
+                sourceVoiceGroupIndex,
+                targetVoiceGroupIndex,
+                legalVoiceCount,
+                "entries"
+        );
+        assertPluginEntryVoiceGroupsRemapped(
+                sourceMek.getMekMaterialBlock().getRegularEntries(),
+                targetMek.getMekMaterialBlock().getRegularEntries(),
+                sourceVoiceGroupIndex,
+                targetVoiceGroupIndex,
+                legalVoiceCount,
+                "regularEntries"
+        );
+        assertPluginEntryVoiceGroupsRemapped(
+                sourceMek.getMekMaterialBlock().getTrailingEntries(),
+                targetMek.getMekMaterialBlock().getTrailingEntries(),
+                sourceVoiceGroupIndex,
+                targetVoiceGroupIndex,
+                legalVoiceCount,
+                "trailingEntries"
+        );
+    }
+
+    private void assertMekVoiceInfoDefaultGroupRemapped(AkaoGraftResult result) {
+        int targetVoiceGroupIndex = result.getGrpAppendPlan().getBatVoiceGroupIndex();
+        int sourceVoiceGroupIndex = findSourceBatVoiceGroupIndex(result, targetVoiceGroupIndex);
+
+        Mek sourceMek = result.getJinkiPackage().getAkaoMek();
+        Mek targetMek = result.getReboundAkaoMek();
+        Assertions.assertNotNull(sourceMek);
+        Assertions.assertNotNull(targetMek);
+        Assertions.assertNotNull(sourceMek.getMekVoiceInfo());
+        Assertions.assertNotNull(targetMek.getMekVoiceInfo());
+
+        Assertions.assertEquals(sourceVoiceGroupIndex, sourceMek.getMekVoiceInfo().getVersion());
+        Assertions.assertEquals(targetVoiceGroupIndex, targetMek.getMekVoiceInfo().getVersion());
+        Assertions.assertNotEquals(sourceVoiceGroupIndex, targetMek.getMekVoiceInfo().getVersion());
+    }
+
+    private int findSourceBatVoiceGroupIndex(AkaoGraftResult result, int targetVoiceGroupIndex) {
+        return result.getGrpAppendPlan().getSourceBatVoiceGroupIndexToTargetIndex().entrySet().stream()
+                .filter(entry -> entry.getValue() != null && entry.getValue() == targetVoiceGroupIndex)
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("缺少 BatVoice 源 -> 目标映射，target=" + targetVoiceGroupIndex));
+    }
+
+    private void assertPluginEntryVoiceGroupsRemapped(
+            List<Mek.MekMaterialBlock.PluginEntry> sourceEntries,
+            List<Mek.MekMaterialBlock.PluginEntry> targetEntries,
+            int sourceVoiceGroupIndex,
+            int targetVoiceGroupIndex,
+            int legalVoiceCount,
+            String label
+    ) {
+        if (sourceEntries == null || targetEntries == null) {
+            return;
+        }
+
+        Assertions.assertEquals(sourceEntries.size(), targetEntries.size(), label + " size mismatch");
+        boolean sawSourceVoiceGroup = false;
+        for (int i = 0; i < sourceEntries.size(); i++) {
+            Mek.MekMaterialBlock.PluginEntry sourceEntry = sourceEntries.get(i);
+            Mek.MekMaterialBlock.PluginEntry targetEntry = targetEntries.get(i);
+            if (sourceEntry == null || targetEntry == null) {
+                Assertions.assertEquals(sourceEntry, targetEntry, label + "[" + i + "] null mismatch");
+                continue;
+            }
+
+            int[] sourceItems = getVoiceGroupItems(sourceEntry, sourceVoiceGroupIndex);
+            int[] targetItems = getVoiceGroupItems(targetEntry, targetVoiceGroupIndex);
+            if (!isNullOrEmpty(sourceItems)) {
+                sawSourceVoiceGroup = true;
+                Assertions.assertArrayEquals(
+                        sourceItems,
+                        targetItems,
+                        label + "[" + i + "] source group " + sourceVoiceGroupIndex + " should remap to target group " + targetVoiceGroupIndex
+                );
+            }
+
+            Assertions.assertTrue(
+                    isNullOrEmpty(getVoiceGroupItems(targetEntry, sourceVoiceGroupIndex)),
+                    label + "[" + i + "] should not retain source voice group " + sourceVoiceGroupIndex
+            );
+
+            if (!isNullOrEmpty(targetItems)) {
+                for (int itemIndex : targetItems) {
+                    Assertions.assertTrue(
+                            itemIndex >= 0 && itemIndex < legalVoiceCount,
+                            label + "[" + i + "] target group " + targetVoiceGroupIndex + " contains illegal item index " + itemIndex
+                    );
+                }
+            }
+        }
+        Assertions.assertTrue(sawSourceVoiceGroup, label + " should contain at least one source voice group " + sourceVoiceGroupIndex + " before remap");
+    }
+
+    private void assertMaterialSpriteGroupsRemapped(AkaoGraftResult result) {
+        int targetSpriteGroupIndex = result.getGrpAppendPlan().getSpriteGroupIndex();
+        int sourceSpriteGroupIndex = findSourceSpriteGroupIndex(result, targetSpriteGroupIndex);
+
+        Mek sourceMek = result.getJinkiPackage().getAkaoMek();
+        Mek targetMek = result.getReboundAkaoMek();
+        Assertions.assertNotNull(sourceMek);
+        Assertions.assertNotNull(targetMek);
+        Assertions.assertNotNull(sourceMek.getMekMaterialBlock());
+        Assertions.assertNotNull(targetMek.getMekMaterialBlock());
+
+        assertIndexedGroupsRemappedIfPresent(
+                sourceMek.getMekMaterialBlock().getEntries(),
+                targetMek.getMekMaterialBlock().getEntries(),
+                true,
+                sourceSpriteGroupIndex,
+                targetSpriteGroupIndex,
+                null,
+                "entries.sprite"
+        );
+        assertIndexedGroupsRemappedIfPresent(
+                sourceMek.getMekMaterialBlock().getRegularEntries(),
+                targetMek.getMekMaterialBlock().getRegularEntries(),
+                true,
+                sourceSpriteGroupIndex,
+                targetSpriteGroupIndex,
+                null,
+                "regularEntries.sprite"
+        );
+        assertIndexedGroupsRemappedIfPresent(
+                sourceMek.getMekMaterialBlock().getTrailingEntries(),
+                targetMek.getMekMaterialBlock().getTrailingEntries(),
+                true,
+                sourceSpriteGroupIndex,
+                targetSpriteGroupIndex,
+                null,
+                "trailingEntries.sprite"
+        );
+    }
+
+    private void assertMaterialSeGroupsRemapped(AkaoGraftResult result) {
+        Mek sourceMek = result.getJinkiPackage().getAkaoMek();
+        Mek targetMek = result.getReboundAkaoMek();
+        Assertions.assertNotNull(sourceMek);
+        Assertions.assertNotNull(targetMek);
+        Assertions.assertNotNull(sourceMek.getMekMaterialBlock());
+        Assertions.assertNotNull(targetMek.getMekMaterialBlock());
+
+        for (Map.Entry<Integer, Integer> mapping : result.getGrpAppendPlan().getSourceSeGroupIndexToTargetIndex().entrySet()) {
+            Integer sourceSeGroupIndex = mapping.getKey();
+            Integer targetSeGroupIndex = mapping.getValue();
+            if (sourceSeGroupIndex == null || targetSeGroupIndex == null) {
+                continue;
+            }
+            if (!containsAnyIndexedGroup(
+                    sourceMek.getMekMaterialBlock().getEntries(),
+                    sourceMek.getMekMaterialBlock().getRegularEntries(),
+                    sourceMek.getMekMaterialBlock().getTrailingEntries(),
+                    false,
+                    sourceSeGroupIndex
+            )) {
+                continue;
+            }
+
+            Map<Integer, Integer> itemMapping = result.getGrpAppendPlan()
+                    .getSourceSeItemIndexToTargetIndexByGroup()
+                    .get(sourceSeGroupIndex);
+
+            assertIndexedGroupsRemappedIfPresent(
+                    sourceMek.getMekMaterialBlock().getEntries(),
+                    targetMek.getMekMaterialBlock().getEntries(),
+                    false,
+                    sourceSeGroupIndex,
+                    targetSeGroupIndex,
+                    itemMapping,
+                    "entries.se[" + sourceSeGroupIndex + "->" + targetSeGroupIndex + "]"
+            );
+            assertIndexedGroupsRemappedIfPresent(
+                    sourceMek.getMekMaterialBlock().getRegularEntries(),
+                    targetMek.getMekMaterialBlock().getRegularEntries(),
+                    false,
+                    sourceSeGroupIndex,
+                    targetSeGroupIndex,
+                    itemMapping,
+                    "regularEntries.se[" + sourceSeGroupIndex + "->" + targetSeGroupIndex + "]"
+            );
+            assertIndexedGroupsRemappedIfPresent(
+                    sourceMek.getMekMaterialBlock().getTrailingEntries(),
+                    targetMek.getMekMaterialBlock().getTrailingEntries(),
+                    false,
+                    sourceSeGroupIndex,
+                    targetSeGroupIndex,
+                    itemMapping,
+                    "trailingEntries.se[" + sourceSeGroupIndex + "->" + targetSeGroupIndex + "]"
+            );
+        }
+    }
+
+    private void assertIndexedGroupsRemappedIfPresent(
+            List<Mek.MekMaterialBlock.PluginEntry> sourceEntries,
+            List<Mek.MekMaterialBlock.PluginEntry> targetEntries,
+            boolean useSpriteGroups,
+            int sourceGroupIndex,
+            int targetGroupIndex,
+            Map<Integer, Integer> itemMapping,
+            String label
+    ) {
+        if (!containsAnyIndexedGroup(sourceEntries, useSpriteGroups, sourceGroupIndex)) {
+            return;
+        }
+        assertPluginEntryIndexedGroupsRemapped(
+                sourceEntries,
+                targetEntries,
+                useSpriteGroups,
+                sourceGroupIndex,
+                targetGroupIndex,
+                itemMapping,
+                label
+        );
+    }
+
+    private void assertPluginEntryIndexedGroupsRemapped(
+            List<Mek.MekMaterialBlock.PluginEntry> sourceEntries,
+            List<Mek.MekMaterialBlock.PluginEntry> targetEntries,
+            boolean useSpriteGroups,
+            int sourceGroupIndex,
+            int targetGroupIndex,
+            Map<Integer, Integer> itemMapping,
+            String label
+    ) {
+        if (sourceEntries == null || targetEntries == null) {
+            return;
+        }
+
+        Assertions.assertEquals(sourceEntries.size(), targetEntries.size(), label + " size mismatch");
+        boolean sawSourceGroup = false;
+        for (int i = 0; i < sourceEntries.size(); i++) {
+            Mek.MekMaterialBlock.PluginEntry sourceEntry = sourceEntries.get(i);
+            Mek.MekMaterialBlock.PluginEntry targetEntry = targetEntries.get(i);
+            if (sourceEntry == null || targetEntry == null) {
+                Assertions.assertEquals(sourceEntry, targetEntry, label + "[" + i + "] null mismatch");
+                continue;
+            }
+
+            List<int[]> sourceGroups = useSpriteGroups ? sourceEntry.getSpriteGroups() : sourceEntry.getSeGroups();
+            List<int[]> targetGroups = useSpriteGroups ? targetEntry.getSpriteGroups() : targetEntry.getSeGroups();
+            int[] sourceItems = getIndexedGroupItems(sourceGroups, sourceGroupIndex);
+            int[] targetItems = getIndexedGroupItems(targetGroups, targetGroupIndex);
+
+            if (!isNullOrEmpty(sourceItems)) {
+                sawSourceGroup = true;
+                Assertions.assertArrayEquals(
+                        remapItems(sourceItems, itemMapping),
+                        targetItems,
+                        label + "[" + i + "] source group " + sourceGroupIndex + " should remap to target group " + targetGroupIndex
+                );
+            }
+
+            if (sourceGroupIndex != targetGroupIndex) {
+                Assertions.assertTrue(
+                        isNullOrEmpty(getIndexedGroupItems(targetGroups, sourceGroupIndex)),
+                        label + "[" + i + "] should not retain source group " + sourceGroupIndex
+                );
+            }
+        }
+        Assertions.assertTrue(sawSourceGroup, label + " should contain at least one source group " + sourceGroupIndex + " before remap");
+    }
+
+    private int[] getVoiceGroupItems(Mek.MekMaterialBlock.PluginEntry entry, int groupIndex) {
+        if (entry == null || entry.getVoiceGroups() == null || groupIndex < 0 || groupIndex >= entry.getVoiceGroups().size()) {
+            return null;
+        }
+        return entry.getVoiceGroups().get(groupIndex);
+    }
+
+    private int[] getIndexedGroupItems(List<int[]> groups, int groupIndex) {
+        if (groups == null || groupIndex < 0 || groupIndex >= groups.size()) {
+            return null;
+        }
+        return groups.get(groupIndex);
+    }
+
+    private boolean containsAnyIndexedGroup(
+            List<Mek.MekMaterialBlock.PluginEntry> entries,
+            List<Mek.MekMaterialBlock.PluginEntry> regularEntries,
+            List<Mek.MekMaterialBlock.PluginEntry> trailingEntries,
+            boolean useSpriteGroups,
+            int groupIndex
+    ) {
+        return containsAnyIndexedGroup(entries, useSpriteGroups, groupIndex)
+                || containsAnyIndexedGroup(regularEntries, useSpriteGroups, groupIndex)
+                || containsAnyIndexedGroup(trailingEntries, useSpriteGroups, groupIndex);
+    }
+
+    private boolean containsAnyIndexedGroup(
+            List<Mek.MekMaterialBlock.PluginEntry> entries,
+            boolean useSpriteGroups,
+            int groupIndex
+    ) {
+        if (entries == null) {
+            return false;
+        }
+        for (Mek.MekMaterialBlock.PluginEntry entry : entries) {
+            if (entry == null) {
+                continue;
+            }
+            List<int[]> groups = useSpriteGroups ? entry.getSpriteGroups() : entry.getSeGroups();
+            if (!isNullOrEmpty(getIndexedGroupItems(groups, groupIndex))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int[] remapItems(int[] sourceItems, Map<Integer, Integer> itemMapping) {
+        if (sourceItems == null) {
+            return null;
+        }
+        if (itemMapping == null || itemMapping.isEmpty()) {
+            return sourceItems.clone();
+        }
+
+        int[] remapped = new int[sourceItems.length];
+        for (int i = 0; i < sourceItems.length; i++) {
+            remapped[i] = itemMapping.getOrDefault(sourceItems[i], sourceItems[i]);
+        }
+        return remapped;
+    }
+
+    private boolean isNullOrEmpty(int[] items) {
+        return items == null || items.length == 0;
+    }
+
+    private int findSourceSpriteGroupIndex(AkaoGraftResult result, int targetSpriteGroupIndex) {
+        return result.getGrpAppendPlan().getSourceSpriteGroupIndexToTargetIndex().entrySet().stream()
+                .filter(entry -> entry.getValue() != null && entry.getValue() == targetSpriteGroupIndex)
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("缂哄皯 SpriteGroup 婧?-> 鐩爣鏄犲皠锛宼arget=" + targetSpriteGroupIndex));
+    }
+
     private void assertWazaGroupParamsMatchActualWaz(AkaoGraftResult result) {
         Map<Integer, Integer> resolvedTargets = new LinkedHashMap<>(result.getGrpAppendPlan().getSourceWazGroupIndexToTargetIndex());
 
@@ -251,5 +616,18 @@ public class TestJinki2BsdxRunner {
             }
         }
         return null;
+    }
+
+    private void assertExeContainsPatchedMekaRuntimeTableBounds(AkaoGraftResult result) {
+        Assertions.assertNotNull(result.getExePatchPlan());
+        Assertions.assertNotNull(result.getExePatchPlan().getOutputExePath());
+        try {
+            byte[] exe = Files.readAllBytes(result.getExePatchPlan().getOutputExePath());
+            Assertions.assertEquals(0x68, exe[0x056CE4] & 0xFF, "0x056CE4 should patch runtime meka table prealloc from 103 to 104");
+            int imm32 = readLittleEndianInt(exe, 0x056F45);
+            Assertions.assertEquals(0x0006E180, imm32, "0x056F45 should patch runtime meka table init loop bound to 104 * 4336");
+        } catch (Exception e) {
+            throw new AssertionError("failed to read patched exe for runtime meka table assertions", e);
+        }
     }
 }
