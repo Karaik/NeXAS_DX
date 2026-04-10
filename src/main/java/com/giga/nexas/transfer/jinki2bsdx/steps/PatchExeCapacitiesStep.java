@@ -171,6 +171,9 @@ public class PatchExeCapacitiesStep {
     private static final int MEKA_CAP_STANDALONE_PREALLOC_OFFSET = 0x30390A;
     private static final int MEKA_CAP_STANDALONE_PREALLOC_EXPECTED = 0x67;
     private static final int MEKA_CAP_STANDALONE_PREALLOC_TARGET = 0x68;
+    private static final int MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_OFFSET = 0x05498B;
+    private static final int MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_EXPECTED = 0x00001688;
+    private static final int MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_TARGET = 0x000016C0;
 
     // ── 公开方法 ─────────────────────────────────────────────────────────
 
@@ -287,6 +290,12 @@ public class PatchExeCapacitiesStep {
                     MEKA_CAP_STANDALONE_PREALLOC_EXPECTED,
                     MEKA_CAP_STANDALONE_PREALLOC_TARGET,
                     "meka cap standalone prealloc: push 103 -> push 104",
+                    plan);
+            applyImm32Patch(exeBytes,
+                    MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_OFFSET,
+                    MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_EXPECTED,
+                    MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_TARGET,
+                    "meka cap weapon-equip fill hard cap: 56*103 -> 56*104 (sub_454E60 cmp eax,0x1688)",
                     plan);
 
             if (plan.getRequiredSelectMekaMenuRows() > 0) {
@@ -493,6 +502,7 @@ public class PatchExeCapacitiesStep {
         plan.getNotes().add("site 9 @0x056F9B: init prealloc alt path, otherwise an alternate init path still allocates only 103 entries.");
         plan.getNotes().add("site 10 @0x275158: save-write alt path, otherwise an alternate write path still stops at 103.");
         plan.getNotes().add("site 11 @0x30390A: standalone prealloc path, otherwise another meka-side allocator still uses 103.");
+        plan.getNotes().add("site 12 @0x05498B: WeaponEquip fill hard cap, otherwise sub_454E60 still stops at 56 * 103 and slot 103 keeps garbage equip-menu label bytes.");
     }
 
     private int readLittleEndianInt(byte[] bytes, int offset) {

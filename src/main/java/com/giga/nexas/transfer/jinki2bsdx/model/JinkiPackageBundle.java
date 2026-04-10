@@ -28,6 +28,7 @@ public class JinkiPackageBundle {
 
     private Dat mekaDat;
     private Dat mekaPilotDat;
+    private Dat weaponEquipDat;
     private Mek akaoMek;
 
     private Map<String, Spm> spmByFileName = new LinkedHashMap<>();

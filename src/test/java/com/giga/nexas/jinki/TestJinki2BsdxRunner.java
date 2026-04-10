@@ -1,11 +1,14 @@
 package com.giga.nexas.jinki;
 
+import com.giga.nexas.dto.ResponseDTO;
+import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp;
 import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventVoice;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
+import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.transfer.jinki2bsdx.Jinki2BsdxSingleRunner;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
@@ -13,6 +16,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -69,6 +73,7 @@ public class TestJinki2BsdxRunner {
         assertMaterialSeGroupsRemapped(result);
         assertMaterialVoiceGroupsRemapped(result);
         assertMekVoiceInfoDefaultGroupRemapped(result);
+        assertWeaponEquipDatExpanded(result);
 
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir()));
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("ProgramMaterial.grp")));
@@ -618,6 +623,37 @@ public class TestJinki2BsdxRunner {
         return null;
     }
 
+    private void assertWeaponEquipDatExpanded(AkaoGraftResult result) {
+        Assertions.assertNotNull(result.getJinkiPackage().getWeaponEquipDat());
+        Assertions.assertNotNull(result.getBsdxBaseline().getWeaponEquipDat());
+
+        int baselineRows = result.getBsdxBaseline().getWeaponEquipDat().getData().size();
+        int sourceRows = result.getJinkiPackage().getWeaponEquipDat().getData().size();
+        Assertions.assertEquals(103, baselineRows);
+        Assertions.assertEquals(104, sourceRows);
+
+        Path configOutput = result.getImportedAssetSet().getOutputRootDir().resolve("Config").resolve("WeaponEquip.dat");
+        Path rootOutput = result.getImportedAssetSet().getOutputRootDir().resolve("WeaponEquip.dat");
+        Assertions.assertTrue(Files.exists(configOutput));
+        Assertions.assertTrue(Files.exists(rootOutput));
+
+        Dat parsed = parseDat(configOutput);
+        Assertions.assertEquals(sourceRows, parsed.getData().size());
+        Assertions.assertEquals(
+                result.getJinkiPackage().getWeaponEquipDat().getData().get(sourceRows - 1),
+                parsed.getData().get(sourceRows - 1)
+        );
+    }
+
+    private Dat parseDat(Path path) {
+        try {
+            ResponseDTO<?> dto = new BsdxBinService().parse(path.toString(), "windows-31j");
+            return (Dat) dto.getData();
+        } catch (Exception e) {
+            throw new AssertionError("failed to parse dat: " + path, e);
+        }
+    }
+
     private void assertExeContainsPatchedMekaRuntimeTableBounds(AkaoGraftResult result) {
         Assertions.assertNotNull(result.getExePatchPlan());
         Assertions.assertNotNull(result.getExePatchPlan().getOutputExePath());
@@ -626,6 +662,8 @@ public class TestJinki2BsdxRunner {
             Assertions.assertEquals(0x68, exe[0x056CE4] & 0xFF, "0x056CE4 should patch runtime meka table prealloc from 103 to 104");
             int imm32 = readLittleEndianInt(exe, 0x056F45);
             Assertions.assertEquals(0x0006E180, imm32, "0x056F45 should patch runtime meka table init loop bound to 104 * 4336");
+            int weaponEquipBound = readLittleEndianInt(exe, 0x05498B);
+            Assertions.assertEquals(0x000016C0, weaponEquipBound, "0x05498B should patch WeaponEquip fill hard cap from 56 * 103 to 56 * 104");
         } catch (Exception e) {
             throw new AssertionError("failed to read patched exe for runtime meka table assertions", e);
         }

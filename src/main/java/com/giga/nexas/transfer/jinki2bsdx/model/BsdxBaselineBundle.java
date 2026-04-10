@@ -33,6 +33,7 @@ public class BsdxBaselineBundle {
     private Dat mekaDat;
     private Dat mekaPilotDat;
     private Dat selectMekaMenuDat;
+    private Dat weaponEquipDat;
 
     private Map<String, Mek> mekByFileName = new LinkedHashMap<>();
     private Map<String, Spm> spmByFileName = new LinkedHashMap<>();

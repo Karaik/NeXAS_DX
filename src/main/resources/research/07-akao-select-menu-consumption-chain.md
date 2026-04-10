@@ -1539,3 +1539,89 @@ runner 测试已经补了两个新断言，直接检查 patched exe：
 - 崩点明确前移到“进入练习模式 / 真正生成机体”的下一层
 
 也就是说，这轮不是空转，而是把问题继续往前推了一整段。
+
+## 证据链终点：WeaponEquip.dat / 装备菜单文本填表
+
+`confirm` 崩溃跨过之后，新的崩点不再落在选人确认链，而是落在进入练习模式后的初始化链。
+
+围绕新业务帧链：
+
+- `0x36169b`
+- `0x2d58f1`
+- `0x2d5a2c`
+- `0x2d5da4`
+- `0x2d87aa`
+- `0x2d835c`
+- `0x2c7909`
+- `0x299c37`
+- `0x29b546`
+- `0x29b85c`
+
+追加定点动态取证以后，`5F0C40 / 5F0DF0 / 5F0F20` 已经降级为旧链 breadcrumb；新的 first bad 现场落在：
+
+- `sub_761590`
+- caller = `0x30ccbb`
+- `fontThis = 0x4daa938`（后续重跑为另一个实例地址）
+- `glyphCount = 9072`
+
+直接抓到的 first bad payload 是：
+
+- `reason = glyph-out-of-range`
+- `glyphIndex = 10773`
+- `allowed = 9072`
+
+这说明崩点不是机体 material inner payload，也不是旧的 `dword_875F54` 103 越界，而是文本渲染阶段拿到了超出字体表上界的脏字符串。
+
+这条字符串不是菜单 hover/detail 生成的，而是：
+
+- `sub_4B9A00`
+- 从 `dword_875F54 + 4336 * mekaIndex + 60` 取字符串
+- 交给 `sub_70C480`
+- 再由 `sub_761590` 做字形边界检查
+
+`dword_875F54 + 60` 这一格的来源继续回溯到：
+
+- `sub_454E60`
+- `WeaponEquip.dat`
+
+`sub_454E60` 的填表循环里存在两个彼此独立的限制：
+
+1. 数据侧只装入了 `WeaponEquip.dat` 的 103 行  
+   `BSDX WeaponEquip.dat` 为 103 行，`JINKI WeaponEquip.dat` 为 104 行。
+
+2. exe 侧仍把填表上界写死成 `56 * 103`  
+   真正命中的位点是：
+   - `0x05498B`
+   - `0x00001688 -> 0x000016C0`
+   - 即 `56 * 103 -> 56 * 104`
+
+因此最终修复集合变成：
+
+- exe
+  - `0x056CE4`
+  - `0x056F45`
+  - `0x05498B`
+- data / graft
+  - `WeaponEquip.dat` 第 104 行 graft
+  - 输出到 `Config/WeaponEquip.dat`
+  - 输出到根目录 `WeaponEquip.dat`
+
+这组修复生效后，原来这条：
+
+- `dword_875F54[103] + 60`
+- `sub_4B9A00`
+- `sub_70C480`
+- `sub_761590`
+
+对应的坏字符串链不再触发 `_invalid_parameter_noinfo()`。
+
+最终复测目录：
+
+- `src/main/resources/tmp/baldrsky_20260410_150356/`
+
+复测结果：
+
+- `frida_stage_probe_log.txt` 只记录到 `ready` / `arm`
+- `crash_v6_log.txt = Exit code: 0x0, Dumps: 0`
+
+因此这条从菜单 confirm 前移出来的崩溃链已经跨过。

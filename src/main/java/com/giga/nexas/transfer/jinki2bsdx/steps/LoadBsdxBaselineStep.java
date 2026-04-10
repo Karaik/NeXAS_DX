@@ -53,6 +53,7 @@ public class LoadBsdxBaselineStep {
             bundle.setMekaDat(parseRequired(request.getBsdxDatDir().resolve("Meka.dat"), Dat.class));
             bundle.setMekaPilotDat(parseRequired(request.getBsdxDatDir().resolve("MekaPilot.dat"), Dat.class));
             bundle.setSelectMekaMenuDat(parseRequired(request.getBsdxDatDir().resolve("SelectMekaMenu.dat"), Dat.class));
+            bundle.setWeaponEquipDat(parseRequired(request.getBsdxDatDir().resolve("WeaponEquip.dat"), Dat.class));
 
             bundle.setMekByFileName(parseAll(request.getBsdxMekDir(), "*.mek", Mek.class));
             bundle.setSpmByFileName(parseAll(request.getBsdxSpmDir(), "*.spm", Spm.class));

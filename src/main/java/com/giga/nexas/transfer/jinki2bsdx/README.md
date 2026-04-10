@@ -398,3 +398,41 @@ out/
 - SelectMekaMenu 超过 76 项后需要继续做 switch/object-id 审计
 - 辅助 waz 不递归重绑（当前策略足够，弹幕/特效内部无交叉引用）
 - 存在 2 处可能需要追加的 meka patch 位点（`0x2749EB`, `0x056CE3`），待实机验证确认
+
+## 固定修复集合
+
+### exe patch
+
+- `0x056CE4`
+  - `push 103 -> push 104`
+  - runtime meka table 预分配条数扩到 104
+- `0x056F45`
+  - `4336 * 103 -> 4336 * 104`
+  - runtime meka table 初始化边界扩到 104
+- `0x05498B`
+  - `56 * 103 -> 56 * 104`
+  - `sub_454E60` 的装备菜单文本填表上界扩到 104
+
+### data / graft
+
+- `WeaponEquip.dat` 追加第 104 行
+- 输出到：
+  - `Config/WeaponEquip.dat`
+  - 根目录 `WeaponEquip.dat`
+
+## 测试锁定点
+
+- `TestJinki2BsdxRunner`
+  - 检查 `WeaponEquip.dat` 输出行为为 104 行
+  - 检查 patched exe：
+    - `0x056CE4 == 0x68`
+    - `0x056F45 == 0x0006E180`
+    - `0x05498B == 0x000016C0`
+
+## 运行结果落点
+
+- 复测目录：
+  - `src/main/resources/tmp/baldrsky_20260410_150356/`
+- 结果：
+  - `frida_stage_probe_log.txt` 仅有 `ready / arm`
+  - `crash_v6_log.txt = Exit code: 0x0, Dumps: 0`

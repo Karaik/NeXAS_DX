@@ -1,5 +1,6 @@
 package com.giga.nexas.transfer.jinki2bsdx.steps;
 
+import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.ProgramMaterialGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.SeGroupGrp;
@@ -68,6 +69,7 @@ public class ImportStaticAssetsStep {
 
             // Step 8-2: 先把所有修改过的 grp 和 ProgramMaterial 真正写进产物。
             writePatchedGrpOutputs(bsdxBaseline, syncedProgramMaterial, outputRoot, importedAssetSet);
+            writePatchedConfigDatOutputs(jinkiPackage, bsdxBaseline, outputRoot, importedAssetSet);
 
             // Step 8-3: 再把主 mek / waz 产物直接平铺写到根目录。
             writeReboundMek(request, reboundAkaoMek, outputRoot, importedAssetSet);
@@ -116,6 +118,58 @@ public class ImportStaticAssetsStep {
         Path output = outputRoot.resolve(fileName);
         bsdxBinService.generate(output.toString(), (com.giga.nexas.dto.bsdx.Bsdx) grp, CHARSET);
         importedAssetSet.getGeneratedGrpFiles().add(output);
+    }
+
+    private void writePatchedConfigDatOutputs(
+            JinkiPackageBundle jinkiPackage,
+            BsdxBaselineBundle bsdxBaseline,
+            Path outputRoot,
+            ImportedAssetSet importedAssetSet
+    ) throws IOException {
+        Dat patchedWeaponEquip = buildPatchedWeaponEquipDat(jinkiPackage, bsdxBaseline);
+        if (patchedWeaponEquip == null) {
+            return;
+        }
+
+        Path configDir = outputRoot.resolve("Config");
+        Files.createDirectories(configDir);
+
+        Path configOutput = configDir.resolve("WeaponEquip.dat");
+        bsdxBinService.generate(configOutput.toString(), patchedWeaponEquip, CHARSET);
+        importedAssetSet.getGeneratedDatFiles().add(configOutput);
+
+        Path rootOutput = outputRoot.resolve("WeaponEquip.dat");
+        bsdxBinService.generate(rootOutput.toString(), patchedWeaponEquip, CHARSET);
+        importedAssetSet.getGeneratedDatFiles().add(rootOutput);
+    }
+
+    private Dat buildPatchedWeaponEquipDat(JinkiPackageBundle jinkiPackage, BsdxBaselineBundle bsdxBaseline) {
+        if (jinkiPackage == null || bsdxBaseline == null) {
+            return null;
+        }
+        Dat source = jinkiPackage.getWeaponEquipDat();
+        Dat baseline = bsdxBaseline.getWeaponEquipDat();
+        if (source == null || baseline == null || source.getData() == null || baseline.getData() == null) {
+            return null;
+        }
+
+        Dat patched = new Dat();
+        patched.setFileName(baseline.getFileName());
+        patched.setExtensionName(baseline.getExtensionName());
+        patched.setColumnCount(baseline.getColumnCount());
+        patched.setColumnTypes(new ArrayList<>(baseline.getColumnTypes()));
+
+        for (List<Object> row : baseline.getData()) {
+            patched.addRow(copyDatRow(row));
+        }
+        for (int i = baseline.getData().size(); i < source.getData().size(); i++) {
+            patched.addRow(copyDatRow(source.getData().get(i)));
+        }
+        return patched;
+    }
+
+    private List<Object> copyDatRow(List<Object> row) {
+        return row == null ? new ArrayList<>() : new ArrayList<>(row);
     }
 
     private void writeReboundMek(

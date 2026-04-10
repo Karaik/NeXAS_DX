@@ -47,6 +47,11 @@ public class DeserializeJinkiPackageStep {
             bundle.setWazaGroupGrp(parseRequired(request.getJinkiGrpDir().resolve("WazaGroup.grp"), WazaGroupGrp.class));
 
             bundle.setMekaDat(parseRequired(request.getJinkiDatDir().resolve("Meka.dat"), Dat.class));
+            bundle.setWeaponEquipDat(parseRequiredWithFallback(
+                    request.getJinkiDatDir().resolve("WeaponEquip.dat"),
+                    request.getExternalStaticAssetRoot() == null ? null : request.getExternalStaticAssetRoot().resolve("WeaponEquip.dat"),
+                    Dat.class
+            ));
 
             // JINKI 当前包内可能没有 MekaPilot.dat。
             // 这层对当前 graft 主链不是硬依赖，所以按可选输入处理。
@@ -73,6 +78,16 @@ public class DeserializeJinkiPackageStep {
         }
         ResponseDTO<?> dto = bsdxBinService.parse(path.toString(), CHARSET);
         return type.cast(dto.getData());
+    }
+
+    private <T> T parseRequiredWithFallback(Path primary, Path fallback, Class<T> type) throws IOException {
+        if (primary != null && Files.exists(primary)) {
+            return parseRequired(primary, type);
+        }
+        if (fallback != null && Files.exists(fallback)) {
+            return parseRequired(fallback, type);
+        }
+        throw new IllegalStateException("资源文件不存在: " + primary + " | fallback=" + fallback);
     }
 
     private <T> T parseOptional(Path path, Class<T> type) throws IOException {

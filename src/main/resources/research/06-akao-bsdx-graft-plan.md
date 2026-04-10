@@ -227,3 +227,43 @@ Step 10 的职责是把 meka 相关运行时容量硬编码从 `103` 放到 `104
 - 当前稳定现象是：hover 不崩，confirm 后崩
 
 也就是说，当前测试方向已经从“修菜单显示槽”推进到“确认 AKAO 之后的真实加载链”，用来继续验证 `mekaIndex = 103` 进入后是否还有下游数据或容量没对齐。
+
+## 固定修复集合
+
+### exe
+
+- `0x056CE4`
+  - `push 103 -> push 104`
+  - `dword_875F54` 对应 runtime meka table 预分配条数扩到 104
+- `0x056F45`
+  - `4336 * 103 -> 4336 * 104`
+  - 同一张 runtime meka table 的初始化边界扩到 104
+- `0x05498B`
+  - `56 * 103 -> 56 * 104`
+  - `sub_454E60` 的装备菜单文本填表上界扩到 104
+
+### data / graft
+
+- `WeaponEquip.dat` graft 到 104 行
+- 产物同时写出：
+  - `Config/WeaponEquip.dat`
+  - 根目录 `WeaponEquip.dat`
+
+## 测试锁定点
+
+- `TestJinki2BsdxRunner`
+  - 断言 `WeaponEquip.dat` 输出为 104 行
+  - 断言 patched exe 中：
+    - `0x056CE4 == 0x68`
+    - `0x056F45 == 0x0006E180`
+    - `0x05498B == 0x000016C0`
+
+## 现象落点
+
+- 旧的 confirm 崩溃链已跨过
+- `WeaponEquip.dat + 装备菜单文本填表上界` 对应的崩溃链已跨过
+- 复测目录：
+  - `src/main/resources/tmp/baldrsky_20260410_150356/`
+- 结果：
+  - `frida_stage_probe_log.txt` 仅有 `ready / arm`
+  - `crash_v6_log.txt = Exit code: 0x0, Dumps: 0`
