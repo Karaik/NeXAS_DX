@@ -632,12 +632,10 @@ public class TestJinki2BsdxRunner {
         Assertions.assertEquals(103, baselineRows);
         Assertions.assertEquals(104, sourceRows);
 
-        Path configOutput = result.getImportedAssetSet().getOutputRootDir().resolve("Config").resolve("WeaponEquip.dat");
         Path rootOutput = result.getImportedAssetSet().getOutputRootDir().resolve("WeaponEquip.dat");
-        Assertions.assertTrue(Files.exists(configOutput));
         Assertions.assertTrue(Files.exists(rootOutput));
 
-        Dat parsed = parseDat(configOutput);
+        Dat parsed = parseDat(rootOutput);
         Assertions.assertEquals(sourceRows, parsed.getData().size());
         Assertions.assertEquals(
                 result.getJinkiPackage().getWeaponEquipDat().getData().get(sourceRows - 1),

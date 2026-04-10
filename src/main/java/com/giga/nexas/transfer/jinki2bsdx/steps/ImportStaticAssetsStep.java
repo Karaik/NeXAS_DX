@@ -131,13 +131,6 @@ public class ImportStaticAssetsStep {
             return;
         }
 
-        Path configDir = outputRoot.resolve("Config");
-        Files.createDirectories(configDir);
-
-        Path configOutput = configDir.resolve("WeaponEquip.dat");
-        bsdxBinService.generate(configOutput.toString(), patchedWeaponEquip, CHARSET);
-        importedAssetSet.getGeneratedDatFiles().add(configOutput);
-
         Path rootOutput = outputRoot.resolve("WeaponEquip.dat");
         bsdxBinService.generate(rootOutput.toString(), patchedWeaponEquip, CHARSET);
         importedAssetSet.getGeneratedDatFiles().add(rootOutput);
