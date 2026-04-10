@@ -174,6 +174,20 @@ public class PatchExeCapacitiesStep {
     private static final int MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_OFFSET = 0x05498B;
     private static final int MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_EXPECTED = 0x00001688;
     private static final int MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_TARGET = 0x000016C0;
+    private static final int BATTLE_VOICE_GATE_BYPASS_OFFSET = 0x20C1FD;
+    private static final byte[] BATTLE_VOICE_GATE_BYPASS_EXPECTED = new byte[]{
+            (byte) 0x84, (byte) 0xC0, (byte) 0x75, (byte) 0x06
+    };
+    private static final byte[] BATTLE_VOICE_GATE_BYPASS_TARGET = new byte[]{
+            (byte) 0x90, (byte) 0x90, (byte) 0xEB, (byte) 0x06
+    };
+    private static final int BATTLE_VOICE_TABLE_GATE_BYPASS_OFFSET = 0x20C2CD;
+    private static final byte[] BATTLE_VOICE_TABLE_GATE_BYPASS_EXPECTED = new byte[]{
+            (byte) 0x84, (byte) 0xC0, (byte) 0x75, (byte) 0x06
+    };
+    private static final byte[] BATTLE_VOICE_TABLE_GATE_BYPASS_TARGET = new byte[]{
+            (byte) 0x90, (byte) 0x90, (byte) 0xEB, (byte) 0x06
+    };
 
     // ── 公开方法 ─────────────────────────────────────────────────────────
 
@@ -296,6 +310,18 @@ public class PatchExeCapacitiesStep {
                     MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_EXPECTED,
                     MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_TARGET,
                     "meka cap weapon-equip fill hard cap: 56*103 -> 56*104 (sub_454E60 cmp eax,0x1688)",
+                    plan);
+            applyBytesPatch(exeBytes,
+                    BATTLE_VOICE_GATE_BYPASS_OFFSET,
+                    BATTLE_VOICE_GATE_BYPASS_EXPECTED,
+                    BATTLE_VOICE_GATE_BYPASS_TARGET,
+                    "battle voice gate bypass: sub_60CDF0 ignores sub_60CC20 zero-return for direct AT/FC requests",
+                    plan);
+            applyBytesPatch(exeBytes,
+                    BATTLE_VOICE_TABLE_GATE_BYPASS_OFFSET,
+                    BATTLE_VOICE_TABLE_GATE_BYPASS_EXPECTED,
+                    BATTLE_VOICE_TABLE_GATE_BYPASS_TARGET,
+                    "battle voice gate bypass: sub_60CEC0 ignores sub_60CC20 zero-return for table-driven combat voice requests",
                     plan);
 
             if (plan.getRequiredSelectMekaMenuRows() > 0) {
@@ -503,6 +529,8 @@ public class PatchExeCapacitiesStep {
         plan.getNotes().add("site 10 @0x275158: save-write alt path, otherwise an alternate write path still stops at 103.");
         plan.getNotes().add("site 11 @0x30390A: standalone prealloc path, otherwise another meka-side allocator still uses 103.");
         plan.getNotes().add("site 12 @0x05498B: WeaponEquip fill hard cap, otherwise sub_454E60 still stops at 56 * 103 and slot 103 keeps garbage equip-menu label bytes.");
+        plan.getNotes().add("site 13 @0x20C1FD: sub_60CDF0 gate bypass, otherwise AT/FC battle-voice requests for appended mekaId 103 are rejected by sub_60CC20 before they enter the request queue.");
+        plan.getNotes().add("site 14 @0x20C2CD: sub_60CEC0 gate bypass, otherwise the sibling table-driven combat voice request path is still rejected by the same sub_60CC20 gate.");
     }
 
     private int readLittleEndianInt(byte[] bytes, int offset) {
@@ -517,6 +545,61 @@ public class PatchExeCapacitiesStep {
         bytes[offset + 1] = (byte) ((value >>> 8) & 0xFF);
         bytes[offset + 2] = (byte) ((value >>> 16) & 0xFF);
         bytes[offset + 3] = (byte) ((value >>> 24) & 0xFF);
+    }
+
+    private void applyBytesPatch(
+            byte[] exeBytes,
+            int offset,
+            byte[] expectedBytes,
+            byte[] targetBytes,
+            String label,
+            ExePatchPlan plan
+    ) {
+        if (offset < 0 || offset + targetBytes.length > exeBytes.length) {
+            throw new IllegalStateException(String.format("byte patch 鍋忕Щ瓒婄晫: 0x%06X", offset));
+        }
+
+        boolean matchesExpected = true;
+        boolean matchesTarget = true;
+        for (int i = 0; i < targetBytes.length; i++) {
+            byte current = exeBytes[offset + i];
+            if (current != expectedBytes[i]) {
+                matchesExpected = false;
+            }
+            if (current != targetBytes[i]) {
+                matchesTarget = false;
+            }
+        }
+
+        if (!matchesExpected && !matchesTarget) {
+            throw new IllegalStateException(String.format(
+                    "byte patch 鍋忕Щ鍘熷€间笉绗﹀悎棰勬湡: 0x%06X (%s)",
+                    offset,
+                    label
+            ));
+        }
+
+        for (int i = 0; i < targetBytes.length; i++) {
+            exeBytes[offset + i] = targetBytes[i];
+        }
+        plan.getTargetOffsets().add(String.format(
+                "0x%06X: %s %s -> %s",
+                offset,
+                label,
+                formatByteArray(matchesExpected ? expectedBytes : targetBytes),
+                formatByteArray(targetBytes)
+        ));
+    }
+
+    private String formatByteArray(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bytes.length; i++) {
+            if (i > 0) {
+                sb.append(' ');
+            }
+            sb.append(String.format("%02X", bytes[i] & 0xFF));
+        }
+        return sb.toString();
     }
 
     private String buildTimestampedExeName(Path sourceExe) {

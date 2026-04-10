@@ -662,6 +662,16 @@ public class TestJinki2BsdxRunner {
             Assertions.assertEquals(0x0006E180, imm32, "0x056F45 should patch runtime meka table init loop bound to 104 * 4336");
             int weaponEquipBound = readLittleEndianInt(exe, 0x05498B);
             Assertions.assertEquals(0x000016C0, weaponEquipBound, "0x05498B should patch WeaponEquip fill hard cap from 56 * 103 to 56 * 104");
+            Assertions.assertArrayEquals(
+                    new byte[]{(byte) 0x90, (byte) 0x90, (byte) 0xEB, (byte) 0x06},
+                    java.util.Arrays.copyOfRange(exe, 0x20C1FD, 0x20C201),
+                    "0x20C1FD should bypass sub_60CC20 failure return in sub_60CDF0 for direct AT/FC requests"
+            );
+            Assertions.assertArrayEquals(
+                    new byte[]{(byte) 0x90, (byte) 0x90, (byte) 0xEB, (byte) 0x06},
+                    java.util.Arrays.copyOfRange(exe, 0x20C2CD, 0x20C2D1),
+                    "0x20C2CD should bypass sub_60CC20 failure return in sub_60CEC0 for table-driven combat voice requests"
+            );
         } catch (Exception e) {
             throw new AssertionError("failed to read patched exe for runtime meka table assertions", e);
         }
