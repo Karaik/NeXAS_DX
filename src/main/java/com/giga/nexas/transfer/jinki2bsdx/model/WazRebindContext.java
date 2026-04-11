@@ -26,6 +26,7 @@ public class WazRebindContext {
     private Map<String, Integer> targetSpriteGroupIndexByFileName = new LinkedHashMap<>();
 
     private Map<Integer, Integer> sourceToTargetWazGroupIndex = new LinkedHashMap<>();
+    private Map<Integer, Map<Integer, Integer>> sourceToTargetWazSkillIndexByGroup = new LinkedHashMap<>();
     private Map<Integer, Integer> sourceToTargetSpriteGroupIndex = new LinkedHashMap<>();
     private Map<Integer, Integer> sourceToTargetSeGroupIndex = new LinkedHashMap<>();
     private Map<Integer, Map<Integer, Integer>> sourceToTargetSeItemIndexByGroup = new LinkedHashMap<>();

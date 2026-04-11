@@ -73,12 +73,13 @@ public class AppendGrpEntriesStep {
         plan.setBatVoiceGroupIndex(upsertBatVoiceGroup(bsdxBaseline.getBatVoiceGrp(), sourceBatVoice.group()));
         plan.getSourceBatVoiceGroupIndexToTargetIndex().put(sourceBatVoice.index(), plan.getBatVoiceGroupIndex());
 
-        // 5. 挂当前机体通过 CEventWazaSelect 用到的辅助 waz 链。
-        // WazaGroup 当前只追加主 AKAO 条目；Akao.waz 里引用到的 0..6 共享辅助 waz 继续复用 BSDX 现有索引。
-        mapReferencedWazGroups(importPlan, plan);
+        // 5. 挂当前机体通过 CEventWazaSelect 用到的辅助 waz 闭包。
+        // 同名辅助 WazaGroup 复用 BSDX 索引，目标缺失时尾插。
+        appendReferencedWazGroups(jinkiPackage, bsdxBaseline, importPlan, plan);
 
-        // 5-1. 主 AKAO 和外部实际引用到的共通 waz，都要把 grp.param 重算到真实 skill 数量。
-        //      当前策略是：主 AKAO 用 JINKI 的 Akao.waz；共享辅助 waz 继续复用 BSDX 现有文件。
+        buildReferencedWazSkillIndexMaps(request, jinkiPackage, bsdxBaseline, importPlan, plan);
+
+        // 5-1. 主 AKAO 和外部实际引用到的辅助 waz，都要把 grp.param 重算到输出 WAZ 的真实 skill 数量。
         recalculateReferencedWazaParams(request, jinkiPackage, bsdxBaseline, importPlan, plan);
 
         // 6. 挂当前机体通过 CEventSprite 用到的辅助 sprite 链。
@@ -90,7 +91,12 @@ public class AppendGrpEntriesStep {
         return plan;
     }
 
-    private void mapReferencedWazGroups(JinkiImportPlan importPlan, GrpAppendPlan plan) {
+    private void appendReferencedWazGroups(
+            JinkiPackageBundle jinkiPackage,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiImportPlan importPlan,
+            GrpAppendPlan plan
+    ) {
         for (Map.Entry<Integer, String> entry : importPlan.getReferencedSourceWazFileNameByGroupIndex().entrySet()) {
             Integer sourceIndex = entry.getKey();
             if (plan.getSourceWazGroupIndexToTargetIndex().containsKey(sourceIndex)) {
@@ -100,7 +106,51 @@ public class AppendGrpEntriesStep {
             Integer targetIndex = importPlan.getTargetWazIndexByFileName().get(normalizeFileName(entry.getValue()));
             if (targetIndex != null && targetIndex >= 0) {
                 plan.getSourceWazGroupIndexToTargetIndex().put(sourceIndex, targetIndex);
+                continue;
             }
+
+            WazaGroupGrp.WazaGroupEntry sourceEntry = requireSourceWazaGroupByIndex(
+                    jinkiPackage.getWazaGroupGrp(),
+                    sourceIndex
+            );
+            int appendedIndex = upsertWazaGroup(bsdxBaseline.getWazaGroupGrp(), sourceEntry);
+            plan.getSourceWazGroupIndexToTargetIndex().put(sourceIndex, appendedIndex);
+            importPlan.getTargetWazIndexByFileName().put(normalizeFileName(entry.getValue()), appendedIndex);
+        }
+    }
+
+    private void buildReferencedWazSkillIndexMaps(
+            AkaoGraftRequest request,
+            JinkiPackageBundle jinkiPackage,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiImportPlan importPlan,
+            GrpAppendPlan plan
+    ) {
+        Integer sourceMainWazIndex = importPlan.getSourceWazIndexByFileName().get(normalizeFileName(request.getWazFileName()));
+        if (sourceMainWazIndex != null) {
+            Waz sourceMainWaz = findWazByFileName(jinkiPackage.getWazByFileName(), request.getWazFileName());
+            if (sourceMainWaz != null) {
+                Map<Integer, Integer> identity = buildIdentitySkillMap(sourceMainWaz);
+                plan.getSourceWazSkillIndexToTargetIndexByGroup().put(sourceMainWazIndex, identity);
+                plan.getTargetWazSkillCountByGroupIndex().put(plan.getWazaGroupIndex(), countSkills(sourceMainWaz));
+            }
+        }
+
+        for (Map.Entry<Integer, String> entry : importPlan.getReferencedSourceWazFileNameByGroupIndex().entrySet()) {
+            Integer sourceIndex = entry.getKey();
+            Integer targetIndex = plan.getSourceWazGroupIndexToTargetIndex().get(sourceIndex);
+            if (targetIndex == null || targetIndex < 0) {
+                continue;
+            }
+            Waz sourceWaz = findWazByFileName(jinkiPackage.getWazByFileName(), entry.getValue());
+            Waz baselineWaz = findWazByFileName(bsdxBaseline.getWazByFileName(), entry.getValue());
+            if (sourceWaz == null) {
+                continue;
+            }
+
+            WazSkillMergePlan skillMergePlan = buildWazSkillMergePlan(sourceWaz, baselineWaz);
+            plan.getSourceWazSkillIndexToTargetIndexByGroup().put(sourceIndex, skillMergePlan.sourceToTargetSkillIndex());
+            plan.getTargetWazSkillCountByGroupIndex().put(targetIndex, skillMergePlan.targetSkillCount());
         }
     }
 
@@ -122,7 +172,7 @@ public class AppendGrpEntriesStep {
             updateWazaParam(targetWazaGroup, plan.getWazaGroupIndex(), countSkills(mainWaz));
         }
 
-        // 外部引用到的共享辅助 waz，当前继续复用 BSDX 现有文件，所以 param 也按 BSDX 实际文件重算。
+        // 外部引用到的辅助 waz 使用 merge 后 skill count 回写 param；没有 merge 计划时退回实际文件 count。
         for (Map.Entry<Integer, String> entry : importPlan.getReferencedSourceWazFileNameByGroupIndex().entrySet()) {
             Integer sourceIndex = entry.getKey();
             Integer targetIndex = plan.getSourceWazGroupIndexToTargetIndex().get(sourceIndex);
@@ -132,6 +182,12 @@ public class AppendGrpEntriesStep {
 
             // 主 AKAO 已经单独处理过，避免重复覆盖。
             if (targetIndex == plan.getWazaGroupIndex()) {
+                continue;
+            }
+
+            Integer mergedSkillCount = plan.getTargetWazSkillCountByGroupIndex().get(targetIndex);
+            if (mergedSkillCount != null) {
+                updateWazaParam(targetWazaGroup, targetIndex, mergedSkillCount);
                 continue;
             }
 
@@ -165,6 +221,62 @@ public class AppendGrpEntriesStep {
         return waz.getSkillList().size();
     }
 
+    private Map<Integer, Integer> buildIdentitySkillMap(Waz waz) {
+        Map<Integer, Integer> result = new LinkedHashMap<>();
+        if (waz == null || waz.getSkillList() == null) {
+            return result;
+        }
+        for (int i = 0; i < waz.getSkillList().size(); i++) {
+            result.put(i, i);
+        }
+        return result;
+    }
+
+    private WazSkillMergePlan buildWazSkillMergePlan(Waz sourceWaz, Waz baselineWaz) {
+        Map<Integer, Integer> sourceToTarget = new LinkedHashMap<>();
+        int baselineSkillCount = baselineWaz == null || baselineWaz.getSkillList() == null ? 0 : baselineWaz.getSkillList().size();
+        int nextTargetIndex = baselineSkillCount;
+
+        Map<String, Integer> baselineKeyToIndex = new LinkedHashMap<>();
+        if (baselineWaz != null && baselineWaz.getSkillList() != null) {
+            for (int i = 0; i < baselineWaz.getSkillList().size(); i++) {
+                String key = normalizeSkillKey(baselineWaz.getSkillList().get(i));
+                if (!key.isEmpty()) {
+                    baselineKeyToIndex.putIfAbsent(key, i);
+                }
+            }
+        }
+
+        if (sourceWaz != null && sourceWaz.getSkillList() != null) {
+            for (int i = 0; i < sourceWaz.getSkillList().size(); i++) {
+                String key = normalizeSkillKey(sourceWaz.getSkillList().get(i));
+                if (key.isEmpty()) {
+                    if (i < baselineSkillCount) {
+                        sourceToTarget.put(i, i);
+                    }
+                    continue;
+                }
+
+                Integer existingIndex = baselineKeyToIndex.get(key);
+                if (existingIndex != null) {
+                    sourceToTarget.put(i, existingIndex);
+                } else {
+                    sourceToTarget.put(i, nextTargetIndex++);
+                    baselineKeyToIndex.put(key, nextTargetIndex - 1);
+                }
+            }
+        }
+
+        return new WazSkillMergePlan(sourceToTarget, nextTargetIndex);
+    }
+
+    private String normalizeSkillKey(Waz.Skill skill) {
+        if (skill == null || skill.getSkillNameEnglish() == null) {
+            return "";
+        }
+        return skill.getSkillNameEnglish().trim().toLowerCase(Locale.ROOT);
+    }
+
     private Waz findWazByFileName(Map<String, Waz> wazByFileName, String fileName) {
         if (wazByFileName == null || wazByFileName.isEmpty()) {
             return null;
@@ -176,6 +288,9 @@ public class AppendGrpEntriesStep {
             }
         }
         return null;
+    }
+
+    private record WazSkillMergePlan(Map<Integer, Integer> sourceToTargetSkillIndex, int targetSkillCount) {
     }
 
     private void appendReferencedSpriteGroups(

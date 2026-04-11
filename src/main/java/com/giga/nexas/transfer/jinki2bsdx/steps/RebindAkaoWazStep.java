@@ -75,6 +75,62 @@ public class RebindAkaoWazStep {
         return targetWaz;
     }
 
+    public Waz rebindAuxiliaryWaz(
+            AkaoGraftRequest request,
+            Waz sourceWaz,
+            Waz baselineWaz,
+            JinkiImportPlan importPlan,
+            GrpAppendPlan grpAppendPlan,
+            Integer sourceWazGroupIndex
+    ) {
+        if (request == null || sourceWaz == null || importPlan == null || grpAppendPlan == null) {
+            return null;
+        }
+
+        WazRebindContext context = buildContext(request, sourceWaz, importPlan, grpAppendPlan);
+        Waz targetWaz = new Waz();
+        Waz shellSource = baselineWaz != null ? baselineWaz : sourceWaz;
+        targetWaz.setFileName(shellSource.getFileName());
+        targetWaz.setExtensionName(shellSource.getExtensionName());
+
+        List<Waz.Skill> targetSkills = new ArrayList<>();
+        int baselineSkillCount = baselineWaz == null || baselineWaz.getSkillList() == null ? 0 : baselineWaz.getSkillList().size();
+        if (baselineWaz != null && baselineWaz.getSkillList() != null) {
+            targetSkills.addAll(baselineWaz.getSkillList());
+        }
+
+        Map<Integer, Integer> skillIndexMap = sourceWazGroupIndex == null
+                ? null
+                : grpAppendPlan.getSourceWazSkillIndexToTargetIndexByGroup().get(sourceWazGroupIndex);
+        if (skillIndexMap == null || skillIndexMap.isEmpty()) {
+            targetWaz.setSkillList(rebuildSkillList(context));
+            return targetWaz;
+        }
+
+        List<Waz.Skill> sourceSkills = sourceWaz.getSkillList();
+        if (sourceSkills != null) {
+            for (int sourceIndex = 0; sourceIndex < sourceSkills.size(); sourceIndex++) {
+                Integer targetIndex = skillIndexMap.get(sourceIndex);
+                if (targetIndex == null || targetIndex < baselineSkillCount) {
+                    continue;
+                }
+                while (targetSkills.size() < targetIndex) {
+                    targetSkills.add(new Waz.Skill());
+                }
+                Waz.Skill rebuilt = rebuildSkill(sourceSkills.get(sourceIndex), context);
+                if (targetSkills.size() == targetIndex) {
+                    targetSkills.add(rebuilt);
+                } else {
+                    targetSkills.set(targetIndex, rebuilt);
+                }
+            }
+        }
+
+        targetWaz.setSkillList(targetSkills);
+        validateRebindResult(targetWaz, context);
+        return targetWaz;
+    }
+
     private Waz findRequiredSourceWaz(JinkiPackageBundle jinkiPackage, String fileName) {
         if (jinkiPackage.getWazByFileName() == null || jinkiPackage.getWazByFileName().isEmpty()) {
             return null;
@@ -146,6 +202,9 @@ public class RebindAkaoWazStep {
         }
         // BatVoiceGroup 源→目标映射：用于 CEventVoice 的 group 重绑
         context.getSourceToTargetBatVoiceGroupIndex().putAll(grpAppendPlan.getSourceBatVoiceGroupIndexToTargetIndex());
+        for (Map.Entry<Integer, Map<Integer, Integer>> entry : grpAppendPlan.getSourceWazSkillIndexToTargetIndexByGroup().entrySet()) {
+            context.getSourceToTargetWazSkillIndexByGroup().put(entry.getKey(), new LinkedHashMap<>(entry.getValue()));
+        }
         return context;
     }
 
@@ -352,7 +411,7 @@ public class RebindAkaoWazStep {
         // 这里保留序号本身。
         // wazSequenceNo 的语义是“目标 waz 文件内部的 skill 索引”，
         // 当前迁移策略是把对应的辅助 waz 文件整体导入，因此内部 skill 序号不在 step7 改。
-        target.setWazSequenceNo(source.getWazSequenceNo());
+        target.setWazSequenceNo(remapWazSkillIndex(source.getWazFileNo(), source.getWazSequenceNo(), context));
         return target;
     }
 
@@ -464,6 +523,18 @@ public class RebindAkaoWazStep {
         }
 
         throw new IllegalStateException("找不到源 waz 顶层索引对应的目标索引: " + sourceIndex);
+    }
+
+    private Integer remapWazSkillIndex(Integer sourceWazGroupIndex, Integer sourceSkillIndex, WazRebindContext context) {
+        if (sourceWazGroupIndex == null || sourceWazGroupIndex < 0 || sourceSkillIndex == null || sourceSkillIndex < 0) {
+            return sourceSkillIndex;
+        }
+
+        Map<Integer, Integer> skillIndexMap = context.getSourceToTargetWazSkillIndexByGroup().get(sourceWazGroupIndex);
+        if (skillIndexMap == null) {
+            return sourceSkillIndex;
+        }
+        return skillIndexMap.getOrDefault(sourceSkillIndex, sourceSkillIndex);
     }
 
     private Integer remapSpriteGroupIndex(Integer sourceIndex, WazRebindContext context) {

@@ -60,9 +60,8 @@ public class BuildImportPlanStep {
         spmFiles.sort(String.CASE_INSENSITIVE_ORDER);
         importPlan.getRequiredSpmFiles().addAll(spmFiles);
 
-        // 5. 从 Akao.waz（仅主 waz，不递归进辅助 waz）里抽出真正会用到的外部 waz / sprite / se 索引链。
-        //    辅助 waz（弹幕/特效类）内部没有 CEventWazaSelect/CEventSprite/CEventSe/CEventVoice 交叉引用，
-        //    因此不需要递归收集。如果未来引入有内部引用链的辅助 waz，此处需要改为广度优先遍历。
+        // 5. 从 Akao.waz 出发递归抽出真正会用到的外部 waz / sprite / se 索引链。
+        //    弹幕/特效类辅助 waz 内部也可能继续引用其他 WAZ，所以这里按闭包遍历。
         collectReferencedChainFromAkaoWaz(request, jinkiPackage, importPlan);
 
         // 6. 以“当前机体自己的资源链”为中心，形成这次迁移要处理的对象清单。
@@ -193,18 +192,37 @@ public class BuildImportPlanStep {
 
         Set<String> requiredWazFiles = new LinkedHashSet<>();
         requiredWazFiles.add(request.getWazFileName());
+        Set<String> visitedWazFiles = new LinkedHashSet<>();
 
         Map<Integer, String> sourceWazFileNameByIndex = invertIndexMap(importPlan.getSourceWazIndexByFileName());
         Map<Integer, String> sourceSpriteFileNameByIndex = invertIndexMap(importPlan.getSourceSpriteIndexByFileName());
 
-        traverseWazReferences(
-                sourceWaz,
-                importPlan,
-                jinkiPackage,
-                sourceWazFileNameByIndex,
-                sourceSpriteFileNameByIndex,
-                requiredWazFiles
-        );
+        boolean changed;
+        do {
+            changed = false;
+            List<String> snapshot = new ArrayList<>(requiredWazFiles);
+            for (String fileName : snapshot) {
+                String normalizedFileName = normalizeFileName(fileName);
+                if (!visitedWazFiles.add(normalizedFileName)) {
+                    continue;
+                }
+                Waz currentWaz = findRequiredSourceWaz(jinkiPackage, fileName);
+                if (currentWaz == null) {
+                    importPlan.getUnresolvedResources().add("缂哄皯杈呭姪 waz: " + fileName);
+                    continue;
+                }
+                int before = requiredWazFiles.size();
+                traverseWazReferences(
+                        currentWaz,
+                        importPlan,
+                        jinkiPackage,
+                        sourceWazFileNameByIndex,
+                        sourceSpriteFileNameByIndex,
+                        requiredWazFiles
+                );
+                changed |= requiredWazFiles.size() > before;
+            }
+        } while (changed);
 
         importPlan.getRequiredWazFiles().clear();
         importPlan.getRequiredWazFiles().addAll(requiredWazFiles);

@@ -8,17 +8,18 @@
 
 当前迁移模型已经对齐为：
 
-1. 先从 `Akao.waz` 中抽当前机体真实使用到的资源链和索引链
+1. 先从 `Akao.waz` 出发递归抽当前机体真实使用到的 WAZ 闭包、资源链和索引链
 2. 再对链上的每个资源做“复用还是尾插”的决策
-3. 形成统一的 `JINKI源索引 -> BSDX目标索引`
-4. `mek / waz` 内部只消费这张结果表做重定向
+3. 对辅助 WAZ 形成 key-based skill merge 结果
+4. 形成统一的 `JINKI源索引 -> BSDX目标索引`
+5. `mek / waz` 内部只消费这些结果表做重定向
 
 当前这一步对 `WazaGroup` 的处理已经收窄为：
 
 - 只把 `JINKI[110] = AKAO` 这个主条目 append 到 BSDX 末尾
-- `Akao.waz` 里通过 `wazFileNo = 0..6` 引用到的共享辅助 `waz` 继续复用 BSDX 现有索引
-- 不再在 `step4` 扩散追加同名辅助 `WazaGroup` 项
-- 主 `AKAO` 和外部实际引用到的共通 `waz`，都会按最终采用的 `.waz.skillList.size()` 重算 `WazaGroup.param`
+- 辅助 WAZ 按文件名复用 BSDX 现有 WazaGroup；目标缺失时 append
+- 辅助 WAZ 内部建立 `source skill index -> target skill index`
+- 主 `AKAO` 和辅助 WAZ 都会按最终输出 `.waz.skillList.size()` 回写 `WazaGroup.param`
 
 当前测试侧还额外有一个重要前提：
 
@@ -29,6 +30,7 @@
 当前已纳入链分析的对象：
 
 - `CEventWazaSelect.wazFileNo`
+- `CEventWazaSelect.wazSequenceNo`
 - `CEventSprite.spmFileSequence`
 - `CEventSe.group/item`
 - `CEventVoice`
@@ -79,6 +81,7 @@
 - 所有资源平铺到输出根目录
 - 写入重绑后的 `Akao.mek`
 - 写入重绑后的 `Akao.waz`
+- 写入合并后的辅助 WAZ
 - 写入修改后的：
   - `MekaGroup.grp`
   - `WazaGroup.grp`
@@ -86,9 +89,8 @@
   - `BatVoice.grp`
   - `SeGroup.grp`
   - `ProgramMaterial.grp`
-- 复制链上辅助 `waz`
 - 复制链上 `spm`
-- 按 `spm.imageData` 补齐当前链引用的图像资源
+- 按 `requiredSpmFiles` 和新增 / 新设 skill 可达 SPM 的 `imageData` 补齐图像资源
 - 只复制当前链真实关联的语音和音效
 
 当前实测现状：
@@ -241,13 +243,20 @@ Step 10 的职责是把 meka 相关运行时容量硬编码从 `103` 放到 `104
 - `0x05498B`
   - `56 * 103 -> 56 * 104`
   - `sub_454E60` 的装备菜单文本填表上界扩到 104
+- `0x20C1FD`
+  - `84 C0 75 06 -> 90 90 EB 06`
+  - `sub_60CDF0` 的直接型 AT/FC 战斗语音 request 不再被 `sub_60CC20` 的零返回提前截断
+- `0x20C2CD`
+  - `84 C0 75 06 -> 90 90 EB 06`
+  - `sub_60CEC0` 的表驱动型战斗语音 request 不再被 `sub_60CC20` 的零返回提前截断
 
 ### data / graft
 
 - `WeaponEquip.dat` graft 到 104 行
-- 产物同时写出：
-  - `Config/WeaponEquip.dat`
-  - 根目录 `WeaponEquip.dat`
+- `WeaponEquip.dat` 输出到根目录
+- 辅助 WAZ 递归闭包 + key-based merge
+- 辅助 WAZ 内部 `CEventWazaSelect` group/skill 双层 remap
+- 新增 / 新设 skill 可达 SPM 图片进入输出包
 
 ## 测试锁定点
 
@@ -257,6 +266,11 @@ Step 10 的职责是把 meka 相关运行时容量硬编码从 `103` 放到 `104
     - `0x056CE4 == 0x68`
     - `0x056F45 == 0x0006E180`
     - `0x05498B == 0x000016C0`
+    - `0x20C1FD == 90 90 EB 06`
+    - `0x20C2CD == 90 90 EB 06`
+  - 断言 `bomb.waz` 输出为 136 个 skill
+  - 断言 `Tama02/Tama04/Tama05` 正确引用 `Bomb[134/133/135]`
+  - 断言 `bomb_004_0002.png` 进入输出
 
 ## 现象落点
 

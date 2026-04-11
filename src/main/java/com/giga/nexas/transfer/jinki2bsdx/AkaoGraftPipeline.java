@@ -90,7 +90,8 @@ public class AkaoGraftPipeline {
                         importPlan,
                         result.getSyncedProgramMaterial(),
                         result.getReboundAkaoMek(),
-                        result.getReboundAkaoWaz()
+                        result.getReboundAkaoWaz(),
+                        grpAppendPlan
                 );
         result.setImportedAssetSet(importedAssetSet);
 

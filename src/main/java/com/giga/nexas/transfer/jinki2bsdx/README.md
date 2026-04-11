@@ -14,21 +14,22 @@
 
 `step3/4/6/7` 共用一套"资源链驱动"的规则：
 
-1. 从 `Akao.waz` 中深度遍历，抽出当前机体真实使用到的资源索引链
+1. 从 `Akao.waz` 出发递归遍历辅助 WAZ 闭包，抽出当前机体真实使用到的资源索引链
 2. 对链上的每个资源做"复用还是尾插"的决策（先按 codeName/fileName 去 BSDX 基线中查重）
-3. 形成统一的 `JINKI源索引 -> BSDX目标索引` 映射表
-4. `mek / waz` 内部只按这张表做重定向
+3. 对辅助 WAZ 做 key-based skill merge，形成 `source WAZ skill index -> target WAZ skill index`
+4. 形成统一的 `JINKI源索引 -> BSDX目标索引` 映射表
+5. `mek / waz` 内部只按这些结果表做重定向
 
 当前已纳入链分析的事件字段：
 
 | 事件类型 | 索引字段 | 重绑方式 |
 |---|---|---|
-| `CEventWazaSelect` | `wazFileNo` -> JINKI WazaGroup 顶层索引 | 源->目标 WazaGroup 索引重映射 |
+| `CEventWazaSelect` | `wazFileNo` -> JINKI WazaGroup 顶层索引；`wazSequenceNo` -> 源 WAZ 内部 skill 索引 | group/skill 双层重映射 |
 | `CEventSprite` | `spmFileSequence` -> JINKI SpriteGroup 顶层索引 | 源->目标 SpriteGroup 索引重映射 |
 | `CEventSe` | `byteDataList[i]` 前 4 字节=seGroupIndex, 后 4 字节=seItemIndex | group/item 分别重映射 |
 | `CEventVoice` | `byteDataList[i]` 前 4 字节=BatVoiceGroup 全局索引 | 语音组索引重映射 |
 
-辅助 waz（弹幕/特效类）不递归收集——它们内部没有 `CEventWazaSelect/CEventSprite/CEventSe/CEventVoice` 交叉引用。
+辅助 WAZ（弹幕/特效类）参与递归闭包收集；输出时保留 BSDX 同名 WAZ 主体，只 append JINKI 非空且 BSDX 不存在的 skill，并重写内部 `CEventWazaSelect` 的 group/skill 索引。
 
 ## Pipeline 主链 (11 步)
 
@@ -87,8 +88,9 @@ AkaoGraftRequest
 核心逻辑：
 1. 建立 JINKI / BSDX 两侧的 sprite/waz 文件名到索引的映射表
 2. 固定主 mek 文件，全量纳入包内 spm
-3. 从 `Akao.waz` 中深度遍历所有 `SkillInfoObject`，通过反射处理嵌套 `*UnitList`
-4. 收集 `CEventWazaSelect`（辅助 waz）、`CEventSprite`（sprite）、`CEventSe`（se group/item）的引用链
+3. 从 `Akao.waz` 出发递归遍历 WAZ 闭包，深度遍历每个 WAZ 的 `SkillInfoObject`
+4. 通过反射处理嵌套 `*UnitList`
+5. 收集 `CEventWazaSelect`（辅助 waz）、`CEventSprite`（sprite）、`CEventSe`（se group/item）的引用链
 
 ### Step 4: AppendGrpEntriesStep
 
@@ -97,19 +99,17 @@ AkaoGraftRequest
 **输入**：`AkaoGraftRequest`, `JinkiPackageBundle`, `BsdxBaselineBundle`, `JinkiImportPlan`
 **输出**：`GrpAppendPlan`
 
-当前这一步对 `WazaGroup` 的处理已经收窄为：
-
 - 只把 `JINKI[110] = AKAO` 这个主条目 append 到 BSDX 末尾
-- `Akao.waz` 里通过 `wazFileNo = 0..6` 引用到的共享辅助 `waz` 继续复用 BSDX 现有索引
-- 不再在 `step4` 扩散追加同名辅助 `WazaGroup` 项
-- 主 `AKAO` 和外部实际引用到的共通 `waz`，都会按最终采用的 `.waz.skillList.size()` 重算 `WazaGroup.param`
+- 辅助 WAZ 按文件名复用 BSDX 现有 WazaGroup；目标缺失时 append
+- 对每个辅助 WAZ 建立 `source skill index -> target skill index`
+- 主 `AKAO` 和辅助 WAZ 都按最终输出 `.waz.skillList.size()` 回写 `WazaGroup.param`
 
 7 步挂载流程：
 1. 挂主机体 MekaGroup → `MekaGroup[103]`（append 模式，count 103→104）
 2. 挂主 WazaGroup（只 append `AKAO`）
 3. 挂主 SpriteGroup
 4. 挂 AKAO 的 BatVoiceGroup
-5. 共享辅助 WazaGroup 保持复用 BSDX 现有索引
+5. 辅助 WazaGroup 按文件名复用或 append，并生成 WAZ 内部 skill 映射
 6. 挂辅助 SpriteGroup 链
 7. 挂 SeGroup 组和组内 SeItem 链
 
@@ -185,6 +185,7 @@ MekaGroup 特殊：支持 `fixedMekaGroupIndex` 强制替换指定位置（当�
 
 重绑的外部引用：
 - `CEventWazaSelect.wazFileNo` -> 目标 WazaGroup 索引
+- `CEventWazaSelect.wazSequenceNo` -> merge 后目标 WAZ 内部 skill 索引
 - `CEventSprite.spmFileSequence` -> 目标 SpriteGroup 索引
 - `CEventSe byteDataList` -> 目标 SeGroup/SeItem 索引（小端序覆写）
 - `CEventVoice byteDataList` 前 4 字节 -> 目标 BatVoiceGroup 索引
@@ -201,9 +202,9 @@ MekaGroup 特殊：支持 `fixedMekaGroupIndex` 强制替换指定位置（当�
 - 7 份修改后的 GRP（MekaGroup/WazaGroup/SpriteGroup/BatVoice/SeGroup/MapGroup/ProgramMaterial）
 - 重绑后的 `Akao.mek`（通过 `BsdxBinService.generate` 序列化）
 - 重绑后的 `Akao.waz`
-- 辅助 waz 文件（原样 Files.copy，不递归重绑）
+- 辅助 WAZ 合并产物（BSDX 主体 + JINKI 非空新增 skill append + 内部引用重绑）
 - 包内所有 spm 文件
-- 当前链实际引用到的图像资源（从 spm.imageData 收集文件名）
+- 当前链实际引用到的图像资源（从 `requiredSpmFiles` 和 grafted skill 可达 SPM 的 `imageData` 收集文件名）
 - 当前链真实关联到的语音和音效文件（优先 .ogg，回退 .wav）
 
 **已知**：21 张图像资源缺口已确认为原始游戏资源本身就缺，按"已知原版缺口"处理。
@@ -396,7 +397,6 @@ out/
 
 - `ProgramMaterial.array1.values[*]` 绑定 MapGroup 索引，当前 AKAO graft 中 values 为空不影响
 - SelectMekaMenu 超过 76 项后需要继续做 switch/object-id 审计
-- 辅助 waz 不递归重绑（当前策略足够，弹幕/特效内部无交叉引用）
 - 存在 2 处可能需要追加的 meka patch 位点（`0x2749EB`, `0x056CE3`），待实机验证确认
 
 ## 固定修复集合
@@ -412,13 +412,20 @@ out/
 - `0x05498B`
   - `56 * 103 -> 56 * 104`
   - `sub_454E60` 的装备菜单文本填表上界扩到 104
+- `0x20C1FD`
+  - `84 C0 75 06 -> 90 90 EB 06`
+  - `sub_60CDF0` 忽略 `sub_60CC20` 的零返回，放开直接型 AT/FC 战斗语音 request
+- `0x20C2CD`
+  - `84 C0 75 06 -> 90 90 EB 06`
+  - `sub_60CEC0` 忽略 `sub_60CC20` 的零返回，放开表驱动型战斗语音 request
 
 ### data / graft
 
 - `WeaponEquip.dat` 追加第 104 行
-- 输出到：
-  - `Config/WeaponEquip.dat`
-  - 根目录 `WeaponEquip.dat`
+- `WeaponEquip.dat` 输出到根目录
+- 辅助 WAZ 递归闭包 + key-based merge
+- 辅助 WAZ 内部 `CEventWazaSelect` group/skill 双层 remap
+- JINKI 新增 / 新设 skill 可达的 SPM 图片进入输出包
 
 ## 测试锁定点
 
@@ -428,6 +435,11 @@ out/
     - `0x056CE4 == 0x68`
     - `0x056F45 == 0x0006E180`
     - `0x05498B == 0x000016C0`
+    - `0x20C1FD == 90 90 EB 06`
+    - `0x20C2CD == 90 90 EB 06`
+  - 检查 `bomb.waz` 进入输出且 skill count 为 136
+  - 检查 `Tama02/Tama04/Tama05` 正确引用 `Bomb[134/133/135]`
+  - 检查 `bomb_004_0002.png` 进入输出
 
 ## 运行结果落点
 

@@ -7,6 +7,7 @@ import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventVoice;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventWazaSelect;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.transfer.jinki2bsdx.Jinki2BsdxSingleRunner;
@@ -17,6 +18,9 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Locale;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -69,6 +73,7 @@ public class TestJinki2BsdxRunner {
         Assertions.assertFalse(collectVoiceGroupIndices(result.getReboundAkaoWaz()).isEmpty());
         Assertions.assertTrue(collectVoiceGroupIndices(result.getReboundAkaoWaz()).stream().allMatch(index -> index == 30));
         assertWazaGroupParamsMatchActualWaz(result);
+        assertAuxiliaryWazGraftAndRebind(result);
         assertMaterialSpriteGroupsRemapped(result);
         assertMaterialSeGroupsRemapped(result);
         assertMaterialVoiceGroupsRemapped(result);
@@ -584,7 +589,10 @@ public class TestJinki2BsdxRunner {
             String sourceFileName = findSourceWazFileName(result, sourceIndex);
             Assertions.assertNotNull(sourceFileName, "缺少源 Waz 文件名映射: " + sourceIndex);
 
-            Waz actualWaz = findWazByFileName(result.getBsdxBaseline().getWazByFileName(), sourceFileName);
+            Waz actualWaz = parseOutputWazIfExists(result, sourceFileName);
+            if (actualWaz == null) {
+                actualWaz = findWazByFileName(result.getBsdxBaseline().getWazByFileName(), sourceFileName);
+            }
             if (actualWaz == null) {
                 actualWaz = findWazByFileName(result.getJinkiPackage().getWazByFileName(), sourceFileName);
             }
@@ -598,6 +606,56 @@ public class TestJinki2BsdxRunner {
                     "WazaGroup.param 与实际 waz 技能数不一致: sourceIndex=" + sourceIndex + ", file=" + sourceFileName + ", targetIndex=" + targetIndex
             );
         }
+    }
+
+    private Waz parseOutputWazIfExists(AkaoGraftResult result, String fileName) {
+        if (result == null || result.getImportedAssetSet() == null || result.getImportedAssetSet().getOutputRootDir() == null) {
+            return null;
+        }
+        Path output = result.getImportedAssetSet().getOutputRootDir().resolve(fileName);
+        if (!Files.exists(output)) {
+            return null;
+        }
+        return parseWaz(output);
+    }
+
+    private void assertAuxiliaryWazGraftAndRebind(AkaoGraftResult result) {
+        Assertions.assertTrue(
+                result.getImportPlan().getRequiredWazFiles().stream().anyMatch(file -> "bomb.waz".equalsIgnoreCase(file)),
+                "Bomb.waz should be pulled in through recursive Tama references"
+        );
+
+        Path outputRoot = result.getImportedAssetSet().getOutputRootDir();
+        Path bombPath = outputRoot.resolve("bomb.waz");
+        Assertions.assertTrue(Files.exists(bombPath), "merged Bomb.waz should be written to output");
+        Waz bombWaz = parseWaz(bombPath);
+        Assertions.assertEquals(136, bombWaz.getSkillList().size(), "Bomb.waz should keep BSDX skills and append JINKI tail skills 133..135");
+
+        Integer targetBombGroup = result.getGrpAppendPlan().getSourceWazGroupIndexToTargetIndex().get(7);
+        Assertions.assertNotNull(targetBombGroup, "source WazaGroup[7]=BOMB should have target mapping");
+
+        for (String fileName : List.of("Tama01.waz", "Tama02.waz", "Tama03.waz", "Tama04.waz", "Tama05.waz")) {
+            Path path = outputRoot.resolve(fileName);
+            Assertions.assertTrue(Files.exists(path), fileName + " should be written to output");
+            Waz waz = parseWaz(path);
+            List<WazRef> refs = collectWazRefs(waz);
+            Assertions.assertTrue(refs.stream().anyMatch(ref -> ref.groupIndex() == targetBombGroup) || fileName.equals("Tama01.waz"));
+        }
+
+        assertHasWazRef(parseWaz(outputRoot.resolve("Tama02.waz")), targetBombGroup, 134);
+        assertHasWazRef(parseWaz(outputRoot.resolve("Tama04.waz")), targetBombGroup, 133);
+        assertHasWazRef(parseWaz(outputRoot.resolve("Tama05.waz")), targetBombGroup, 135);
+        Assertions.assertTrue(
+                Files.exists(outputRoot.resolve("bomb_004_0002.png")),
+                "Bomb.waz[134] should pull bomb.spm image bomb_004_0002.png into output"
+        );
+    }
+
+    private void assertHasWazRef(Waz waz, int expectedGroup, int expectedSequence) {
+        Assertions.assertTrue(
+                collectWazRefs(waz).stream().anyMatch(ref -> ref.groupIndex() == expectedGroup && ref.sequenceNo() == expectedSequence),
+                "expected CEventWazaSelect ref group=" + expectedGroup + ", sequence=" + expectedSequence
+        );
     }
 
     private String findSourceWazFileName(AkaoGraftResult result, Integer sourceIndex) {
@@ -650,6 +708,100 @@ public class TestJinki2BsdxRunner {
         } catch (Exception e) {
             throw new AssertionError("failed to parse dat: " + path, e);
         }
+    }
+
+    private Waz parseWaz(Path path) {
+        try {
+            ResponseDTO<?> dto = new BsdxBinService().parse(path.toString(), "windows-31j");
+            return (Waz) dto.getData();
+        } catch (Exception e) {
+            throw new AssertionError("failed to parse waz: " + path, e);
+        }
+    }
+
+    private List<WazRef> collectWazRefs(Waz waz) {
+        List<WazRef> refs = new ArrayList<>();
+        if (waz == null || waz.getSkillList() == null) {
+            return refs;
+        }
+        for (Waz.Skill skill : waz.getSkillList()) {
+            if (skill == null || skill.getPhasesInfo() == null) {
+                continue;
+            }
+            for (Waz.Skill.SkillPhase phase : skill.getPhasesInfo()) {
+                if (phase == null || phase.getSkillUnitCollection() == null) {
+                    continue;
+                }
+                for (SkillUnit unit : phase.getSkillUnitCollection()) {
+                    if (unit == null || unit.getSkillInfoObjectList() == null) {
+                        continue;
+                    }
+                    for (SkillInfoObject object : unit.getSkillInfoObjectList()) {
+                        collectWazRefsFromObject(object, refs);
+                    }
+                }
+            }
+        }
+        return refs;
+    }
+
+    private void collectWazRefsFromObject(SkillInfoObject object, List<WazRef> refs) {
+        if (object == null) {
+            return;
+        }
+        if (object instanceof CEventWazaSelect select) {
+            refs.add(new WazRef(select.getWazFileNo(), select.getWazSequenceNo()));
+        }
+
+        for (Field field : getAllFields(object.getClass())) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            if (!List.class.isAssignableFrom(field.getType()) || !field.getName().endsWith("UnitList")) {
+                continue;
+            }
+            field.setAccessible(true);
+            try {
+                Object units = field.get(object);
+                if (!(units instanceof List<?> unitList)) {
+                    continue;
+                }
+                for (Object unit : unitList) {
+                    SkillInfoObject data = getNestedUnitData(unit);
+                    if (data != null) {
+                        collectWazRefsFromObject(data, refs);
+                    }
+                }
+            } catch (ReflectiveOperationException e) {
+                throw new AssertionError("failed to collect nested waz refs", e);
+            }
+        }
+    }
+
+    private SkillInfoObject getNestedUnitData(Object unit) {
+        if (unit == null) {
+            return null;
+        }
+        try {
+            Method getter = unit.getClass().getMethod("getData");
+            Object value = getter.invoke(unit);
+            return value instanceof SkillInfoObject object ? object : null;
+        } catch (ReflectiveOperationException e) {
+            return null;
+        }
+    }
+
+    private List<Field> getAllFields(Class<?> type) {
+        List<Field> fields = new ArrayList<>();
+        Class<?> current = type;
+        while (current != null && current != Object.class) {
+            fields.addAll(List.of(current.getDeclaredFields()));
+            current = current.getSuperclass();
+        }
+        return fields;
+    }
+
+    private record WazRef(int groupIndex, int sequenceNo) {
     }
 
     private void assertExeContainsPatchedMekaRuntimeTableBounds(AkaoGraftResult result) {

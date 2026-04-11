@@ -4,17 +4,25 @@ import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.ProgramMaterialGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.SeGroupGrp;
+import com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp;
 import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.spm.Spm;
 import com.giga.nexas.dto.bsdx.waz.Waz;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSprite;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
 import com.giga.nexas.transfer.jinki2bsdx.model.BsdxBaselineBundle;
+import com.giga.nexas.transfer.jinki2bsdx.model.GrpAppendPlan;
 import com.giga.nexas.transfer.jinki2bsdx.model.ImportedAssetSet;
 import com.giga.nexas.transfer.jinki2bsdx.model.JinkiImportPlan;
 import com.giga.nexas.transfer.jinki2bsdx.model.JinkiPackageBundle;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -42,6 +50,7 @@ public class ImportStaticAssetsStep {
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS");
 
     private final BsdxBinService bsdxBinService = new BsdxBinService();
+    private final RebindAkaoWazStep rebindAkaoWazStep = new RebindAkaoWazStep();
 
     public ImportedAssetSet importAssets(
             AkaoGraftRequest request,
@@ -50,7 +59,8 @@ public class ImportStaticAssetsStep {
             JinkiImportPlan importPlan,
             ProgramMaterialGrp syncedProgramMaterial,
             Mek reboundAkaoMek,
-            Waz reboundAkaoWaz
+            Waz reboundAkaoWaz,
+            GrpAppendPlan grpAppendPlan
     ) {
         ImportedAssetSet importedAssetSet = new ImportedAssetSet();
         if (request == null || jinkiPackage == null || bsdxBaseline == null || importPlan == null) {
@@ -78,14 +88,14 @@ public class ImportStaticAssetsStep {
             writePatchedBaselineMeks(bsdxBaseline, request.getMekFileName(), outputRoot, importedAssetSet);
             writeReboundWaz(request, reboundAkaoWaz, outputRoot, importedAssetSet);
 
-            // Step 8-4: 再把辅助 waz 平铺复制到根目录。
-            copyRequiredWazFiles(request, importPlan, outputRoot, importedAssetSet);
+            // Step 8-4: 再把辅助 waz 的 merge/rebind 产物平铺写到根目录。
+            writeRequiredAuxiliaryWazFiles(request, jinkiPackage, bsdxBaseline, importPlan, grpAppendPlan, outputRoot, importedAssetSet);
 
             // Step 8-5: 把链上需要的 spm 平铺复制到根目录。
             copyRequiredSpmFiles(request, importPlan, outputRoot, importedAssetSet);
 
             // Step 8-6: 再按这些 spm 的 imageData，补齐真正用到的图像文件。
-            copyRequiredImageFiles(request, jinkiPackage, importPlan, outputRoot, importedAssetSet);
+            copyRequiredImageFiles(request, jinkiPackage, bsdxBaseline, importPlan, grpAppendPlan, outputRoot, importedAssetSet);
 
             // Step 8-7: 最后只补当前机体链真实关联到的音频，不再整组打包。
             copyRequiredAudioAssets(request, jinkiPackage, importPlan, reboundAkaoMek, reboundAkaoWaz, outputRoot, importedAssetSet);
@@ -230,9 +240,12 @@ public class ImportStaticAssetsStep {
         importedAssetSet.getGeneratedWazFiles().add(output);
     }
 
-    private void copyRequiredWazFiles(
+    private void writeRequiredAuxiliaryWazFiles(
             AkaoGraftRequest request,
+            JinkiPackageBundle jinkiPackage,
+            BsdxBaselineBundle bsdxBaseline,
             JinkiImportPlan importPlan,
+            GrpAppendPlan grpAppendPlan,
             Path outputRoot,
             ImportedAssetSet importedAssetSet
     ) throws IOException {
@@ -241,16 +254,39 @@ public class ImportStaticAssetsStep {
                 continue;
             }
 
-            Path source = resolveFileCaseInsensitive(request.getJinkiWazDir(), fileName);
-            if (source == null) {
+            Waz sourceWaz = findWazByFileName(jinkiPackage.getWazByFileName(), fileName);
+            if (sourceWaz == null) {
                 importedAssetSet.getMissingAssets().add("缺少辅助 waz: " + fileName);
                 continue;
             }
 
-            Path output = outputRoot.resolve(source.getFileName().toString());
-            Files.copy(source, output, StandardCopyOption.REPLACE_EXISTING);
+            Integer sourceWazGroupIndex = findSourceWazGroupIndex(importPlan, fileName);
+            Waz baselineWaz = findWazByFileName(bsdxBaseline.getWazByFileName(), fileName);
+            Waz outputWaz = rebindAkaoWazStep.rebindAuxiliaryWaz(
+                    request,
+                    sourceWaz,
+                    baselineWaz,
+                    importPlan,
+                    grpAppendPlan,
+                    sourceWazGroupIndex
+            );
+
+            Path output = outputRoot.resolve(fileName);
+            bsdxBinService.generate(output.toString(), outputWaz, CHARSET);
             importedAssetSet.getGeneratedWazFiles().add(output);
         }
+    }
+
+    private Integer findSourceWazGroupIndex(JinkiImportPlan importPlan, String fileName) {
+        if (importPlan == null || importPlan.getSourceWazIndexByFileName() == null) {
+            return null;
+        }
+        for (Map.Entry<String, Integer> entry : importPlan.getSourceWazIndexByFileName().entrySet()) {
+            if (normalize(entry.getKey()).equals(normalize(fileName))) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     private void copyRequiredSpmFiles(
@@ -275,7 +311,9 @@ public class ImportStaticAssetsStep {
     private void copyRequiredImageFiles(
             AkaoGraftRequest request,
             JinkiPackageBundle jinkiPackage,
+            BsdxBaselineBundle bsdxBaseline,
             JinkiImportPlan importPlan,
+            GrpAppendPlan grpAppendPlan,
             Path outputRoot,
             ImportedAssetSet importedAssetSet
     ) throws IOException {
@@ -285,6 +323,7 @@ public class ImportStaticAssetsStep {
         }
 
         Set<String> imageNames = collectRequiredImageNames(jinkiPackage, importPlan);
+        imageNames.addAll(collectGraftedSkillImageNames(jinkiPackage, bsdxBaseline, importPlan, grpAppendPlan, outputRoot));
         if (imageNames.isEmpty()) {
             return;
         }
@@ -324,6 +363,233 @@ public class ImportStaticAssetsStep {
         }
 
         return imageNames;
+    }
+
+    private Set<String> collectGraftedSkillImageNames(
+            JinkiPackageBundle jinkiPackage,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiImportPlan importPlan,
+            GrpAppendPlan grpAppendPlan,
+            Path outputRoot
+    ) throws IOException {
+        Set<String> imageNames = new LinkedHashSet<>();
+        if (jinkiPackage == null || bsdxBaseline == null || importPlan == null || grpAppendPlan == null || outputRoot == null) {
+            return imageNames;
+        }
+
+        for (String fileName : importPlan.getRequiredWazFiles()) {
+            Integer sourceWazGroupIndex = findSourceWazGroupIndex(importPlan, fileName);
+            if (sourceWazGroupIndex == null) {
+                continue;
+            }
+
+            Map<Integer, Integer> skillIndexMap = grpAppendPlan.getSourceWazSkillIndexToTargetIndexByGroup().get(sourceWazGroupIndex);
+            if (skillIndexMap == null || skillIndexMap.isEmpty()) {
+                continue;
+            }
+
+            Waz sourceWaz = findWazByFileName(jinkiPackage.getWazByFileName(), fileName);
+            Waz baselineWaz = findWazByFileName(bsdxBaseline.getWazByFileName(), fileName);
+            Waz outputWaz = parseOutputWaz(outputRoot, fileName);
+            if (sourceWaz == null || outputWaz == null || sourceWaz.getSkillList() == null || outputWaz.getSkillList() == null) {
+                continue;
+            }
+
+            Set<String> baselineKeys = collectSkillKeys(baselineWaz);
+            int baselineSkillCount = baselineWaz == null || baselineWaz.getSkillList() == null ? 0 : baselineWaz.getSkillList().size();
+
+            for (int sourceSkillIndex = 0; sourceSkillIndex < sourceWaz.getSkillList().size(); sourceSkillIndex++) {
+                Waz.Skill sourceSkill = sourceWaz.getSkillList().get(sourceSkillIndex);
+                String sourceKey = normalizeSkillKey(sourceSkill);
+                if (sourceKey.isEmpty()) {
+                    continue;
+                }
+
+                Integer targetSkillIndex = skillIndexMap.get(sourceSkillIndex);
+                if (targetSkillIndex == null || targetSkillIndex < 0 || targetSkillIndex >= outputWaz.getSkillList().size()) {
+                    continue;
+                }
+
+                boolean graftedSkill = targetSkillIndex >= baselineSkillCount || !baselineKeys.contains(sourceKey);
+                if (!graftedSkill) {
+                    continue;
+                }
+
+                collectImageNamesFromSkill(outputWaz.getSkillList().get(targetSkillIndex), bsdxBaseline, jinkiPackage, outputRoot, imageNames);
+            }
+        }
+
+        return imageNames;
+    }
+
+    private Set<String> collectSkillKeys(Waz waz) {
+        Set<String> keys = new LinkedHashSet<>();
+        if (waz == null || waz.getSkillList() == null) {
+            return keys;
+        }
+        for (Waz.Skill skill : waz.getSkillList()) {
+            String key = normalizeSkillKey(skill);
+            if (!key.isEmpty()) {
+                keys.add(key);
+            }
+        }
+        return keys;
+    }
+
+    private String normalizeSkillKey(Waz.Skill skill) {
+        if (skill == null || skill.getSkillNameEnglish() == null) {
+            return "";
+        }
+        return skill.getSkillNameEnglish().trim().toLowerCase(Locale.ROOT);
+    }
+
+    private Waz parseOutputWaz(Path outputRoot, String fileName) throws IOException {
+        Path output = outputRoot.resolve(fileName);
+        if (!Files.exists(output)) {
+            output = resolveFileCaseInsensitive(outputRoot, fileName);
+        }
+        if (output == null || !Files.exists(output)) {
+            return null;
+        }
+        return (Waz) bsdxBinService.parse(output.toString(), CHARSET).getData();
+    }
+
+    private void collectImageNamesFromSkill(
+            Waz.Skill skill,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiPackageBundle jinkiPackage,
+            Path outputRoot,
+            Set<String> imageNames
+    ) throws IOException {
+        if (skill == null || skill.getPhasesInfo() == null) {
+            return;
+        }
+
+        for (Waz.Skill.SkillPhase phase : skill.getPhasesInfo()) {
+            if (phase == null || phase.getSkillUnitCollection() == null) {
+                continue;
+            }
+            for (SkillUnit unit : phase.getSkillUnitCollection()) {
+                if (unit == null || unit.getSkillInfoObjectList() == null) {
+                    continue;
+                }
+                for (SkillInfoObject object : unit.getSkillInfoObjectList()) {
+                    collectImageNamesFromObject(object, bsdxBaseline, jinkiPackage, outputRoot, imageNames);
+                }
+            }
+        }
+    }
+
+    private void collectImageNamesFromObject(
+            SkillInfoObject object,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiPackageBundle jinkiPackage,
+            Path outputRoot,
+            Set<String> imageNames
+    ) throws IOException {
+        if (object == null) {
+            return;
+        }
+
+        if (object instanceof CEventSprite sprite) {
+            collectImageNamesFromSpriteIndex(sprite.getSpmFileSequence(), bsdxBaseline, jinkiPackage, outputRoot, imageNames);
+        }
+
+        for (Field field : getAllFields(object.getClass())) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            if (!List.class.isAssignableFrom(field.getType()) || !field.getName().endsWith("UnitList")) {
+                continue;
+            }
+            field.setAccessible(true);
+            try {
+                Object units = field.get(object);
+                if (!(units instanceof List<?> unitList)) {
+                    continue;
+                }
+                for (Object unit : unitList) {
+                    SkillInfoObject data = tryGetUnitData(unit);
+                    if (data != null) {
+                        collectImageNamesFromObject(data, bsdxBaseline, jinkiPackage, outputRoot, imageNames);
+                    }
+                }
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException("鏀堕泦 WAZ 鍐呭祵 sprite 鍥惧儚澶辫触: " + field.getName(), e);
+            }
+        }
+    }
+
+    private void collectImageNamesFromSpriteIndex(
+            Integer spriteGroupIndex,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiPackageBundle jinkiPackage,
+            Path outputRoot,
+            Set<String> imageNames
+    ) throws IOException {
+        if (spriteGroupIndex == null || spriteGroupIndex < 0 || bsdxBaseline.getSpriteGroupGrp() == null
+                || bsdxBaseline.getSpriteGroupGrp().getSpriteList() == null
+                || spriteGroupIndex >= bsdxBaseline.getSpriteGroupGrp().getSpriteList().size()) {
+            return;
+        }
+
+        SpriteGroupGrp.SpriteGroupEntry spriteEntry = bsdxBaseline.getSpriteGroupGrp().getSpriteList().get(spriteGroupIndex);
+        if (spriteEntry == null || spriteEntry.getSpriteFileName() == null || spriteEntry.getSpriteFileName().isBlank()) {
+            return;
+        }
+
+        Spm spm = resolveSpmForImageCollection(spriteEntry.getSpriteFileName(), bsdxBaseline, jinkiPackage, outputRoot);
+        if (spm == null || spm.getImageData() == null) {
+            return;
+        }
+
+        for (Spm.SPMImageData imageData : spm.getImageData()) {
+            if (imageData == null || imageData.getImageName() == null || imageData.getImageName().isBlank()) {
+                continue;
+            }
+            imageNames.add(imageData.getImageName());
+        }
+    }
+
+    private Spm resolveSpmForImageCollection(
+            String fileName,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiPackageBundle jinkiPackage,
+            Path outputRoot
+    ) throws IOException {
+        Path outputSpm = resolveFileCaseInsensitive(outputRoot, fileName);
+        if (outputSpm != null && Files.exists(outputSpm)) {
+            return (Spm) bsdxBinService.parse(outputSpm.toString(), CHARSET).getData();
+        }
+
+        Spm spm = findSpm(jinkiPackage.getSpmByFileName(), fileName);
+        if (spm != null) {
+            return spm;
+        }
+        return findSpm(bsdxBaseline.getSpmByFileName(), fileName);
+    }
+
+    private SkillInfoObject tryGetUnitData(Object unit) {
+        if (unit == null) {
+            return null;
+        }
+        try {
+            Method getter = unit.getClass().getMethod("getData");
+            Object value = getter.invoke(unit);
+            return value instanceof SkillInfoObject object ? object : null;
+        } catch (ReflectiveOperationException e) {
+            return null;
+        }
+    }
+
+    private List<Field> getAllFields(Class<?> type) {
+        List<Field> fields = new ArrayList<>();
+        Class<?> current = type;
+        while (current != null && current != Object.class) {
+            fields.addAll(List.of(current.getDeclaredFields()));
+            current = current.getSuperclass();
+        }
+        return fields;
     }
 
     private void copyRequiredAudioAssets(
@@ -519,6 +785,18 @@ public class ImportStaticAssetsStep {
 
     private Spm findSpm(Map<String, Spm> spmByFileName, String fileName) {
         for (Map.Entry<String, Spm> entry : spmByFileName.entrySet()) {
+            if (normalize(entry.getKey()).equals(normalize(fileName))) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    private Waz findWazByFileName(Map<String, Waz> wazByFileName, String fileName) {
+        if (wazByFileName == null || fileName == null) {
+            return null;
+        }
+        for (Map.Entry<String, Waz> entry : wazByFileName.entrySet()) {
             if (normalize(entry.getKey()).equals(normalize(fileName))) {
                 return entry.getValue();
             }

@@ -20,6 +20,8 @@ public class GrpAppendPlan {
     private int batVoiceGroupIndex = -1;
 
     private Map<Integer, Integer> sourceWazGroupIndexToTargetIndex = new LinkedHashMap<>();
+    private Map<Integer, Map<Integer, Integer>> sourceWazSkillIndexToTargetIndexByGroup = new LinkedHashMap<>();
+    private Map<Integer, Integer> targetWazSkillCountByGroupIndex = new LinkedHashMap<>();
     private Map<Integer, Integer> sourceSpriteGroupIndexToTargetIndex = new LinkedHashMap<>();
     private Map<Integer, Integer> sourceBatVoiceGroupIndexToTargetIndex = new LinkedHashMap<>();
     private Map<Integer, Integer> sourceSeGroupIndexToTargetIndex = new LinkedHashMap<>();
