@@ -262,6 +262,9 @@ public class ImportStaticAssetsStep {
 
             Integer sourceWazGroupIndex = findSourceWazGroupIndex(importPlan, fileName);
             Waz baselineWaz = findWazByFileName(bsdxBaseline.getWazByFileName(), fileName);
+
+            // 辅助 WAZ 不能直接复制 JINKI 文件：
+            // BSDX 同名 WAZ 里有大量原生技能，JINKI 侧也有空槽，所以这里输出 key-based merge 后的 WAZ。
             Waz outputWaz = rebindAkaoWazStep.rebindAuxiliaryWaz(
                     request,
                     sourceWaz,
@@ -415,7 +418,17 @@ public class ImportStaticAssetsStep {
                     continue;
                 }
 
-                collectImageNamesFromSkill(outputWaz.getSkillList().get(targetSkillIndex), bsdxBaseline, jinkiPackage, outputRoot, imageNames);
+                // 只从 JINKI 新增/新设 skill 出发递归收图；
+                // BSDX 原生 skill 的图片仍由原版资源承担，避免把整份 SPM 图片打进 Update3。
+                collectImageNamesFromReachableSkill(
+                        outputWaz,
+                        targetSkillIndex,
+                        bsdxBaseline,
+                        jinkiPackage,
+                        outputRoot,
+                        imageNames,
+                        new LinkedHashSet<>()
+                );
             }
         }
 
@@ -454,12 +467,33 @@ public class ImportStaticAssetsStep {
         return (Waz) bsdxBinService.parse(output.toString(), CHARSET).getData();
     }
 
+    private void collectImageNamesFromReachableSkill(
+            Waz waz,
+            int skillIndex,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiPackageBundle jinkiPackage,
+            Path outputRoot,
+            Set<String> imageNames,
+            Set<String> visited
+    ) throws IOException {
+        if (waz == null || waz.getSkillList() == null || skillIndex < 0 || skillIndex >= waz.getSkillList().size()) {
+            return;
+        }
+        String visitKey = normalize(waz.getFileName()) + "#" + skillIndex;
+        if (!visited.add(visitKey)) {
+            // Effect/Bomb 等特效 WAZ 可能互相引用；同一 skill 已访问过就停止展开。
+            return;
+        }
+        collectImageNamesFromSkill(waz.getSkillList().get(skillIndex), bsdxBaseline, jinkiPackage, outputRoot, imageNames, visited);
+    }
+
     private void collectImageNamesFromSkill(
             Waz.Skill skill,
             BsdxBaselineBundle bsdxBaseline,
             JinkiPackageBundle jinkiPackage,
             Path outputRoot,
-            Set<String> imageNames
+            Set<String> imageNames,
+            Set<String> visited
     ) throws IOException {
         if (skill == null || skill.getPhasesInfo() == null) {
             return;
@@ -474,7 +508,7 @@ public class ImportStaticAssetsStep {
                     continue;
                 }
                 for (SkillInfoObject object : unit.getSkillInfoObjectList()) {
-                    collectImageNamesFromObject(object, bsdxBaseline, jinkiPackage, outputRoot, imageNames);
+                    collectImageNamesFromObject(object, bsdxBaseline, jinkiPackage, outputRoot, imageNames, visited);
                 }
             }
         }
@@ -485,14 +519,21 @@ public class ImportStaticAssetsStep {
             BsdxBaselineBundle bsdxBaseline,
             JinkiPackageBundle jinkiPackage,
             Path outputRoot,
-            Set<String> imageNames
+            Set<String> imageNames,
+            Set<String> visited
     ) throws IOException {
         if (object == null) {
             return;
         }
 
         if (object instanceof CEventSprite sprite) {
-            collectImageNamesFromSpriteIndex(sprite.getSpmFileSequence(), bsdxBaseline, jinkiPackage, outputRoot, imageNames);
+            // 图片依赖最终由 CEventSprite 决定：spmFileSequence + actionGroupNumber 指向具体 SPM 动画。
+            collectImageNamesFromSpriteAction(sprite, bsdxBaseline, jinkiPackage, outputRoot, imageNames);
+        }
+
+        if (object instanceof com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventWazaSelect select) {
+            // 新增 skill 可能继续调用其他 WAZ skill，所以图片依赖也要沿 WAZ 引用递归下去。
+            collectImageNamesFromWazRef(select, bsdxBaseline, jinkiPackage, outputRoot, imageNames, visited);
         }
 
         for (Field field : getAllFields(object.getClass())) {
@@ -511,7 +552,7 @@ public class ImportStaticAssetsStep {
                 for (Object unit : unitList) {
                     SkillInfoObject data = tryGetUnitData(unit);
                     if (data != null) {
-                        collectImageNamesFromObject(data, bsdxBaseline, jinkiPackage, outputRoot, imageNames);
+                        collectImageNamesFromObject(data, bsdxBaseline, jinkiPackage, outputRoot, imageNames, visited);
                     }
                 }
             } catch (ReflectiveOperationException e) {
@@ -520,13 +561,39 @@ public class ImportStaticAssetsStep {
         }
     }
 
-    private void collectImageNamesFromSpriteIndex(
-            Integer spriteGroupIndex,
+    private void collectImageNamesFromWazRef(
+            com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventWazaSelect select,
+            BsdxBaselineBundle bsdxBaseline,
+            JinkiPackageBundle jinkiPackage,
+            Path outputRoot,
+            Set<String> imageNames,
+            Set<String> visited
+    ) throws IOException {
+        if (select.getWazFileNo() == null || select.getWazFileNo() < 0 || select.getWazSequenceNo() == null || select.getWazSequenceNo() < 0
+                || bsdxBaseline.getWazaGroupGrp() == null || bsdxBaseline.getWazaGroupGrp().getWazaList() == null
+                || select.getWazFileNo() >= bsdxBaseline.getWazaGroupGrp().getWazaList().size()) {
+            return;
+        }
+        var entry = bsdxBaseline.getWazaGroupGrp().getWazaList().get(select.getWazFileNo());
+        if (entry == null || entry.getWazaDisplayName() == null || entry.getWazaDisplayName().isBlank()) {
+            return;
+        }
+        Waz targetWaz = parseOutputWaz(outputRoot, entry.getWazaDisplayName() + ".waz");
+        if (targetWaz == null) {
+            // 没有输出覆盖的原生 WAZ 仍可从 BSDX baseline 读取结构，用于继续解析可达图片。
+            targetWaz = findWazByFileName(bsdxBaseline.getWazByFileName(), entry.getWazaDisplayName() + ".waz");
+        }
+        collectImageNamesFromReachableSkill(targetWaz, select.getWazSequenceNo(), bsdxBaseline, jinkiPackage, outputRoot, imageNames, visited);
+    }
+
+    private void collectImageNamesFromSpriteAction(
+            CEventSprite sprite,
             BsdxBaselineBundle bsdxBaseline,
             JinkiPackageBundle jinkiPackage,
             Path outputRoot,
             Set<String> imageNames
     ) throws IOException {
+        Integer spriteGroupIndex = sprite.getSpmFileSequence();
         if (spriteGroupIndex == null || spriteGroupIndex < 0 || bsdxBaseline.getSpriteGroupGrp() == null
                 || bsdxBaseline.getSpriteGroupGrp().getSpriteList() == null
                 || spriteGroupIndex >= bsdxBaseline.getSpriteGroupGrp().getSpriteList().size()) {
@@ -539,11 +606,44 @@ public class ImportStaticAssetsStep {
         }
 
         Spm spm = resolveSpmForImageCollection(spriteEntry.getSpriteFileName(), bsdxBaseline, jinkiPackage, outputRoot);
-        if (spm == null || spm.getImageData() == null) {
+        if (spm == null || spm.getImageData() == null || spm.getAnimData() == null
+                || sprite.getActionGroupNumber() == null || sprite.getActionGroupNumber() < 0
+                || sprite.getActionGroupNumber() >= spm.getAnimData().size()) {
             return;
         }
 
-        for (Spm.SPMImageData imageData : spm.getImageData()) {
+        Spm.SPMAnimData animData = spm.getAnimData().get(sprite.getActionGroupNumber());
+        if (animData == null || animData.getPatData() == null) {
+            return;
+        }
+
+        // 按 actionGroup 收该动画实际 page/chip 用图；
+        // 这里不再整份复制 SPM.imageData，避免 bomb/mark/tama 这类大图集被过量带入。
+        for (Spm.SPMPatData patData : animData.getPatData()) {
+            if (patData == null || patData.getPageNo() == null) {
+                continue;
+            }
+            for (Integer pageNo : patData.getPageNo()) {
+                collectImageNamesFromPage(spm, pageNo, imageNames);
+            }
+        }
+    }
+
+    private void collectImageNamesFromPage(Spm spm, Integer pageNo, Set<String> imageNames) {
+        if (spm == null || spm.getPageData() == null || spm.getImageData() == null
+                || pageNo == null || pageNo < 0 || pageNo >= spm.getPageData().size()) {
+            return;
+        }
+        Spm.SPMPageData pageData = spm.getPageData().get(pageNo);
+        if (pageData == null || pageData.getChipData() == null) {
+            return;
+        }
+        for (Spm.SPMChipData chipData : pageData.getChipData()) {
+            if (chipData == null || chipData.getImageNo() == null
+                    || chipData.getImageNo() < 0 || chipData.getImageNo() >= spm.getImageData().size()) {
+                continue;
+            }
+            Spm.SPMImageData imageData = spm.getImageData().get(chipData.getImageNo());
             if (imageData == null || imageData.getImageName() == null || imageData.getImageName().isBlank()) {
                 continue;
             }

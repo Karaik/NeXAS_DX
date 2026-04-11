@@ -46,6 +46,8 @@ public class AkaoGraftPipeline {
             return result;
         }
 
+        // 前半段只构造“源数据、目标基线、索引映射”三类上下文；
+        // 后半段再用这些上下文重建 MEK/WAZ 并落盘，避免各 step 自己猜目标索引。
         // Step 1: 反序列化 JINKI 包内资源。
         JinkiPackageBundle jinkiPackage = deserializeJinkiPackageStep.deserializePackage(request);
         result.setJinkiPackage(jinkiPackage);
@@ -69,6 +71,7 @@ public class AkaoGraftPipeline {
         );
 
         // Step 5.5: 补齐所有基线机体的 CMaterial 组数，对齐追加后的 grp。
+        // 这一步只做外层组数 padding，不改任何原生机体已有的组内内容。
         padBaselineMekMaterialStep.padMaterialBlock(bsdxBaseline);
 
         // Step 6: 重绑 Akao.mek。
@@ -82,6 +85,7 @@ public class AkaoGraftPipeline {
         );
 
         // Step 8: 平铺落盘当前机体链的静态资源。
+        // 辅助 WAZ 的 skill merge 结果会影响图片收集，所以这里必须传入 grpAppendPlan。
         ImportedAssetSet importedAssetSet =
                 importStaticAssetsStep.importAssets(
                         request,

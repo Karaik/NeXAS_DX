@@ -102,6 +102,9 @@ public class RebindAkaoMekStep {
         context.setTargetWazaGroupIndex(grpAppendPlan.getWazaGroupIndex());
         context.setTargetSpriteGroupIndex(grpAppendPlan.getSpriteGroupIndex());
         context.setTargetBatVoiceGroupIndex(grpAppendPlan.getBatVoiceGroupIndex());
+
+        // MEK 内部也持有 sprite / voice / se 的顶层 group index；
+        // 这些字段必须消费 Step 4 的最终映射，不能在 MEK 重建阶段重新猜。
         context.getSourceSpriteGroupIndexToTargetIndex().putAll(grpAppendPlan.getSourceSpriteGroupIndexToTargetIndex());
         context.getSourceBatVoiceGroupIndexToTargetIndex().putAll(grpAppendPlan.getSourceBatVoiceGroupIndexToTargetIndex());
         context.getSourceSeGroupIndexToTargetIndex().putAll(grpAppendPlan.getSourceSeGroupIndexToTargetIndex());
@@ -457,6 +460,7 @@ public class RebindAkaoMekStep {
         target.setVoiceSlots(voiceSlots);
 
         // table 当前也显式重建容器，但不修改 Entry.groupId。
+        // 这里的 groupId 在运行时表现为默认 BatVoice group 内的 item index，不是顶层 BatVoiceGroup index。
         List<List<List<Mek.MekVoiceInfo.Entry>>> table = new ArrayList<>();
         if (source.getTable() != null) {
             for (List<List<Mek.MekVoiceInfo.Entry>> row : source.getTable()) {
@@ -511,7 +515,8 @@ public class RebindAkaoMekStep {
         target.setExtraRegularCount(source.getExtraRegularCount());
         target.regularCount = source.regularCount;
 
-        // entries 当前显式重建 PluginEntry 容器。
+        // CMaterial 的 entries / regularEntries / trailingEntries 都可能含有外层 group index。
+        // 统一走 copyPluginEntries，避免只修其中一段导致 confirm 或战斗初始化再错位。
         target.setEntries(copyPluginEntries(source.getEntries(), context));
 
         // regularEntries 当前显式重建 PluginEntry 容器。
@@ -540,6 +545,9 @@ public class RebindAkaoMekStep {
             Mek.MekMaterialBlock.PluginEntry copied = new Mek.MekMaterialBlock.PluginEntry();
             copied.offset = entry.offset;
             copied.length = entry.length;
+
+            // 只改外层 group index 和确认可映射的 SE item；
+            // sprite/voice 组内 payload 的语义由引擎解释，不能在这里按文件名盲改。
             copied.setSpriteGroups(remapSpriteGroups(entry.getSpriteGroups(), context));
             copied.setSeGroups(remapSeGroups(entry.getSeGroups(), context));
             copied.setVoiceGroups(remapVoiceGroups(entry.getVoiceGroups(), context));
@@ -608,6 +616,7 @@ public class RebindAkaoMekStep {
                 continue;
             }
 
+            // SE 有明确的 source item -> target item 映射；sprite/voice 目前只搬外层 group，items 原样保留。
             int[] remappedItems = remapGroupItems(
                     sourceItems,
                     sourceItemIndexToTargetIndexByGroup == null ? null : sourceItemIndexToTargetIndexByGroup.get(sourceGroupIndex)

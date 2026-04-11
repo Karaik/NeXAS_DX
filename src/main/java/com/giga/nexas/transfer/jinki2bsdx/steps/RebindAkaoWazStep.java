@@ -103,6 +103,7 @@ public class RebindAkaoWazStep {
                 ? null
                 : grpAppendPlan.getSourceWazSkillIndexToTargetIndexByGroup().get(sourceWazGroupIndex);
         if (skillIndexMap == null || skillIndexMap.isEmpty()) {
+            // 没有 skill merge 计划时，说明这个 WAZ 不需要 key-based graft，走完整源 WAZ 重建即可。
             targetWaz.setSkillList(rebuildSkillList(context));
             return targetWaz;
         }
@@ -112,9 +113,11 @@ public class RebindAkaoWazStep {
             for (int sourceIndex = 0; sourceIndex < sourceSkills.size(); sourceIndex++) {
                 Integer targetIndex = skillIndexMap.get(sourceIndex);
                 if (targetIndex == null || targetIndex < baselineSkillCount) {
+                    // targetIndex 落在 baseline 范围内代表复用 BSDX 原 skill，不需要把 JINKI 内容写过去覆盖。
                     continue;
                 }
                 while (targetSkills.size() < targetIndex) {
+                    // 理论上 key-based append 会连续追加；这里补空槽只是防御配置/映射异常。
                     targetSkills.add(new Waz.Skill());
                 }
                 Waz.Skill rebuilt = rebuildSkill(sourceSkills.get(sourceIndex), context);
@@ -411,6 +414,7 @@ public class RebindAkaoWazStep {
         // 这里保留序号本身。
         // wazSequenceNo 的语义是“目标 waz 文件内部的 skill 索引”，
         // 当前迁移策略是把对应的辅助 waz 文件整体导入，因此内部 skill 序号不在 step7 改。
+        // wazSequenceNo 是“目标 WAZ 内部 skill index”，辅助 WAZ 做 key-based merge 后必须同步重写。
         target.setWazSequenceNo(remapWazSkillIndex(source.getWazFileNo(), source.getWazSequenceNo(), context));
         return target;
     }
@@ -532,6 +536,7 @@ public class RebindAkaoWazStep {
 
         Map<Integer, Integer> skillIndexMap = context.getSourceToTargetWazSkillIndexByGroup().get(sourceWazGroupIndex);
         if (skillIndexMap == null) {
+            // 没有该 WAZ 的 skill merge 表时，保持源 index；主 Akao.waz 使用 identity map。
             return sourceSkillIndex;
         }
         return skillIndexMap.getOrDefault(sourceSkillIndex, sourceSkillIndex);

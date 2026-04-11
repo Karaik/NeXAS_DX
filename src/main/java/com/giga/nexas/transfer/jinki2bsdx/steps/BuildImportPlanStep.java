@@ -192,6 +192,9 @@ public class BuildImportPlanStep {
 
         Set<String> requiredWazFiles = new LinkedHashSet<>();
         requiredWazFiles.add(request.getWazFileName());
+
+        // requiredWazFiles 会在遍历时继续增长；visited 用来保证每个 WAZ 只扫描一次，
+        // 防止 Effect/Bomb 这类特效链互相引用时出现无限递归。
         Set<String> visitedWazFiles = new LinkedHashSet<>();
 
         Map<Integer, String> sourceWazFileNameByIndex = invertIndexMap(importPlan.getSourceWazIndexByFileName());
@@ -200,6 +203,9 @@ public class BuildImportPlanStep {
         boolean changed;
         do {
             changed = false;
+
+            // 这里要对快照遍历，不能直接遍历 requiredWazFiles 本体；
+            // collectReferencedIndicesFromObject 可能会在循环中追加新的二级 WAZ。
             List<String> snapshot = new ArrayList<>(requiredWazFiles);
             for (String fileName : snapshot) {
                 String normalizedFileName = normalizeFileName(fileName);
@@ -208,7 +214,7 @@ public class BuildImportPlanStep {
                 }
                 Waz currentWaz = findRequiredSourceWaz(jinkiPackage, fileName);
                 if (currentWaz == null) {
-                    importPlan.getUnresolvedResources().add("缂哄皯杈呭姪 waz: " + fileName);
+                    importPlan.getUnresolvedResources().add("缺少辅助 waz: " + fileName);
                     continue;
                 }
                 int before = requiredWazFiles.size();
@@ -284,6 +290,8 @@ public class BuildImportPlanStep {
             if (sourceIndex != null && sourceIndex >= 0) {
                 String fileName = sourceWazFileNameByIndex.get(sourceIndex);
                 if (fileName != null) {
+                    // CEventWazaSelect 的 wazFileNo 是源侧 WazaGroup index；
+                    // 先记录 group->file，后续 Step 4 再决定复用目标同名 WAZ 还是 append。
                     importPlan.getReferencedSourceWazFileNameByGroupIndex().put(sourceIndex, fileName);
                     if (containsFile(jinkiPackage.getWazByFileName(), fileName)) {
                         requiredWazFiles.add(fileName);
@@ -301,6 +309,7 @@ public class BuildImportPlanStep {
             if (sourceIndex != null && sourceIndex >= 0) {
                 String fileName = sourceSpriteFileNameByIndex.get(sourceIndex);
                 if (fileName != null) {
+                    // spmFileSequence 同样是源侧 SpriteGroup index；这里只收集引用，不在 plan 阶段改值。
                     importPlan.getReferencedSourceSpriteFileNameByGroupIndex().put(sourceIndex, fileName);
                 } else {
                     importPlan.getUnresolvedResources().add("引用了无法解析文件名的源 SpriteGroup 索引: " + sourceIndex);
@@ -313,6 +322,8 @@ public class BuildImportPlanStep {
         }
 
         if (hasNestedUnitList(object.getClass())) {
+            // CEventEffect 等事件会把真正的资源引用塞在 *UnitList.data 里；
+            // 如果不递归下去，Tama -> Bomb 这类二级弹幕链会直接漏掉。
             collectReferencedIndicesFromNestedUnitLists(
                     object,
                     importPlan,

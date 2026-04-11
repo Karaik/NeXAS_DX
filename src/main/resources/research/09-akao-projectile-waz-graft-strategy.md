@@ -180,8 +180,8 @@ JINKI 侧引用统计：
 
 最新产物：
 
-- `src/main/resources/out/jinki2bsdx_assets_20260411_152526_601`
-- `src/main/resources/out/BaldrSky_20260411_152538_214.exe`
+- `src/main/resources/out/jinki2bsdx_assets_20260411_194437_236`
+- `src/main/resources/out/BaldrSky_20260411_194445_817.exe`
 - `src/main/resources/out/Update3.pac`
 
 输出 WAZ：

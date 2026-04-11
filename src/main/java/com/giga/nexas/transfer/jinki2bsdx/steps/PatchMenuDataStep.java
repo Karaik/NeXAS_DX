@@ -920,10 +920,18 @@ public class PatchMenuDataStep {
         }
 
         List<Object> selectRow = selectRows.get(REPLACE_VISIBLE_SELECT_MENU_SLOT_INDEX);
+
+        // 菜单槽位复用的是 BSDX 第 25 个可见项：
+        // 第 1 列提供原 donor mekaIndex，第 2 列提供菜单机体图 animIndex。
         int sourceMekaIndex = toInt(selectRow.get(0));
         int selectAnimIndex = toInt(selectRow.get(1));
+
+        // 第 3 列是菜单状态，不直接等同 mekaIndex。
+        // 这里优先取相邻正常可选 donor 行，避免落入移动/删除等特殊菜单分支。
         int selectState = resolveSelectMenuState(selectRows, selectRow);
 
+        // MekaPilot.dat 不是按可见槽位顺序索引，而是按 mekaIndex 反查 pilot row。
+        // 这个 row index 后续也就是 MekaPilot.spm 的 anim 槽位。
         int pilotRowIndex = findPilotRowIndex(bsdxBaseline.getMekaPilotDat(), sourceMekaIndex);
         if (pilotRowIndex < 0) {
             throw new IllegalStateException("MekaPilot.dat 中找不到 SelectMekaMenu 槽位对应的 pilot 行: " + sourceMekaIndex);

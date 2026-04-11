@@ -105,10 +105,12 @@ public class AppendGrpEntriesStep {
 
             Integer targetIndex = importPlan.getTargetWazIndexByFileName().get(normalizeFileName(entry.getValue()));
             if (targetIndex != null && targetIndex >= 0) {
+                // 同名辅助 WAZ 在 BSDX 已存在时复用原 group，避免把全局 WazaGroup 顺序打乱。
                 plan.getSourceWazGroupIndexToTargetIndex().put(sourceIndex, targetIndex);
                 continue;
             }
 
+            // 目标侧没有同名 WAZ 时才追加 group。这个分支是给真正新增的辅助 WAZ 留的。
             WazaGroupGrp.WazaGroupEntry sourceEntry = requireSourceWazaGroupByIndex(
                     jinkiPackage.getWazaGroupGrp(),
                     sourceIndex
@@ -148,6 +150,8 @@ public class AppendGrpEntriesStep {
                 continue;
             }
 
+            // 这里不按文件整体覆盖，而是生成 WAZ 内部 skill 映射：
+            // BSDX 已有 key 就复用，JINKI 新 key 才 append 到目标 WAZ 尾部。
             WazSkillMergePlan skillMergePlan = buildWazSkillMergePlan(sourceWaz, baselineWaz);
             plan.getSourceWazSkillIndexToTargetIndexByGroup().put(sourceIndex, skillMergePlan.sourceToTargetSkillIndex());
             plan.getTargetWazSkillCountByGroupIndex().put(targetIndex, skillMergePlan.targetSkillCount());
@@ -187,6 +191,7 @@ public class AppendGrpEntriesStep {
 
             Integer mergedSkillCount = plan.getTargetWazSkillCountByGroupIndex().get(targetIndex);
             if (mergedSkillCount != null) {
+                // WazaGroup.param 是运行时检查 skill 上界的依据，必须等于输出 WAZ 的真实 skill 数。
                 updateWazaParam(targetWazaGroup, targetIndex, mergedSkillCount);
                 continue;
             }
@@ -252,6 +257,7 @@ public class AppendGrpEntriesStep {
                 String key = normalizeSkillKey(sourceWaz.getSkillList().get(i));
                 if (key.isEmpty()) {
                     if (i < baselineSkillCount) {
+                        // 源侧空槽不应该覆盖 BSDX 原有内容；这里只保留同 index 映射供旧引用兜底。
                         sourceToTarget.put(i, i);
                     }
                     continue;
@@ -259,8 +265,10 @@ public class AppendGrpEntriesStep {
 
                 Integer existingIndex = baselineKeyToIndex.get(key);
                 if (existingIndex != null) {
+                    // 同 key 表示语义上同一个 skill，复用 BSDX 槽位而不是复制一份。
                     sourceToTarget.put(i, existingIndex);
                 } else {
+                    // JINKI 非空且 BSDX 没有的 key 才作为 AKAO 需要的新 skill 追加。
                     sourceToTarget.put(i, nextTargetIndex++);
                     baselineKeyToIndex.put(key, nextTargetIndex - 1);
                 }

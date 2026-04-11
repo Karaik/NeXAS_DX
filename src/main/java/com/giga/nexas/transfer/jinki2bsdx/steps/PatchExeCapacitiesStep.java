@@ -174,6 +174,9 @@ public class PatchExeCapacitiesStep {
     private static final int MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_OFFSET = 0x05498B;
     private static final int MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_EXPECTED = 0x00001688;
     private static final int MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_TARGET = 0x000016C0;
+
+    // 这两个位点不是容量 patch，而是战斗语音 gate 的兼容 patch。
+    // sub_60CC20 只认识原 BSDX roster 的 this[1577]，追加的 mekaId=103 会被挡在 request 写入前。
     private static final int BATTLE_VOICE_GATE_BYPASS_OFFSET = 0x20C1FD;
     private static final byte[] BATTLE_VOICE_GATE_BYPASS_EXPECTED = new byte[]{
             (byte) 0x84, (byte) 0xC0, (byte) 0x75, (byte) 0x06
@@ -311,6 +314,9 @@ public class PatchExeCapacitiesStep {
                     MEKA_CAP_WEAPON_EQUIP_FILL_BOUND_TARGET,
                     "meka cap weapon-equip fill hard cap: 56*103 -> 56*104 (sub_454E60 cmp eax,0x1688)",
                     plan);
+
+            // 只绕过 60CDF0/60CEC0 对 sub_60CC20 零返回的早退；
+            // 不修改 sub_60CC20 本体，也不把 mekaId=103 全局伪装成其他机体。
             applyBytesPatch(exeBytes,
                     BATTLE_VOICE_GATE_BYPASS_OFFSET,
                     BATTLE_VOICE_GATE_BYPASS_EXPECTED,
@@ -555,6 +561,8 @@ public class PatchExeCapacitiesStep {
             String label,
             ExePatchPlan plan
     ) {
+        // 多字节 patch 同时接受“原始字节”和“已经 patch 后的字节”，
+        // 这样重复运行 pipeline 不会因为目标 exe 已经被处理过而失败。
         if (offset < 0 || offset + targetBytes.length > exeBytes.length) {
             throw new IllegalStateException(String.format("byte patch 鍋忕Щ瓒婄晫: 0x%06X", offset));
         }

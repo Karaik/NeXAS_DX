@@ -204,7 +204,7 @@ MekaGroup 特殊：支持 `fixedMekaGroupIndex` 强制替换指定位置（当�
 - 重绑后的 `Akao.waz`
 - 辅助 WAZ 合并产物（BSDX 主体 + JINKI 非空新增 skill append + 内部引用重绑）
 - 包内所有 spm 文件
-- 当前链实际引用到的图像资源（从 `requiredSpmFiles` 和 grafted skill 可达 SPM 的 `imageData` 收集文件名）
+- 当前链实际引用到的图像资源（`requiredSpmFiles` 走 SPM `imageData`；grafted skill 走 `actionGroup -> pat/page/chip` 精确收图）
 - 当前链真实关联到的语音和音效文件（优先 .ogg，回退 .wav）
 
 **已知**：21 张图像资源缺口已确认为原始游戏资源本身就缺，按"已知原版缺口"处理。
@@ -425,7 +425,7 @@ out/
 - `WeaponEquip.dat` 输出到根目录
 - 辅助 WAZ 递归闭包 + key-based merge
 - 辅助 WAZ 内部 `CEventWazaSelect` group/skill 双层 remap
-- JINKI 新增 / 新设 skill 可达的 SPM 图片进入输出包
+- JINKI 新增 / 新设 skill 可达的 SPM 图片按 action/page/chip 粒度进入输出包
 
 ## 测试锁定点
 
@@ -439,7 +439,7 @@ out/
     - `0x20C2CD == 90 90 EB 06`
   - 检查 `bomb.waz` 进入输出且 skill count 为 136
   - 检查 `Tama02/Tama04/Tama05` 正确引用 `Bomb[134/133/135]`
-  - 检查 `bomb_004_0002.png` 进入输出
+  - 检查 `Bomb.waz[134]` 可达的 `bomb_004_0002.png` 进入输出
 
 ## 运行结果落点
 

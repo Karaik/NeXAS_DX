@@ -90,7 +90,7 @@
   - `SeGroup.grp`
   - `ProgramMaterial.grp`
 - 复制链上 `spm`
-- 按 `requiredSpmFiles` 和新增 / 新设 skill 可达 SPM 的 `imageData` 补齐图像资源
+- 按 `requiredSpmFiles` 和新增 / 新设 skill 可达 SPM 的 action/page/chip 补齐图像资源
 - 只复制当前链真实关联的语音和音效
 
 当前实测现状：
@@ -256,7 +256,7 @@ Step 10 的职责是把 meka 相关运行时容量硬编码从 `103` 放到 `104
 - `WeaponEquip.dat` 输出到根目录
 - 辅助 WAZ 递归闭包 + key-based merge
 - 辅助 WAZ 内部 `CEventWazaSelect` group/skill 双层 remap
-- 新增 / 新设 skill 可达 SPM 图片进入输出包
+- 新增 / 新设 skill 可达 SPM 图片按 action/page/chip 粒度进入输出包
 
 ## 测试锁定点
 
@@ -270,7 +270,7 @@ Step 10 的职责是把 meka 相关运行时容量硬编码从 `103` 放到 `104
     - `0x20C2CD == 90 90 EB 06`
   - 断言 `bomb.waz` 输出为 136 个 skill
   - 断言 `Tama02/Tama04/Tama05` 正确引用 `Bomb[134/133/135]`
-  - 断言 `bomb_004_0002.png` 进入输出
+  - 断言 `Bomb.waz[134]` 可达的 `bomb_004_0002.png` 进入输出
 
 ## 现象落点
 
