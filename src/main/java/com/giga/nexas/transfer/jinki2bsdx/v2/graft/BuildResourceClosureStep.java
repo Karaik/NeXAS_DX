@@ -1,0 +1,484 @@
+package com.giga.nexas.transfer.jinki2bsdx.v2.graft;
+
+import com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp;
+import com.giga.nexas.dto.bsdx.grp.groupmap.WazaGroupGrp;
+import com.giga.nexas.dto.bsdx.waz.Waz;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSe;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSprite;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventWazaSelect;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
+import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
+import com.giga.nexas.transfer.jinki2bsdx.model.BsdxBaselineBundle;
+import com.giga.nexas.transfer.jinki2bsdx.model.JinkiImportPlan;
+import com.giga.nexas.transfer.jinki2bsdx.model.JinkiPackageBundle;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * 从源 WAZ 出发构建本次 graft 的资源闭包。
+ *
+ * <p>这一步的职责是“发现要处理什么”，不是“决定写到哪里”。
+ * 它会建立源/目标文件名索引表，递归扫描 WAZ 事件里引用到的 WAZ、SPM、SE，
+ * 并把这些发现结果写入 {@link JinkiImportPlan}，供后续 GRP append 阶段做复用或尾插。</p>
+ *
+ * <p>当前 JINKI 包很小，SPM 仍整体纳入闭包；WAZ/SE 则按事件引用递归收集，
+ * 因为 Effect/Bomb/Tama 等辅助技能可能互相调用，静态只看主 WAZ 文件会漏资源。</p>
+ */
+public class BuildResourceClosureStep {
+
+    public JinkiImportPlan buildResourceClosure(
+            AkaoGraftRequest request,
+            JinkiPackageBundle jinkiPackage,
+            BsdxBaselineBundle bsdxBaseline
+    ) {
+        JinkiImportPlan importPlan = new JinkiImportPlan();
+
+        collectSourceSpriteIndices(jinkiPackage, importPlan);
+        collectSourceWazIndices(jinkiPackage, importPlan);
+        collectTargetSpriteIndices(bsdxBaseline, importPlan);
+        collectTargetWazIndices(bsdxBaseline, importPlan);
+
+        if (jinkiPackage.getAkaoMek() != null) {
+            importPlan.getRequiredMekFiles().add(request.getMekFileName());
+        }
+
+        // 当前源包里的 SPM 数量很小，先全部纳入输出白名单。
+        // 这不是最终抽象原则，而是为了保持 JINKI 旧 pipeline 行为和 byte parity。
+        List<String> spmFiles = new ArrayList<>(jinkiPackage.getSpmByFileName().keySet());
+        spmFiles.sort(String.CASE_INSENSITIVE_ORDER);
+        importPlan.getRequiredSpmFiles().addAll(spmFiles);
+
+        collectReferencedChainFromAkaoWaz(request, jinkiPackage, importPlan);
+        appendAuditTargets(request, importPlan);
+        appendRebindTargets(importPlan);
+        appendNotes(importPlan);
+        return importPlan;
+    }
+
+    private void appendAuditTargets(AkaoGraftRequest request, JinkiImportPlan importPlan) {
+        importPlan.getGrpAppendTargets().add("MekaGroup:" + request.getMekaCodeName());
+        importPlan.getGrpAppendTargets().add("WazaGroup:" + request.getWazCodeName());
+        importPlan.getGrpAppendTargets().add("SpriteGroup:" + request.getSpriteCodeName() + "->" + request.getSpriteFileName());
+        importPlan.getGrpAppendTargets().add("BatVoice:" + request.getMekaCodeName());
+
+        for (Map.Entry<Integer, String> entry : importPlan.getReferencedSourceWazFileNameByGroupIndex().entrySet()) {
+            importPlan.getGrpAppendTargets().add("WazaGroupRef:" + entry.getKey() + "->" + entry.getValue());
+        }
+        for (Map.Entry<Integer, String> entry : importPlan.getReferencedSourceSpriteFileNameByGroupIndex().entrySet()) {
+            importPlan.getGrpAppendTargets().add("SpriteGroupRef:" + entry.getKey() + "->" + entry.getValue());
+        }
+        for (Map.Entry<Integer, List<Integer>> entry : importPlan.getReferencedSourceSeItemIndicesByGroupIndex().entrySet()) {
+            importPlan.getGrpAppendTargets().add("SeGroupRef:" + entry.getKey() + " items=" + entry.getValue());
+        }
+
+        importPlan.getProgramMaterialSyncTargets().add("ProgramMaterial.array1");
+        importPlan.getProgramMaterialSyncTargets().add("ProgramMaterial.array2");
+        importPlan.getProgramMaterialSyncTargets().add("ProgramMaterial.array3");
+    }
+
+    private void appendRebindTargets(JinkiImportPlan importPlan) {
+        importPlan.getMekRebindTargets().add("Akao.mek.mekBasicInfo.wazFileSequence");
+        importPlan.getMekRebindTargets().add("Akao.mek.mekBasicInfo.spmFileSequence");
+        importPlan.getMekRebindTargets().add("MekWeaponInfo.wazSequence 保持解释为目标 waz 内部 skill 索引");
+
+        importPlan.getWazRebindTargets().add("CEventWazaSelect.wazFileNo");
+        importPlan.getWazRebindTargets().add("CEventSprite.spmFileSequence");
+        importPlan.getWazRebindTargets().add("CEventSe.seGroupIndex");
+        importPlan.getWazRebindTargets().add("CEventSe.seItemIndex");
+        importPlan.getWazRebindTargets().add("CEventVoice.byteDataList 前4字节（语音组索引）统一指向 AKAO 目标语音组");
+    }
+
+    private void appendNotes(JinkiImportPlan importPlan) {
+        importPlan.getNotes().add("step3 当前生成的是当前机体资源链计划，不再做文件级 diff。");
+        importPlan.getNotes().add("step4 会针对链上的每个资源做复用或尾插决策。");
+        importPlan.getNotes().add("step6/7 只消费 step4 产出的源到目标映射表。");
+    }
+
+    private void collectSourceSpriteIndices(JinkiPackageBundle jinkiPackage, JinkiImportPlan importPlan) {
+        SpriteGroupGrp spriteGroupGrp = jinkiPackage.getSpriteGroupGrp();
+        if (spriteGroupGrp == null) {
+            return;
+        }
+        for (int i = 0; i < spriteGroupGrp.getSpriteList().size(); i++) {
+            SpriteGroupGrp.SpriteGroupEntry entry = spriteGroupGrp.getSpriteList().get(i);
+            if (!isExisting(entry == null ? null : entry.getExistFlag())) {
+                continue;
+            }
+            if (entry.getSpriteFileName() == null || entry.getSpriteFileName().isBlank()) {
+                continue;
+            }
+            importPlan.getSourceSpriteIndexByFileName().put(normalizeFileName(entry.getSpriteFileName()), i);
+        }
+    }
+
+    private void collectSourceWazIndices(JinkiPackageBundle jinkiPackage, JinkiImportPlan importPlan) {
+        WazaGroupGrp wazaGroupGrp = jinkiPackage.getWazaGroupGrp();
+        if (wazaGroupGrp == null) {
+            return;
+        }
+        for (int i = 0; i < wazaGroupGrp.getWazaList().size(); i++) {
+            WazaGroupGrp.WazaGroupEntry entry = wazaGroupGrp.getWazaList().get(i);
+            if (!isExisting(entry == null ? null : entry.getExistFlag())) {
+                continue;
+            }
+            String fileName = buildWazFileName(entry);
+            if (fileName != null) {
+                importPlan.getSourceWazIndexByFileName().put(normalizeFileName(fileName), i);
+            }
+        }
+    }
+
+    private void collectTargetSpriteIndices(BsdxBaselineBundle bsdxBaseline, JinkiImportPlan importPlan) {
+        SpriteGroupGrp spriteGroupGrp = bsdxBaseline.getSpriteGroupGrp();
+        if (spriteGroupGrp == null) {
+            return;
+        }
+        for (int i = 0; i < spriteGroupGrp.getSpriteList().size(); i++) {
+            SpriteGroupGrp.SpriteGroupEntry entry = spriteGroupGrp.getSpriteList().get(i);
+            if (!isExisting(entry == null ? null : entry.getExistFlag())) {
+                continue;
+            }
+            if (entry.getSpriteFileName() == null || entry.getSpriteFileName().isBlank()) {
+                continue;
+            }
+            importPlan.getTargetSpriteIndexByFileName().put(normalizeFileName(entry.getSpriteFileName()), i);
+        }
+    }
+
+    private void collectTargetWazIndices(BsdxBaselineBundle bsdxBaseline, JinkiImportPlan importPlan) {
+        WazaGroupGrp wazaGroupGrp = bsdxBaseline.getWazaGroupGrp();
+        if (wazaGroupGrp == null) {
+            return;
+        }
+        for (int i = 0; i < wazaGroupGrp.getWazaList().size(); i++) {
+            WazaGroupGrp.WazaGroupEntry entry = wazaGroupGrp.getWazaList().get(i);
+            if (!isExisting(entry == null ? null : entry.getExistFlag())) {
+                continue;
+            }
+            String fileName = buildWazFileName(entry);
+            if (fileName != null) {
+                importPlan.getTargetWazIndexByFileName().put(normalizeFileName(fileName), i);
+            }
+        }
+    }
+
+    private void collectReferencedChainFromAkaoWaz(
+            AkaoGraftRequest request,
+            JinkiPackageBundle jinkiPackage,
+            JinkiImportPlan importPlan
+    ) {
+        Waz sourceWaz = findRequiredSourceWaz(jinkiPackage, request.getWazFileName());
+        if (sourceWaz == null) {
+            importPlan.getUnresolvedResources().add("缺少主 waz: " + request.getWazFileName());
+            return;
+        }
+
+        Set<String> requiredWazFiles = new LinkedHashSet<>();
+        requiredWazFiles.add(request.getWazFileName());
+        Set<String> visitedWazFiles = new LinkedHashSet<>();
+
+        Map<Integer, String> sourceWazFileNameByIndex = invertIndexMap(importPlan.getSourceWazIndexByFileName());
+        Map<Integer, String> sourceSpriteFileNameByIndex = invertIndexMap(importPlan.getSourceSpriteIndexByFileName());
+
+        boolean changed;
+        do {
+            changed = false;
+            // 遍历快照而不是 requiredWazFiles 本体。
+            // 扫描当前 WAZ 时可能发现新的辅助 WAZ，如果直接遍历原集合会让递归闭包不稳定。
+            List<String> snapshot = new ArrayList<>(requiredWazFiles);
+            for (String fileName : snapshot) {
+                String normalizedFileName = normalizeFileName(fileName);
+                if (!visitedWazFiles.add(normalizedFileName)) {
+                    continue;
+                }
+                Waz currentWaz = findRequiredSourceWaz(jinkiPackage, fileName);
+                if (currentWaz == null) {
+                    importPlan.getUnresolvedResources().add("缺少辅助 waz: " + fileName);
+                    continue;
+                }
+                int before = requiredWazFiles.size();
+                traverseWazReferences(
+                        currentWaz,
+                        importPlan,
+                        jinkiPackage,
+                        sourceWazFileNameByIndex,
+                        sourceSpriteFileNameByIndex,
+                        requiredWazFiles
+                );
+                changed |= requiredWazFiles.size() > before;
+            }
+        } while (changed);
+
+        importPlan.getRequiredWazFiles().clear();
+        importPlan.getRequiredWazFiles().addAll(requiredWazFiles);
+    }
+
+    private void traverseWazReferences(
+            Waz sourceWaz,
+            JinkiImportPlan importPlan,
+            JinkiPackageBundle jinkiPackage,
+            Map<Integer, String> sourceWazFileNameByIndex,
+            Map<Integer, String> sourceSpriteFileNameByIndex,
+            Set<String> requiredWazFiles
+    ) {
+        if (sourceWaz.getSkillList() == null) {
+            return;
+        }
+        for (Waz.Skill skill : sourceWaz.getSkillList()) {
+            if (skill == null || skill.getPhasesInfo() == null) {
+                continue;
+            }
+            for (Waz.Skill.SkillPhase phase : skill.getPhasesInfo()) {
+                if (phase == null || phase.getSkillUnitCollection() == null) {
+                    continue;
+                }
+                for (SkillUnit unit : phase.getSkillUnitCollection()) {
+                    if (unit == null || unit.getSkillInfoObjectList() == null) {
+                        continue;
+                    }
+                    for (SkillInfoObject object : unit.getSkillInfoObjectList()) {
+                        collectReferencedIndicesFromObject(
+                                object,
+                                importPlan,
+                                jinkiPackage,
+                                sourceWazFileNameByIndex,
+                                sourceSpriteFileNameByIndex,
+                                requiredWazFiles
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    private void collectReferencedIndicesFromObject(
+            SkillInfoObject object,
+            JinkiImportPlan importPlan,
+            JinkiPackageBundle jinkiPackage,
+            Map<Integer, String> sourceWazFileNameByIndex,
+            Map<Integer, String> sourceSpriteFileNameByIndex,
+            Set<String> requiredWazFiles
+    ) {
+        if (object == null) {
+            return;
+        }
+
+        if (object instanceof CEventWazaSelect select) {
+            Integer sourceIndex = select.getWazFileNo();
+            if (sourceIndex != null && sourceIndex >= 0) {
+                String fileName = sourceWazFileNameByIndex.get(sourceIndex);
+                if (fileName != null) {
+                    // CEventWazaSelect 存的是源 WazaGroup 顶层 index。
+                    // 这里只记录 source index -> fileName；目标 index 要等 GRP append 后才能确定。
+                    importPlan.getReferencedSourceWazFileNameByGroupIndex().put(sourceIndex, fileName);
+                    if (containsFile(jinkiPackage.getWazByFileName(), fileName)) {
+                        requiredWazFiles.add(fileName);
+                    } else {
+                        importPlan.getUnresolvedResources().add("引用了源 WazGroup[" + sourceIndex + "] 但包内缺少文件: " + fileName);
+                    }
+                } else {
+                    importPlan.getUnresolvedResources().add("引用了无法解析文件名的源 WazGroup 索引: " + sourceIndex);
+                }
+            }
+        }
+
+        if (object instanceof CEventSprite sprite) {
+            Integer sourceIndex = sprite.getSpmFileSequence();
+            if (sourceIndex != null && sourceIndex >= 0) {
+                String fileName = sourceSpriteFileNameByIndex.get(sourceIndex);
+                if (fileName != null) {
+                    // CEventSprite 的 spmFileSequence 同样是源 SpriteGroup 顶层 index。
+                    // 先保留原始引用事实，避免在闭包阶段提前做目标侧假设。
+                    importPlan.getReferencedSourceSpriteFileNameByGroupIndex().put(sourceIndex, fileName);
+                } else {
+                    importPlan.getUnresolvedResources().add("引用了无法解析文件名的源 SpriteGroup 索引: " + sourceIndex);
+                }
+            }
+        }
+
+        if (object instanceof CEventSe se) {
+            collectReferencedSeIndices(se, importPlan);
+        }
+
+        if (hasNestedUnitList(object.getClass())) {
+            collectReferencedIndicesFromNestedUnitLists(
+                    object,
+                    importPlan,
+                    jinkiPackage,
+                    sourceWazFileNameByIndex,
+                    sourceSpriteFileNameByIndex,
+                    requiredWazFiles
+            );
+        }
+    }
+
+    private void collectReferencedSeIndices(CEventSe se, JinkiImportPlan importPlan) {
+        if (se.getByteDataList() == null) {
+            return;
+        }
+        for (byte[] bytes : se.getByteDataList()) {
+            if (bytes == null || bytes.length < 8) {
+                continue;
+            }
+            int groupIndex = readLittleEndianInt(bytes, 0);
+            int itemIndex = readLittleEndianInt(bytes, 4);
+            if (groupIndex < 0 || itemIndex < 0) {
+                continue;
+            }
+            importPlan.getReferencedSourceSeItemIndicesByGroupIndex().computeIfAbsent(groupIndex, key -> new ArrayList<>());
+            List<Integer> itemIndices = importPlan.getReferencedSourceSeItemIndicesByGroupIndex().get(groupIndex);
+            if (!itemIndices.contains(itemIndex)) {
+                itemIndices.add(itemIndex);
+            }
+        }
+    }
+
+    private void collectReferencedIndicesFromNestedUnitLists(
+            SkillInfoObject source,
+            JinkiImportPlan importPlan,
+            JinkiPackageBundle jinkiPackage,
+            Map<Integer, String> sourceWazFileNameByIndex,
+            Map<Integer, String> sourceSpriteFileNameByIndex,
+            Set<String> requiredWazFiles
+    ) {
+        for (Field field : getAllFields(source.getClass())) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            if (!List.class.isAssignableFrom(field.getType()) || !field.getName().endsWith("UnitList")) {
+                continue;
+            }
+            field.setAccessible(true);
+            try {
+                List<?> units = (List<?>) field.get(source);
+                if (units == null) {
+                    continue;
+                }
+                for (Object unit : units) {
+                    SkillInfoObject data = tryGetUnitData(unit);
+                    if (data != null) {
+                        collectReferencedIndicesFromObject(
+                                data,
+                                importPlan,
+                                jinkiPackage,
+                                sourceWazFileNameByIndex,
+                                sourceSpriteFileNameByIndex,
+                                requiredWazFiles
+                        );
+                    }
+                }
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException("解析嵌套 unit 引用失败: " + field.getName(), e);
+            }
+        }
+    }
+
+    private Map<Integer, String> invertIndexMap(Map<String, Integer> source) {
+        Map<Integer, String> target = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> entry : source.entrySet()) {
+            target.put(entry.getValue(), entry.getKey());
+        }
+        return target;
+    }
+
+    private SkillInfoObject tryGetUnitData(Object unit) {
+        if (unit == null) {
+            return null;
+        }
+        try {
+            Method getter = unit.getClass().getMethod("getData");
+            Object value = getter.invoke(unit);
+            return value instanceof SkillInfoObject object ? object : null;
+        } catch (ReflectiveOperationException e) {
+            return null;
+        }
+    }
+
+    private boolean hasNestedUnitList(Class<?> type) {
+        for (Field field : getAllFields(type)) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            if (List.class.isAssignableFrom(field.getType()) && field.getName().endsWith("UnitList")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<Field> getAllFields(Class<?> type) {
+        List<Field> fields = new ArrayList<>();
+        Class<?> current = type;
+        while (current != null && current != Object.class) {
+            Field[] declaredFields = current.getDeclaredFields();
+            for (Field declaredField : declaredFields) {
+                fields.add(declaredField);
+            }
+            current = current.getSuperclass();
+        }
+        return fields;
+    }
+
+    private Waz findRequiredSourceWaz(JinkiPackageBundle jinkiPackage, String fileName) {
+        if (jinkiPackage.getWazByFileName() == null) {
+            return null;
+        }
+        for (Map.Entry<String, Waz> entry : jinkiPackage.getWazByFileName().entrySet()) {
+            if (normalizeFileName(entry.getKey()).equals(normalizeFileName(fileName))) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    private boolean containsFile(Map<String, ?> registry, String fileName) {
+        if (registry == null || fileName == null) {
+            return false;
+        }
+        for (String key : registry.keySet()) {
+            if (normalizeFileName(key).equals(normalizeFileName(fileName))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int readLittleEndianInt(byte[] bytes, int offset) {
+        return (bytes[offset] & 0xFF)
+                | ((bytes[offset + 1] & 0xFF) << 8)
+                | ((bytes[offset + 2] & 0xFF) << 16)
+                | ((bytes[offset + 3] & 0xFF) << 24);
+    }
+
+    private boolean isExisting(Integer existFlag) {
+        return existFlag == null || existFlag != 0;
+    }
+
+    private String buildWazFileName(WazaGroupGrp.WazaGroupEntry entry) {
+        if (entry == null) {
+            return null;
+        }
+        String displayName = entry.getWazaDisplayName();
+        if (displayName == null || displayName.isBlank()) {
+            return null;
+        }
+        return displayName + ".waz";
+    }
+
+    private String normalizeFileName(String fileName) {
+        if (fileName == null) {
+            return "";
+        }
+        return fileName.trim().toLowerCase(Locale.ROOT);
+    }
+}
