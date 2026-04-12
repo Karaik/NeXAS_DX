@@ -13,11 +13,14 @@ import com.giga.nexas.transfer.jinki2bsdx.model.GrpAppendPlan;
 import com.giga.nexas.transfer.jinki2bsdx.model.ImportedAssetSet;
 import com.giga.nexas.transfer.jinki2bsdx.model.JinkiPackageBundle;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -36,6 +39,16 @@ public class PatchMenuDataStep {
     private static final String CHARSET = "windows-31j";
     private static final int REPLACE_VISIBLE_SELECT_MENU_SLOT_INDEX = 24;
     private static final int SELECT_MENU_STATE_DONOR_ROW_INDEX = 23;
+    private static final List<String> MEKA_PILOT_IMAGE_NAMES = List.of(
+            "MOD_001_HELL_AKAO_001.png",
+            "MOD_001_HELL_MEKA_AKAO_001.png"
+    );
+    private static final List<String> SELECT_MENU_MEKA_IMAGE_NAMES = List.of(
+            "MOD_001_SelectMekaMenuMeka_Moribito_2_001.png",
+            "MOD_001_SelectMekaMenuMeka_Moribito_2_002.png"
+    );
+    private static final LayoutPolicy MEKA_PILOT_LAYOUT_POLICY = LayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR;
+    private static final LayoutPolicy SELECT_MENU_MEKA_LAYOUT_POLICY = LayoutPolicy.ORIGIN_CENTER;
 
     private final BsdxBinService bsdxBinService = new BsdxBinService();
 
@@ -58,9 +71,8 @@ public class PatchMenuDataStep {
         Dat patchedSelectMekaMenuDat = patchSelectMekaMenuDat(bsdxBaseline, grpAppendPlan);
 
         Mek menuMek = resolveMenuMek(result, jinkiPackage);
-        Spm mekaPilotSourceSpm = loadRequiredExternalSpm(request, buildExternalUiSpmName("M_", request.getSpriteFileName()));
-        Spm patchedMekaPilotSpm = patchMekaPilotSpm(bsdxBaseline, mekaPilotSourceSpm, menuMek);
-        Spm patchedSelectMekaMenuMekaSpm = patchSelectMekaMenuMekaSpm(bsdxBaseline, menuMek);
+        Spm patchedMekaPilotSpm = patchMekaPilotSpm(request, bsdxBaseline, menuMek);
+        Spm patchedSelectMekaMenuMekaSpm = patchSelectMekaMenuMekaSpm(request, bsdxBaseline, menuMek);
 
         result.setPatchedMekaDat(patchedMekaDat);
         result.setPatchedMekaPilotDat(patchedMekaPilotDat);
@@ -75,8 +87,7 @@ public class PatchMenuDataStep {
                 patchedMekaPilotDat,
                 patchedSelectMekaMenuDat,
                 patchedMekaPilotSpm,
-                patchedSelectMekaMenuMekaSpm,
-                mekaPilotSourceSpm
+                patchedSelectMekaMenuMekaSpm
         );
     }
 
@@ -223,8 +234,8 @@ public class PatchMenuDataStep {
     }
 
     private Spm patchMekaPilotSpm(
+            AkaoGraftRequest request,
             BsdxBaselineBundle bsdxBaseline,
-            Spm sourceSpm,
             Mek menuMek
     ) {
         if (bsdxBaseline.getMekaPilotSpm() == null) {
@@ -233,11 +244,19 @@ public class PatchMenuDataStep {
 
         ReplacementSlot slot = resolveReplacementSlot(bsdxBaseline);
         Spm target = copySpm(bsdxBaseline.getMekaPilotSpm());
-        replaceTargetUiSpmAnim(target, slot.pilotAnimIndex, sourceSpm, buildPilotAnimName(menuMek), true);
+        updateTargetUiSpmAnimName(target, slot.pilotAnimIndex, buildPilotAnimName(menuMek));
+        rebuildMenuAnimImageChain(
+                target,
+                slot.pilotAnimIndex,
+                MEKA_PILOT_IMAGE_NAMES,
+                request.getExternalStaticAssetRoot(),
+                MEKA_PILOT_LAYOUT_POLICY
+        );
         return target;
     }
 
     private Spm patchSelectMekaMenuMekaSpm(
+            AkaoGraftRequest request,
             BsdxBaselineBundle bsdxBaseline,
             Mek menuMek
     ) {
@@ -248,6 +267,13 @@ public class PatchMenuDataStep {
         ReplacementSlot slot = resolveReplacementSlot(bsdxBaseline);
         Spm target = copySpm(bsdxBaseline.getSelectMekaMenuMekaSpm());
         updateTargetUiSpmAnimName(target, slot.selectMenuAnimIndex, buildStableSelectMenuAnimName(menuMek));
+        rebuildMenuAnimImageChain(
+                target,
+                slot.selectMenuAnimIndex,
+                SELECT_MENU_MEKA_IMAGE_NAMES,
+                request.getExternalStaticAssetRoot(),
+                SELECT_MENU_MEKA_LAYOUT_POLICY
+        );
         return target;
     }
 
@@ -274,6 +300,249 @@ public class PatchMenuDataStep {
 
         targetAnim.setAnimName(animName);
         targetAnim.setNumPat(targetAnim.getPatData() == null ? 0 : targetAnim.getPatData().size());
+    }
+
+    private void rebuildMenuAnimImageChain(
+            Spm target,
+            int targetAnimIndex,
+            List<String> imageNames,
+            Path externalStaticAssetRoot,
+            LayoutPolicy layoutPolicy
+    ) {
+        if (target == null || target.getAnimData() == null || target.getPageData() == null || imageNames == null || imageNames.isEmpty()) {
+            return;
+        }
+        if (targetAnimIndex < 0 || targetAnimIndex >= target.getAnimData().size()) {
+            return;
+        }
+        if (externalStaticAssetRoot == null || !Files.exists(externalStaticAssetRoot)) {
+            throw new IllegalStateException("外部静态资源目录不存在，无法重建菜单 SPM 贴图链: " + externalStaticAssetRoot);
+        }
+
+        Spm.SPMAnimData targetAnim = target.getAnimData().get(targetAnimIndex);
+        List<Integer> targetPageIndices = collectTargetPageIndices(targetAnim);
+        if (targetPageIndices.size() != imageNames.size()) {
+            throw new IllegalStateException(
+                    "菜单 SPM anim 的 page 数量与目标 PNG 数量不一致: animIndex=" + targetAnimIndex
+                            + ", pages=" + targetPageIndices.size()
+                            + ", images=" + imageNames.size()
+            );
+        }
+
+        for (int i = 0; i < imageNames.size(); i++) {
+            Integer pageIndex = targetPageIndices.get(i);
+            if (pageIndex == null || pageIndex < 0 || pageIndex >= target.getPageData().size()) {
+                throw new IllegalStateException("菜单 SPM anim 指向无效 page: animIndex=" + targetAnimIndex + ", page=" + pageIndex);
+            }
+
+            String imageName = imageNames.get(i);
+            ImageSize imageSize = readPngSize(externalStaticAssetRoot.resolve(imageName));
+            Spm.SPMPageData currentPage = target.getPageData().get(pageIndex);
+            Spm.SPMPageData templatePage = selectTemplatePage(target, targetPageIndices, pageIndex);
+            Spm.SPMChipData templateChip = firstChip(templatePage);
+            int imageDataIndex = resolveImageDataIndexForPage(target, currentPage);
+            Spm.SPMRect rect = calculateMenuImageRect(target, targetAnimIndex, i, imageSize, layoutPolicy);
+
+            target.getImageData().get(imageDataIndex).setImageName(imageName);
+            target.getPageData().set(pageIndex, rebuildSingleChipPage(templatePage, templateChip, imageDataIndex, imageSize, rect));
+        }
+
+        target.setNumPageData(target.getPageData().size());
+        target.setNumImageData(target.getImageData() == null ? 0 : target.getImageData().size());
+        targetAnim.setNumPat(targetAnim.getPatData() == null ? 0 : targetAnim.getPatData().size());
+    }
+
+    private ImageSize readPngSize(Path path) {
+        if (path == null || !Files.exists(path)) {
+            throw new IllegalStateException("缺少菜单 PNG: " + path);
+        }
+        try {
+            BufferedImage image = ImageIO.read(path.toFile());
+            if (image == null) {
+                throw new IllegalStateException("无法读取菜单 PNG 尺寸: " + path);
+            }
+            return new ImageSize(image.getWidth(), image.getHeight());
+        } catch (IOException e) {
+            throw new IllegalStateException("读取菜单 PNG 尺寸失败: " + path, e);
+        }
+    }
+
+    private Spm.SPMPageData selectTemplatePage(Spm target, List<Integer> targetPageIndices, int currentPageIndex) {
+        Spm.SPMPageData currentPage = target.getPageData().get(currentPageIndex);
+        if (hasSingleChip(currentPage)) {
+            return currentPage;
+        }
+
+        for (Integer pageIndex : targetPageIndices) {
+            if (pageIndex == null || pageIndex == currentPageIndex || pageIndex < 0 || pageIndex >= target.getPageData().size()) {
+                continue;
+            }
+            Spm.SPMPageData siblingPage = target.getPageData().get(pageIndex);
+            if (hasSingleChip(siblingPage)) {
+                return siblingPage;
+            }
+        }
+
+        for (Spm.SPMPageData page : target.getPageData()) {
+            if (hasSingleChip(page)) {
+                return page;
+            }
+        }
+
+        throw new IllegalStateException("菜单 SPM 中找不到可作为模板的非空单 chip page");
+    }
+
+    private Spm.SPMPageData rebuildSingleChipPage(
+            Spm.SPMPageData templatePage,
+            Spm.SPMChipData templateChip,
+            int imageDataIndex,
+            ImageSize imageSize,
+            Spm.SPMRect rect
+    ) {
+        Spm.SPMPageData targetPage = copyPageData(templatePage, null);
+
+        targetPage.setNumChipData(1);
+        targetPage.setPageWidth(imageSize.width());
+        targetPage.setPageHeight(imageSize.height());
+        targetPage.setPageRect(copyRect(rect));
+
+        Spm.SPMChipData targetChip = copyChipData(templateChip, null);
+        targetChip.setImageNo(imageDataIndex);
+        targetChip.setChipWidth(imageSize.width());
+        targetChip.setChipHeight(imageSize.height());
+        targetChip.setSrcRect(newRect(0, 0, imageSize.width(), imageSize.height()));
+        targetChip.setDstRect(copyRect(rect));
+        targetPage.setChipData(new ArrayList<>(List.of(targetChip)));
+        return targetPage;
+    }
+
+    private Spm.SPMRect calculateMenuImageRect(
+            Spm target,
+            int targetAnimIndex,
+            int patIndex,
+            ImageSize imageSize,
+            LayoutPolicy layoutPolicy
+    ) {
+        if (layoutPolicy == LayoutPolicy.ORIGIN_CENTER) {
+            int left = -Math.floorDiv(imageSize.width(), 2);
+            int top = -Math.floorDiv(imageSize.height(), 2);
+            return newRect(left, top, left + imageSize.width(), top + imageSize.height());
+        }
+
+        List<AnchorSample> samples = collectMekaPilotAnchorSamples(target, targetAnimIndex, patIndex);
+        if (samples.isEmpty()) {
+            throw new IllegalStateException("MekaPilot.spm 中找不到同质锚点样本: animIndex=" + targetAnimIndex + ", patIndex=" + patIndex);
+        }
+
+        double centerX = median(samples.stream().map(AnchorSample::centerX).toList());
+        double bottom = median(samples.stream().map(AnchorSample::bottom).toList());
+        int left = (int) Math.round(centerX - imageSize.width() / 2.0);
+        int rectBottom = (int) Math.round(bottom);
+        return newRect(left, rectBottom - imageSize.height(), left + imageSize.width(), rectBottom);
+    }
+
+    private List<AnchorSample> collectMekaPilotAnchorSamples(Spm target, int targetAnimIndex, int patIndex) {
+        List<AnchorSample> samples = new ArrayList<>();
+        if (target == null || target.getAnimData() == null || target.getPageData() == null) {
+            return samples;
+        }
+
+        for (int animIndex = 0; animIndex < target.getAnimData().size() && animIndex < targetAnimIndex; animIndex++) {
+            Spm.SPMAnimData anim = target.getAnimData().get(animIndex);
+            if (anim == null || anim.getPatData() == null || patIndex < 0 || patIndex >= anim.getPatData().size()) {
+                continue;
+            }
+            Spm.SPMPatData patData = anim.getPatData().get(patIndex);
+            if (patData == null || patData.getPageNo() == null || patData.getPageNo().isEmpty()) {
+                continue;
+            }
+            Integer pageNo = patData.getPageNo().get(0);
+            if (pageNo == null || pageNo < 0 || pageNo >= target.getPageData().size()) {
+                continue;
+            }
+            Spm.SPMPageData page = target.getPageData().get(pageNo);
+            if (!hasSingleChip(page)) {
+                continue;
+            }
+            samples.add(toAnchorSample(page));
+        }
+        return samples;
+    }
+
+    private AnchorSample toAnchorSample(Spm.SPMPageData page) {
+        Spm.SPMRect rect = page.getPageRect();
+        return new AnchorSample(
+                (rect.getLeft() + rect.getRight()) / 2.0,
+                rect.getBottom()
+        );
+    }
+
+    private double median(List<Double> values) {
+        if (values == null || values.isEmpty()) {
+            throw new IllegalStateException("median 输入不能为空");
+        }
+        List<Double> sorted = values.stream().sorted(Comparator.naturalOrder()).toList();
+        int mid = sorted.size() / 2;
+        if (sorted.size() % 2 == 1) {
+            return sorted.get(mid);
+        }
+        return (sorted.get(mid - 1) + sorted.get(mid)) / 2.0;
+    }
+
+    private Spm.SPMRect newRect(int left, int top, int right, int bottom) {
+        Spm.SPMRect rect = new Spm.SPMRect();
+        rect.setLeft(left);
+        rect.setTop(top);
+        rect.setRight(right);
+        rect.setBottom(bottom);
+        return rect;
+    }
+
+    private int resolveImageDataIndexForPage(Spm target, Spm.SPMPageData page) {
+        if (target.getImageData() == null) {
+            target.setImageData(new ArrayList<>());
+        }
+        Spm.SPMChipData chip = firstChip(page);
+        if (chip != null
+                && chip.getImageNo() != null
+                && chip.getImageNo() >= 0
+                && chip.getImageNo() < target.getImageData().size()
+                && countImageReferences(target, chip.getImageNo()) == 1) {
+            return chip.getImageNo();
+        }
+
+        Spm.SPMImageData imageData = new Spm.SPMImageData();
+        target.getImageData().add(imageData);
+        return target.getImageData().size() - 1;
+    }
+
+    private int countImageReferences(Spm spm, int imageNo) {
+        int count = 0;
+        if (spm == null || spm.getPageData() == null) {
+            return count;
+        }
+        for (Spm.SPMPageData page : spm.getPageData()) {
+            if (page == null || page.getChipData() == null) {
+                continue;
+            }
+            for (Spm.SPMChipData chip : page.getChipData()) {
+                if (chip != null && chip.getImageNo() != null && chip.getImageNo() == imageNo) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    private boolean hasSingleChip(Spm.SPMPageData page) {
+        return page != null && page.getChipData() != null && page.getChipData().size() == 1 && page.getChipData().get(0) != null;
+    }
+
+    private Spm.SPMChipData firstChip(Spm.SPMPageData page) {
+        if (!hasSingleChip(page)) {
+            return null;
+        }
+        return page.getChipData().get(0);
     }
 
     private void replaceTargetUiSpmAnim(
@@ -436,8 +705,7 @@ public class PatchMenuDataStep {
             Dat patchedMekaPilotDat,
             Dat patchedSelectMekaMenuDat,
             Spm patchedMekaPilotSpm,
-            Spm patchedSelectMekaMenuMekaSpm,
-            Spm mekaPilotSourceSpm
+            Spm patchedSelectMekaMenuMekaSpm
     ) {
         if (importedAssetSet == null || importedAssetSet.getOutputRootDir() == null) {
             return;
@@ -451,7 +719,7 @@ public class PatchMenuDataStep {
             writeSpm(importedAssetSet, "MekaPilot.spm", patchedMekaPilotSpm);
             writeSpm(importedAssetSet, "SelectMekaMenuMeka.spm", patchedSelectMekaMenuMekaSpm);
 
-            copyMenuSpmImages(request, importedAssetSet, patchedMekaPilotSpm, patchedSelectMekaMenuMekaSpm, mekaPilotSourceSpm);
+            copyMenuSpmImages(request, importedAssetSet, patchedMekaPilotSpm, patchedSelectMekaMenuMekaSpm);
         } catch (IOException e) {
             throw new IllegalStateException("写出 step9 菜单链产物失败", e);
         }
@@ -979,5 +1247,16 @@ public class PatchMenuDataStep {
         private int selectMenuState;
         private int pilotRowIndex;
         private int pilotAnimIndex;
+    }
+
+    private record ImageSize(int width, int height) {
+    }
+
+    private record AnchorSample(double centerX, double bottom) {
+    }
+
+    private enum LayoutPolicy {
+        MEKA_PILOT_MEDIAN_ANCHOR,
+        ORIGIN_CENTER
     }
 }

@@ -4,6 +4,7 @@ import com.giga.nexas.dto.ResponseDTO;
 import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp;
 import com.giga.nexas.dto.bsdx.mek.Mek;
+import com.giga.nexas.dto.bsdx.spm.Spm;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventVoice;
@@ -16,6 +17,9 @@ import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.lang.reflect.Field;
@@ -108,18 +112,7 @@ public class TestJinki2BsdxRunner {
                 result.getBsdxBaseline().getSelectMekaMenuMekaSpm().getAnimData().size(),
                 result.getPatchedSelectMekaMenuMekaSpm().getAnimData().size()
         );
-        Assertions.assertTrue(
-                result.getPatchedSelectMekaMenuMekaSpm().getImageData().stream()
-                        .map(image -> image == null || image.getImageName() == null ? "" : image.getImageName().toLowerCase(Locale.ROOT))
-                        .anyMatch("selectmekamenumeka_0011_0001.png"::equals)
-        );
-        Assertions.assertTrue(
-                result.getPatchedSelectMekaMenuMekaSpm().getImageData().stream()
-                        .map(image -> image == null || image.getImageName() == null ? "" : image.getImageName().toLowerCase(Locale.ROOT))
-                        .anyMatch("selectmekamenumeka_0012_0001.png"::equals)
-        );
-        Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("selectmekamenumeka_0011_0001.png")));
-        Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("selectmekamenumeka_0012_0001.png")));
+        assertMenuSpmImageChains(result, request);
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("Akao_0901.ogg")));
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("Akao_0902.ogg")));
         Assertions.assertTrue(Files.exists(result.getImportedAssetSet().getOutputRootDir().resolve("Akao_0903.ogg")));
@@ -218,6 +211,231 @@ public class TestJinki2BsdxRunner {
             return number.intValue();
         }
         return Integer.parseInt(String.valueOf(value));
+    }
+
+    private void assertMenuSpmImageChains(AkaoGraftResult result, AkaoGraftRequest request) {
+        int visibleSlotIndex = 25 - 1;
+        List<Object> selectRow = result.getPatchedSelectMekaMenuDat().getData().get(visibleSlotIndex);
+        int targetMekaIndex = asInt(selectRow.get(0));
+        int selectMenuAnimIndex = asInt(selectRow.get(1));
+        int pilotAnimIndex = findRowIndexByFirstColumn(result.getPatchedMekaPilotDat(), targetMekaIndex);
+
+        Assertions.assertEquals(29, pilotAnimIndex, "menu slot 25 should derive MekaPilot.spm anim index through MekaPilot.dat");
+        Assertions.assertEquals(18, selectMenuAnimIndex, "menu slot 25 should derive SelectMekaMenuMeka.spm anim index from SelectMekaMenu.dat column 2");
+
+        List<Integer> pilotPages = collectAnimPageIndices(result.getPatchedMekaPilotSpm(), pilotAnimIndex);
+        List<Integer> selectMenuPages = collectAnimPageIndices(result.getPatchedSelectMekaMenuMekaSpm(), selectMenuAnimIndex);
+
+        Assertions.assertEquals(List.of(59, 60), pilotPages, "derived MekaPilot anim should keep its existing page chain");
+        Assertions.assertEquals(List.of(36, 37), selectMenuPages, "derived SelectMekaMenuMeka anim should keep its existing page chain");
+
+        assertPageImageChain(
+                result.getPatchedMekaPilotSpm(),
+                pilotAnimIndex,
+                0,
+                pilotPages.get(0),
+                "MOD_001_HELL_AKAO_001.png",
+                request.getExternalStaticAssetRoot(),
+                result.getImportedAssetSet().getOutputRootDir(),
+                LayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR
+        );
+        assertPageImageChain(
+                result.getPatchedMekaPilotSpm(),
+                pilotAnimIndex,
+                1,
+                pilotPages.get(1),
+                "MOD_001_HELL_MEKA_AKAO_001.png",
+                request.getExternalStaticAssetRoot(),
+                result.getImportedAssetSet().getOutputRootDir(),
+                LayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR
+        );
+        assertPageImageChain(
+                result.getPatchedSelectMekaMenuMekaSpm(),
+                selectMenuAnimIndex,
+                0,
+                selectMenuPages.get(0),
+                "MOD_001_SelectMekaMenuMeka_Moribito_2_001.png",
+                request.getExternalStaticAssetRoot(),
+                result.getImportedAssetSet().getOutputRootDir(),
+                LayoutPolicy.ORIGIN_CENTER
+        );
+        assertPageImageChain(
+                result.getPatchedSelectMekaMenuMekaSpm(),
+                selectMenuAnimIndex,
+                1,
+                selectMenuPages.get(1),
+                "MOD_001_SelectMekaMenuMeka_Moribito_2_002.png",
+                request.getExternalStaticAssetRoot(),
+                result.getImportedAssetSet().getOutputRootDir(),
+                LayoutPolicy.ORIGIN_CENTER
+        );
+    }
+
+    private int findRowIndexByFirstColumn(Dat dat, int firstColumnValue) {
+        Assertions.assertNotNull(dat);
+        Assertions.assertNotNull(dat.getData());
+        for (int i = 0; i < dat.getData().size(); i++) {
+            List<Object> row = dat.getData().get(i);
+            if (row != null && !row.isEmpty() && asInt(row.get(0)) == firstColumnValue) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private List<Integer> collectAnimPageIndices(Spm spm, int animIndex) {
+        Assertions.assertNotNull(spm);
+        Assertions.assertNotNull(spm.getAnimData());
+        Assertions.assertTrue(animIndex >= 0 && animIndex < spm.getAnimData().size(), "derived anim index out of range");
+
+        Spm.SPMAnimData anim = spm.getAnimData().get(animIndex);
+        Assertions.assertNotNull(anim);
+        Assertions.assertNotNull(anim.getPatData());
+
+        List<Integer> pages = new ArrayList<>();
+        for (Spm.SPMPatData patData : anim.getPatData()) {
+            Assertions.assertNotNull(patData);
+            Assertions.assertNotNull(patData.getPageNo());
+            pages.addAll(patData.getPageNo());
+        }
+        return pages;
+    }
+
+    private void assertPageImageChain(
+            Spm spm,
+            int animIndex,
+            int patIndex,
+            int pageIndex,
+            String expectedImageName,
+            Path externalStaticAssetRoot,
+            Path outputRoot,
+            LayoutPolicy layoutPolicy
+    ) {
+        ImageSize expectedSize = readImageSize(externalStaticAssetRoot.resolve(expectedImageName));
+        ExpectedRect expectedRect = calculateExpectedRect(spm, animIndex, patIndex, expectedSize, layoutPolicy);
+
+        Assertions.assertTrue(pageIndex >= 0 && pageIndex < spm.getPageData().size(), "page index out of range");
+        Spm.SPMPageData page = spm.getPageData().get(pageIndex);
+        Assertions.assertNotNull(page);
+        Assertions.assertEquals(1, page.getNumChipData());
+        Assertions.assertNotNull(page.getChipData());
+        Assertions.assertEquals(1, page.getChipData().size());
+
+        Spm.SPMChipData chip = page.getChipData().get(0);
+        Assertions.assertNotNull(chip);
+        Assertions.assertNotNull(chip.getImageNo());
+        Assertions.assertTrue(chip.getImageNo() >= 0 && chip.getImageNo() < spm.getImageData().size(), "chip imageNo out of range");
+        Assertions.assertEquals(expectedImageName, spm.getImageData().get(chip.getImageNo()).getImageName());
+
+        Assertions.assertEquals(expectedSize.width(), page.getPageWidth());
+        Assertions.assertEquals(expectedSize.height(), page.getPageHeight());
+        Assertions.assertEquals(expectedSize.width(), chip.getChipWidth());
+        Assertions.assertEquals(expectedSize.height(), chip.getChipHeight());
+        assertRectSize(page.getPageRect(), expectedSize);
+        assertRectSize(chip.getDstRect(), expectedSize);
+        assertSameRect(page.getPageRect(), chip.getDstRect());
+        assertRectEquals(expectedRect, page.getPageRect());
+        Assertions.assertEquals(0, chip.getSrcRect().getLeft());
+        Assertions.assertEquals(0, chip.getSrcRect().getTop());
+        Assertions.assertEquals(expectedSize.width(), chip.getSrcRect().getRight());
+        Assertions.assertEquals(expectedSize.height(), chip.getSrcRect().getBottom());
+
+        Assertions.assertTrue(Files.exists(outputRoot.resolve(expectedImageName)), expectedImageName + " should be copied into output dir");
+    }
+
+    private ExpectedRect calculateExpectedRect(Spm spm, int animIndex, int patIndex, ImageSize imageSize, LayoutPolicy layoutPolicy) {
+        if (layoutPolicy == LayoutPolicy.ORIGIN_CENTER) {
+            int left = -Math.floorDiv(imageSize.width(), 2);
+            int top = -Math.floorDiv(imageSize.height(), 2);
+            return new ExpectedRect(left, top, left + imageSize.width(), top + imageSize.height());
+        }
+
+        List<AnchorSample> samples = collectMekaPilotAnchorSamples(spm, animIndex, patIndex);
+        Assertions.assertFalse(samples.isEmpty(), "MekaPilot anchor sample pool should not be empty");
+        double centerX = median(samples.stream().map(AnchorSample::centerX).toList());
+        double bottom = median(samples.stream().map(AnchorSample::bottom).toList());
+        int left = (int) Math.round(centerX - imageSize.width() / 2.0);
+        int rectBottom = (int) Math.round(bottom);
+        return new ExpectedRect(left, rectBottom - imageSize.height(), left + imageSize.width(), rectBottom);
+    }
+
+    private List<AnchorSample> collectMekaPilotAnchorSamples(Spm spm, int animIndex, int patIndex) {
+        List<AnchorSample> samples = new ArrayList<>();
+        for (int i = 0; i < spm.getAnimData().size() && i < animIndex; i++) {
+            Spm.SPMAnimData anim = spm.getAnimData().get(i);
+            if (anim == null || anim.getPatData() == null || patIndex < 0 || patIndex >= anim.getPatData().size()) {
+                continue;
+            }
+            Spm.SPMPatData patData = anim.getPatData().get(patIndex);
+            if (patData == null || patData.getPageNo() == null || patData.getPageNo().isEmpty()) {
+                continue;
+            }
+            int pageNo = patData.getPageNo().get(0);
+            if (pageNo < 0 || pageNo >= spm.getPageData().size()) {
+                continue;
+            }
+            Spm.SPMPageData page = spm.getPageData().get(pageNo);
+            if (page == null || page.getChipData() == null || page.getChipData().size() != 1) {
+                continue;
+            }
+            Spm.SPMRect rect = page.getPageRect();
+            samples.add(new AnchorSample((rect.getLeft() + rect.getRight()) / 2.0, rect.getBottom()));
+        }
+        return samples;
+    }
+
+    private double median(List<Double> values) {
+        List<Double> sorted = values.stream().sorted().toList();
+        int mid = sorted.size() / 2;
+        if (sorted.size() % 2 == 1) {
+            return sorted.get(mid);
+        }
+        return (sorted.get(mid - 1) + sorted.get(mid)) / 2.0;
+    }
+
+    private void assertRectSize(Spm.SPMRect rect, ImageSize expectedSize) {
+        Assertions.assertNotNull(rect);
+        Assertions.assertEquals(expectedSize.width(), rect.getRight() - rect.getLeft());
+        Assertions.assertEquals(expectedSize.height(), rect.getBottom() - rect.getTop());
+    }
+
+    private void assertSameRect(Spm.SPMRect left, Spm.SPMRect right) {
+        Assertions.assertEquals(left.getLeft(), right.getLeft());
+        Assertions.assertEquals(left.getTop(), right.getTop());
+        Assertions.assertEquals(left.getRight(), right.getRight());
+        Assertions.assertEquals(left.getBottom(), right.getBottom());
+    }
+
+    private void assertRectEquals(ExpectedRect expected, Spm.SPMRect actual) {
+        Assertions.assertEquals(expected.left(), actual.getLeft());
+        Assertions.assertEquals(expected.top(), actual.getTop());
+        Assertions.assertEquals(expected.right(), actual.getRight());
+        Assertions.assertEquals(expected.bottom(), actual.getBottom());
+    }
+
+    private ImageSize readImageSize(Path path) {
+        Assertions.assertTrue(Files.exists(path), "missing expected PNG: " + path);
+        try {
+            BufferedImage image = ImageIO.read(path.toFile());
+            Assertions.assertNotNull(image, "failed to read PNG: " + path);
+            return new ImageSize(image.getWidth(), image.getHeight());
+        } catch (IOException e) {
+            throw new AssertionError("failed to read PNG: " + path, e);
+        }
+    }
+
+    private record ImageSize(int width, int height) {
+    }
+
+    private record ExpectedRect(int left, int top, int right, int bottom) {
+    }
+
+    private record AnchorSample(double centerX, double bottom) {
+    }
+
+    private enum LayoutPolicy {
+        MEKA_PILOT_MEDIAN_ANCHOR,
+        ORIGIN_CENTER
     }
 
     private void assertMaterialVoiceGroupsRemapped(AkaoGraftResult result) {
