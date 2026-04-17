@@ -44,7 +44,7 @@ public class TsukuyomiConvertOverviewStep {
         // 转换选定 grp 文件，建立源侧 group 视图。
         convertSelectedGrpFilesStep.convert(request, rawSourceBundle, convertedBundle);
 
-        // TODO 20260417：转换选定 mek 文件，先保留空实现骨架。
+        // 转换选定 mek 文件，建立 BSDX DTO 形状的源侧 MEK 视图。
         convertSelectedMekFilesStep.convert(request, rawSourceBundle, convertedBundle);
 
         // TODO 20260417：转换选定 waz 文件和指定公共弹幕 waz，先保留空实现骨架。
