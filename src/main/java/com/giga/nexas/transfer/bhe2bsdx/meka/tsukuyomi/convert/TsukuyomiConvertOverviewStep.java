@@ -50,7 +50,7 @@ public class TsukuyomiConvertOverviewStep {
         // 转换选定 waz 文件和指定公共弹幕 waz，建立 BSDX DTO 形状的源侧 WAZ 视图。
         convertSelectedWazFilesStep.convert(request, rawSourceBundle, convertedBundle);
 
-        // TODO 20260417：转换选定 spm 文件以及公共资源推导出的 spm，先保留空实现骨架。
+        // 转换选定 spm 文件，建立 BSDX DTO 形状的源侧 SPM 视图。
         convertSelectedSpmFilesStep.convert(request, rawSourceBundle, convertedBundle);
 
         // TODO 20260417：根据指定公共资源构建追加计划。
