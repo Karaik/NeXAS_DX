@@ -12,6 +12,7 @@ import com.giga.nexas.dto.bhe.waz.Waz;
 import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.service.BheBinService;
 import com.giga.nexas.service.BsdxBinService;
+import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.convert.common.TsukuyomiSpecifiedCommonResources;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiRawSourceBundle;
 
@@ -29,16 +30,6 @@ import java.util.Map;
 public class LoadRawBheSourceStep {
 
     private static final String CHARSET = "windows-31j";
-    private static final String[] COMMON_PROJECTILE_WAZ_FILES = {
-            "effect.waz",
-            "tama01.waz",
-            "tama02.waz",
-            "tama03.waz",
-            "tama04.waz",
-            "tama05.waz",
-            "laser.waz",
-            "bomb.waz"
-    };
 
     private final BheBinService bheBinService;
     private final BsdxBinService bsdxBinService;
@@ -98,7 +89,7 @@ public class LoadRawBheSourceStep {
         if (commonWazDir == null || !Files.isDirectory(commonWazDir)) {
             throw new IllegalStateException("BHE 公共 WAZ 目录不存在: " + commonWazDir);
         }
-        for (String fileName : COMMON_PROJECTILE_WAZ_FILES) {
+        for (String fileName : TsukuyomiSpecifiedCommonResources.commonProjectileWazFileArray()) {
             Path path = commonWazDir.resolve(fileName);
             Waz waz = parseRequiredBhe(path, Waz.class);
             wazByFileName.put(path.getFileName().toString(), waz);
