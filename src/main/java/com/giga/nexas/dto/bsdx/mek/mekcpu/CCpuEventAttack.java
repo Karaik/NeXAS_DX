@@ -44,4 +44,16 @@ public class CCpuEventAttack extends CCpuEvent {
         super.writeInfo(writer);
         writer.writeInt(this.mekWeaponInfoMapNo);
     }
+
+    public void transBheCCpuEventAttackToBsdx(
+            com.giga.nexas.dto.bhe.mek.mekcpu.CCpuEventAttack src,
+            CCpuEventAttack bsdx
+    ) {
+        if (src == null || bsdx == null) {
+            return;
+        }
+        super.transBheCCpuEventToBsdx(src, bsdx);
+        bsdx.setMekWeaponInfoMapNo(src.getMekWeaponInfoMapNo());
+        bsdx.setWazaName(src.getWazaName());
+    }
 }
