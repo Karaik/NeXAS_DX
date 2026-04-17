@@ -37,7 +37,7 @@ public class TsukuyomiConvertOverviewStep {
     ) {
         TsukuyomiConvertedBundle convertedBundle = new TsukuyomiConvertedBundle();
 
-        // TODO 20260417：读取 BHE 原始资源，包含选定资源和指定公共资源。
+        // 读取 BHE 原始资源，包含选定资源和当前 Tsukuyomi 首次接入需要的公共弹幕资源。
         TsukuyomiRawSourceBundle rawSourceBundle = loadRawBheSourceStep.load(request);
         convertedBundle.setRawSourceBundle(rawSourceBundle);
 
