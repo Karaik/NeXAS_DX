@@ -41,7 +41,7 @@ public class TsukuyomiConvertOverviewStep {
         TsukuyomiRawSourceBundle rawSourceBundle = loadRawBheSourceStep.load(request);
         convertedBundle.setRawSourceBundle(rawSourceBundle);
 
-        // TODO 20260417：转换选定 grp 文件，建立源侧 group 视图。
+        // 转换选定 grp 文件，建立源侧 group 视图。
         convertSelectedGrpFilesStep.convert(request, rawSourceBundle, convertedBundle);
 
         // TODO 20260417：转换选定 mek 文件，先保留空实现骨架。
