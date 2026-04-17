@@ -2,6 +2,9 @@ package com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi;
 
 import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.dto.bsdx.spm.Spm;
+import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.convert.BuildBaselineFromJinkiResultStep;
+import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.convert.TsukuyomiConvertOverviewStep;
+import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiConvertedBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBundle;
@@ -11,6 +14,7 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportedAssetSe
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPackageBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPacPackPlan;
+import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.exe.PatchExeStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.AppendGrpEntriesStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.BuildResourceClosureStep;
@@ -29,12 +33,28 @@ import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.pack.PackUpdatePacStep;
 import java.nio.file.Path;
 
 /**
- * Tsukuyomi -> BSDX orchestration.
+ * Tsukuyomi -> BSDX 主流程编排。
  *
  * <p>这条 Tsukuyomi 主线保留共享主链结构作为验收基线，但自身不再直接调用旧 steps 包。
  * 每次内部替换都以最终输出目录和解包后的 Update3.pac 逐文件 byte parity 作为硬闸。</p>
  */
 public class TsukuyomiGraftPipeline {
+
+    /**
+     * JINKI 结果 -> BHE 当前层基线视图的转换入口。
+     *
+     * <p>这里刻意下沉到转换包，而不是继续把转换细节塞在主流程编排类里，
+     * 原因是这一步本质上不是“跑主流程”，而是“把上一层成果物改写成当前层可消费的输入对象”。</p>
+     */
+    private final BuildBaselineFromJinkiResultStep buildBaselineFromJinkiResultStep = new BuildBaselineFromJinkiResultStep();
+
+    /**
+     * 第 0 步资源转换层总入口。
+     *
+     * <p>主流程只调用这个总览类；具体 raw / grp / mek / waz / spm / common 的细分步骤，
+     * 都由总览类在转换包内部调度。</p>
+     */
+    private final TsukuyomiConvertOverviewStep tsukuyomiConvertOverviewStep = new TsukuyomiConvertOverviewStep();
 
     /**
      * 源游戏转换层入口。
@@ -45,9 +65,9 @@ public class TsukuyomiGraftPipeline {
     private final LoadTsukuyomiSourceAssetsStep loadTsukuyomiSourceAssetsStep = new LoadTsukuyomiSourceAssetsStep();
 
     /**
-     * 链式成果物 baseline 加载入口。
+     * 链式成果物基线加载入口。
      *
-     * <p>当前阶段读取原始 BSDX baseline；后续 BHE 阶段可以把这里的输入换成
+     * <p>当前阶段读取原始 BSDX 基线；后续 BHE 阶段可以把这里的输入换成
      * BSDX+TSUKUYOMI 成果物，从而继续继承上一层输出。</p>
      */
     private final LoadGraftBaselineStep loadGraftBaselineStep = new LoadGraftBaselineStep();
@@ -77,7 +97,7 @@ public class TsukuyomiGraftPipeline {
     private final SyncProgramMaterialStep syncProgramMaterialStep = new SyncProgramMaterialStep();
 
     /**
-     * baseline MEK material padding 入口。
+     * 基线 MEK material 补齐入口。
      *
      * <p>用于把旧 BSDX 机体的 material 块补到新 GRP 容量，
      * 避免只让新增机体正确而破坏既有机体的表结构。</p>
@@ -136,49 +156,52 @@ public class TsukuyomiGraftPipeline {
             return result;
         }
 
-        // TODO to AI 20260416
-        // 0. 资源转换层
-        // 这里比较特殊，得先一步把 bhe 对象转为 bsdx对象
-        // 主要转的是 0-7 index 的几个公共弹幕文件
-        // tstukuyomi 的 waz spm mek，所以需要单独建一个 convert 包，去分别做 convert
+        // 0.1 链式基线输入层。
+        // BHE 当前层必须接手 JINKI 成果物基线，不再从目录回退加载原始 BSDX 基线。
+        TsukuyomiBsdxBaselineBundle bsdxBaseline =
+                buildBaselineFromJinkiResultStep.buildBaselineFromJinkiResult(request.getInheritedJinkiResult());
+        result.setBsdxBaseline(bsdxBaseline);
 
-        // 1. 源游戏转换层。
-        // TSUKUYOMI 和 BSDX 是同系对象格式，所以这里不是做跨格式语义转换，
-        // 而是把源侧二进制稳定反序列化为 BSDX DTO，给后续通用 graft 主线消费。
+        // 0.2 资源转换层。
+        // TODO 20260417：第 0 步转换层只有这一个入口；内部细分步骤放在 convert 包的对应子目录中。
+        TsukuyomiConvertedBundle convertedBundle = tsukuyomiConvertOverviewStep.convert(request, bsdxBaseline);
+        result.setRawSourceBundle(convertedBundle.getRawSourceBundle());
+        result.setConvertedBundle(convertedBundle);
+        result.setCommonResourceAppendPlan(convertedBundle.getCommonResourceAppendPlan());
+        result.setPreparedBaselineBundle(convertedBundle.getPreparedBaselineBundle());
+        bsdxBaseline = convertedBundle.getPreparedBaselineBundle();
+        result.setBsdxBaseline(bsdxBaseline);
+
+        // 1. 源资源包加载层。
+        // TODO 20260417：第 0 步真实转换完成前，后续主线仍暂时沿用当前 loader 产出的源资源包。
         TsukuyomiPackageBundle tsukuyomiPackage = loadTsukuyomiSourceAssetsStep.load(request);
         result.setTsukuyomiPackage(tsukuyomiPackage);
 
-        // 2. 链式 baseline 输入层。
-        // 当前测试仍用原始 BSDX 作为 baseline；后续 BHE 接入时，这个输入可以换成
-        // BSDX+TSUKUYOMI 的成果物目录，而不是重新从原始 BSDX 开一条独立线。
-        TsukuyomiBsdxBaselineBundle bsdxBaseline = loadGraftBaselineStep.load(request);
-        result.setBsdxBaseline(bsdxBaseline);
-
-        // 3. 前置客制化输入收束。
+        // 2. 前置客制化输入收束。
         // 这一步只产出“本次要 graft 哪些资源”的闭包和审计信息，
         // 不修改任何目标资源；真正的复用/尾插决策放到 GRP append 阶段。
         TsukuyomiImportPlan importPlan = buildResourceClosureStep.buildResourceClosure(request, tsukuyomiPackage, bsdxBaseline);
         result.setImportPlan(importPlan);
 
-        // 4. 通用 graft 主线的核心映射阶段。
+        // 3. 通用 graft 主线的核心映射阶段。
         // 从这里开始，后续所有 MEK/WAZ/SPM/DAT 重绑都只能消费 TsukuyomiGrpAppendPlan，
         // 不能再各自猜测“源 index 应该落到哪个目标 index”。
         TsukuyomiGrpAppendPlan grpAppendPlan = appendGrpEntriesStep.appendTsukuyomiBranch(request, tsukuyomiPackage, bsdxBaseline, importPlan);
         result.setGrpAppendPlan(grpAppendPlan);
 
-        // 5. GRP 扩容后的全局结构补齐。
+        // 4. GRP 扩容后的全局结构补齐。
         // ProgramMaterial / MapGroup / 基线 MEK 的数组长度都依赖当前 GRP 顶层容量；
         // 如果只追加 group 而不补齐这些结构，游戏加载时会在长度不一致处崩溃。
         result.setSyncedProgramMaterial(syncProgramMaterialStep.syncOuterArrays(request, bsdxBaseline, grpAppendPlan));
         padBaselineMekMaterialStep.padMaterialBlock(bsdxBaseline);
 
-        // 6. 主机体资源重绑。
+        // 5. 主机体资源重绑。
         // MEK/WAZ 重建不是在源对象上原地 patch，而是按 DTO 层级重建目标对象，
         // 这样每个外部引用点都能明确说明消费的是哪张映射表。
         result.setReboundTsukuyomiMek(rebindMekStep.rebindTsukuyomiMek(request, tsukuyomiPackage, grpAppendPlan));
         result.setReboundTsukuyomiWaz(rebindWazStep.rebindTsukuyomiWaz(request, tsukuyomiPackage, importPlan, grpAppendPlan));
 
-        // 7. 主线输出沉淀。
+        // 6. 主线输出沉淀。
         // 这里写出的目录是最终打包输入；后续所有后置覆盖都必须写回同一目录，
         // 否则目录 parity 可能通过局部对象测试，却在打包对象里漏文件。
         TsukuyomiImportedAssetSet importedAssetSet = importStaticAssetsStep.importAssets(
@@ -193,7 +216,7 @@ public class TsukuyomiGraftPipeline {
         );
         result.setImportedAssetSet(importedAssetSet);
 
-        // 8. 后置客制化覆盖。
+        // 7. 后置客制化覆盖。
         // 菜单不是主 MEK/WAZ 闭包自然能推导出的资源链，所以放在后置覆盖阶段。
         // 它仍然必须产出可审计的 dat/spm/png，并覆盖同一个 outputRoot。
         if (request.isPatchMenuData()) {
@@ -209,18 +232,24 @@ public class TsukuyomiGraftPipeline {
             applyMenuContextToResultAndAssetSet(menuContext, result, importedAssetSet);
         }
 
-        // 9. 兼容 patch 累加。
-        // exe patch 的输入是当前 baseline exe，输出是本层成果物 exe；
+        // 8. 兼容 patch 累加。
+        // EXE 补丁的输入是当前基线 exe，输出是本层成果物 exe；
         // patch site 允许 expected 或 target，是为了支持后续链式成果物继续累加。
         TsukuyomiExePatchPlan exePatchPlan = patchExeStep.patchExe(request, bsdxBaseline, grpAppendPlan, result);
         result.setExePatchPlan(exePatchPlan);
 
-        // 10. 最终打包。
+        // 9. 最终打包。
         // 最终验收不以 pac 文件本身字节为唯一标准，
         // 而是先打包，再解包比较内部文件集合和逐文件 bytes。
         TsukuyomiPacPackPlan pacPackPlan = packUpdatePacStep.packUpdatePac(request, importedAssetSet);
         result.setPacPackPlan(pacPackPlan);
         return result;
+    }
+
+    private TsukuyomiBsdxBaselineBundle buildBaselineFromJinkiResult(AkaoGraftResult inheritedJinkiResult) {
+        // 这里保留一个很薄的代理，只负责把主流程编排层的调用转发到转换层。
+        // 具体“如何从 JINKI 结果拼出当前层基线”的规则，统一收敛到转换包内维护。
+        return buildBaselineFromJinkiResultStep.buildBaselineFromJinkiResult(inheritedJinkiResult);
     }
 
     private void applyMenuContextToResultAndAssetSet(

@@ -13,8 +13,12 @@ import lombok.Data;
 @Data
 public class TsukuyomiGraftResult {
 
+    private TsukuyomiRawSourceBundle rawSourceBundle;
+    private TsukuyomiConvertedBundle convertedBundle;
+    private TsukuyomiCommonResourceAppendPlan commonResourceAppendPlan;
     private TsukuyomiPackageBundle tsukuyomiPackage;
     private TsukuyomiBsdxBaselineBundle bsdxBaseline;
+    private TsukuyomiBsdxBaselineBundle preparedBaselineBundle;
     private TsukuyomiImportPlan importPlan;
     private TsukuyomiGrpAppendPlan grpAppendPlan;
     private ProgramMaterialGrp syncedProgramMaterial;

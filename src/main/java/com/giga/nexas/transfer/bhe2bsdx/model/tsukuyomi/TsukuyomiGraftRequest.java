@@ -1,5 +1,6 @@
 package com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi;
 
+import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
 import lombok.Data;
 
 import java.nio.file.Path;
@@ -12,7 +13,7 @@ import java.nio.file.Paths;
 public class TsukuyomiGraftRequest {
 
     /**
-     * JINKI V2 当前层输出的 patched exe，相对项目根目录记录。
+     * JINKI V2 当前层输出的已补丁改写 exe，相对项目根目录记录。
      */
     private Path jinkiGeneratedExePath;
 
@@ -20,6 +21,12 @@ public class TsukuyomiGraftRequest {
      * JINKI V2 当前层输出的平铺 asset 目录，相对项目根目录记录。
      */
     private Path jinkiGeneratedAssetDir;
+
+    /**
+     * TODO 20260417：
+     * 通过现有 request 入口携带上一层 JINKI 结果，避免新增重载入口。
+     */
+    private AkaoGraftResult inheritedJinkiResult;
 
     /**
      * BHE 游戏资源根目录。这个目录不在项目内，内部按 grp/dat/mek/spm/waz 分类。

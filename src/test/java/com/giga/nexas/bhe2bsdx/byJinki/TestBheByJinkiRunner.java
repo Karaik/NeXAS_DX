@@ -13,10 +13,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Slf4j
-public class TestTsukuyomiByJinkiRunner {
+public class TestBheByJinkiRunner {
 
     @Test
-    public void testRunTsukuyomiByJinki() {
+    public void testRunBheByJinki() {
         Path projectRoot = Paths.get("").toAbsolutePath().normalize();
 
         // 1. akao
@@ -39,6 +39,7 @@ public class TestTsukuyomiByJinkiRunner {
         TsukuyomiGraftRequest tsukuyomiRequest = new TsukuyomiGraftRequest();
         tsukuyomiRequest.setJinkiGeneratedExePath(jinkiGeneratedExeRelative);
         tsukuyomiRequest.setJinkiGeneratedAssetDir(jinkiGeneratedAssetDirRelative);
+        tsukuyomiRequest.setInheritedJinkiResult(jinkiResult);
         tsukuyomiRequest.setBheGameResourceRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_game"));
         tsukuyomiRequest.setTsukuyomiResourceDir(Paths.get("tsukuyomi"));
         tsukuyomiRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
@@ -46,12 +47,5 @@ public class TestTsukuyomiByJinkiRunner {
 
         TsukuyomiGraftResult tsukuyomiResult = TsukuyomiTransfer.process(tsukuyomiRequest);
 
-        log.info("jinki generated exe (relative) = {}", jinkiGeneratedExeRelative);
-        log.info("jinki generated asset dir (relative) = {}", jinkiGeneratedAssetDirRelative);
-        log.info("bhe game resource root = {}", tsukuyomiRequest.getBheGameResourceRoot());
-        log.info("tsukuyomi resource dir (relative) = {}", tsukuyomiRequest.getTsukuyomiResourceDir());
-        log.info("tsukuyomi output root = {}", tsukuyomiResult == null || tsukuyomiResult.getImportedAssetSet() == null
-                ? null
-                : tsukuyomiResult.getImportedAssetSet().getOutputRootDir());
     }
 }

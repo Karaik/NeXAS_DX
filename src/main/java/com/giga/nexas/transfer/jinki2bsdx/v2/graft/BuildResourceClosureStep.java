@@ -43,6 +43,7 @@ public class BuildResourceClosureStep {
     ) {
         JinkiImportPlan importPlan = new JinkiImportPlan();
 
+        // 收集 JINKI 的对应非空资源并记录槽位
         collectSourceSpriteIndices(jinkiPackage, importPlan);
         collectSourceWazIndices(jinkiPackage, importPlan);
         collectTargetSpriteIndices(bsdxBaseline, importPlan);
@@ -461,7 +462,7 @@ public class BuildResourceClosureStep {
     }
 
     private boolean isExisting(Integer existFlag) {
-        return existFlag == null || existFlag != 0;
+        return existFlag != 0;
     }
 
     private String buildWazFileName(WazaGroupGrp.WazaGroupEntry entry) {
