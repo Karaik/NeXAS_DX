@@ -14,6 +14,8 @@ import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.transfer.jinki2bsdx.Jinki2BsdxSingleRunner;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
+import com.giga.nexas.transfer.jinki2bsdx.v2.Jinki2BsdxTransferV2;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +38,7 @@ import java.util.Objects;
  * 直接跑一遍当前 jinki2bsdx runner，
  * 确认流程保持在“复用第 25 槽 + 复用 mekaIndex=32 + 禁用 103 扩容 patch”这条线上。
  */
+@Slf4j
 public class TestJinki2BsdxRunner {
 
     @Test
@@ -131,6 +134,14 @@ public class TestJinki2BsdxRunner {
 
         Assertions.assertTrue(result.getPacPackPlan().isPacked());
         Assertions.assertTrue(Files.exists(result.getPacPackPlan().getOutputPacPath()));
+    }
+
+    @Test
+    public void testRunAkaoGraftPipelineV2() {
+        AkaoGraftRequest request = new AkaoGraftRequest();
+        request.setPatchMenuData(true);
+        AkaoGraftResult akaoGraftResultV2 = Jinki2BsdxTransferV2.process(request);
+        log.info("jinki v2 result = {}", 1);
     }
 
     private List<Integer> collectVoiceGroupIndices(Waz waz) {
