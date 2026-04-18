@@ -93,6 +93,7 @@ class SelfRedirectBheCommonProjectileResourcesStepSemanticTest {
 
             assertEquals("bhe_" + sourceEntry.getWazaDisplayName() + ".waz", targetFileName);
             assertEquals("bhe_" + sourceEntry.getWazaDisplayName(), targetEntry.getWazaDisplayName());
+            assertEquals(sourceEntry.getWazaName(), targetEntry.getWazaName());
             assertTrue(targetEntry.getWazaCodeName().startsWith("BHE_"));
             assertEquals(countSkills(baseline.getWazByFileName().get(targetFileName)), targetEntry.getParam());
             assertNotNull(baseline.getWazByFileName().get(targetFileName));
@@ -137,7 +138,8 @@ class SelfRedirectBheCommonProjectileResourcesStepSemanticTest {
         assertEquals(baseSeSize + 1, baseline.getSeGroupGrp().getSeList().size());
 
         SeGroupGrp.SeGroupGroup group = baseline.getSeGroupGrp().getSeList().get(baseSeSize);
-        assertEquals("BHE_COMMON_PROJECTILE_SE", group.getSeTypeCodeName());
+        assertEquals("BHE_SE_PUBLIC", group.getSeType());
+        assertEquals("BHE_SE_PUBLIC", group.getSeTypeCodeName());
         assertEquals(668, group.getSeItems().size(), "公共 WAZ 实际引用到的唯一 SE pair 数量应保持审计结果");
         assertEquals(668, appendPlan.getSourceSePairToTargetItemIndex().size());
         assertTrue(group.getSeItems().stream().allMatch(item -> item.getSeFileName().startsWith("bhe_")));

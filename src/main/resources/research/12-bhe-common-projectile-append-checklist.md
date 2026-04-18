@@ -56,9 +56,9 @@
   - 公共资源阶段暂定接入全量 BHE term 语义转换。
   - term 转换方法和实现策略待定，单独抽出 `TODO 20260417` 子问题处理。
   - 公共 WAZ redirect 实现不能把 term 当成普通备注字段跳过。
-- [x] 公共 SE 使用 1 个 BHE 公共弹幕专属 `SeGroup` 聚合组。
+- [x] 公共 SE 使用 1 个 `BHE_SE_PUBLIC` 聚合 `SeGroup`。
   - 输入来自 8 个公共 WAZ 实际引用到的 BHE 源 `(SeGroup, SeItem)`。
-  - 输出是在 `BSDX + JINKI` baseline 上追加 1 个 `bhe_common_projectile_se` 顶层 `SeGroup`。
+  - 输出是在 `BSDX + JINKI` baseline 上追加 1 个 `BHE_SE_PUBLIC` 顶层 `SeGroup`。
   - 中间聚合视图只用于建立 source pair 到目标 item 的映射，不作为独立产物。
 
 ## 架构入口
@@ -110,7 +110,7 @@
   - 示例：`0 -> baseSpriteGroupSize + 0`，`10 -> baseSpriteGroupSize + 10`，`173 -> baseSpriteGroupSize + 11`。
   - 公共 WAZ 内部 `CEventSprite.spmFileSequence` 按该映射重写。
   - 新 `bhe_*` SPM 文件独立存在，`actionGroupNumber` 保持源侧 anim index，不叠加旧同名 SPM 的 anim 偏移。
-- [x] 公共 SE 新增 1 个 `bhe_common_projectile_se` 顶层 `SeGroup` entry。
+- [x] 公共 SE 新增 1 个 `BHE_SE_PUBLIC` 顶层 `SeGroup` entry。
   - 目标 group：`targetSeGroupIndex = baseSeGroupSize`。
   - 目标 item：`(sourceSeGroupIndex, sourceSeItemIndex) -> targetSeItemIndex`。
   - 公共 WAZ 内部 `CEventSe` 重写为 `(baseSeGroupSize, targetSeItemIndex)`。
@@ -128,7 +128,7 @@
 - [x] 已实现 12 个公共 SPM 目标 entry 接入。
   - 目标区间：`baseSpriteGroupSize=138`，目标 index `138..149`。
   - `sourceSpriteIndex=173` 映射到 `targetSpriteIndex=149`。
-- [x] 已实现 1 个 `bhe_common_projectile_se` 聚合 SeGroup。
+- [x] 已实现 1 个 `BHE_SE_PUBLIC` 聚合 SeGroup。
   - 目标 group：`baseSeGroupSize=38`。
   - 聚合 item 数量：`668`。
   - SE 输入来自 BHE 源公共 WAZ 的实际 `CEventSe` 引用，不从转换后 WAZ 反推。
@@ -196,7 +196,7 @@
 2. **追加公共目标 entry**
    - WAZ：新增 8 个 `bhe_*` 顶层 `WazaGroup` entry。
    - SPM：新增 12 个 `bhe_*` 顶层 `SpriteGroup` entry。
-   - SE：新增 1 个 `bhe_common_projectile_se` 顶层 `SeGroup` entry。
+   - SE：新增 1 个 `BHE_SE_PUBLIC` 顶层 `SeGroup` entry。
    - Voice：`SOU / MISAKI` 作为外部角色语音特例记录，不在公共阶段重建。
 
 3. **写入公共资源文件**
@@ -296,7 +296,7 @@
   - `RebindWazStep` 重写私有 WAZ 时优先查询 `BheCommonProjectileAppendPlan`，查不到再查询 `TsukuyomiGrpAppendPlan`。
   - WAZ skill：命中公共 WAZ 时保持源侧 skill index；命中私有 WAZ 时使用私有 skill merge 映射。
   - SPM action：命中公共 SPM 时保持源侧 anim index；普通私有路径维持既有逻辑。
-  - SE：命中公共 pair 时落到 `bhe_common_projectile_se` 聚合组；否则走私有 SE 映射。
+  - SE：命中公共 pair 时落到 `BHE_SE_PUBLIC` 聚合组；否则走私有 SE 映射。
 
 ### 20260418 selected closure / rebind 接线审计
 

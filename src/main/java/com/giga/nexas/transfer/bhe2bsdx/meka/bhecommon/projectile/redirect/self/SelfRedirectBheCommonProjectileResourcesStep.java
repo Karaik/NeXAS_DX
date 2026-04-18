@@ -36,6 +36,8 @@ import java.util.Set;
  */
 public class SelfRedirectBheCommonProjectileResourcesStep {
 
+    private static final String COMMON_SE_GROUP_NAME = "BHE_SE_PUBLIC";
+
     public void redirect(
             TsukuyomiGraftRequest request,
             TsukuyomiRawSourceBundle rawSourceBundle,
@@ -111,7 +113,7 @@ public class SelfRedirectBheCommonProjectileResourcesStep {
 
             WazaGroupGrp.WazaGroupEntry targetEntry = new WazaGroupGrp.WazaGroupEntry();
             targetEntry.setExistFlag(existFlagOrDefault(sourceEntry.getExistFlag()));
-            targetEntry.setWazaName(prefixLabel(sourceEntry.getWazaName()));
+            targetEntry.setWazaName(sourceEntry.getWazaName());
             targetEntry.setWazaCodeName(prefixCodeName(sourceEntry.getWazaCodeName(), "WAZ_" + sourceIndex));
             targetEntry.setWazaDisplayName(stripExtension(targetFileName));
             targetEntry.setParam(countSkills(convertedWaz));
@@ -180,8 +182,9 @@ public class SelfRedirectBheCommonProjectileResourcesStep {
         List<SePair> sourcePairs = collectCommonSePairs(rawSourceBundle);
         SeGroupGrp.SeGroupGroup aggregateGroup = new SeGroupGrp.SeGroupGroup();
         aggregateGroup.setExistFlag(1);
-        aggregateGroup.setSeType("BHE 公共弹幕");
-        aggregateGroup.setSeTypeCodeName("BHE_COMMON_PROJECTILE_SE");
+        // 公共弹幕 SE 聚合组使用固定业务名，便于人工审计和后续单机体阶段稳定引用。
+        aggregateGroup.setSeType(COMMON_SE_GROUP_NAME);
+        aggregateGroup.setSeTypeCodeName(COMMON_SE_GROUP_NAME);
 
         for (int targetItemIndex = 0; targetItemIndex < sourcePairs.size(); targetItemIndex++) {
             SePair sourcePair = sourcePairs.get(targetItemIndex);
@@ -575,13 +578,6 @@ public class SelfRedirectBheCommonProjectileResourcesStep {
         }
         String trimmed = sourceFileName.trim();
         return trimmed.regionMatches(true, 0, "bhe_", 0, 4) ? trimmed : "bhe_" + trimmed;
-    }
-
-    private String prefixLabel(String sourceLabel) {
-        if (sourceLabel == null || sourceLabel.isBlank()) {
-            return "BHE";
-        }
-        return sourceLabel.regionMatches(true, 0, "bhe_", 0, 4) ? sourceLabel : "BHE " + sourceLabel;
     }
 
     private String prefixCodeName(String sourceCodeName, String fallback) {
