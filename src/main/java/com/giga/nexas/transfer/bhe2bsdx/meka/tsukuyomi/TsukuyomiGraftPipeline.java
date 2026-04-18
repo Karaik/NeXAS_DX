@@ -180,7 +180,12 @@ public class TsukuyomiGraftPipeline {
         // 2. 前置客制化输入收束。
         // 这一步只产出“本次要 graft 哪些资源”的闭包和审计信息，
         // 不修改任何目标资源；真正的复用/尾插决策放到 GRP append 阶段。
-        TsukuyomiImportPlan importPlan = buildResourceClosureStep.buildResourceClosure(request, tsukuyomiPackage, bsdxBaseline);
+        TsukuyomiImportPlan importPlan = buildResourceClosureStep.buildResourceClosure(
+                request,
+                tsukuyomiPackage,
+                bsdxBaseline,
+                convertedBundle.getCommonProjectileAppendPlan()
+        );
         result.setImportPlan(importPlan);
 
         // 3. 通用 graft 主线的核心映射阶段。
@@ -199,7 +204,13 @@ public class TsukuyomiGraftPipeline {
         // MEK/WAZ 重建不是在源对象上原地 patch，而是按 DTO 层级重建目标对象，
         // 这样每个外部引用点都能明确说明消费的是哪张映射表。
         result.setReboundTsukuyomiMek(rebindMekStep.rebindTsukuyomiMek(request, tsukuyomiPackage, grpAppendPlan));
-        result.setReboundTsukuyomiWaz(rebindWazStep.rebindTsukuyomiWaz(request, tsukuyomiPackage, importPlan, grpAppendPlan));
+        result.setReboundTsukuyomiWaz(rebindWazStep.rebindTsukuyomiWaz(
+                request,
+                tsukuyomiPackage,
+                importPlan,
+                grpAppendPlan,
+                convertedBundle.getCommonProjectileAppendPlan()
+        ));
 
         // 6. 主线输出沉淀。
         // 这里写出的目录是最终打包输入；后续所有后置覆盖都必须写回同一目录，
@@ -212,7 +223,8 @@ public class TsukuyomiGraftPipeline {
                 result.getSyncedProgramMaterial(),
                 result.getReboundTsukuyomiMek(),
                 result.getReboundTsukuyomiWaz(),
-                grpAppendPlan
+                grpAppendPlan,
+                convertedBundle.getCommonProjectileAppendPlan()
         );
         result.setImportedAssetSet(importedAssetSet);
 

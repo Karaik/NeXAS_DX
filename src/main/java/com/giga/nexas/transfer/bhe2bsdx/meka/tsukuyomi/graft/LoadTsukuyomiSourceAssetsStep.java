@@ -11,6 +11,7 @@ import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.spm.Spm;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.service.BsdxBinService;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.BheCommonProjectileResources;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPackageBundle;
 
@@ -22,12 +23,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Load the current Tsukuyomi source bundle in the same role as the JINKI source loader.
+ * 加载 Tsukuyomi 单机体私有资源包。
  *
- * <p>At the skeleton-alignment stage this step still parses source files directly into BSDX-side DTO
- * shapes. The important constraint here is that it must consume the request-provided directories
- * instead of hardcoded project paths, so that a JINKI-generated baseline and an external BHE game
- * tree can be wired in from the caller.</p>
+ * <p>这个 loader 仍然负责给 graft 主线提供 Tsukuyomi 自己的源资源视图，但 WAZ/SPM 必须过滤掉
+ * BHE 公共弹幕资源。公共资源已经由 bhecommon 接入 preparedBaseline，不能再进入 selected closure。</p>
  */
 public class LoadTsukuyomiSourceAssetsStep {
 
@@ -73,8 +72,8 @@ public class LoadTsukuyomiSourceAssetsStep {
             bundle.setMekaPilotDat(parseOptional(bheDatDir.resolve("mekapilot.dat"), Dat.class));
 
             bundle.setTsukuyomiMek(parseRequired(bheMekDir.resolve(request.getMekFileName()), Mek.class));
-            bundle.setSpmByFileName(parseAll(bheSpmDir, "*.spm", Spm.class));
-            bundle.setWazByFileName(parseAll(bheWazDir, "*.waz", Waz.class));
+            bundle.setSpmByFileName(parseSelectedSpmFiles(bheSpmDir));
+            bundle.setWazByFileName(parseSelectedWazFiles(bheWazDir));
             return bundle;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load Tsukuyomi BHE source assets", e);
@@ -109,6 +108,36 @@ public class LoadTsukuyomiSourceAssetsStep {
             for (Path path : stream) {
                 ResponseDTO<?> dto = bsdxBinService.parse(path.toString(), CHARSET);
                 result.put(path.getFileName().toString(), type.cast(dto.getData()));
+            }
+        }
+        return result;
+    }
+
+    private Map<String, Spm> parseSelectedSpmFiles(Path dir) throws IOException {
+        Map<String, Spm> result = new LinkedHashMap<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.spm")) {
+            for (Path path : stream) {
+                String fileName = path.getFileName().toString();
+                if (BheCommonProjectileResources.isCommonProjectileSpm(fileName)) {
+                    continue;
+                }
+                ResponseDTO<?> dto = bsdxBinService.parse(path.toString(), CHARSET);
+                result.put(fileName, Spm.class.cast(dto.getData()));
+            }
+        }
+        return result;
+    }
+
+    private Map<String, Waz> parseSelectedWazFiles(Path dir) throws IOException {
+        Map<String, Waz> result = new LinkedHashMap<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.waz")) {
+            for (Path path : stream) {
+                String fileName = path.getFileName().toString();
+                if (BheCommonProjectileResources.isCommonProjectileWaz(fileName)) {
+                    continue;
+                }
+                ResponseDTO<?> dto = bsdxBinService.parse(path.toString(), CHARSET);
+                result.put(fileName, Waz.class.cast(dto.getData()));
             }
         }
         return result;

@@ -31,6 +31,16 @@ public class TsukuyomiImportPlan {
     private Map<Integer, String> referencedSourceSpriteFileNameByGroupIndex = new LinkedHashMap<>();
     private Map<Integer, List<Integer>> referencedSourceSeItemIndicesByGroupIndex = new LinkedHashMap<>();
 
+    /**
+     * selected WAZ 中引用到的公共资源。
+     *
+     * <p>这些条目只用于审计和 rebind 说明，不能进入普通 selected closure，
+     * 目标索引由 BheCommonProjectileAppendPlan 提供。</p>
+     */
+    private Map<Integer, Integer> commonWazReferenceTargetIndexBySourceIndex = new LinkedHashMap<>();
+    private Map<Integer, Integer> commonSpriteReferenceTargetIndexBySourceIndex = new LinkedHashMap<>();
+    private Map<String, Integer> commonSeReferenceTargetItemIndexBySourcePair = new LinkedHashMap<>();
+
     private List<String> unresolvedResources = new ArrayList<>();
     private List<String> notes = new ArrayList<>();
 }

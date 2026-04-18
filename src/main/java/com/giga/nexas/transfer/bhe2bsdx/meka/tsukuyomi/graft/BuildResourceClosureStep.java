@@ -8,6 +8,8 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSe;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSprite;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventWazaSelect;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
+import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.resolve.BheResourceIndexResolver;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportPlan;
@@ -31,6 +33,9 @@ import java.util.Set;
  * 它会建立源/目标文件名索引表，递归扫描 WAZ 事件里引用到的 WAZ、SPM、SE，
  * 并把这些发现结果写入 {@link TsukuyomiImportPlan}，供后续 GRP append 阶段做复用或尾插。</p>
  *
+ * <p>BHE 公共资源是 preparedBaseline 的既成事实。扫描到公共 WAZ/SPM/SE 时，
+ * 本步骤只写入 common reference 审计字段，不把它们放进 selected closure。</p>
+ *
  * <p>当前 TSUKUYOMI 包很小，SPM 仍整体纳入闭包；WAZ/SE 则按事件引用递归收集，
  * 因为 Effect/Bomb/Tama 等辅助技能可能互相调用，静态只看主 WAZ 文件会漏资源。</p>
  */
@@ -39,9 +44,12 @@ public class BuildResourceClosureStep {
     public TsukuyomiImportPlan buildResourceClosure(
             TsukuyomiGraftRequest request,
             TsukuyomiPackageBundle tsukuyomiPackage,
-            TsukuyomiBsdxBaselineBundle bsdxBaseline
+            TsukuyomiBsdxBaselineBundle bsdxBaseline,
+            BheCommonProjectileAppendPlan commonProjectileAppendPlan
     ) {
         TsukuyomiImportPlan importPlan = new TsukuyomiImportPlan();
+        BheResourceIndexResolver resolver =
+                new BheResourceIndexResolver(commonProjectileAppendPlan, null);
 
         // 收集 TSUKUYOMI 的对应非空资源并记录槽位
         collectSourceSpriteIndices(tsukuyomiPackage, importPlan);
@@ -59,7 +67,7 @@ public class BuildResourceClosureStep {
         spmFiles.sort(String.CASE_INSENSITIVE_ORDER);
         importPlan.getRequiredSpmFiles().addAll(spmFiles);
 
-        collectReferencedChainFromTsukuyomiWaz(request, tsukuyomiPackage, importPlan);
+        collectReferencedChainFromTsukuyomiWaz(request, tsukuyomiPackage, importPlan, resolver);
         appendAuditTargets(request, importPlan);
         appendRebindTargets(importPlan);
         appendNotes(importPlan);
@@ -80,6 +88,15 @@ public class BuildResourceClosureStep {
         }
         for (Map.Entry<Integer, List<Integer>> entry : importPlan.getReferencedSourceSeItemIndicesByGroupIndex().entrySet()) {
             importPlan.getGrpAppendTargets().add("SeGroupRef:" + entry.getKey() + " items=" + entry.getValue());
+        }
+        for (Map.Entry<Integer, Integer> entry : importPlan.getCommonWazReferenceTargetIndexBySourceIndex().entrySet()) {
+            importPlan.getGrpAppendTargets().add("CommonWazaRef:" + entry.getKey() + "->" + entry.getValue());
+        }
+        for (Map.Entry<Integer, Integer> entry : importPlan.getCommonSpriteReferenceTargetIndexBySourceIndex().entrySet()) {
+            importPlan.getGrpAppendTargets().add("CommonSpriteRef:" + entry.getKey() + "->" + entry.getValue());
+        }
+        for (Map.Entry<String, Integer> entry : importPlan.getCommonSeReferenceTargetItemIndexBySourcePair().entrySet()) {
+            importPlan.getGrpAppendTargets().add("CommonSeRef:" + entry.getKey() + "->" + entry.getValue());
         }
 
         importPlan.getProgramMaterialSyncTargets().add("ProgramMaterial.array1");
@@ -176,7 +193,8 @@ public class BuildResourceClosureStep {
     private void collectReferencedChainFromTsukuyomiWaz(
             TsukuyomiGraftRequest request,
             TsukuyomiPackageBundle tsukuyomiPackage,
-            TsukuyomiImportPlan importPlan
+            TsukuyomiImportPlan importPlan,
+            BheResourceIndexResolver resolver
     ) {
         Waz sourceWaz = findRequiredSourceWaz(tsukuyomiPackage, request.getWazFileName());
         if (sourceWaz == null) {
@@ -214,7 +232,8 @@ public class BuildResourceClosureStep {
                         tsukuyomiPackage,
                         sourceWazFileNameByIndex,
                         sourceSpriteFileNameByIndex,
-                        requiredWazFiles
+                        requiredWazFiles,
+                        resolver
                 );
                 changed |= requiredWazFiles.size() > before;
             }
@@ -230,7 +249,8 @@ public class BuildResourceClosureStep {
             TsukuyomiPackageBundle tsukuyomiPackage,
             Map<Integer, String> sourceWazFileNameByIndex,
             Map<Integer, String> sourceSpriteFileNameByIndex,
-            Set<String> requiredWazFiles
+            Set<String> requiredWazFiles,
+            BheResourceIndexResolver resolver
     ) {
         if (sourceWaz.getSkillList() == null) {
             return;
@@ -251,11 +271,12 @@ public class BuildResourceClosureStep {
                         collectReferencedIndicesFromObject(
                                 object,
                                 importPlan,
-                                tsukuyomiPackage,
-                                sourceWazFileNameByIndex,
-                                sourceSpriteFileNameByIndex,
-                                requiredWazFiles
-                        );
+                        tsukuyomiPackage,
+                        sourceWazFileNameByIndex,
+                        sourceSpriteFileNameByIndex,
+                        requiredWazFiles,
+                        resolver
+                );
                     }
                 }
             }
@@ -268,7 +289,8 @@ public class BuildResourceClosureStep {
             TsukuyomiPackageBundle tsukuyomiPackage,
             Map<Integer, String> sourceWazFileNameByIndex,
             Map<Integer, String> sourceSpriteFileNameByIndex,
-            Set<String> requiredWazFiles
+            Set<String> requiredWazFiles,
+            BheResourceIndexResolver resolver
     ) {
         if (object == null) {
             return;
@@ -277,6 +299,11 @@ public class BuildResourceClosureStep {
         if (object instanceof CEventWazaSelect select) {
             Integer sourceIndex = select.getWazFileNo();
             if (sourceIndex != null && sourceIndex >= 0) {
+                if (resolver.isCommonWazIndex(sourceIndex)) {
+                    importPlan.getCommonWazReferenceTargetIndexBySourceIndex()
+                            .put(sourceIndex, resolver.resolveWazGroupIndex(sourceIndex));
+                    return;
+                }
                 String fileName = sourceWazFileNameByIndex.get(sourceIndex);
                 if (fileName != null) {
                     // CEventWazaSelect 存的是源 WazaGroup 顶层 index。
@@ -296,6 +323,11 @@ public class BuildResourceClosureStep {
         if (object instanceof CEventSprite sprite) {
             Integer sourceIndex = sprite.getSpmFileSequence();
             if (sourceIndex != null && sourceIndex >= 0) {
+                if (resolver.isCommonSpriteIndex(sourceIndex)) {
+                    importPlan.getCommonSpriteReferenceTargetIndexBySourceIndex()
+                            .put(sourceIndex, resolver.resolveSpriteGroupIndex(sourceIndex));
+                    return;
+                }
                 String fileName = sourceSpriteFileNameByIndex.get(sourceIndex);
                 if (fileName != null) {
                     // CEventSprite 的 spmFileSequence 同样是源 SpriteGroup 顶层 index。
@@ -308,7 +340,7 @@ public class BuildResourceClosureStep {
         }
 
         if (object instanceof CEventSe se) {
-            collectReferencedSeIndices(se, importPlan);
+            collectReferencedSeIndices(se, importPlan, resolver);
         }
 
         if (hasNestedUnitList(object.getClass())) {
@@ -318,12 +350,17 @@ public class BuildResourceClosureStep {
                     tsukuyomiPackage,
                     sourceWazFileNameByIndex,
                     sourceSpriteFileNameByIndex,
-                    requiredWazFiles
+                    requiredWazFiles,
+                    resolver
             );
         }
     }
 
-    private void collectReferencedSeIndices(CEventSe se, TsukuyomiImportPlan importPlan) {
+    private void collectReferencedSeIndices(
+            CEventSe se,
+            TsukuyomiImportPlan importPlan,
+            BheResourceIndexResolver resolver
+    ) {
         if (se.getByteDataList() == null) {
             return;
         }
@@ -334,6 +371,12 @@ public class BuildResourceClosureStep {
             int groupIndex = readLittleEndianInt(bytes, 0);
             int itemIndex = readLittleEndianInt(bytes, 4);
             if (groupIndex < 0 || itemIndex < 0) {
+                continue;
+            }
+            if (resolver.isCommonSePair(groupIndex, itemIndex)) {
+                String key = BheCommonProjectileAppendPlan.sePairKey(groupIndex, itemIndex);
+                importPlan.getCommonSeReferenceTargetItemIndexBySourcePair()
+                        .put(key, resolver.resolveSe(groupIndex, itemIndex).targetItemIndex());
                 continue;
             }
             importPlan.getReferencedSourceSeItemIndicesByGroupIndex().computeIfAbsent(groupIndex, key -> new ArrayList<>());
@@ -350,13 +393,15 @@ public class BuildResourceClosureStep {
             TsukuyomiPackageBundle tsukuyomiPackage,
             Map<Integer, String> sourceWazFileNameByIndex,
             Map<Integer, String> sourceSpriteFileNameByIndex,
-            Set<String> requiredWazFiles
+            Set<String> requiredWazFiles,
+            BheResourceIndexResolver resolver
     ) {
         for (Field field : getAllFields(source.getClass())) {
             if (Modifier.isStatic(field.getModifiers())) {
                 continue;
             }
-            if (!List.class.isAssignableFrom(field.getType()) || !field.getName().endsWith("UnitList")) {
+            if (!List.class.isAssignableFrom(field.getType())
+                    || !field.getName().toLowerCase(Locale.ROOT).endsWith("unitlist")) {
                 continue;
             }
             field.setAccessible(true);
@@ -374,7 +419,8 @@ public class BuildResourceClosureStep {
                                 tsukuyomiPackage,
                                 sourceWazFileNameByIndex,
                                 sourceSpriteFileNameByIndex,
-                                requiredWazFiles
+                                requiredWazFiles,
+                                resolver
                         );
                     }
                 }
@@ -410,7 +456,8 @@ public class BuildResourceClosureStep {
             if (Modifier.isStatic(field.getModifiers())) {
                 continue;
             }
-            if (List.class.isAssignableFrom(field.getType()) && field.getName().endsWith("UnitList")) {
+            if (List.class.isAssignableFrom(field.getType())
+                    && field.getName().toLowerCase(Locale.ROOT).endsWith("unitlist")) {
                 return true;
             }
         }
@@ -462,7 +509,7 @@ public class BuildResourceClosureStep {
     }
 
     private boolean isExisting(Integer existFlag) {
-        return existFlag != 0;
+        return existFlag != null && existFlag != 0;
     }
 
     private String buildWazFileName(WazaGroupGrp.WazaGroupEntry entry) {

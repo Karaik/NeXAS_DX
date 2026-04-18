@@ -12,6 +12,7 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSprite;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.service.BsdxBinService;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGrpAppendPlan;
@@ -92,7 +93,8 @@ public class ImportStaticAssetsStep {
             ProgramMaterialGrp syncedProgramMaterial,
             Mek reboundTsukuyomiMek,
             Waz reboundTsukuyomiWaz,
-            TsukuyomiGrpAppendPlan grpAppendPlan
+            TsukuyomiGrpAppendPlan grpAppendPlan,
+            BheCommonProjectileAppendPlan commonProjectileAppendPlan
     ) {
         TsukuyomiImportedAssetSet importedAssetSet = new TsukuyomiImportedAssetSet();
         if (request == null || tsukuyomiPackage == null || bsdxBaseline == null || importPlan == null) {
@@ -121,7 +123,16 @@ public class ImportStaticAssetsStep {
             writeReboundWaz(request, reboundTsukuyomiWaz, outputRoot, importedAssetSet);
 
             // Step 8-4: 再把辅助 waz 的 merge/rebind 产物平铺写到根目录。
-            writeRequiredAuxiliaryWazFiles(request, tsukuyomiPackage, bsdxBaseline, importPlan, grpAppendPlan, outputRoot, importedAssetSet);
+            writeRequiredAuxiliaryWazFiles(
+                    request,
+                    tsukuyomiPackage,
+                    bsdxBaseline,
+                    importPlan,
+                    grpAppendPlan,
+                    commonProjectileAppendPlan,
+                    outputRoot,
+                    importedAssetSet
+            );
 
             // Step 8-5: 把链上需要的 spm 平铺复制到根目录。
             copyRequiredSpmFiles(request, importPlan, outputRoot, importedAssetSet);
@@ -294,6 +305,7 @@ public class ImportStaticAssetsStep {
             TsukuyomiBsdxBaselineBundle bsdxBaseline,
             TsukuyomiImportPlan importPlan,
             TsukuyomiGrpAppendPlan grpAppendPlan,
+            BheCommonProjectileAppendPlan commonProjectileAppendPlan,
             Path outputRoot,
             TsukuyomiImportedAssetSet importedAssetSet
     ) throws IOException {
@@ -321,7 +333,8 @@ public class ImportStaticAssetsStep {
                     baselineWaz,
                     importPlan,
                     grpAppendPlan,
-                    sourceWazGroupIndex
+                    sourceWazGroupIndex,
+                    commonProjectileAppendPlan
             );
 
             Path output = outputRoot.resolve(fileName);

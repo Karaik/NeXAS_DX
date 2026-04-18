@@ -9,6 +9,9 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventVoice;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventWazaSelect;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoUnknown;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
+import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.resolve.BheResolvedSeRef;
+import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.resolve.BheResourceIndexResolver;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGrpAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportPlan;
@@ -42,6 +45,9 @@ import java.util.Map;
  *
  * <p>同时，像 {@code CEventEffect} 这类带嵌套 unit 列表的对象，
  * 会递归重建内部 {@code data}，而不是只做一层浅复制。</p>
+ *
+ * <p>BHE 公共资源映射通过 {@link BheResourceIndexResolver} 查询。它让公共资源映射优先，
+ * 私有 graft 映射兜底，避免把公共资源混入 {@link TsukuyomiGrpAppendPlan}。</p>
  */
 public class RebindWazStep {
 
@@ -49,7 +55,8 @@ public class RebindWazStep {
             TsukuyomiGraftRequest request,
             TsukuyomiPackageBundle tsukuyomiPackage,
             TsukuyomiImportPlan importPlan,
-            TsukuyomiGrpAppendPlan grpAppendPlan
+            TsukuyomiGrpAppendPlan grpAppendPlan,
+            BheCommonProjectileAppendPlan commonProjectileAppendPlan
     ) {
         if (request == null || tsukuyomiPackage == null || importPlan == null || grpAppendPlan == null) {
             return null;
@@ -63,12 +70,13 @@ public class RebindWazStep {
 
         // Step 7-2: 把源侧索引和目标侧索引整理成 step7 专用上下文。
         TsukuyomiWazRebindContext context = buildContext(request, sourceWaz, importPlan, grpAppendPlan);
+        BheResourceIndexResolver resolver = new BheResourceIndexResolver(commonProjectileAppendPlan, grpAppendPlan);
 
         // Step 7-3: 先创建目标 Waz 外壳，只保留最顶层公共信息。
         Waz targetWaz = createTargetWazShell(context);
 
         // Step 7-4: 再按 Waz -> Skill -> Phase -> Unit -> Object 的顺序逐层重建。
-        targetWaz.setSkillList(rebuildSkillList(context));
+        targetWaz.setSkillList(rebuildSkillList(context, resolver));
 
         // Step 7-5: 对这一步已经明确会改的外部引用做结果校验。
         validateRebindResult(targetWaz, context);
@@ -81,13 +89,15 @@ public class RebindWazStep {
             Waz baselineWaz,
             TsukuyomiImportPlan importPlan,
             TsukuyomiGrpAppendPlan grpAppendPlan,
-            Integer sourceWazGroupIndex
+            Integer sourceWazGroupIndex,
+            BheCommonProjectileAppendPlan commonProjectileAppendPlan
     ) {
         if (request == null || sourceWaz == null || importPlan == null || grpAppendPlan == null) {
             return null;
         }
 
         TsukuyomiWazRebindContext context = buildContext(request, sourceWaz, importPlan, grpAppendPlan);
+        BheResourceIndexResolver resolver = new BheResourceIndexResolver(commonProjectileAppendPlan, grpAppendPlan);
         Waz targetWaz = new Waz();
         Waz shellSource = baselineWaz != null ? baselineWaz : sourceWaz;
         targetWaz.setFileName(shellSource.getFileName());
@@ -104,7 +114,7 @@ public class RebindWazStep {
                 : grpAppendPlan.getSourceWazSkillIndexToTargetIndexByGroup().get(sourceWazGroupIndex);
         if (skillIndexMap == null || skillIndexMap.isEmpty()) {
             // 没有 skill merge 计划时，说明这个 WAZ 不需要 key-based graft，走完整源 WAZ 重建即可。
-            targetWaz.setSkillList(rebuildSkillList(context));
+            targetWaz.setSkillList(rebuildSkillList(context, resolver));
             return targetWaz;
         }
 
@@ -120,7 +130,7 @@ public class RebindWazStep {
                     // 理论上 key-based append 会连续追加；这里补空槽只是防御配置/映射异常。
                     targetSkills.add(new Waz.Skill());
                 }
-                Waz.Skill rebuilt = rebuildSkill(sourceSkills.get(sourceIndex), context);
+                Waz.Skill rebuilt = rebuildSkill(sourceSkills.get(sourceIndex), context, resolver);
                 if (targetSkills.size() == targetIndex) {
                     targetSkills.add(rebuilt);
                 } else {
@@ -238,7 +248,10 @@ public class RebindWazStep {
         return targetWaz;
     }
 
-    private List<Waz.Skill> rebuildSkillList(TsukuyomiWazRebindContext context) {
+    private List<Waz.Skill> rebuildSkillList(
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
+    ) {
         List<Waz.Skill> target = new ArrayList<>();
         List<Waz.Skill> source = context.getSourceWaz().getSkillList();
         if (source == null) {
@@ -247,12 +260,16 @@ public class RebindWazStep {
 
         // 这里按 skill 粒度重建整份 Tsukuyomi.waz。
         for (Waz.Skill skill : source) {
-            target.add(rebuildSkill(skill, context));
+            target.add(rebuildSkill(skill, context, resolver));
         }
         return target;
     }
 
-    private Waz.Skill rebuildSkill(Waz.Skill source, TsukuyomiWazRebindContext context) {
+    private Waz.Skill rebuildSkill(
+            Waz.Skill source,
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
+    ) {
         if (source == null) {
             return null;
         }
@@ -265,7 +282,7 @@ public class RebindWazStep {
         target.setSkillNameEnglish(source.getSkillNameEnglish());
 
         // 再重建 phase 列表。
-        target.setPhasesInfo(rebuildSkillPhaseList(source.getPhasesInfo(), context));
+        target.setPhasesInfo(rebuildSkillPhaseList(source.getPhasesInfo(), context, resolver));
 
         // 最后重建 skill suffix 列表。
         target.setSkillSuffixList(rebuildSkillSuffixList(source.getSkillSuffixList()));
@@ -274,7 +291,8 @@ public class RebindWazStep {
 
     private List<Waz.Skill.SkillPhase> rebuildSkillPhaseList(
             List<Waz.Skill.SkillPhase> source,
-            TsukuyomiWazRebindContext context
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
     ) {
         List<Waz.Skill.SkillPhase> target = new ArrayList<>();
         if (source == null) {
@@ -282,12 +300,16 @@ public class RebindWazStep {
         }
 
         for (Waz.Skill.SkillPhase phase : source) {
-            target.add(rebuildSkillPhase(phase, context));
+            target.add(rebuildSkillPhase(phase, context, resolver));
         }
         return target;
     }
 
-    private Waz.Skill.SkillPhase rebuildSkillPhase(Waz.Skill.SkillPhase source, TsukuyomiWazRebindContext context) {
+    private Waz.Skill.SkillPhase rebuildSkillPhase(
+            Waz.Skill.SkillPhase source,
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
+    ) {
         if (source == null) {
             return null;
         }
@@ -295,23 +317,31 @@ public class RebindWazStep {
         Waz.Skill.SkillPhase target = new Waz.Skill.SkillPhase();
 
         // 一个 phase 里真正有语义的是 unit 列表，所以继续往下逐 unit 重建。
-        target.setSkillUnitCollection(rebuildSkillUnitList(source.getSkillUnitCollection(), context));
+        target.setSkillUnitCollection(rebuildSkillUnitList(source.getSkillUnitCollection(), context, resolver));
         return target;
     }
 
-    private List<SkillUnit> rebuildSkillUnitList(List<SkillUnit> source, TsukuyomiWazRebindContext context) {
+    private List<SkillUnit> rebuildSkillUnitList(
+            List<SkillUnit> source,
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
+    ) {
         List<SkillUnit> target = new ArrayList<>();
         if (source == null) {
             return target;
         }
 
         for (SkillUnit unit : source) {
-            target.add(rebuildSkillUnit(unit, context));
+            target.add(rebuildSkillUnit(unit, context, resolver));
         }
         return target;
     }
 
-    private SkillUnit rebuildSkillUnit(SkillUnit source, TsukuyomiWazRebindContext context) {
+    private SkillUnit rebuildSkillUnit(
+            SkillUnit source,
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
+    ) {
         if (source == null) {
             return null;
         }
@@ -323,7 +353,7 @@ public class RebindWazStep {
         target.setUnitDescription(source.getUnitDescription());
 
         // 再逐个重建该 unit 里的对象列表。
-        target.setSkillInfoObjectList(rebuildSkillInfoObjectList(source.getSkillInfoObjectList(), context));
+        target.setSkillInfoObjectList(rebuildSkillInfoObjectList(source.getSkillInfoObjectList(), context, resolver));
 
         // unknown 列表本身不带外部文件号，但也要做结构级复制。
         target.setSkillInfoUnknownList(rebuildSkillInfoUnknownList(source.getSkillInfoUnknownList()));
@@ -332,7 +362,8 @@ public class RebindWazStep {
 
     private List<SkillInfoObject> rebuildSkillInfoObjectList(
             List<SkillInfoObject> source,
-            TsukuyomiWazRebindContext context
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
     ) {
         List<SkillInfoObject> target = new ArrayList<>();
         if (source == null) {
@@ -340,7 +371,7 @@ public class RebindWazStep {
         }
 
         for (SkillInfoObject infoObject : source) {
-            target.add(rebuildSkillInfoObject(infoObject, context));
+            target.add(rebuildSkillInfoObject(infoObject, context, resolver));
         }
         return target;
     }
@@ -357,22 +388,26 @@ public class RebindWazStep {
         return target;
     }
 
-    private SkillInfoObject rebuildSkillInfoObject(SkillInfoObject source, TsukuyomiWazRebindContext context) {
+    private SkillInfoObject rebuildSkillInfoObject(
+            SkillInfoObject source,
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
+    ) {
         if (source == null) {
             return null;
         }
 
         // 这里先把已经确认带“外部文件索引”语义的对象单独拉出来处理。
         if (source instanceof CEventWazaSelect wazaSelect) {
-            return rebuildCEventWazaSelect(wazaSelect, context);
+            return rebuildCEventWazaSelect(wazaSelect, context, resolver);
         }
         if (source instanceof CEventSprite sprite) {
-            return rebuildCEventSprite(sprite, context);
+            return rebuildCEventSprite(sprite, context, resolver);
         }
 
         // 这两类虽然不改索引，但内部是 byte[] 列表，不能直接共享源数组引用。
         if (source instanceof CEventSe se) {
-            return rebuildCEventSe(se, context);
+            return rebuildCEventSe(se, resolver);
         }
         if (source instanceof CEventVoice voice) {
             return rebuildCEventVoice(voice, context);
@@ -386,7 +421,7 @@ public class RebindWazStep {
         // 像 CEventEffect / CEventEscape / CEventCamera 这类对象，
         // 内部会继续挂一层 unit -> data，需要递归重建 data。
         if (hasNestedUnitList(source.getClass())) {
-            return rebuildNestedUnitObject(source, context);
+            return rebuildNestedUnitObject(source, context, resolver);
         }
 
         // 剩下的是普通叶子对象，只需要复制它自身的字段。
@@ -403,39 +438,47 @@ public class RebindWazStep {
         return target;
     }
 
-    private CEventWazaSelect rebuildCEventWazaSelect(CEventWazaSelect source, TsukuyomiWazRebindContext context) {
+    private CEventWazaSelect rebuildCEventWazaSelect(
+            CEventWazaSelect source,
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
+    ) {
         CEventWazaSelect target = new CEventWazaSelect();
         BeanUtil.copyProperties(source, target);
 
         // 这里是真正的外部 waz 顶层索引重绑点。
         // 原字段指向 TSUKUYOMI 的 WazaGroup 顶层序号，迁移后必须改成 BSDX 目标序号。
-        target.setWazFileNo(remapWazGroupIndex(source.getWazFileNo(), context));
+        target.setWazFileNo(resolver.resolveWazGroupIndex(source.getWazFileNo()));
 
         // 这里保留序号本身。
         // wazSequenceNo 的语义是“目标 waz 文件内部的 skill 索引”，
         // 当前迁移策略是把对应的辅助 waz 文件整体导入，因此内部 skill 序号不在 step7 改。
         // wazSequenceNo 是“目标 WAZ 内部 skill index”，辅助 WAZ 做 key-based merge 后必须同步重写。
-        target.setWazSequenceNo(remapWazSkillIndex(source.getWazFileNo(), source.getWazSequenceNo(), context));
+        target.setWazSequenceNo(resolver.resolveWazSkillIndex(source.getWazFileNo(), source.getWazSequenceNo()));
         return target;
     }
 
-    private CEventSprite rebuildCEventSprite(CEventSprite source, TsukuyomiWazRebindContext context) {
+    private CEventSprite rebuildCEventSprite(
+            CEventSprite source,
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
+    ) {
         CEventSprite target = new CEventSprite();
         BeanUtil.copyProperties(source, target);
 
         // CEventSprite 的 spmFileSequence 在存在非负值时，解释的是外部 sprite 顶层序号。
         // 所以这里也要按“源侧 sprite 索引 -> 目标 BSDX sprite 索引”去回写。
-        target.setSpmFileSequence(remapSpriteGroupIndex(source.getSpmFileSequence(), context));
+        target.setSpmFileSequence(resolver.resolveSpriteGroupIndex(source.getSpmFileSequence()));
         return target;
     }
 
-    private CEventSe rebuildCEventSe(CEventSe source, TsukuyomiWazRebindContext context) {
+    private CEventSe rebuildCEventSe(CEventSe source, BheResourceIndexResolver resolver) {
         CEventSe target = new CEventSe();
         BeanUtil.copyProperties(source, target);
 
         // 这里的 byteDataList 不能直接复用源数组引用，否则后续改写会串源对象。
         target.setByteDataList(deepCopyByteArrayList(source.getByteDataList()));
-        rewriteSeTargets(target.getByteDataList(), context);
+        rewriteSeTargets(target.getByteDataList(), resolver);
         return target;
     }
 
@@ -449,13 +492,17 @@ public class RebindWazStep {
         return target;
     }
 
-    private SkillInfoObject rebuildNestedUnitObject(SkillInfoObject source, TsukuyomiWazRebindContext context) {
+    private SkillInfoObject rebuildNestedUnitObject(
+            SkillInfoObject source,
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
+    ) {
         SkillInfoObject target = instantiateLike(source);
         BeanUtil.copyProperties(source, target);
 
         // 先把对象自身的普通字段复制过去，
         // 再把所有 *UnitList 里的 data 递归重建，避免内部仍然指着旧索引。
-        rebuildNestedUnitLists(source, target, context);
+        rebuildNestedUnitLists(source, target, context, resolver);
         return target;
     }
 
@@ -468,7 +515,8 @@ public class RebindWazStep {
     private void rebuildNestedUnitLists(
             SkillInfoObject source,
             SkillInfoObject target,
-            TsukuyomiWazRebindContext context
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
     ) {
         for (Field field : getAllFields(source.getClass())) {
             if (Modifier.isStatic(field.getModifiers())) {
@@ -477,7 +525,7 @@ public class RebindWazStep {
             if (!List.class.isAssignableFrom(field.getType())) {
                 continue;
             }
-            if (!field.getName().endsWith("UnitList")) {
+            if (!field.getName().toLowerCase(Locale.ROOT).endsWith("unitlist")) {
                 continue;
             }
 
@@ -488,7 +536,7 @@ public class RebindWazStep {
 
                 if (sourceUnits != null) {
                     for (Object sourceUnit : sourceUnits) {
-                        targetUnits.add(rebuildNestedUnit(sourceUnit, context));
+                        targetUnits.add(rebuildNestedUnit(sourceUnit, context, resolver));
                     }
                 }
 
@@ -499,7 +547,11 @@ public class RebindWazStep {
         }
     }
 
-    private Object rebuildNestedUnit(Object sourceUnit, TsukuyomiWazRebindContext context) {
+    private Object rebuildNestedUnit(
+            Object sourceUnit,
+            TsukuyomiWazRebindContext context,
+            BheResourceIndexResolver resolver
+    ) {
         if (sourceUnit == null) {
             return null;
         }
@@ -511,48 +563,9 @@ public class RebindWazStep {
         // 真正带资源引用语义的是里面的 data，所以这里只递归替换 data。
         SkillInfoObject sourceData = tryGetUnitData(sourceUnit);
         if (sourceData != null) {
-            trySetUnitData(targetUnit, rebuildSkillInfoObject(sourceData, context));
+            trySetUnitData(targetUnit, rebuildSkillInfoObject(sourceData, context, resolver));
         }
         return targetUnit;
-    }
-
-    private Integer remapWazGroupIndex(Integer sourceIndex, TsukuyomiWazRebindContext context) {
-        if (sourceIndex == null || sourceIndex < 0) {
-            return sourceIndex;
-        }
-
-        Integer targetIndex = context.getSourceToTargetWazGroupIndex().get(sourceIndex);
-        if (targetIndex != null) {
-            return targetIndex;
-        }
-
-        throw new IllegalStateException("找不到源 waz 顶层索引对应的目标索引: " + sourceIndex);
-    }
-
-    private Integer remapWazSkillIndex(Integer sourceWazGroupIndex, Integer sourceSkillIndex, TsukuyomiWazRebindContext context) {
-        if (sourceWazGroupIndex == null || sourceWazGroupIndex < 0 || sourceSkillIndex == null || sourceSkillIndex < 0) {
-            return sourceSkillIndex;
-        }
-
-        Map<Integer, Integer> skillIndexMap = context.getSourceToTargetWazSkillIndexByGroup().get(sourceWazGroupIndex);
-        if (skillIndexMap == null) {
-            // 没有该 WAZ 的 skill merge 表时，保持源 index；主 Tsukuyomi.waz 使用 identity map。
-            return sourceSkillIndex;
-        }
-        return skillIndexMap.getOrDefault(sourceSkillIndex, sourceSkillIndex);
-    }
-
-    private Integer remapSpriteGroupIndex(Integer sourceIndex, TsukuyomiWazRebindContext context) {
-        if (sourceIndex == null || sourceIndex < 0) {
-            return sourceIndex;
-        }
-
-        Integer targetIndex = context.getSourceToTargetSpriteGroupIndex().get(sourceIndex);
-        if (targetIndex != null) {
-            return targetIndex;
-        }
-
-        throw new IllegalStateException("找不到源 sprite 顶层索引对应的目标索引: " + sourceIndex);
     }
 
     private List<byte[]> deepCopyByteArrayList(List<byte[]> source) {
@@ -567,8 +580,8 @@ public class RebindWazStep {
         return target;
     }
 
-    private void rewriteSeTargets(List<byte[]> byteDataList, TsukuyomiWazRebindContext context) {
-        if (byteDataList == null || context == null) {
+    private void rewriteSeTargets(List<byte[]> byteDataList, BheResourceIndexResolver resolver) {
+        if (byteDataList == null || resolver == null) {
             return;
         }
 
@@ -583,18 +596,9 @@ public class RebindWazStep {
                 continue;
             }
 
-            Integer targetGroupIndex = context.getSourceToTargetSeGroupIndex().get(sourceGroupIndex);
-            Map<Integer, Integer> itemMap = context.getSourceToTargetSeItemIndexByGroup().get(sourceGroupIndex);
-            Integer targetItemIndex = itemMap == null ? null : itemMap.get(sourceItemIndex);
-
-            if (targetGroupIndex == null || targetItemIndex == null) {
-                throw new IllegalStateException(
-                        "找不到 CEventSe 的目标映射: group=" + sourceGroupIndex + ", item=" + sourceItemIndex
-                );
-            }
-
-            writeLittleEndianInt(bytes, 0, targetGroupIndex);
-            writeLittleEndianInt(bytes, 4, targetItemIndex);
+            BheResolvedSeRef targetRef = resolver.resolveSe(sourceGroupIndex, sourceItemIndex);
+            writeLittleEndianInt(bytes, 0, targetRef.targetGroupIndex());
+            writeLittleEndianInt(bytes, 4, targetRef.targetItemIndex());
         }
     }
 
@@ -636,7 +640,7 @@ public class RebindWazStep {
                 continue;
             }
 
-            Integer targetGroupIndex = batVoiceGroupMap.get(sourceGroupIndex);
+            Integer targetGroupIndex = context.getSourceToTargetBatVoiceGroupIndex().get(sourceGroupIndex);
             if (targetGroupIndex == null) {
                 throw new IllegalStateException(
                         "找不到 CEventVoice 的 BatVoiceGroup 目标映射: sourceGroup=" + sourceGroupIndex
@@ -672,7 +676,8 @@ public class RebindWazStep {
             if (Modifier.isStatic(field.getModifiers())) {
                 continue;
             }
-            if (List.class.isAssignableFrom(field.getType()) && field.getName().endsWith("UnitList")) {
+            if (List.class.isAssignableFrom(field.getType())
+                    && field.getName().toLowerCase(Locale.ROOT).endsWith("unitlist")) {
                 return true;
             }
         }

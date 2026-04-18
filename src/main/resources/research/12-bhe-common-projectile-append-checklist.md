@@ -41,6 +41,9 @@
   - 公共资源接入完成后，公共资源属于 `preparedBaseline` 的既成事实。
   - `mergedPackageBundle` 只承载本次单机体 selected 资源的转换结果视图。
   - 单机体 closure/graft 不能把公共 WAZ/SPM/SE 当作普通 selected 依赖重新扫入。
+- [x] `LoadTsukuyomiSourceAssetsStep` 保留，但只能加载单机体私有资源。
+  - WAZ/SPM 读取时必须过滤 BHE 公共弹幕资源清单。
+  - 该 loader 给 graft 主线提供 selected 源资源视图，不负责公共资源接入。
 - [x] `SOU / MISAKI` 的 BatVoice 依赖属于公共弹幕层的外部角色语音特例。
   - 公共资源层记录依赖，但不在公共阶段把两个角色的单机体语音策略定死。
   - 移植 `SOU / MISAKI` 时必须回看本节，避免把公共弹幕层已经占用或引用的 voice 槽位重复导入、覆盖或重定向。
@@ -66,9 +69,9 @@
   - `redirect()`：负责公共资源接入、自重定向、交叉重定向和审计。
 - [x] `redirect()` 内部分两步：
   - `selfRedirect()`：已实现公共 WAZ/SPM 目标 entry、公共 SE 聚合组、容量同步和 source -> target 映射。
-  - `crossRedirect()`：`TODO 20260417` 空实现，处理公共 WAZ 指向 WAZ/SPM/SE 的跨资源引用重写；Voice 只记录外部依赖，term 通过独立 TODO 子问题接入。
+  - `crossRedirect()`：已实现公共 WAZ 指向 WAZ/SPM/SE 的跨资源引用重写；Voice 只记录外部依赖，term 通过独立 TODO 子问题接入。
 - [x] `TsukuyomiConvertOverviewStep` 只调用 `prepare()`，不直接调用公共资源内部的 convert / redirect / self / cross 细节。
-- [x] selfRedirect 目标 entry 接入已实现；crossRedirect 和 term 全量语义转换保留 `TODO 20260417`。
+- [x] selfRedirect 与 crossRedirect 已实现；term 全量语义转换保留 `TODO 20260417`。
 
 ## 单机体 graft 护栏
 
@@ -78,6 +81,9 @@
 - [x] `BuildResourceClosureStep` 扫到公共 WAZ 引用时，不能把公共 WAZ 加入单机体 `requiredWazFiles`。
 - [x] `AppendGrpEntriesStep` 不能对公共 WAZ 执行 key-based merge。
 - [x] `RebindWazStep` 遇到公共 WAZ 引用时，只能读取公共计划中的只读映射，把引用落到 `preparedBaseline` 的公共追加段。
+- [x] 单机体 graft 通过 `BheResourceIndexResolver` 消费公共映射。
+  - resolver 持有 `BheCommonProjectileAppendPlan` 和 `TsukuyomiGrpAppendPlan`，公共映射优先，私有映射兜底。
+  - 不允许把公共映射合并进 `TsukuyomiGrpAppendPlan`。
 - [x] 该护栏用于修正 JINKI 架子的默认假设：扫到的辅助 WAZ 不一定都是单机体迁移资源，BHE 公共 WAZ 是公共资源层的基线组成部分。
 
 ## WAZ 运行时引用语义
@@ -278,6 +284,31 @@
   - `mergedPackageBundle` 只作为 Tsukuyomi 私有资源转换结果视图。
   - 单机体 graft 以 `preparedBaseline` 为目标基线，并通过只读公共 append plan 处理私有 WAZ 中的公共引用。
   - 实现护栏：后续接线时必须避免公共 WAZ/SPM/SE 从 `mergedPackageBundle` 进入 `BuildResourceClosureStep / AppendGrpEntriesStep / RebindWazStep` 的普通 selected 路径。
+
+- [x] Q13：`LoadTsukuyomiSourceAssetsStep` 是否退出主线？
+  - 结论：不退出，但只加载 Tsukuyomi 单机体私有资源。
+  - 原因：loader 仍然负责给 graft 主线提供 selected 源资源视图；公共 WAZ/SPM 已经由 bhecommon 接入 `preparedBaseline`。
+  - 执行边界：loader 读取 WAZ/SPM 时过滤 `BheCommonProjectileResources` 固定清单，避免公共资源重新进入 selected closure。
+
+- [x] Q14：单机体 selected 主线如何消费公共资源映射？
+  - 结论：通过 `BheResourceIndexResolver` 统一解析，不把公共映射并入私有 `TsukuyomiGrpAppendPlan`。
+  - `BuildResourceClosureStep` 扫到公共 WAZ/SPM/SE 引用时，只写入 common reference 审计字段，不加入普通 selected closure。
+  - `RebindWazStep` 重写私有 WAZ 时优先查询 `BheCommonProjectileAppendPlan`，查不到再查询 `TsukuyomiGrpAppendPlan`。
+  - WAZ skill：命中公共 WAZ 时保持源侧 skill index；命中私有 WAZ 时使用私有 skill merge 映射。
+  - SPM action：命中公共 SPM 时保持源侧 anim index；普通私有路径维持既有逻辑。
+  - SE：命中公共 pair 时落到 `bhe_common_projectile_se` 聚合组；否则走私有 SE 映射。
+
+### 20260418 selected closure / rebind 接线审计
+
+- [x] `LoadTsukuyomiSourceAssetsStep` 已过滤公共 WAZ/SPM。
+- [x] `BuildResourceClosureStep` 已分流公共 WAZ/SPM/SE 引用。
+  - 公共引用不会加入普通 `requiredWazFiles / referencedSourceSprite / referencedSourceSe`。
+  - 公共引用会记录到 `TsukuyomiImportPlan` 的 common reference 审计字段。
+- [x] `RebindWazStep` 已通过 `BheResourceIndexResolver` 重写私有 WAZ 中的公共 WAZ/SPM/SE 引用。
+- [x] 已补测试：
+  - `LoadTsukuyomiSourceAssetsStepTest`
+  - `BuildResourceClosureStepCommonReferenceTest`
+  - `RebindWazStepCommonReferenceTest`
 
 ## bhecommon/waz 子阶段实现边界
 
