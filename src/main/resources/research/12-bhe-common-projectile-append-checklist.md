@@ -310,6 +310,24 @@
   - `BuildResourceClosureStepCommonReferenceTest`
   - `RebindWazStepCommonReferenceTest`
 
+### 20260418 公共资源输出沉淀审计
+
+- [x] 公共资源输出逻辑放在 `bhecommon/projectile/output/OutputBheCommonProjectileResourcesStep`。
+- [x] 输出 step 由 `ImportStaticAssetsStep` 调用，位置在 GRP/DAT 输出之后、selected 主线资源输出之前。
+- [x] 公共 WAZ / SPM 从 `preparedBaseline` 生成到 outputRoot。
+- [x] 公共 SE 音频从 `externalStaticAssetRoot` 查找原始文件，输出时使用 `bhe_*` 文件名；真实数据中 668 个公共 SE 音频均可找到。
+- [x] 公共 SPM 图片按公共 WAZ 实际 `CEventSprite` 可达动画收集，不复制整份 SPM.imageData。
+  - 原因：真实 BHE `externalStaticAssetRoot` 中并不包含公共 SPM imageData 的全部图片，整份复制会制造假缺失。
+- [x] 真实数据审计发现 7 个公共 SPM 可达 PNG 在 BHE externalStaticAssetRoot 中缺失。
+  - `bhe_smoke_007_0001.png`
+  - `bhe_mark_maru038_0001.png`
+  - `bhe_mark_maru044_0001.png`
+  - `bhe_bomb_ball005_0002.png`
+  - `bhe_tama_138_0001.png`
+  - `bhe_ice_005_0002.png`
+  - `bhe_bomb_010_0001.png`
+  - 处理：输出 step 记录 missingAssets，不从 BSDX/JINKI/CLARIAS 资源目录静默补图。
+
 ## bhecommon/waz 子阶段实现边界
 
 - 新增 8 个 `bhe_*` 顶层 `WazaGroup` entry。

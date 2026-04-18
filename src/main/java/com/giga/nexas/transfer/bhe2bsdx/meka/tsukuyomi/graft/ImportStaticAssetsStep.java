@@ -13,6 +13,7 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSprite;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.output.OutputBheCommonProjectileResourcesStep;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGrpAppendPlan;
@@ -84,6 +85,8 @@ public class ImportStaticAssetsStep {
      * 因此复用 RebindWazStep 的引用提取能力，而不是在这里另写一套猜测逻辑。</p>
      */
     private final RebindWazStep rebindWazStep = new RebindWazStep();
+    private final OutputBheCommonProjectileResourcesStep outputCommonProjectileResourcesStep =
+            new OutputBheCommonProjectileResourcesStep();
 
     public TsukuyomiImportedAssetSet importAssets(
             TsukuyomiGraftRequest request,
@@ -114,6 +117,15 @@ public class ImportStaticAssetsStep {
             // Step 8-2: 先把所有修改过的 grp 和 ProgramMaterial 真正写进产物。
             writePatchedGrpOutputs(bsdxBaseline, syncedProgramMaterial, outputRoot, importedAssetSet);
             writePatchedConfigDatOutputs(tsukuyomiPackage, bsdxBaseline, outputRoot, importedAssetSet);
+
+            // 公共资源已经是 preparedBaseline 的一部分，必须在 selected 主线资源前落盘。
+            outputCommonProjectileResourcesStep.output(
+                    request,
+                    bsdxBaseline,
+                    commonProjectileAppendPlan,
+                    outputRoot,
+                    importedAssetSet
+            );
 
             // Step 8-3: 再把主 mek / waz 产物直接平铺写到根目录。
             writeReboundMek(request, reboundTsukuyomiMek, outputRoot, importedAssetSet);
