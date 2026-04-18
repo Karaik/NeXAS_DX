@@ -1,5 +1,6 @@
 package com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi;
 
+import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuOverrideSpec;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
 import lombok.Data;
 
@@ -23,8 +24,7 @@ public class TsukuyomiGraftRequest {
     private Path jinkiGeneratedAssetDir;
 
     /**
-     * TODO 20260417：
-     * 通过现有 request 入口携带上一层 JINKI 结果，避免新增重载入口。
+     * 通过 request 入口携带 JINKI 结果，避免新增重载入口。
      */
     private AkaoGraftResult inheritedJinkiResult;
 
@@ -65,6 +65,13 @@ public class TsukuyomiGraftRequest {
 
     private boolean patchMenuData = true;
     private boolean planExeCapacityPatch = true;
+    /**
+     * 菜单覆盖输入由调用方提供。
+     *
+     * <p>包含目标可见槽位、donor 行、两组菜单 PNG 和布局策略。pipeline 只消费这个对象，
+     * 不在编排层写死菜单图片或槽位。</p>
+     */
+    private MenuOverrideSpec menuOverrideSpec;
 
     public Path resolveTargetExePath() {
         return resolveAgainstProjectRoot(jinkiGeneratedExePath != null ? jinkiGeneratedExePath : targetExePath);

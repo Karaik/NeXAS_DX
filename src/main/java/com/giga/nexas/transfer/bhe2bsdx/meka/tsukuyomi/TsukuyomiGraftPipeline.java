@@ -26,7 +26,6 @@ import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.RebindWazStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.SyncProgramMaterialStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuOverrideContext;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuOverridePipeline;
-import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuOverrideSpec;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.pack.PackUpdatePacStep;
 
 import java.nio.file.Path;
@@ -235,7 +234,7 @@ public class TsukuyomiGraftPipeline {
                     grpAppendPlan,
                     result.getReboundTsukuyomiMek(),
                     importedAssetSet.getOutputRootDir(),
-                    MenuOverrideSpec.defaultTsukuyomiMenuOverride()
+                    request.getMenuOverrideSpec()
             );
             applyMenuContextToResultAndAssetSet(menuContext, result, importedAssetSet);
         }

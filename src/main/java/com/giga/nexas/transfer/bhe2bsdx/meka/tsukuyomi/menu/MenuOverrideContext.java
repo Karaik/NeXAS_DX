@@ -10,6 +10,7 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPackageBundle;
 import lombok.Data;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
 /**
  * 菜单 override pipeline 的内部上下文。
@@ -40,7 +41,7 @@ public class MenuOverrideContext {
     private final TsukuyomiPackageBundle tsukuyomiPackage;
 
     /**
-     * 当前 BSDX baseline 资产包。
+     * BSDX baseline 资产包。
      *
      * <p>菜单覆盖以 baseline 的 `Meka.dat`、`MekaPilot.dat`、
      * `SelectMekaMenu.dat`、`MekaPilot.spm`、`SelectMekaMenuMeka.spm` 为模板。</p>
@@ -66,7 +67,7 @@ public class MenuOverrideContext {
     /**
      * 菜单 DAT/SPM/PNG 的最终输出目录。
      *
-     * <p>必须和主 graft 输出目录一致，因为后续 `Update3.pac` 只打包这一棵目录。</p>
+     * <p>必须和主 graft 输出目录一致，因为 `Update3.pac` 只打包这一棵目录。</p>
      */
     private final Path outputRoot;
 
@@ -81,7 +82,7 @@ public class MenuOverrideContext {
     /**
      * ResolveMenuSlotStep 推导出的菜单槽位关系。
      *
-     * <p>后续 DAT 和 SPM step 都消费同一份 mapping，避免各 step 各自重新推导导致不一致。</p>
+     * <p>DAT 和 SPM step 都消费同一份 mapping，避免各 step 各自重新推导导致不一致。</p>
      */
     private MenuSlotMapping slotMapping;
 
@@ -143,7 +144,7 @@ public class MenuOverrideContext {
         this.grpAppendPlan = grpAppendPlan;
         this.menuMek = menuMek;
         this.outputRoot = outputRoot;
-        this.spec = spec == null ? MenuOverrideSpec.defaultTsukuyomiMenuOverride() : spec;
+        this.spec = Objects.requireNonNull(spec, "菜单覆盖 spec 不能为空，调用方必须显式传入槽位和 PNG 清单");
         this.audit = new MenuOverrideAudit();
     }
 }

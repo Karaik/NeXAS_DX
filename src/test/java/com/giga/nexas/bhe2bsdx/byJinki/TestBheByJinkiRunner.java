@@ -1,6 +1,8 @@
 package com.giga.nexas.bhe2bsdx.byJinki;
 
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.TsukuyomiTransfer;
+import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuLayoutPolicy;
+import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuOverrideSpec;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftResult;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 @Slf4j
 public class TestBheByJinkiRunner {
@@ -40,12 +43,31 @@ public class TestBheByJinkiRunner {
         tsukuyomiRequest.setJinkiGeneratedExePath(jinkiGeneratedExeRelative);
         tsukuyomiRequest.setJinkiGeneratedAssetDir(jinkiGeneratedAssetDirRelative);
         tsukuyomiRequest.setInheritedJinkiResult(jinkiResult);
-        tsukuyomiRequest.setBheGameResourceRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_game"));
+        tsukuyomiRequest.setBheGameResourceRoot(null);
         tsukuyomiRequest.setTsukuyomiResourceDir(Paths.get("tsukuyomi"));
         tsukuyomiRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
         tsukuyomiRequest.setPatchMenuData(true);
+        tsukuyomiRequest.setMenuOverrideSpec(tsukuyomiMenuOverrideSpec());
 
         TsukuyomiGraftResult tsukuyomiResult = TsukuyomiTransfer.process(tsukuyomiRequest);
 
+    }
+
+    // 2. tsukuyomi
+    private MenuOverrideSpec tsukuyomiMenuOverrideSpec() {
+        return new MenuOverrideSpec(
+                25,
+                24,
+                List.of(
+                        "MOD_001_HELL_TSUKUYOMI_001.png",
+                        "MOD_001_HELL_MEKA_TSUKUYOMI_001.png"
+                ),
+                List.of(
+                        "MOD_001_SelectMekaMenuMeka_Sakurabi_001.png",
+                        "MOD_001_SelectMekaMenuMeka_Sakurabi_002.png"
+                ),
+                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.ORIGIN_CENTER
+        );
     }
 }

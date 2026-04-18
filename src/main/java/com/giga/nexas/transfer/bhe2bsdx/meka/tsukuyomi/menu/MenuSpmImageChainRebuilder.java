@@ -17,7 +17,7 @@ import java.util.List;
  * <p>菜单图不能只改 imageName。PNG 尺寸变了以后，pageWidth/pageHeight、pageRect、
  * chip src/dst rect 都必须同步改，否则游戏会按旧矩形绘制，出现裁切或错位。</p>
  *
- * <p>当前有两种布局策略：
+ * <p>存在两种布局策略：
  * MekaPilot 使用历史 pilot 动画样本的中位锚点，保持角色站位；
  * SelectMekaMenuMeka 使用原点居中，保持选机菜单机体图在槽位中心。</p>
  */
@@ -76,10 +76,10 @@ public class MenuSpmImageChainRebuilder {
             ResolvedImageSlot imageSlot = resolveImageSlotForPage(target, currentPage);
             Spm.SPMRect rect = calculateRect(target, animIndex, i, size, policy);
 
-            // TODO 客制化入口：这里是“换菜单 PNG 后自动适配尺寸”的核心落点。
+            // 这里是“换菜单 PNG 后自动适配尺寸”的核心落点。
             // 对 MekaPilot.spm / SelectMekaMenuMeka.spm 来说，只要 MenuOverrideSpec 指到新 PNG，
             // readPngSize 会读取真实宽高，calculateRect 会根据 layout policy 重算 page/chip rect。
-            // 如果只是换该机体菜单图，不要手写 pageWidth/pageHeight/srcRect/dstRect；手写只留给有明确逆向依据的特殊站位策略。
+            // 单纯替换机体菜单图时不要手写 pageWidth/pageHeight/srcRect/dstRect；手写只留给有明确逆向依据的特殊站位策略。
             // imageData 槽位可复用时复用，不能复用时才 append。
             // 这样能保持旧 SPM 中非目标 page 对同一 imageNo 的引用不被误改。
             target.getImageData().get(imageSlot.imageDataIndex()).setImageName(imageName);
@@ -140,7 +140,7 @@ public class MenuSpmImageChainRebuilder {
             return new ResolvedImageSlot(chip.getImageNo(), false);
         }
 
-        // 当前 page 引用的 imageNo 如果被其他 page 共享，直接改会污染别的动画。
+        // page 引用的 imageNo 被其他 page 共享时，直接改会污染别的动画。
         // append 新 imageData 是更安全的行为，也能被 final parity 捕捉。
         Spm.SPMImageData imageData = new Spm.SPMImageData();
         target.getImageData().add(imageData);
@@ -182,8 +182,8 @@ public class MenuSpmImageChainRebuilder {
     }
 
     public Spm.SPMRect calculateOriginCenteredRect(ImageSize size) {
-        // TODO 客制化入口：SelectMekaMenuMeka.spm 当前使用原点居中。
-        // 如果某台机体选机图需要固定偏移，不要直接改这里的公式；给 MenuOverrideSpec 增加 offset 字段，
+        // SelectMekaMenuMeka.spm 使用原点居中。
+        // 机体选机图需要固定偏移时，不要直接改这里的公式；给 MenuOverrideSpec 增加 offset 字段，
         // 或新增 MenuLayoutPolicy，把“为什么偏移、偏移多少”保留成可审计输入。
         int left = -Math.floorDiv(size.width(), 2);
         int top = -Math.floorDiv(size.height(), 2);
@@ -198,9 +198,9 @@ public class MenuSpmImageChainRebuilder {
 
         double centerX = median(samples.stream().map(AnchorSample::centerX).toList());
         double bottom = median(samples.stream().map(AnchorSample::bottom).toList());
-        // TODO 客制化入口：MekaPilot.spm 当前用历史 pilot 的中心 X / 底边 Y 中位数对齐。
-        // 如果某个机师图需要特殊站位，先扩展 MenuOverrideSpec 或新增 LayoutPolicy，
-        // 再在这里应用偏移；不要在 defaultTsukuyomiMenuOverride 外到处写 rect 魔法数。
+        // MekaPilot.spm 用历史 pilot 的中心 X / 底边 Y 中位数对齐。
+        // 机师图需要特殊站位时，先扩展 MenuOverrideSpec 或新增 LayoutPolicy，
+        // 再在这里应用偏移；不要把 rect 魔法数写散到调用方或重建算法里。
         // 以“中心 X + 底边 Y”作为锚点，比直接复制某一帧 rect 更稳：
         // 不同 pilot 图宽高可能不同，但底边和中心位置应该跟既有 pilot 群体保持一致。
         int left = (int) Math.round(centerX - size.width() / 2.0);
