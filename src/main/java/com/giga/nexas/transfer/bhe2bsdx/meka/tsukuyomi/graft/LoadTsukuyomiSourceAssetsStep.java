@@ -25,8 +25,8 @@ import java.util.Map;
 /**
  * 加载 Tsukuyomi 单机体私有资源包。
  *
- * <p>这个 loader 仍然负责给 graft 主线提供 Tsukuyomi 自己的源资源视图，但 WAZ/SPM 必须过滤掉
- * BHE 公共弹幕资源。公共资源已经由 bhecommon 接入 preparedBaseline，不能再进入 selected closure。</p>
+ * <p>主线 graft 消费第 0 步转换出来的 selectedResourceBundle，本 loader 只保留给独立测试和诊断入口使用。
+ * 读取 WAZ/SPM 时仍必须过滤 BHE 公共弹幕资源，避免测试入口误把公共资源放进 selected closure。</p>
  */
 public class LoadTsukuyomiSourceAssetsStep {
 

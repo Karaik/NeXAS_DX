@@ -134,7 +134,7 @@ public class ImportStaticAssetsStep {
             writePatchedBaselineMeks(bsdxBaseline, request.getMekFileName(), outputRoot, importedAssetSet);
             writeReboundWaz(request, reboundTsukuyomiWaz, outputRoot, importedAssetSet);
 
-            // Step 8-4: 再把辅助 waz 的 merge/rebind 产物平铺写到根目录。
+            // Step 8-4: 再把私有辅助 WAZ 的重绑产物平铺写到根目录。
             writeRequiredAuxiliaryWazFiles(
                     request,
                     tsukuyomiPackage,
@@ -333,16 +333,11 @@ public class ImportStaticAssetsStep {
             }
 
             Integer sourceWazGroupIndex = findSourceWazGroupIndex(importPlan, fileName);
-            Waz baselineWaz = findWazByFileName(bsdxBaseline.getWazByFileName(), fileName);
-
-            // 辅助 WAZ 不能直接复制 TSUKUYOMI 文件：
-            // BSDX 同名 WAZ 里有大量原生技能，TSUKUYOMI 侧也有空槽，所以这里输出 key-based merge 后的 WAZ。
-            // 这里必须和 AppendGrpEntriesStep 产出的 skill index mapping 配套；
-            // 否则 CEventWazaSelect 可能指到 merge 后错误的 skill 槽位。
+            // BHE 私有辅助 WAZ 按整文件重绑输出，不和 baseline 同名 WAZ 做 skill 合并。
+            // 公共 WAZ 已经在 preparedBaseline 里，能命中公共映射的引用只改索引，不重复输出公共 WAZ。
             Waz outputWaz = rebindWazStep.rebindAuxiliaryWaz(
                     request,
                     sourceWaz,
-                    baselineWaz,
                     importPlan,
                     grpAppendPlan,
                     sourceWazGroupIndex,
@@ -461,43 +456,25 @@ public class ImportStaticAssetsStep {
                 continue;
             }
 
-            // 只沿“本次 graft 出来的 skill”继续收图。
-            // 对 BSDX 原生 skill，不复制它的整套原版图集；否则 Update3 会被无谓放大，
-            // 也会破坏旧 pipeline 已经确认过的输出文件集合。
             Map<Integer, Integer> skillIndexMap = grpAppendPlan.getSourceWazSkillIndexToTargetIndexByGroup().get(sourceWazGroupIndex);
             if (skillIndexMap == null || skillIndexMap.isEmpty()) {
                 continue;
             }
 
             Waz sourceWaz = findWazByFileName(tsukuyomiPackage.getWazByFileName(), fileName);
-            Waz baselineWaz = findWazByFileName(bsdxBaseline.getWazByFileName(), fileName);
             Waz outputWaz = parseOutputWaz(outputRoot, fileName);
             if (sourceWaz == null || outputWaz == null || sourceWaz.getSkillList() == null || outputWaz.getSkillList() == null) {
                 continue;
             }
 
-            Set<String> baselineKeys = collectSkillKeys(baselineWaz);
-            int baselineSkillCount = baselineWaz == null || baselineWaz.getSkillList() == null ? 0 : baselineWaz.getSkillList().size();
-
+            // BHE 私有 WAZ 按整文件重绑输出；源 skill index 与目标 skill index 保持一致。
+            // 因此图片闭包也必须从本次输出 WAZ 的所有源侧 skill 出发，不能按同名 skill 过滤。
             for (int sourceSkillIndex = 0; sourceSkillIndex < sourceWaz.getSkillList().size(); sourceSkillIndex++) {
-                Waz.Skill sourceSkill = sourceWaz.getSkillList().get(sourceSkillIndex);
-                String sourceKey = normalizeSkillKey(sourceSkill);
-                if (sourceKey.isEmpty()) {
-                    continue;
-                }
-
                 Integer targetSkillIndex = skillIndexMap.get(sourceSkillIndex);
                 if (targetSkillIndex == null || targetSkillIndex < 0 || targetSkillIndex >= outputWaz.getSkillList().size()) {
                     continue;
                 }
 
-                boolean graftedSkill = targetSkillIndex >= baselineSkillCount || !baselineKeys.contains(sourceKey);
-                if (!graftedSkill) {
-                    continue;
-                }
-
-                // 只从 TSUKUYOMI 新增/新设 skill 出发递归收图；
-                // BSDX 原生 skill 的图片仍由原版资源承担，避免把整份 SPM 图片打进 Update3。
                 collectImageNamesFromReachableSkill(
                         outputWaz,
                         targetSkillIndex,
@@ -511,27 +488,6 @@ public class ImportStaticAssetsStep {
         }
 
         return imageNames;
-    }
-
-    private Set<String> collectSkillKeys(Waz waz) {
-        Set<String> keys = new LinkedHashSet<>();
-        if (waz == null || waz.getSkillList() == null) {
-            return keys;
-        }
-        for (Waz.Skill skill : waz.getSkillList()) {
-            String key = normalizeSkillKey(skill);
-            if (!key.isEmpty()) {
-                keys.add(key);
-            }
-        }
-        return keys;
-    }
-
-    private String normalizeSkillKey(Waz.Skill skill) {
-        if (skill == null || skill.getSkillNameEnglish() == null) {
-            return "";
-        }
-        return skill.getSkillNameEnglish().trim().toLowerCase(Locale.ROOT);
     }
 
     private Waz parseOutputWaz(Path outputRoot, String fileName) throws IOException {

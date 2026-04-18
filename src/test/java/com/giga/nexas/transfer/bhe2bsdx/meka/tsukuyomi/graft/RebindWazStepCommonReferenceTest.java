@@ -12,6 +12,8 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPackageBundle;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RebindWazStepCommonReferenceTest {
@@ -48,6 +50,32 @@ class RebindWazStepCommonReferenceTest {
         assertEquals(656, readLittleEndian(se.getByteDataList().get(0), 4));
     }
 
+    @Test
+    void rebindAuxiliaryWazKeepsWholeBheFileSkillLayout() {
+        TsukuyomiGraftRequest request = new TsukuyomiGraftRequest();
+        Waz sourceWaz = wazWithNamedSkills("aux0", "aux1", "aux2");
+        TsukuyomiImportPlan importPlan = new TsukuyomiImportPlan();
+        importPlan.getSourceWazIndexByFileName().put("aux.waz", 20);
+        importPlan.getTargetWazIndexByFileName().put("aux.waz", 220);
+        TsukuyomiGrpAppendPlan privatePlan = new TsukuyomiGrpAppendPlan();
+        privatePlan.getSourceWazGroupIndexToTargetIndex().put(20, 220);
+        privatePlan.getSourceWazSkillIndexToTargetIndexByGroup().put(20, Map.of(0, 0, 1, 1, 2, 2));
+
+        Waz rebound = step.rebindAuxiliaryWaz(
+                request,
+                sourceWaz,
+                importPlan,
+                privatePlan,
+                20,
+                new BheCommonProjectileAppendPlan()
+        );
+
+        assertEquals(3, rebound.getSkillList().size());
+        assertEquals("aux0", rebound.getSkillList().get(0).getSkillNameEnglish());
+        assertEquals("aux1", rebound.getSkillList().get(1).getSkillNameEnglish());
+        assertEquals("aux2", rebound.getSkillList().get(2).getSkillNameEnglish());
+    }
+
     private BheCommonProjectileAppendPlan commonPlan() {
         BheCommonProjectileAppendPlan plan = new BheCommonProjectileAppendPlan();
         plan.getSourceWazIndexToTargetIndex().put(0, 108);
@@ -80,6 +108,19 @@ class RebindWazStepCommonReferenceTest {
         phase.getSkillUnitCollection().add(unit);
         skill.getPhasesInfo().add(phase);
         waz.getSkillList().add(skill);
+        return waz;
+    }
+
+    private Waz wazWithNamedSkills(String... names) {
+        Waz waz = new Waz();
+        waz.setFileName("aux");
+        waz.setExtensionName("waz");
+        for (String name : names) {
+            Waz.Skill skill = new Waz.Skill();
+            skill.setSkillNameJapanese(name);
+            skill.setSkillNameEnglish(name);
+            waz.getSkillList().add(skill);
+        }
         return waz;
     }
 

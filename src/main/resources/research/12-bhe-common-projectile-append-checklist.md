@@ -41,9 +41,9 @@
   - 公共资源接入完成后，公共资源属于 `preparedBaseline` 的既成事实。
   - `mergedPackageBundle` 只承载本次单机体 selected 资源的转换结果视图。
   - 单机体 closure/graft 不能把公共 WAZ/SPM/SE 当作普通 selected 依赖重新扫入。
-- [x] `LoadTsukuyomiSourceAssetsStep` 保留，但只能加载单机体私有资源。
-  - WAZ/SPM 读取时必须过滤 BHE 公共弹幕资源清单。
-  - 该 loader 给 graft 主线提供 selected 源资源视图，不负责公共资源接入。
+- [x] 主线 graft 消费第 0 步产出的 `selectedResourceBundle`，不再绕回源目录重新加载 BHE 文件。
+  - WAZ/SPM 原始读取仍由第 0 步 raw loader 完成，并在 raw 阶段过滤 BHE 公共弹幕资源清单。
+  - selected 源资源视图来自 BHE -> BSDX 格式转换结果，不绕过公共资源护栏。
 - [x] `SOU / MISAKI` 的 BatVoice 依赖属于公共弹幕层的外部角色语音特例。
   - 公共资源层记录依赖，但不在公共阶段把两个角色的单机体语音策略定死。
   - 移植 `SOU / MISAKI` 时必须回看本节，避免把公共弹幕层已经占用或引用的 voice 槽位重复导入、覆盖或重定向。
@@ -53,8 +53,8 @@
   - 不为公共资源构建 voice 映射。
   - 只记录 `tama02 / tama04 / tama05` 对 `SOU / MISAKI` 的外部依赖。
 - [x] `term / InfoCollection` 属于公共 WAZ 自洽范围，不能放到单机体阶段处理。
-  - 公共资源阶段暂定接入全量 BHE term 语义转换。
-  - term 转换方法和实现策略待定，单独抽出 `TODO 20260417` 子问题处理。
+  - 公共资源阶段已接入全量 BHE term 语义转换。
+  - term 转换规则与精度损失记录见 `src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/bhecommon/term/TERM_MIGRATION_PLAN.md`。
   - 公共 WAZ redirect 实现不能把 term 当成普通备注字段跳过。
 - [x] 公共 SE 使用 1 个 `BHE_SE_PUBLIC` 聚合 `SeGroup`。
   - 输入来自 8 个公共 WAZ 实际引用到的 BHE 源 `(SeGroup, SeItem)`。
@@ -71,7 +71,7 @@
   - `selfRedirect()`：已实现公共 WAZ/SPM 目标 entry、公共 SE 聚合组、容量同步和 source -> target 映射。
   - `crossRedirect()`：已实现公共 WAZ 指向 WAZ/SPM/SE 的跨资源引用重写；Voice 只记录外部依赖，term 通过独立 TODO 子问题接入。
 - [x] `TsukuyomiConvertOverviewStep` 只调用 `prepare()`，不直接调用公共资源内部的 convert / redirect / self / cross 细节。
-- [x] selfRedirect 与 crossRedirect 已实现；term 全量语义转换保留 `TODO 20260417`。
+- [x] selfRedirect、crossRedirect 与 term 全量语义转换已实现。
 
 ## 单机体 graft 护栏
 
@@ -191,7 +191,7 @@
    - 8 个公共 WAZ：`effect / tama01..05 / laser / bomb`。
    - 12 个公共 SPM：`[0,1,2,3,4,5,6,7,8,9,10,173]`。
    - 668 个公共 SE source pair：来自公共 WAZ 实际 `CEventSe` 引用。
-   - `term / InfoCollection`：公共资源阶段接入全量语义转换，方法和策略待定。
+   - `term / InfoCollection`：公共资源阶段接入全量语义转换，规则见 term 包文档。
 
 2. **追加公共目标 entry**
    - WAZ：新增 8 个 `bhe_*` 顶层 `WazaGroup` entry。
@@ -271,8 +271,7 @@
 - [x] Q10：公共 WAZ 里的 `term / InfoCollection` 是否属于公共资源阶段必须处理的内容？
   - 结论：属于公共资源阶段，必须处理。
   - 原因：公共 WAZ 已经被隔离到 `bhe_*` 公共资源层，它内部携带的 term 语义也属于这层自洽的一部分；把 term 留给单机体阶段会破坏公共层独立性。
-  - 暂定口径：公共资源阶段接入全量 BHE term 语义转换。
-  - 执行边界：term 转换方法和实现策略待定，单独开 `TODO 20260417` 子问题，基于实际 InfoCollection/term 数据审计后再落地。
+  - 执行口径：公共资源阶段接入全量 BHE term 语义转换，规则和精度损失见 term 包文档。
 
 - [x] Q11：公共资源阶段是否重建 Voice / BatVoice？
   - 结论：不重建。
@@ -285,30 +284,37 @@
   - 单机体 graft 以 `preparedBaseline` 为目标基线，并通过只读公共 append plan 处理私有 WAZ 中的公共引用。
   - 实现护栏：后续接线时必须避免公共 WAZ/SPM/SE 从 `mergedPackageBundle` 进入 `BuildResourceClosureStep / AppendGrpEntriesStep / RebindWazStep` 的普通 selected 路径。
 
-- [x] Q13：`LoadTsukuyomiSourceAssetsStep` 是否退出主线？
-  - 结论：不退出，但只加载 Tsukuyomi 单机体私有资源。
-  - 原因：loader 仍然负责给 graft 主线提供 selected 源资源视图；公共 WAZ/SPM 已经由 bhecommon 接入 `preparedBaseline`。
-  - 执行边界：loader 读取 WAZ/SPM 时过滤 `BheCommonProjectileResources` 固定清单，避免公共资源重新进入 selected closure。
+- [x] Q13：主线 graft 是否还能从源目录重新加载 selected 资源？
+  - 结论：不能。主线 graft 只能消费第 0 步产出的 `convertedBundle.getSelectedResourceBundle()`。
+  - 原因：第 0 步已经完成 BHE -> BSDX 格式转换、公共资源接入和 term 重编译；绕回源目录加载会跳过这些结果。
+  - 执行边界：raw 读取仍在第 0 步内完成，并负责过滤 `BheCommonProjectileResources` 固定清单。
 
 - [x] Q14：单机体 selected 主线如何消费公共资源映射？
   - 结论：通过 `BheResourceIndexResolver` 统一解析，不把公共映射并入私有 `TsukuyomiGrpAppendPlan`。
   - `BuildResourceClosureStep` 扫到公共 WAZ/SPM/SE 引用时，只写入 common reference 审计字段，不加入普通 selected closure。
   - `RebindWazStep` 重写私有 WAZ 时优先查询 `BheCommonProjectileAppendPlan`，查不到再查询 `TsukuyomiGrpAppendPlan`。
-  - WAZ skill：命中公共 WAZ 时保持源侧 skill index；命中私有 WAZ 时使用私有 skill merge 映射。
+  - WAZ skill：命中公共 WAZ 时保持源侧 skill index；命中私有 WAZ 时按整文件重绑，源 skill index 等于目标 skill index。
   - SPM action：命中公共 SPM 时保持源侧 anim index；普通私有路径维持既有逻辑。
   - SE：命中公共 pair 时落到 `BHE_SE_PUBLIC` 聚合组；否则走私有 SE 映射。
 
 ### 20260418 selected closure / rebind 接线审计
 
-- [x] `LoadTsukuyomiSourceAssetsStep` 已过滤公共 WAZ/SPM。
+- [x] 第 0 步 raw loader 已过滤公共 WAZ/SPM。
 - [x] `BuildResourceClosureStep` 已分流公共 WAZ/SPM/SE 引用。
   - 公共引用不会加入普通 `requiredWazFiles / referencedSourceSprite / referencedSourceSe`。
   - 公共引用会记录到 `TsukuyomiImportPlan` 的 common reference 审计字段。
 - [x] `RebindWazStep` 已通过 `BheResourceIndexResolver` 重写私有 WAZ 中的公共 WAZ/SPM/SE 引用。
+- [x] `AppendGrpEntriesStep` 的 BHE 私有辅助 WAZ 已改为整文件重绑。
+  - 即使 baseline 存在同名 WAZ，也追加新的目标 `WazaGroup` entry。
+  - 私有辅助 WAZ 的 `wazSequenceNo` 保持源文件内部 skill index，不做 JINKI 式 skill 合并。
+  - `WazaGroup.param` 回写为 BHE 源辅助 WAZ 自身 `skillList.size()`。
+- [x] `ImportStaticAssetsStep` 的私有辅助 WAZ 输出已改为整文件重绑输出。
+  - 图片闭包从输出 WAZ 的全部源侧 skill 出发，不再按 baseline 同名 skill 过滤。
 - [x] 已补测试：
   - `LoadTsukuyomiSourceAssetsStepTest`
   - `BuildResourceClosureStepCommonReferenceTest`
   - `RebindWazStepCommonReferenceTest`
+  - `AppendGrpEntriesStepBheRebindTest`
 
 ### 20260418 公共资源输出沉淀审计
 

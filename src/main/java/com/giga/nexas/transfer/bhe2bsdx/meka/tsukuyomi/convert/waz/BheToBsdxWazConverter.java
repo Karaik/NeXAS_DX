@@ -9,7 +9,7 @@ import java.util.List;
  * BHE WAZ -> BSDX WAZ DTO 形状转换器。
  *
  * <p>本类只负责源侧格式转换：BHE 的 83 个事件槽位按结构映射转成 BSDX 的 72 个事件槽位。
- * WAZ 文件组索引、SPM 文件组索引、SE 索引、语音组索引、skill merge/reorder 均由 rebind 阶段处理。</p>
+ * WAZ 文件组索引、SPM 文件组索引、SE 索引、语音组索引和目标侧资源索引均由 BHE rebind 阶段处理。</p>
  */
 public class BheToBsdxWazConverter {
 

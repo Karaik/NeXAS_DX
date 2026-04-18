@@ -92,7 +92,6 @@ public class RebindWazStep {
     public Waz rebindAuxiliaryWaz(
             TsukuyomiGraftRequest request,
             Waz sourceWaz,
-            Waz baselineWaz,
             TsukuyomiImportPlan importPlan,
             TsukuyomiGrpAppendPlan grpAppendPlan,
             Integer sourceWazGroupIndex,
@@ -105,50 +104,13 @@ public class RebindWazStep {
         TsukuyomiWazRebindContext context = buildContext(request, sourceWaz, importPlan, grpAppendPlan);
         BheResourceIndexResolver resolver = new BheResourceIndexResolver(commonProjectileAppendPlan, grpAppendPlan);
         Waz targetWaz = new Waz();
-        Waz shellSource = baselineWaz != null ? baselineWaz : sourceWaz;
-        targetWaz.setFileName(shellSource.getFileName());
-        targetWaz.setExtensionName(shellSource.getExtensionName());
+        targetWaz.setFileName(sourceWaz.getFileName());
+        targetWaz.setExtensionName(sourceWaz.getExtensionName());
 
-        List<Waz.Skill> targetSkills = new ArrayList<>();
-        int baselineSkillCount = baselineWaz == null || baselineWaz.getSkillList() == null ? 0 : baselineWaz.getSkillList().size();
-        if (baselineWaz != null && baselineWaz.getSkillList() != null) {
-            targetSkills.addAll(baselineWaz.getSkillList());
-        }
-
-        Map<Integer, Integer> skillIndexMap = sourceWazGroupIndex == null
-                ? null
-                : grpAppendPlan.getSourceWazSkillIndexToTargetIndexByGroup().get(sourceWazGroupIndex);
-        if (skillIndexMap == null || skillIndexMap.isEmpty()) {
-            // 没有 skill merge 计划时，说明这个 WAZ 不需要 key-based graft，走完整源 WAZ 重建即可。
-            targetWaz.setSkillList(rebuildSkillList(context, resolver));
-            termRewriter.rewrite(targetWaz, "tsukuyomi auxiliary WAZ " + targetWaz.getFileName());
-            return targetWaz;
-        }
-
-        List<Waz.Skill> sourceSkills = sourceWaz.getSkillList();
-        if (sourceSkills != null) {
-            for (int sourceIndex = 0; sourceIndex < sourceSkills.size(); sourceIndex++) {
-                Integer targetIndex = skillIndexMap.get(sourceIndex);
-                if (targetIndex == null || targetIndex < baselineSkillCount) {
-                    // targetIndex 落在 baseline 范围内代表复用 BSDX 原 skill，不需要把 TSUKUYOMI 内容写过去覆盖。
-                    continue;
-                }
-                while (targetSkills.size() < targetIndex) {
-                    // 理论上 key-based append 会连续追加；这里补空槽只是防御配置/映射异常。
-                    targetSkills.add(new Waz.Skill());
-                }
-                Waz.Skill rebuilt = rebuildSkill(sourceSkills.get(sourceIndex), context, resolver);
-                // key-based merge 中 baseline skill 已经是 BSDX term 空间，只能重编译新增的 BHE skill。
-                termRewriter.rewrite(rebuilt, "tsukuyomi auxiliary WAZ " + targetWaz.getFileName() + " skill " + sourceIndex);
-                if (targetSkills.size() == targetIndex) {
-                    targetSkills.add(rebuilt);
-                } else {
-                    targetSkills.set(targetIndex, rebuilt);
-                }
-            }
-        }
-
-        targetWaz.setSkillList(targetSkills);
+        // BHE 私有辅助 WAZ 按整文件重绑，不和 baseline 同名 WAZ 做 skill 合并。
+        // 因此 wazSequenceNo 保持源文件内部 skill index，AppendGrpEntriesStep 只提供 identity skill 映射。
+        targetWaz.setSkillList(rebuildSkillList(context, resolver));
+        termRewriter.rewrite(targetWaz, "tsukuyomi auxiliary WAZ " + targetWaz.getFileName());
         validateRebindResult(targetWaz, context);
         return targetWaz;
     }
@@ -459,10 +421,7 @@ public class RebindWazStep {
         // 原字段指向 TSUKUYOMI 的 WazaGroup 顶层序号，迁移后必须改成 BSDX 目标序号。
         target.setWazFileNo(resolver.resolveWazGroupIndex(source.getWazFileNo()));
 
-        // 这里保留序号本身。
-        // wazSequenceNo 的语义是“目标 waz 文件内部的 skill 索引”，
-        // 当前迁移策略是把对应的辅助 waz 文件整体导入，因此内部 skill 序号不在 step7 改。
-        // wazSequenceNo 是“目标 WAZ 内部 skill index”，辅助 WAZ 做 key-based merge 后必须同步重写。
+        // wazSequenceNo 是“目标 WAZ 内部 skill index”；BHE 整文件重绑时保持源文件内部 skill index。
         target.setWazSequenceNo(resolver.resolveWazSkillIndex(source.getWazFileNo(), source.getWazSequenceNo()));
         return target;
     }

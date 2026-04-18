@@ -73,13 +73,13 @@ public class AppendGrpEntriesStep {
         plan.setBatVoiceGroupIndex(upsertBatVoiceGroup(bsdxBaseline.getBatVoiceGrp(), sourceBatVoice.group()));
         plan.getSourceBatVoiceGroupIndexToTargetIndex().put(sourceBatVoice.index(), plan.getBatVoiceGroupIndex());
 
-        // 5. 挂当前机体通过 CEventWazaSelect 用到的辅助 waz 闭包。
-        // 同名辅助 WazaGroup 复用 BSDX 索引，目标缺失时尾插。
+        // 5. 挂当前机体通过 CEventWazaSelect 用到的私有 WAZ 闭包。
+        // BHE 私有 WAZ 按整文件重绑，不复用 baseline 同名 WAZ 的 skill 槽位。
         appendReferencedWazGroups(tsukuyomiPackage, bsdxBaseline, importPlan, plan);
 
-        buildReferencedWazSkillIndexMaps(request, tsukuyomiPackage, bsdxBaseline, importPlan, plan);
+        buildReferencedWazSkillIdentityMaps(request, tsukuyomiPackage, importPlan, plan);
 
-        // 5-1. 主 Tsukuyomi 和外部实际引用到的辅助 waz，都要把 grp.param 重算到输出 WAZ 的真实 skill 数量。
+        // 5-1. 回写每个私有 WAZ 的真实 skill 数，保证 WazaGroup.param 与输出文件一致。
         recalculateReferencedWazaParams(request, tsukuyomiPackage, bsdxBaseline, importPlan, plan);
 
         // 6. 挂当前机体通过 CEventSprite 用到的辅助 sprite 链。
@@ -103,28 +103,21 @@ public class AppendGrpEntriesStep {
                 continue;
             }
 
-            Integer targetIndex = importPlan.getTargetWazIndexByFileName().get(normalizeFileName(entry.getValue()));
-            if (targetIndex != null && targetIndex >= 0) {
-                // 同名辅助 WAZ 在 BSDX 已存在时复用原 group，避免把全局 WazaGroup 顺序打乱。
-                plan.getSourceWazGroupIndexToTargetIndex().put(sourceIndex, targetIndex);
-                continue;
-            }
-
-            // 目标侧没有同名 WAZ 时才追加 group。这个分支是给真正新增的辅助 WAZ 留的。
+            // BHE 私有辅助 WAZ 是整文件资源，不走 JINKI 的同名复用或 skill 合并。
+            // 即使 baseline 存在同名 WAZ，也要追加新的目标 entry，确保源 skill index 在目标文件内保持不变。
             WazaGroupGrp.WazaGroupEntry sourceEntry = requireSourceWazaGroupByIndex(
                     tsukuyomiPackage.getWazaGroupGrp(),
                     sourceIndex
             );
-            int appendedIndex = upsertWazaGroup(bsdxBaseline.getWazaGroupGrp(), sourceEntry);
+            int appendedIndex = appendWazaGroup(bsdxBaseline.getWazaGroupGrp(), sourceEntry);
             plan.getSourceWazGroupIndexToTargetIndex().put(sourceIndex, appendedIndex);
             importPlan.getTargetWazIndexByFileName().put(normalizeFileName(entry.getValue()), appendedIndex);
         }
     }
 
-    private void buildReferencedWazSkillIndexMaps(
+    private void buildReferencedWazSkillIdentityMaps(
             TsukuyomiGraftRequest request,
             TsukuyomiPackageBundle tsukuyomiPackage,
-            TsukuyomiBsdxBaselineBundle bsdxBaseline,
             TsukuyomiImportPlan importPlan,
             TsukuyomiGrpAppendPlan plan
     ) {
@@ -145,16 +138,13 @@ public class AppendGrpEntriesStep {
                 continue;
             }
             Waz sourceWaz = findWazByFileName(tsukuyomiPackage.getWazByFileName(), entry.getValue());
-            Waz baselineWaz = findWazByFileName(bsdxBaseline.getWazByFileName(), entry.getValue());
             if (sourceWaz == null) {
                 continue;
             }
 
-            // 这里不按文件整体覆盖，而是生成 WAZ 内部 skill 映射：
-            // BSDX 已有 key 就复用，TSUKUYOMI 新 key 才 append 到目标 WAZ 尾部。
-            WazSkillMergePlan skillMergePlan = buildWazSkillMergePlan(sourceWaz, baselineWaz);
-            plan.getSourceWazSkillIndexToTargetIndexByGroup().put(sourceIndex, skillMergePlan.sourceToTargetSkillIndex());
-            plan.getTargetWazSkillCountByGroupIndex().put(targetIndex, skillMergePlan.targetSkillCount());
+            // BHE 私有辅助 WAZ 不和 baseline 同名 WAZ 合并；源 skill index 就是目标 skill index。
+            plan.getSourceWazSkillIndexToTargetIndexByGroup().put(sourceIndex, buildIdentitySkillMap(sourceWaz));
+            plan.getTargetWazSkillCountByGroupIndex().put(targetIndex, countSkills(sourceWaz));
         }
     }
 
@@ -176,7 +166,7 @@ public class AppendGrpEntriesStep {
             updateWazaParam(targetWazaGroup, plan.getWazaGroupIndex(), countSkills(mainWaz));
         }
 
-        // 外部引用到的辅助 waz 使用 merge 后 skill count 回写 param；没有 merge 计划时退回实际文件 count。
+        // 外部引用到的私有辅助 WAZ 使用源文件自身 skill count 回写 param。
         for (Map.Entry<Integer, String> entry : importPlan.getReferencedSourceWazFileNameByGroupIndex().entrySet()) {
             Integer sourceIndex = entry.getKey();
             Integer targetIndex = plan.getSourceWazGroupIndexToTargetIndex().get(sourceIndex);
@@ -189,17 +179,7 @@ public class AppendGrpEntriesStep {
                 continue;
             }
 
-            Integer mergedSkillCount = plan.getTargetWazSkillCountByGroupIndex().get(targetIndex);
-            if (mergedSkillCount != null) {
-                // WazaGroup.param 是运行时检查 skill 上界的依据，必须等于输出 WAZ 的真实 skill 数。
-                updateWazaParam(targetWazaGroup, targetIndex, mergedSkillCount);
-                continue;
-            }
-
-            Waz resolvedWaz = findWazByFileName(bsdxBaseline.getWazByFileName(), entry.getValue());
-            if (resolvedWaz == null) {
-                resolvedWaz = findWazByFileName(tsukuyomiPackage.getWazByFileName(), entry.getValue());
-            }
+            Waz resolvedWaz = findWazByFileName(tsukuyomiPackage.getWazByFileName(), entry.getValue());
             if (resolvedWaz == null) {
                 throw new IllegalStateException("无法找到用于重算 WazaGroup.param 的 waz 文件: " + entry.getValue());
             }
@@ -237,54 +217,6 @@ public class AppendGrpEntriesStep {
         return result;
     }
 
-    private WazSkillMergePlan buildWazSkillMergePlan(Waz sourceWaz, Waz baselineWaz) {
-        Map<Integer, Integer> sourceToTarget = new LinkedHashMap<>();
-        int baselineSkillCount = baselineWaz == null || baselineWaz.getSkillList() == null ? 0 : baselineWaz.getSkillList().size();
-        int nextTargetIndex = baselineSkillCount;
-
-        Map<String, Integer> baselineKeyToIndex = new LinkedHashMap<>();
-        if (baselineWaz != null && baselineWaz.getSkillList() != null) {
-            for (int i = 0; i < baselineWaz.getSkillList().size(); i++) {
-                String key = normalizeSkillKey(baselineWaz.getSkillList().get(i));
-                if (!key.isEmpty()) {
-                    baselineKeyToIndex.putIfAbsent(key, i);
-                }
-            }
-        }
-
-        if (sourceWaz != null && sourceWaz.getSkillList() != null) {
-            for (int i = 0; i < sourceWaz.getSkillList().size(); i++) {
-                String key = normalizeSkillKey(sourceWaz.getSkillList().get(i));
-                if (key.isEmpty()) {
-                    if (i < baselineSkillCount) {
-                        // 源侧空槽不应该覆盖 BSDX 原有内容；这里只保留同 index 映射供旧引用兜底。
-                        sourceToTarget.put(i, i);
-                    }
-                    continue;
-                }
-
-                Integer existingIndex = baselineKeyToIndex.get(key);
-                if (existingIndex != null) {
-                    // 同 key 表示语义上同一个 skill，复用 BSDX 槽位而不是复制一份。
-                    sourceToTarget.put(i, existingIndex);
-                } else {
-                    // TSUKUYOMI 非空且 BSDX 没有的 key 才作为 Tsukuyomi 需要的新 skill 追加。
-                    sourceToTarget.put(i, nextTargetIndex++);
-                    baselineKeyToIndex.put(key, nextTargetIndex - 1);
-                }
-            }
-        }
-
-        return new WazSkillMergePlan(sourceToTarget, nextTargetIndex);
-    }
-
-    private String normalizeSkillKey(Waz.Skill skill) {
-        if (skill == null || skill.getSkillNameEnglish() == null) {
-            return "";
-        }
-        return skill.getSkillNameEnglish().trim().toLowerCase(Locale.ROOT);
-    }
-
     private Waz findWazByFileName(Map<String, Waz> wazByFileName, String fileName) {
         if (wazByFileName == null || wazByFileName.isEmpty()) {
             return null;
@@ -296,9 +228,6 @@ public class AppendGrpEntriesStep {
             }
         }
         return null;
-    }
-
-    private record WazSkillMergePlan(Map<Integer, Integer> sourceToTargetSkillIndex, int targetSkillCount) {
     }
 
     private void appendReferencedSpriteGroups(
@@ -375,6 +304,10 @@ public class AppendGrpEntriesStep {
         if (existingIndex >= 0) {
             return existingIndex;
         }
+        return appendWazaGroup(targetGroup, sourceEntry);
+    }
+
+    private int appendWazaGroup(WazaGroupGrp targetGroup, WazaGroupGrp.WazaGroupEntry sourceEntry) {
         targetGroup.getWazaList().add(copyWazaGroup(sourceEntry));
         return targetGroup.getWazaList().size() - 1;
     }
