@@ -50,10 +50,8 @@ public class TestBheByJinkiRunner {
         tsukuyomiRequest.setMenuOverrideSpec(tsukuyomiMenuOverrideSpec());
 
         TsukuyomiGraftResult tsukuyomiResult = TsukuyomiTransfer.process(tsukuyomiRequest);
-
     }
 
-    // 2. tsukuyomi
     private MenuOverrideSpec tsukuyomiMenuOverrideSpec() {
         return new MenuOverrideSpec(
                 25,

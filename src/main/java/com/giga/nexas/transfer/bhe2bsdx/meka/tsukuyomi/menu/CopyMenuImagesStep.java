@@ -13,10 +13,10 @@ import java.util.Set;
 /**
  * 复制菜单 SPM 实际引用到的 PNG。
  *
- * <p>复制范围来自 patched SPM 的 imageData，而不是 spec 的四张图硬编码。
- * 这样如果重建规则未来复用了额外图片，输出目录也能跟着 SPM 引用自动补齐。</p>
+ * <p>复制范围来自 patched SPM 的 page/chip 链，而不是整份 imageData。
+ * 这样不会把模板 SPM 中未被目标 anim 使用的旧菜单图全量带入输出目录。</p>
  *
- * <p>最后仍然校验 spec 指定的四张 MOD PNG 必须存在，保证当前 Tsukuyomi 菜单最小交付物没有漏。</p>
+ * <p>最后仍校验 spec 指定的 MOD PNG 已经落到输出目录，保证菜单最小交付物没有漏。</p>
  */
 public class CopyMenuImagesStep {
 
@@ -30,7 +30,9 @@ public class CopyMenuImagesStep {
 
         Set<String> imageNames = collectImageNames(
                 context.getPatchedMekaPilotSpm(),
-                context.getPatchedSelectMekaMenuMekaSpm()
+                context.getSlotMapping() == null ? -1 : context.getSlotMapping().getPilotAnimIndex(),
+                context.getPatchedSelectMekaMenuMekaSpm(),
+                context.getSlotMapping() == null ? -1 : context.getSlotMapping().getSelectMenuAnimIndex()
         );
         for (String imageName : imageNames) {
             copyImage(externalRoot, outputRoot, imageName, audit);
@@ -38,23 +40,56 @@ public class CopyMenuImagesStep {
         assertRequiredSpecImagesCopied(context.getSpec(), outputRoot);
     }
 
-    public Set<String> collectImageNames(Spm... spms) {
+    public Set<String> collectImageNames(
+            Spm pilotSpm,
+            int pilotAnimIndex,
+            Spm selectMenuMekaSpm,
+            int selectMenuAnimIndex
+    ) {
         Set<String> imageNames = new LinkedHashSet<>();
-        if (spms == null) {
-            return imageNames;
+        collectImageNamesFromAnim(pilotSpm, pilotAnimIndex, imageNames);
+        collectImageNamesFromAnim(selectMenuMekaSpm, selectMenuAnimIndex, imageNames);
+        return imageNames;
+    }
+
+    private void collectImageNamesFromAnim(Spm spm, int animIndex, Set<String> imageNames) {
+        if (spm == null || spm.getImageData() == null || spm.getPageData() == null || spm.getAnimData() == null
+                || animIndex < 0 || animIndex >= spm.getAnimData().size()) {
+            return;
         }
-        for (Spm spm : spms) {
-            if (spm == null || spm.getImageData() == null) {
+        Spm.SPMAnimData anim = spm.getAnimData().get(animIndex);
+        if (anim == null || anim.getPatData() == null) {
+            return;
+        }
+        for (Spm.SPMPatData pat : anim.getPatData()) {
+            if (pat == null || pat.getPageNo() == null) {
                 continue;
             }
-            for (Spm.SPMImageData imageData : spm.getImageData()) {
-                if (imageData == null || imageData.getImageName() == null || imageData.getImageName().isBlank()) {
-                    continue;
-                }
-                imageNames.add(imageData.getImageName());
+            for (Integer pageNo : pat.getPageNo()) {
+                collectImageNamesFromPage(spm, pageNo, imageNames);
             }
         }
-        return imageNames;
+    }
+
+    private void collectImageNamesFromPage(Spm spm, Integer pageNo, Set<String> imageNames) {
+        if (pageNo == null || pageNo < 0 || pageNo >= spm.getPageData().size()) {
+            return;
+        }
+        Spm.SPMPageData page = spm.getPageData().get(pageNo);
+        if (page == null || page.getChipData() == null) {
+            return;
+        }
+        for (Spm.SPMChipData chip : page.getChipData()) {
+            if (chip == null || chip.getImageNo() == null
+                    || chip.getImageNo() < 0 || chip.getImageNo() >= spm.getImageData().size()) {
+                continue;
+            }
+            Spm.SPMImageData imageData = spm.getImageData().get(chip.getImageNo());
+            if (imageData == null || imageData.getImageName() == null || imageData.getImageName().isBlank()) {
+                continue;
+            }
+            imageNames.add(imageData.getImageName());
+        }
     }
 
     public void copyImage(Path sourceRoot, Path outputRoot, String imageName, MenuOverrideAudit audit) {

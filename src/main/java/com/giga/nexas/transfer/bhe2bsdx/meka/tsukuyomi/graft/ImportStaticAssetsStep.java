@@ -405,6 +405,9 @@ public class ImportStaticAssetsStep {
         }
 
         for (String imageName : imageNames) {
+            if (Files.exists(outputRoot.resolve(imageName))) {
+                continue;
+            }
             Path source = resolveExternalFileCaseInsensitive(request.getExternalStaticAssetRoot(), imageName);
             if (source == null) {
                 importedAssetSet.getMissingAssets().add("缺少图像资源: " + imageName);
