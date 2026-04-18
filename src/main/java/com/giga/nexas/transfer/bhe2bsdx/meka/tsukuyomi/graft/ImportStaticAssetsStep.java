@@ -2,6 +2,7 @@ package com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft;
 
 import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.dto.bsdx.grp.groupmap.BatVoiceGrp;
+import com.giga.nexas.dto.bsdx.grp.groupmap.MekaGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.ProgramMaterialGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.SeGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp;
@@ -113,6 +114,7 @@ public class ImportStaticAssetsStep {
             Path outputRoot = request.getExeOutputDir().resolve("tsukuyomi_assets_" + LocalDateTime.now().format(TS));
             Files.createDirectories(outputRoot);
             importedAssetSet.setOutputRootDir(outputRoot);
+            copyInheritedJinkiAssets(request, outputRoot, importedAssetSet);
 
             // Step 8-2: 先把所有修改过的 grp 和 ProgramMaterial 真正写进产物。
             writePatchedGrpOutputs(bsdxBaseline, syncedProgramMaterial, outputRoot, importedAssetSet);
@@ -127,12 +129,15 @@ public class ImportStaticAssetsStep {
                     importedAssetSet
             );
 
+            String targetMekFileName = resolveTargetMekFileName(bsdxBaseline, grpAppendPlan, request.getMekFileName());
+
             // Step 8-3: 再把主 mek / waz 产物直接平铺写到根目录。
-            writeReboundMek(request, reboundTsukuyomiMek, outputRoot, importedAssetSet);
+            writeReboundMek(targetMekFileName, reboundTsukuyomiMek, outputRoot, importedAssetSet);
 
             // Step 8-3.5: 补齐后的基线机体 .mek 全部写回（grp 追加后 CMaterial 组数需要同步）。
-            writePatchedBaselineMeks(bsdxBaseline, request.getMekFileName(), outputRoot, importedAssetSet);
+            writePatchedBaselineMeks(bsdxBaseline, targetMekFileName, request.getMekFileName(), outputRoot, importedAssetSet);
             writeReboundWaz(request, reboundTsukuyomiWaz, outputRoot, importedAssetSet);
+            writeInheritedSidecarWazFiles(request, bsdxBaseline, outputRoot, importedAssetSet);
 
             // Step 8-4: 再把私有辅助 WAZ 的重绑产物平铺写到根目录。
             writeRequiredAuxiliaryWazFiles(
@@ -173,6 +178,53 @@ public class ImportStaticAssetsStep {
         writeGrp(outputRoot, "MapGroup.grp", bsdxBaseline.getMapGroupGrp(), importedAssetSet);
         writeGrp(outputRoot, "SeGroup.grp", bsdxBaseline.getSeGroupGrp(), importedAssetSet);
         writeGrp(outputRoot, "ProgramMaterial.grp", syncedProgramMaterial != null ? syncedProgramMaterial : bsdxBaseline.getProgramMaterialGrp(), importedAssetSet);
+    }
+
+    private void copyInheritedJinkiAssets(
+            TsukuyomiGraftRequest request,
+            Path outputRoot,
+            TsukuyomiImportedAssetSet importedAssetSet
+    ) throws IOException {
+        if (request == null || request.getJinkiGeneratedAssetDir() == null) {
+            return;
+        }
+        Path inheritedAssetDir = Path.of("").toAbsolutePath().normalize()
+                .resolve(request.getJinkiGeneratedAssetDir())
+                .normalize();
+        if (!Files.exists(inheritedAssetDir)) {
+            return;
+        }
+
+        try (Stream<Path> stream = Files.walk(inheritedAssetDir)) {
+            for (Path source : stream.filter(Files::isRegularFile).toList()) {
+                String fileName = source.getFileName().toString();
+                if (fileName.endsWith(".pac") || fileName.endsWith(".exe")) {
+                    continue;
+                }
+                Path output = outputRoot.resolve(fileName);
+                Files.copy(source, output, StandardCopyOption.REPLACE_EXISTING);
+                registerInheritedCopiedAsset(importedAssetSet, output);
+            }
+        }
+    }
+
+    private void registerInheritedCopiedAsset(TsukuyomiImportedAssetSet importedAssetSet, Path output) {
+        String lower = output.getFileName().toString().toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".png")) {
+            importedAssetSet.getCopiedImageFiles().add(output);
+        } else if (lower.endsWith(".ogg") || lower.endsWith(".wav")) {
+            importedAssetSet.getCopiedAudioFiles().add(output);
+        } else if (lower.endsWith(".spm")) {
+            importedAssetSet.getCopiedSpmFiles().add(output);
+        } else if (lower.endsWith(".mek")) {
+            importedAssetSet.getGeneratedMekFiles().add(output);
+        } else if (lower.endsWith(".waz")) {
+            importedAssetSet.getGeneratedWazFiles().add(output);
+        } else if (lower.endsWith(".dat")) {
+            importedAssetSet.getGeneratedDatFiles().add(output);
+        } else if (lower.endsWith(".grp")) {
+            importedAssetSet.getGeneratedGrpFiles().add(output);
+        }
     }
 
     private void writeGrp(Path outputRoot, String fileName, Object grp, TsukuyomiImportedAssetSet importedAssetSet) throws IOException {
@@ -246,8 +298,30 @@ public class ImportStaticAssetsStep {
         return row == null ? new ArrayList<>() : new ArrayList<>(row);
     }
 
+    private String resolveTargetMekFileName(
+            TsukuyomiBsdxBaselineBundle bsdxBaseline,
+            TsukuyomiGrpAppendPlan grpAppendPlan,
+            String fallbackFileName
+    ) {
+        if (bsdxBaseline != null
+                && bsdxBaseline.getMekaGroupGrp() != null
+                && bsdxBaseline.getMekaGroupGrp().getMekaList() != null
+                && grpAppendPlan != null
+                && grpAppendPlan.getMekaGroupIndex() >= 0
+                && grpAppendPlan.getMekaGroupIndex() < bsdxBaseline.getMekaGroupGrp().getMekaList().size()) {
+            MekaGroupGrp.MekaGroup targetGroup =
+                    bsdxBaseline.getMekaGroupGrp().getMekaList().get(grpAppendPlan.getMekaGroupIndex());
+            if (targetGroup != null && targetGroup.getMekaName() != null && !targetGroup.getMekaName().isBlank()) {
+                // PAC 内部文件名按 MekaGroup 的 mekaName 精确匹配。源侧可以是 tsukuyomi.mek，
+                // 写入 BSDX 成果物时必须落成 Tsukuyomi.mek，避免运行时按组名找不到 .mek。
+                return targetGroup.getMekaName() + ".mek";
+            }
+        }
+        return fallbackFileName;
+    }
+
     private void writeReboundMek(
-            TsukuyomiGraftRequest request,
+            String targetMekFileName,
             Mek reboundTsukuyomiMek,
             Path outputRoot,
             TsukuyomiImportedAssetSet importedAssetSet
@@ -257,7 +331,7 @@ public class ImportStaticAssetsStep {
             return;
         }
 
-        Path output = outputRoot.resolve(request.getMekFileName());
+        Path output = outputRoot.resolve(targetMekFileName);
         bsdxBinService.generate(output.toString(), reboundTsukuyomiMek, CHARSET);
         importedAssetSet.getGeneratedMekFiles().add(output);
     }
@@ -268,7 +342,8 @@ public class ImportStaticAssetsStep {
      */
     private void writePatchedBaselineMeks(
             TsukuyomiBsdxBaselineBundle bsdxBaseline,
-            String currentMekFileName,
+            String targetMekFileName,
+            String sourceMekFileName,
             Path outputRoot,
             TsukuyomiImportedAssetSet importedAssetSet
     ) throws IOException {
@@ -285,7 +360,8 @@ public class ImportStaticAssetsStep {
             }
 
             // 跳过本次单机体的 mek，避免与 writeReboundMek 重复写入。
-            if (normalize(fileName).equals(normalize(currentMekFileName))) {
+            if (normalize(fileName).equals(normalize(targetMekFileName))
+                    || normalize(fileName).equals(normalize(sourceMekFileName))) {
                 continue;
             }
 
@@ -309,6 +385,40 @@ public class ImportStaticAssetsStep {
         Path output = outputRoot.resolve(request.getWazFileName());
         bsdxBinService.generate(output.toString(), reboundTsukuyomiWaz, CHARSET);
         importedAssetSet.getGeneratedWazFiles().add(output);
+    }
+
+    private void writeInheritedSidecarWazFiles(
+            TsukuyomiGraftRequest request,
+            TsukuyomiBsdxBaselineBundle bsdxBaseline,
+            Path outputRoot,
+            TsukuyomiImportedAssetSet importedAssetSet
+    ) throws IOException {
+        if (bsdxBaseline == null || bsdxBaseline.getWazByFileName() == null) {
+            return;
+        }
+
+        Path originalBsdxWazDir = request == null || request.getBsdxWazDir() == null
+                ? null
+                : Path.of("").toAbsolutePath().normalize().resolve(request.getBsdxWazDir()).normalize();
+        for (Map.Entry<String, Waz> entry : bsdxBaseline.getWazByFileName().entrySet()) {
+            String fileName = entry.getKey();
+            Waz waz = entry.getValue();
+            if (fileName == null || fileName.isBlank() || waz == null) {
+                continue;
+            }
+            if (originalBsdxWazDir != null && Files.exists(originalBsdxWazDir.resolve(fileName))) {
+                continue;
+            }
+            if (normalize(fileName).equals(normalize(request == null ? null : request.getWazFileName()))) {
+                continue;
+            }
+
+            // JINKI 层追加的 AKAO.waz 不在原始 BSDX WAZ 目录中，但会被 AKAO.mek 引用。
+            // BHE 最终包必须继承这些 sidecar WAZ，否则菜单或资源预读会拿到空事件对象。
+            Path output = outputRoot.resolve(fileName);
+            bsdxBinService.generate(output.toString(), waz, CHARSET);
+            importedAssetSet.getGeneratedWazFiles().add(output);
+        }
     }
 
     private void writeRequiredAuxiliaryWazFiles(

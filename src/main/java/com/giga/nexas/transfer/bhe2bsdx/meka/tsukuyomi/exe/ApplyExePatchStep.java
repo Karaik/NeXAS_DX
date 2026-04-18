@@ -67,7 +67,9 @@ public class ApplyExePatchStep {
             throw new IllegalStateException("目标 exe 不存在: " + (plan == null ? null : plan.getSourceExePath()));
         }
 
-        ExePatchProfile patchProfile = profile == null ? ExePatchProfile.defaultTsukuyomiCompatibilityProfile() : profile;
+        ExePatchProfile patchProfile = profile == null
+                ? ExePatchProfile.forCapacities(plan.getRequiredMekaCapacity(), plan.getRequiredWeaponEquipRows())
+                : profile;
         try {
             byte[] exeBytes = Files.readAllBytes(plan.getSourceExePath());
             for (ExePatchSite site : patchProfile.getSites()) {

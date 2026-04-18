@@ -1,8 +1,8 @@
 package com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.exe;
 
-import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiExePatchPlan;
+import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGrpAppendPlan;
 
 import java.nio.file.Path;
@@ -10,9 +10,8 @@ import java.util.Map;
 
 public class BuildExePatchPlanStep {
 
-    // TODO 客制化入口：这两个值是 EXE 菜单容量审计边界，不是 DAT 行数的通用真理。
-    // 如果以后手动扩展更多可见 SelectMekaMenu 行，先继续逆向 switch/object-id/绘制表，
-    // 再同步调整这里和 ExePatchProfile；不要只改 DAT 行数，否则菜单可能能打包但运行时读不到。
+    // SelectMekaMenu 的可见行边界来自 EXE 逆向审计，不等同于 DAT 行数。
+    // 本轮复用第 26 个可见槽位，不追加可见菜单行；如果要新增可见槽位，必须先审计 switch/object-id/绘制分支。
     private static final int BASELINE_VISIBLE_SELECT_MEKA_MENU_ROWS = 70;
     private static final int MAX_AUDITED_SELECT_MEKA_MENU_ROWS = 76;
 
@@ -26,7 +25,8 @@ public class BuildExePatchPlanStep {
         plan.setSourceExePath(sourceExe);
         populateRequiredCapacities(plan, bsdxBaseline, grpAppendPlan);
         populateRequiredMenuCapacities(plan, bsdxBaseline, result);
-        plan.getNotes().add("step10: patch exe meka capacity 103 -> 104 (10 active sites, 1 excluded site).");
+        plan.getNotes().add("EXE meka capacity target = " + plan.getRequiredMekaCapacity()
+                + "，容量来自追加后的 MekaGroup.grp 实际条目数。");
         addMekaCapacityPatchRationaleNotes(plan);
         return plan;
     }
@@ -62,6 +62,15 @@ public class BuildExePatchPlanStep {
                         ? null
                         : maxValue(grpAppendPlan.getSourceSeGroupIndexToTargetIndex())
         ));
+        int baselineWeaponEquipRows = bsdxBaseline == null
+                || bsdxBaseline.getWeaponEquipDat() == null
+                || bsdxBaseline.getWeaponEquipDat().getData() == null
+                ? -1
+                : bsdxBaseline.getWeaponEquipDat().getData().size();
+        if (baselineWeaponEquipRows >= 0) {
+            // BHE 只追加一行默认武装预设；这个容量按 WeaponEquip.dat 行数走，不按 MekaGroup 条目数走。
+            plan.setRequiredWeaponEquipRows(baselineWeaponEquipRows + 1);
+        }
     }
 
     private void populateRequiredMenuCapacities(
@@ -81,8 +90,8 @@ public class BuildExePatchPlanStep {
 
         if (plan.getRequiredSelectMekaMenuRows() > MAX_AUDITED_SELECT_MEKA_MENU_ROWS) {
             throw new IllegalStateException(
-                    "当前只审到 SelectMekaMenu 可见 " + MAX_AUDITED_SELECT_MEKA_MENU_ROWS
-                            + " 项，实际需求 " + plan.getRequiredSelectMekaMenuRows()
+                    "当前只审计到 SelectMekaMenu 可见 " + MAX_AUDITED_SELECT_MEKA_MENU_ROWS
+                            + " 行，实际需求 " + plan.getRequiredSelectMekaMenuRows()
                             + "，需要先继续做 switch/object-id 审计"
             );
         }
@@ -105,20 +114,21 @@ public class BuildExePatchPlanStep {
     }
 
     private void addMekaCapacityPatchRationaleNotes(TsukuyomiExePatchPlan plan) {
-        plan.getNotes().add("site 1 @0x1E3F40: init allocator, otherwise meka slot 103 is never preallocated.");
-        plan.getNotes().add("site 2 @0x1E3DA2: scene cleanup loop bound, otherwise slot 103 reference counts are never cleared.");
-        plan.getNotes().add("site 3 @0x276427: save-read loop #1, otherwise slot 103 base/type state is never loaded.");
-        plan.getNotes().add("site 4 @0x2762EB: save-read loop #2, otherwise slot 103 detailed state is never loaded.");
-        plan.getNotes().add("site 5 @0x275336: save-write allocator, otherwise slot 103 is missing from save output buffers.");
-        plan.getNotes().add("site 6 @0x063A85: resource-size loop bound, otherwise slot 103 is skipped by aggregate resource accounting.");
-        plan.getNotes().add("site 7 @0x2749ED: save-read loop #3, otherwise a third parallel save-read pass still stops at 102.");
-        plan.getNotes().add("site 8 @0x056CE4: CMekaGroup runtime table prealloc size, otherwise dword_875F54 is allocated for only 103 meka records.");
-        plan.getNotes().add("site 8b @0x056F45: CMekaGroup runtime table init loop bound, otherwise only 103 * 4336 bytes are initialized and slot 103 never becomes a valid runtime record.");
-        plan.getNotes().add("site 9 @0x056F9B: init prealloc alt path, otherwise an alternate init path still allocates only 103 entries.");
-        plan.getNotes().add("site 10 @0x275158: save-write alt path, otherwise an alternate write path still stops at 103.");
-        plan.getNotes().add("site 11 @0x30390A: standalone prealloc path, otherwise another meka-side allocator still uses 103.");
-        plan.getNotes().add("site 12 @0x05498B: WeaponEquip fill hard cap, otherwise sub_454E60 still stops at 56 * 103 and slot 103 keeps garbage equip-menu label bytes.");
-        plan.getNotes().add("site 13 @0x20C1FD: sub_60CDF0 gate bypass, otherwise AT/FC battle-voice requests for appended mekaId 103 are rejected by sub_60CC20 before they enter the request queue.");
-        plan.getNotes().add("site 14 @0x20C2CD: sub_60CEC0 gate bypass, otherwise the sibling table-driven combat voice request path is still rejected by the same sub_60CC20 gate.");
+        plan.getNotes().add("site 1 @0x1E3F40: 初始化分配器容量，避免新增机体槽没有 runtime 结构。");
+        plan.getNotes().add("site 2 @0x1E3DA2: scene cleanup 循环边界，避免新增机体引用计数不被清理。");
+        plan.getNotes().add("site 3 @0x276427: 存档读取第一段循环，避免新增机体基础状态不被读取。");
+        plan.getNotes().add("site 4 @0x2762EB: 存档读取第二段循环，避免新增机体详细状态不被读取。");
+        plan.getNotes().add("site 5 @0x275336: 存档写入分配器容量，避免新增机体没有写出空间。");
+        plan.getNotes().add("site 6 @0x063A85: 资源尺寸统计循环边界，避免新增机体被资源统计跳过。");
+        plan.getNotes().add("site 7 @0x2749ED: 存档读取第三段循环，避免并行读取路径仍停在旧上界。");
+        plan.getNotes().add("site 8 @0x056CE4: CMekaGroup runtime 表预分配容量，避免新增机体 runtime 记录为空。");
+        plan.getNotes().add("site 8b @0x056F45: CMekaGroup runtime 表初始化字节边界，避免新增槽位未初始化。");
+        plan.getNotes().add("site 9 @0x056F9B: 初始化备用路径预分配容量。");
+        plan.getNotes().add("site 10 @0x275158: 存档写入备用路径容量。");
+        plan.getNotes().add("site 11 @0x30390A: 独立预分配路径容量。");
+        plan.getNotes().add("site 12 @0x05498B: WeaponEquip 填充硬上限，目标行数 = " + plan.getRequiredWeaponEquipRows()
+                + "，该值独立于 MekaGroup 容量。");
+        plan.getNotes().add("site 13 @0x20C1FD: sub_60CDF0 战斗语音 gate 绕过，允许追加机体的 AT/FC 语音请求进入队列。");
+        plan.getNotes().add("site 14 @0x20C2CD: sub_60CEC0 表驱动战斗语音 gate 绕过，允许追加机体的表驱动语音请求进入队列。");
     }
 }

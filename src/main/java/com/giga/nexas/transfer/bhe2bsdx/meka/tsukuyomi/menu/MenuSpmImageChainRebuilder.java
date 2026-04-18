@@ -74,7 +74,7 @@ public class MenuSpmImageChainRebuilder {
             Spm.SPMPageData templatePage = selectStructureTemplatePage(target, targetPages, pageIndex);
             Spm.SPMChipData templateChip = firstChip(templatePage);
             ResolvedImageSlot imageSlot = resolveImageSlotForPage(target, currentPage);
-            Spm.SPMRect rect = calculateRect(target, animIndex, i, size, policy);
+            Spm.SPMRect rect = calculateRect(target, animIndex, i, size, policy, templatePage);
 
             // 这里是“换菜单 PNG 后自动适配尺寸”的核心落点。
             // 对 MekaPilot.spm / SelectMekaMenuMeka.spm 来说，只要 MenuOverrideSpec 指到新 PNG，
@@ -172,13 +172,47 @@ public class MenuSpmImageChainRebuilder {
             ImageSize size,
             MenuLayoutPolicy policy
     ) {
+        return calculateRect(target, animIndex, patIndex, size, policy, null);
+    }
+
+    public Spm.SPMRect calculateRect(
+            Spm target,
+            int animIndex,
+            int patIndex,
+            ImageSize size,
+            MenuLayoutPolicy policy,
+            Spm.SPMPageData templatePage
+    ) {
         if (policy == MenuLayoutPolicy.ORIGIN_CENTER) {
             return calculateOriginCenteredRect(size);
+        }
+        if (policy == MenuLayoutPolicy.FIT_DONOR_BOX_BOTTOM_CENTER) {
+            return calculateFitDonorBoxBottomCenterRect(size, templatePage);
         }
         if (policy == MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR) {
             return calculateMekaPilotMedianRect(target, animIndex, patIndex, size);
         }
         throw new IllegalStateException("未知菜单布局策略: " + policy);
+    }
+
+    public Spm.SPMRect calculateFitDonorBoxBottomCenterRect(ImageSize size, Spm.SPMPageData templatePage) {
+        if (templatePage == null || templatePage.getPageRect() == null) {
+            return calculateOriginCenteredRect(size);
+        }
+        Spm.SPMRect donorRect = templatePage.getPageRect();
+        int donorWidth = Math.max(1, donorRect.getRight() - donorRect.getLeft());
+        int donorHeight = Math.max(1, donorRect.getBottom() - donorRect.getTop());
+        double scale = Math.min(1.0, Math.min(donorWidth / (double) size.width(), donorHeight / (double) size.height()));
+
+        int drawWidth = Math.max(1, (int) Math.round(size.width() * scale));
+        int drawHeight = Math.max(1, (int) Math.round(size.height() * scale));
+        double donorCenterX = (donorRect.getLeft() + donorRect.getRight()) / 2.0;
+        int left = (int) Math.round(donorCenterX - drawWidth / 2.0);
+        int bottom = donorRect.getBottom();
+
+        // 使用 donor 原页的中心 X / 底边作为约束框，不写角色专用坐标。
+        // PNG 过高时只缩小到 donor 可视框内，避免选人画面只露出脚。
+        return newRect(left, bottom - drawHeight, left + drawWidth, bottom);
     }
 
     public Spm.SPMRect calculateOriginCenteredRect(ImageSize size) {

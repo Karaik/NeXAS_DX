@@ -19,6 +19,7 @@ public class TsukuyomiExePatchPlan {
     private int requiredSpriteCapacity = -1;
     private int requiredBatVoiceCapacity = -1;
     private int requiredSeCapacity = -1;
+    private int requiredWeaponEquipRows = -1;
     private int requiredSelectMekaMenuRows = -1;
 
     private Path sourceExePath;
