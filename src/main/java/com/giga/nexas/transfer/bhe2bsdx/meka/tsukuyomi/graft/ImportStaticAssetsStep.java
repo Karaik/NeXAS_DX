@@ -41,17 +41,17 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- * 负责把 step6/7 产物和当前机体链上的静态资源落盘到输出根目录。
+ * 负责把 step6/7 产物和单机体资源链上的静态资源落盘到输出根目录。
  *
- * <p>当前统一平铺写入：
+ * <p>统一平铺写入：
  * `src/main/resources/out/tsukuyomi_assets_<timestamp>`</p>
  *
  * <p>这里是最终打包对象的“沉淀层”：所有被修改过或新增的 grp/dat/mek/waz/spm，
  * 以及 WAZ/SPM 实际引用到的 png/audio，都必须在这里落到同一个 outputRoot。
- * 后续 pack step 不再理解业务语义，只打包这个目录。</p>
+ * pack step 不再理解业务语义，只打包这个目录。</p>
  *
  * <p>本类仍保持旧 pipeline 的平铺输出规则，以最终目录 byte parity 作为行为边界。
- * 后续如果要继续拆分图片/音频收集，也必须先保持同一份输出 manifest。</p>
+ * 图片/音频收集拆分也必须保持同一份输出 manifest。</p>
  */
 public class ImportStaticAssetsStep {
 
@@ -146,13 +146,13 @@ public class ImportStaticAssetsStep {
                     importedAssetSet
             );
 
-            // Step 8-5: 把链上需要的 spm 平铺复制到根目录。
-            copyRequiredSpmFiles(request, importPlan, outputRoot, importedAssetSet);
+            // Step 8-5: 把链上需要的 selected SPM 以 BSDX 格式生成到根目录。
+            writeRequiredSpmFiles(tsukuyomiPackage, importPlan, outputRoot, importedAssetSet);
 
             // Step 8-6: 再按这些 spm 的 imageData，补齐真正用到的图像文件。
             copyRequiredImageFiles(request, tsukuyomiPackage, bsdxBaseline, importPlan, grpAppendPlan, outputRoot, importedAssetSet);
 
-            // Step 8-7: 最后只补当前机体链真实关联到的音频，不再整组打包。
+            // Step 8-7: 最后只补单机体资源链真实关联到的音频，不再整组打包。
             copyRequiredAudioAssets(request, tsukuyomiPackage, importPlan, reboundTsukuyomiMek, reboundTsukuyomiWaz, outputRoot, importedAssetSet);
             return importedAssetSet;
         } catch (IOException e) {
@@ -264,7 +264,7 @@ public class ImportStaticAssetsStep {
 
     /**
      * 遍历基线中所有 .mek，将经过 padMaterialBlock 补齐后的产物全部写回输出目录。
-     * 跳过当前机体（已由 writeReboundMek 单独写入），避免覆盖。
+     * 跳过本次单机体（已由 writeReboundMek 单独写入），避免覆盖。
      */
     private void writePatchedBaselineMeks(
             TsukuyomiBsdxBaselineBundle bsdxBaseline,
@@ -284,7 +284,7 @@ public class ImportStaticAssetsStep {
                 continue;
             }
 
-            // 跳过当前机体的 mek，避免与 writeReboundMek 重复写入
+            // 跳过本次单机体的 mek，避免与 writeReboundMek 重复写入。
             if (normalize(fileName).equals(normalize(currentMekFileName))) {
                 continue;
             }
@@ -362,21 +362,24 @@ public class ImportStaticAssetsStep {
         return null;
     }
 
-    private void copyRequiredSpmFiles(
-            TsukuyomiGraftRequest request,
+    private void writeRequiredSpmFiles(
+            TsukuyomiPackageBundle tsukuyomiPackage,
             TsukuyomiImportPlan importPlan,
             Path outputRoot,
             TsukuyomiImportedAssetSet importedAssetSet
     ) throws IOException {
         for (String fileName : importPlan.getRequiredSpmFiles()) {
-            Path source = resolveFileCaseInsensitive(request.resolveBheSpmDir(), fileName);
-            if (source == null) {
-                importedAssetSet.getMissingAssets().add("缺少 spm: " + fileName);
+            Spm spm = findSpm(tsukuyomiPackage.getSpmByFileName(), fileName);
+            if (spm == null) {
+                importedAssetSet.getMissingAssets().add("缺少转换后的 spm 产物: " + fileName);
                 continue;
             }
 
-            Path output = outputRoot.resolve(source.getFileName().toString());
-            Files.copy(source, output, StandardCopyOption.REPLACE_EXISTING);
+            // 这里必须写 converted selected bundle 里的 BSDX SPM DTO，不能复制 BHE 原始二进制。
+            // SPM 阶段已经处理 hitbox / page / chip 的格式转换，绕回源目录会把这些转换结果全部丢掉。
+            spm.setExtensionName("spm");
+            Path output = outputRoot.resolve(fileName);
+            bsdxBinService.generate(output.toString(), spm, CHARSET);
             importedAssetSet.getCopiedSpmFiles().add(output);
         }
     }
