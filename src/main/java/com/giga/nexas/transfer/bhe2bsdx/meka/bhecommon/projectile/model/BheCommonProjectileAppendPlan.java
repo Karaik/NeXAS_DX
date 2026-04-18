@@ -3,7 +3,9 @@ package com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * BHE 公共弹幕资源簇追加计划。
@@ -26,10 +28,39 @@ import java.util.List;
 @Data
 public class BheCommonProjectileAppendPlan {
 
+    private int baseWazaGroupSize = -1;
+    private int baseSpriteGroupSize = -1;
+    private int baseSeGroupSize = -1;
+    private int commonProjectileSeGroupIndex = -1;
+
     private List<String> commonProjectileWazFiles = new ArrayList<>();
     private List<String> commonProjectileSpmFiles = new ArrayList<>();
     private List<String> globalSeReferences = new ArrayList<>();
     private List<String> globalVoiceReferences = new ArrayList<>();
     private List<String> termReferences = new ArrayList<>();
     private List<String> notes = new ArrayList<>();
+
+    /**
+     * BHE 源公共 WazaGroup index -> preparedBaseline 中新增 bhe_* WazaGroup index。
+     */
+    private Map<Integer, Integer> sourceWazIndexToTargetIndex = new LinkedHashMap<>();
+    private Map<Integer, String> sourceWazIndexToTargetFileName = new LinkedHashMap<>();
+
+    /**
+     * BHE 源 SpriteGroup index -> preparedBaseline 中新增 bhe_* SpriteGroup index。
+     *
+     * <p>公共 SPM 源 index 不是连续区间，`173` 会映射到紧凑追加段的最后一项。</p>
+     */
+    private Map<Integer, Integer> sourceSpriteIndexToTargetIndex = new LinkedHashMap<>();
+    private Map<Integer, String> sourceSpriteIndexToTargetFileName = new LinkedHashMap<>();
+
+    /**
+     * BHE 源 `(SeGroup, SeItem)` -> `bhe_common_projectile_se` 聚合组内 item index。
+     */
+    private Map<String, Integer> sourceSePairToTargetItemIndex = new LinkedHashMap<>();
+    private Map<String, String> sourceSePairToTargetFileName = new LinkedHashMap<>();
+
+    public static String sePairKey(int sourceSeGroupIndex, int sourceSeItemIndex) {
+        return sourceSeGroupIndex + ":" + sourceSeItemIndex;
+    }
 }

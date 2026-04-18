@@ -43,7 +43,7 @@ public class BheCommonProjectilePrepareStep {
         BheCommonProjectileAppendPlan appendPlan = new BheCommonProjectileAppendPlan();
         convertedBundle.setCommonProjectileAppendPlan(appendPlan);
 
-        // TODO 20260417：在 redirect 内实现 append、内部重定向、交叉重定向和审计。
+        // TODO 20260417：在 redirect 内继续实现公共 WAZ 交叉重写、Voice 特例审计和 term 全量语义转换。
         redirectStep.redirect(request, rawSourceBundle, inheritedBaseline, convertedBundle, appendPlan);
 
         // TODO 20260417：redirect 接入公共资源前，preparedBaseline 等于继承基线。

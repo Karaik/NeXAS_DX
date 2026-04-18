@@ -63,12 +63,12 @@
 - [x] 公共资源准备层的唯一外露入口是 `meka/bhecommon/projectile/BheCommonProjectilePrepareStep`。
 - [x] `prepare()` 内部分两步：
   - `convert()`：已实现，负责公共 WAZ/SPM 的 BHE DTO -> BSDX DTO 格式转换。
-  - `redirect()`：`TODO 20260417` 空实现，负责公共资源 append、自重定向、交叉重定向和审计。
+  - `redirect()`：负责公共资源接入、自重定向、交叉重定向和审计。
 - [x] `redirect()` 内部分两步：
-  - `selfRedirect()`：`TODO 20260417` 空实现，处理资源自身 append 后的内部索引平移。
-  - `crossRedirect()`：`TODO 20260417` 空实现，处理公共 WAZ 指向 WAZ/SPM/SE/Voice 的跨资源引用重写；term 通过独立 TODO 子问题接入。
+  - `selfRedirect()`：已实现公共 WAZ/SPM 目标 entry、公共 SE 聚合组、容量同步和 source -> target 映射。
+  - `crossRedirect()`：`TODO 20260417` 空实现，处理公共 WAZ 指向 WAZ/SPM/SE 的跨资源引用重写；Voice 只记录外部依赖，term 通过独立 TODO 子问题接入。
 - [x] `TsukuyomiConvertOverviewStep` 只调用 `prepare()`，不直接调用公共资源内部的 convert / redirect / self / cross 细节。
-- [x] 本轮只实现 `convert()`；`redirect()`、`selfRedirect()`、`crossRedirect()` 保留 `TODO 20260417`，由 QA 对齐后逐项实现。
+- [x] selfRedirect 目标 entry 接入已实现；crossRedirect 和 term 全量语义转换保留 `TODO 20260417`。
 
 ## 单机体 graft 护栏
 
@@ -113,6 +113,23 @@
   - 公共 SPM：`source public sprite index -> preparedBaseline bhe_* SpriteGroup index`。
   - 公共 SE：`source se pair -> preparedBaseline common SeGroup/item`。
   - 单机体 graft 不重新 append 公共资源。
+
+### 20260418 selfRedirect 实现审计
+
+- [x] 已实现 8 个公共 WAZ 目标 entry 接入。
+  - 审计输出：`src/main/resources/out/bhe2bsdx/common-projectile-self-redirect/audit.md`
+  - 目标区间：`baseWazaGroupSize=108`，目标 index `108..115`。
+- [x] 已实现 12 个公共 SPM 目标 entry 接入。
+  - 目标区间：`baseSpriteGroupSize=138`，目标 index `138..149`。
+  - `sourceSpriteIndex=173` 映射到 `targetSpriteIndex=149`。
+- [x] 已实现 1 个 `bhe_common_projectile_se` 聚合 SeGroup。
+  - 目标 group：`baseSeGroupSize=38`。
+  - 聚合 item 数量：`668`。
+  - SE 输入来自 BHE 源公共 WAZ 的实际 `CEventSe` 引用，不从转换后 WAZ 反推。
+- [x] 已实现公共资源接入后的容量同步。
+  - ProgramMaterial array1/array2 追平 SpriteGroup/SeGroup 顶层长度。
+  - MapGroup array1/array2 追平 SpriteGroup/SeGroup 顶层长度。
+  - baseline MEK material 的 sprite/se/voice 数组追平目标顶层长度。
 
 ## 公共 SPM 候选清单
 
