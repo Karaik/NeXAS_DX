@@ -131,6 +131,24 @@
   - MapGroup array1/array2 追平 SpriteGroup/SeGroup 顶层长度。
   - baseline MEK material 的 sprite/se/voice 数组追平目标顶层长度。
 
+### 20260418 crossRedirect 实现审计
+
+- [x] 已实现公共 WAZ 内部 `CEventWazaSelect` 目标侧重写。
+  - 审计数量：`4583`。
+  - 目标 WazaGroup：`108..115`。
+- [x] 已实现公共 WAZ 内部 `CEventSprite` 目标侧重写。
+  - 审计数量：`6169` 个有效非负 SPM 引用。
+  - 目标 SpriteGroup：`138..149`。
+- [x] 已实现公共 WAZ 内部 `CEventSe` 目标侧重写。
+  - 审计数量：`2993` 个 SE byte entry。
+  - 目标 SeGroup：`38`。
+  - 转换后公共 WAZ 实际使用 `667` 个聚合 SE item。
+- [x] `selfRedirect` 保留 `668` 个源侧 SE pair，其中 `47:55 -> bhe_Beep25` 不再被转换后公共 WAZ 引用。
+  - 原因：该 pair 只出现在 BHE WAZ slot `69` 的嵌套 CEventSe 中；slot `69` 在 BHE -> BSDX WAZ slot map 中声明为丢弃。
+  - 处理：保留在公共 SE 聚合组中，保证源侧公共资源闭包完整；crossRedirect 审计记录该项未被转换后 WAZ 使用。
+- [x] `CEventVoice` 只记录 `SOU / MISAKI` 外部依赖，不重建 BatVoice。
+  - 审计数量：`13` 个 voice byte entry，`6` 个唯一 voice 依赖。
+
 ## 公共 SPM 候选清单
 
 - [x] 公共 SPM 候选清单完成审计。
