@@ -57,7 +57,7 @@ class BheToBsdxWazObjectConverter {
         Integer correctBsdxTypeId = target.getTypeId();
         copyAndTrans(source, target);
 
-        // InfoCollection 本阶段只做结构搬运，term 语义重编译留给后续公共能力。
+        // InfoCollection 在格式转换阶段只做结构搬运；term 语义重编译属于公共资源重定向职责。
         InfoCollectionMapper.copyBheToBsdx(source, target);
 
         target.setSlotNum(targetSlot);
@@ -127,7 +127,7 @@ class BheToBsdxWazObjectConverter {
             BeanUtil.copyProperties(source, event);
         } else if (target instanceof CEventSe event) {
             // SE group/item 目标映射后置，本阶段只做结构转换。
-            // byteDataList 中的 group/index 原样保留，后续 rebind 阶段按目标 SeGroup 重写。
+            // byteDataList 中的 group/index 原样保留，由 rebind/redirect 阶段按目标 SeGroup 重写。
             BeanUtil.copyProperties(source, event);
         } else if (target instanceof CEventTouch event) {
             BeanUtil.copyProperties(source, event);
@@ -166,7 +166,7 @@ class BheToBsdxWazObjectConverter {
             BeanUtil.copyProperties(source, event);
         } else if (target instanceof CEventSprite event) {
             // spmFileSequence 目标 SpriteGroup 映射后置，本阶段保持源侧索引。
-            // 后续 rebind 阶段会根据 SpriteGroup source->target 映射重写该字段。
+            // rebind/redirect 阶段会根据 SpriteGroup source->target 映射重写该字段。
             BeanUtil.copyProperties(source, event);
         } else if (target instanceof CEventHeight event) {
             BeanUtil.copyProperties(source, event);

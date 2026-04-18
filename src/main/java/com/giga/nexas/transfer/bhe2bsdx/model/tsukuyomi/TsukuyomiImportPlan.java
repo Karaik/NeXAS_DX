@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 记录 Tsukuyomi graft 第一阶段所需导入闭包和后续挂接目标的计划对象。
+ * 记录 Tsukuyomi graft 第一阶段所需导入闭包和挂接目标的计划对象。
  */
 @Data
 public class TsukuyomiImportPlan {

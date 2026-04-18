@@ -85,7 +85,7 @@ public class BheToBsdxMekConverter {
 
         target.setVersion(source.getVersion());
         target.builtinEmotionCount = source.builtinEmotionCount;
-        // VoiceInfo 本阶段只做结构转换；version 和 Entry.groupId 的目标 BatVoice 重绑留给后续阶段。
+        // VoiceInfo 本阶段只做结构转换；version 和 Entry.groupId 的目标 BatVoice 重绑留给 graft 阶段。
         target.setEmotions(convertVoiceEmotions(source.getEmotions()));
         target.setVoiceSlots(convertVoiceSlots(source.getVoiceSlots()));
         target.setTable(convertVoiceTable(source.getTable()));

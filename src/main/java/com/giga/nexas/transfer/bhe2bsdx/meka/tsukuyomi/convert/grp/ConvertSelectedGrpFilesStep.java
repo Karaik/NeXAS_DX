@@ -28,7 +28,7 @@ public class ConvertSelectedGrpFilesStep {
         selectedBundle.setSpriteGroupGrp(converter.convertSpriteGroup(rawSourceBundle.getSpriteGroupGrp()));
         selectedBundle.setWazaGroupGrp(converter.convertWazaGroup(rawSourceBundle.getWazaGroupGrp()));
 
-        // 当前公共资源转换尚未接入，合并包先继承选定资源的 group 视图。
+        // groupmap 是公共资源和单机体资源共用的源侧索引视图；公共资源入口只抽取其中的公共子集。
         TsukuyomiPackageBundle mergedBundle = convertedBundle.getMergedPackageBundle();
         mergedBundle.setBatVoiceGrp(selectedBundle.getBatVoiceGrp());
         mergedBundle.setMekaGroupGrp(selectedBundle.getMekaGroupGrp());

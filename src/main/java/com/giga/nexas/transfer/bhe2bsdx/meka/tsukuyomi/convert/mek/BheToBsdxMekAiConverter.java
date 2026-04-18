@@ -13,7 +13,7 @@ import java.util.List;
  *
  * <p>这里以 src/test 中旧 trans 逻辑和同名 MEK 真实数据为准：
  * BHE 的 CCpuEvent 尾部条件字段比 BSDX 多出若干项，不能按同名字段直接复制，
- * 必须走 BSDX DTO 上已经沉淀的 transBhe 方法完成错位映射。</p>
+ * 必须走 BSDX DTO 上的 transBhe 方法完成错位映射。</p>
  */
 class BheToBsdxMekAiConverter {
 

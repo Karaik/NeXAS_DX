@@ -13,12 +13,12 @@ import java.nio.file.Paths;
 public class TsukuyomiGraftRequest {
 
     /**
-     * JINKI V2 当前层输出的已补丁改写 exe，相对项目根目录记录。
+     * JINKI V2 输出的已补丁改写 exe，相对项目根目录记录。
      */
     private Path jinkiGeneratedExePath;
 
     /**
-     * JINKI V2 当前层输出的平铺 asset 目录，相对项目根目录记录。
+     * JINKI V2 输出的平铺 asset 目录，相对项目根目录记录。
      */
     private Path jinkiGeneratedAssetDir;
 

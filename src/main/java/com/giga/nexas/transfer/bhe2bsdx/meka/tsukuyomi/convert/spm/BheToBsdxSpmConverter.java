@@ -9,8 +9,8 @@ import java.util.List;
 /**
  * BHE SPM -> BSDX SPM DTO 形状转换器。
  *
- * <p>当前 BHE 实际数据全部为 SPM VER-2.00，本类按 2.00 源数据转换。
- * BHE 2.02 的 unk3/unk5 需要先补齐 BHE parser/DTO 承载后再接入，不在本阶段猜测。</p>
+ * <p>BHE 实际数据全部为 SPM VER-2.00，本类按 2.00 源数据转换。
+ * BHE 2.02 的 unk3/unk5 需要 BHE parser/DTO 承载；本阶段不猜测。</p>
  */
 public class BheToBsdxSpmConverter {
 
@@ -120,7 +120,7 @@ public class BheToBsdxSpmConverter {
                 targetList.add(normalizeHitArea(null));
                 continue;
             }
-            // 当前实际使用的 BHE shapeType 只有 1 和 10；其他类型沿用 DTO 既有 fallback，避免无样本猜测。
+            // BHE 实际使用的 shapeType 只有 1 和 10；其他类型沿用 DTO 既有 fallback，避免无样本猜测。
             // 关键映射由 BHE hitbox DTO 的 transHitbox 完成：shapeType=1 -> BSDX unk0=2；
             // shapeType=10 -> BSDX unk0=7，并把 Z 范围写入 unk1/unk2。
             targetList.add(normalizeHitArea(source.transHitbox()));

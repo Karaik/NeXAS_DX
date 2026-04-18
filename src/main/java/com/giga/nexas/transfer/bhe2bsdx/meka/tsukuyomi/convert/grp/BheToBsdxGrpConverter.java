@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * BHE groupmap -> BSDX groupmap 的结构转换器。
  *
- * <p>当前第 0 步只需要把 Tsukuyomi 主线用到的五个 groupmap
+ * <p>第 0 步读取 Tsukuyomi 主线用到的五个 groupmap，
  * 转成 BSDX 侧 DTO 形状：BatVoice / MekaGroup / SeGroup / SpriteGroup / WazaGroup。</p>
  *
  * <p>逐类对照 BHE / BSDX DTO 和实际 JSON 后，五个主线 groupmap 中只有

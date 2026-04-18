@@ -9,7 +9,7 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiRawSourceBundle
  * 转换选定的 BHE mek 文件。
  *
  * <p>本步骤只做源侧格式转换：BHE Mek DTO -> BSDX Mek DTO 形状。
- * 目标侧索引重绑、WAZ skill 重排补偿、WeaponEquip 默认预设都由后续阶段处理。</p>
+ * 目标侧索引重绑、WAZ skill 重排补偿、WeaponEquip 默认预设都由 graft 阶段处理。</p>
  */
 public class ConvertSelectedMekFilesStep {
 
@@ -33,7 +33,7 @@ public class ConvertSelectedMekFilesStep {
         TsukuyomiPackageBundle selectedBundle = convertedBundle.getSelectedResourceBundle();
         selectedBundle.setTsukuyomiMek(convertedMek);
 
-        // 当前 common 资源尚未改写 MEK，本阶段 merged 包直接继承选定 MEK 转换结果。
+        // 公共资源层不改写 MEK；merged 包直接继承选定 MEK 转换结果。
         TsukuyomiPackageBundle mergedBundle = convertedBundle.getMergedPackageBundle();
         mergedBundle.setTsukuyomiMek(convertedMek);
     }

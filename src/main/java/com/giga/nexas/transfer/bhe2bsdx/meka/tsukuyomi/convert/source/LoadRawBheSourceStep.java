@@ -12,7 +12,7 @@ import com.giga.nexas.dto.bhe.waz.Waz;
 import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.service.BheBinService;
 import com.giga.nexas.service.BsdxBinService;
-import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.convert.common.TsukuyomiSpecifiedCommonResources;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.BheCommonProjectileResources;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiRawSourceBundle;
 
@@ -62,7 +62,7 @@ public class LoadRawBheSourceStep {
             ensureDirectory(privateWazDir, "BHE Tsukuyomi waz 目录");
             ensureDirectory(privateSpmDir, "BHE Tsukuyomi spm 目录");
 
-            // 当前只读取 Tsukuyomi 主线已经声明依赖的五个 groupmap。
+            // 读取 Tsukuyomi 主线声明依赖的五个 groupmap。
             bundle.setBatVoiceGrp(parseRequiredBhe(grpDir.resolve("batvoice.grp"), BatVoiceGrp.class));
             bundle.setMekaGroupGrp(parseRequiredBhe(grpDir.resolve("mekagroup.grp"), MekaGroupGrp.class));
             bundle.setSeGroupGrp(parseRequiredBhe(grpDir.resolve("segroup.grp"), SeGroupGrp.class));
@@ -75,13 +75,24 @@ public class LoadRawBheSourceStep {
             bundle.setMekaPilotDat(parseOptionalBsdx(datDir.resolve("mekapilot.dat"), Dat.class));
 
             bundle.setTsukuyomiMek(parseRequiredBhe(mekDir.resolve(request.getMekFileName()), Mek.class));
+            // 私有目录只进入单机体资源 map；公共弹幕资源从父目录单独读取，避免混入 selected。
             bundle.setSpmByFileName(parseAllBhe(privateSpmDir, "*.spm", Spm.class));
             bundle.setWazByFileName(parseAllBhe(privateWazDir, "*.waz", Waz.class));
-            loadCommonProjectileWaz(privateWazDir, bundle.getWazByFileName());
+            loadCommonProjectileResources(privateWazDir, privateSpmDir, bundle);
             return bundle;
         } catch (IOException e) {
             throw new IllegalStateException("读取 BHE 原始资源失败", e);
         }
+    }
+
+    private void loadCommonProjectileResources(
+            Path privateWazDir,
+            Path privateSpmDir,
+            TsukuyomiRawSourceBundle bundle
+    ) throws IOException {
+        // BHE 资源目录约定：`waz/tsukuyomi` 与公共 WAZ 同在 `waz` 下，SPM 同理。
+        loadCommonProjectileWaz(privateWazDir, bundle.getCommonProjectileWazByFileName());
+        loadCommonProjectileSpm(privateSpmDir, bundle.getCommonProjectileSpmByFileName());
     }
 
     private void loadCommonProjectileWaz(Path privateWazDir, Map<String, Waz> wazByFileName) throws IOException {
@@ -89,10 +100,24 @@ public class LoadRawBheSourceStep {
         if (commonWazDir == null || !Files.isDirectory(commonWazDir)) {
             throw new IllegalStateException("BHE 公共 WAZ 目录不存在: " + commonWazDir);
         }
-        for (String fileName : TsukuyomiSpecifiedCommonResources.commonProjectileWazFileArray()) {
+        for (String fileName : BheCommonProjectileResources.commonProjectileWazFileArray()) {
+            // 公共 WAZ 清单必须显式读取；不要用 glob 全扫，避免把非公共 WAZ 意外纳入公共资源簇。
             Path path = commonWazDir.resolve(fileName);
             Waz waz = parseRequiredBhe(path, Waz.class);
             wazByFileName.put(path.getFileName().toString(), waz);
+        }
+    }
+
+    private void loadCommonProjectileSpm(Path privateSpmDir, Map<String, Spm> spmByFileName) throws IOException {
+        Path commonSpmDir = privateSpmDir == null ? null : privateSpmDir.getParent();
+        if (commonSpmDir == null || !Files.isDirectory(commonSpmDir)) {
+            throw new IllegalStateException("BHE 公共 SPM 目录不存在: " + commonSpmDir);
+        }
+        for (String fileName : BheCommonProjectileResources.commonProjectileSpmFileArray()) {
+            // 公共 SPM 清单来自公共 WAZ 引用审计，append/rewrite 必须使用这批精确输入。
+            Path path = commonSpmDir.resolve(fileName);
+            Spm spm = parseRequiredBhe(path, Spm.class);
+            spmByFileName.put(path.getFileName().toString(), spm);
         }
     }
 

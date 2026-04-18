@@ -12,7 +12,7 @@ import java.util.Map;
  * 转换选定的 BHE spm 文件。
  *
  * <p>本步骤只做源侧格式转换：BHE SPM DTO -> BSDX SPM DTO 形状。
- * 目标侧 SpriteGroup 重绑、WAZ 引用回写、图片 sidecar 闭包均由后续阶段处理。</p>
+ * 目标侧 SpriteGroup 重绑、WAZ 引用回写、图片 sidecar 闭包均由 graft/output 阶段处理。</p>
  */
 public class ConvertSelectedSpmFilesStep {
 

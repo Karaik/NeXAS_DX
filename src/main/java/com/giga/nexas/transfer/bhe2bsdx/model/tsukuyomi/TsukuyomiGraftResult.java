@@ -5,6 +5,7 @@ import com.giga.nexas.dto.bsdx.grp.groupmap.ProgramMaterialGrp;
 import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.spm.Spm;
 import com.giga.nexas.dto.bsdx.waz.Waz;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
 import lombok.Data;
 
 /**
@@ -15,7 +16,7 @@ public class TsukuyomiGraftResult {
 
     private TsukuyomiRawSourceBundle rawSourceBundle;
     private TsukuyomiConvertedBundle convertedBundle;
-    private TsukuyomiCommonResourceAppendPlan commonResourceAppendPlan;
+    private BheCommonProjectileAppendPlan commonProjectileAppendPlan;
     private TsukuyomiPackageBundle tsukuyomiPackage;
     private TsukuyomiBsdxBaselineBundle bsdxBaseline;
     private TsukuyomiBsdxBaselineBundle preparedBaselineBundle;

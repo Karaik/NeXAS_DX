@@ -167,13 +167,13 @@ public class TsukuyomiGraftPipeline {
         TsukuyomiConvertedBundle convertedBundle = tsukuyomiConvertOverviewStep.convert(request, bsdxBaseline);
         result.setRawSourceBundle(convertedBundle.getRawSourceBundle());
         result.setConvertedBundle(convertedBundle);
-        result.setCommonResourceAppendPlan(convertedBundle.getCommonResourceAppendPlan());
+        result.setCommonProjectileAppendPlan(convertedBundle.getCommonProjectileAppendPlan());
         result.setPreparedBaselineBundle(convertedBundle.getPreparedBaselineBundle());
         bsdxBaseline = convertedBundle.getPreparedBaselineBundle();
         result.setBsdxBaseline(bsdxBaseline);
 
         // 1. 源资源包加载层。
-        // TODO 20260417：第 0 步真实转换完成前，后续主线仍暂时沿用当前 loader 产出的源资源包。
+        // TODO 20260417：主线 graft 接线使用 loader 源包；实现 preparedBaseline/selected closure 护栏时改为消费 convertedBundle selected 视图。
         TsukuyomiPackageBundle tsukuyomiPackage = loadTsukuyomiSourceAssetsStep.load(request);
         result.setTsukuyomiPackage(tsukuyomiPackage);
 
