@@ -41,7 +41,7 @@ public class TsukuyomiConvertOverviewStep {
         TsukuyomiRawSourceBundle rawSourceBundle = loadRawBheSourceStep.load(request);
         convertedBundle.setRawSourceBundle(rawSourceBundle);
 
-        // 第 0 步第二层：公共资源独立准备；本阶段只执行 convert，redirect/self/cross 保持 TODO。
+        // 第 0 步第二层：公共资源独立准备；prepare 内完成公共 WAZ/SPM 转换、GRP/SE 接入、跨资源重写和 term 重编译。
         bheCommonProjectilePrepareStep.prepare(request, rawSourceBundle, inheritedBaseline, convertedBundle);
 
         // 单机体私有资源转换，只建立 Tsukuyomi 单机体源侧视图。

@@ -20,7 +20,6 @@ import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.AppendGrpEntriesSte
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.BuildResourceClosureStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.ImportStaticAssetsStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.LoadGraftBaselineStep;
-import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.LoadTsukuyomiSourceAssetsStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.PadBaselineMekMaterialStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.RebindMekStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.RebindWazStep;
@@ -55,14 +54,6 @@ public class TsukuyomiGraftPipeline {
      * 都由总览类在转换包内部调度。</p>
      */
     private final TsukuyomiConvertOverviewStep tsukuyomiConvertOverviewStep = new TsukuyomiConvertOverviewStep();
-
-    /**
-     * 源游戏转换层入口。
-     *
-     * <p>当前 TSUKUYOMI 资产已经能直接解析成 BSDX DTO，所以这一步主要负责加载；
-     * 未来 BHE 接入时，对应 converter 应在进入通用 graft 主线前完成。</p>
-     */
-    private final LoadTsukuyomiSourceAssetsStep loadTsukuyomiSourceAssetsStep = new LoadTsukuyomiSourceAssetsStep();
 
     /**
      * 链式成果物基线加载入口。
@@ -163,7 +154,7 @@ public class TsukuyomiGraftPipeline {
         result.setBsdxBaseline(bsdxBaseline);
 
         // 0.2 资源转换层。
-        // TODO 20260417：第 0 步转换层只有这一个入口；内部细分步骤放在 convert 包的对应子目录中。
+        // 第 0 步转换层只有这一个入口；内部细分步骤放在 convert 包的对应子目录中。
         TsukuyomiConvertedBundle convertedBundle = tsukuyomiConvertOverviewStep.convert(request, bsdxBaseline);
         result.setRawSourceBundle(convertedBundle.getRawSourceBundle());
         result.setConvertedBundle(convertedBundle);
@@ -172,9 +163,10 @@ public class TsukuyomiGraftPipeline {
         bsdxBaseline = convertedBundle.getPreparedBaselineBundle();
         result.setBsdxBaseline(bsdxBaseline);
 
-        // 1. 源资源包加载层。
-        // TODO 20260417：主线 graft 接线使用 loader 源包；实现 preparedBaseline/selected closure 护栏时改为消费 convertedBundle selected 视图。
-        TsukuyomiPackageBundle tsukuyomiPackage = loadTsukuyomiSourceAssetsStep.load(request);
+        // 1. 单机体 selected 资源视图。
+        // 第 0 步把 BHE 私有资源转换成 BSDX DTO 形状；主线 graft 只消费这个 selected 视图。
+        // 这里禁止绕回源目录重新加载 BHE 文件，避免绕过公共资源护栏和 term/格式转换结果。
+        TsukuyomiPackageBundle tsukuyomiPackage = convertedBundle.getSelectedResourceBundle();
         result.setTsukuyomiPackage(tsukuyomiPackage);
 
         // 2. 前置客制化输入收束。
