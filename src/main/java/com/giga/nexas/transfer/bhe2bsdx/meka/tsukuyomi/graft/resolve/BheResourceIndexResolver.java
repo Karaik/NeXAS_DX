@@ -11,7 +11,7 @@ import java.util.Map;
  * <p>这里统一封装“公共资源优先、单机体私有资源兜底”的协议。公共资源来自
  * {@link BheCommonProjectileAppendPlan}，属于 preparedBaseline 既成事实；私有资源来自
  * {@link TsukuyomiGrpAppendPlan}，属于本次 selected graft 产物。不要把两张映射表合并，
- * 否则后续步骤会误以为公共资源也是本次单机体 closure 生成的资源。</p>
+ * 否则调用方会误以为公共资源也是本次单机体 closure 生成的资源。</p>
  */
 public class BheResourceIndexResolver {
 

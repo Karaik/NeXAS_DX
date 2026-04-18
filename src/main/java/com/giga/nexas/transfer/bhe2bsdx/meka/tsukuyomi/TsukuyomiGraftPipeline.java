@@ -40,10 +40,10 @@ import java.nio.file.Path;
 public class TsukuyomiGraftPipeline {
 
     /**
-     * JINKI 结果 -> BHE 当前层基线视图的转换入口。
+     * JINKI 结果 -> BHE 本层基线视图的转换入口。
      *
      * <p>这里刻意下沉到转换包，而不是继续把转换细节塞在主流程编排类里，
-     * 原因是这一步本质上不是“跑主流程”，而是“把上一层成果物改写成当前层可消费的输入对象”。</p>
+     * 原因是这一步本质上不是“跑主流程”，而是“把 JINKI 成果物改写成本层可消费的输入对象”。</p>
      */
     private final BuildBaselineFromJinkiResultStep buildBaselineFromJinkiResultStep = new BuildBaselineFromJinkiResultStep();
 
@@ -58,8 +58,7 @@ public class TsukuyomiGraftPipeline {
     /**
      * 链式成果物基线加载入口。
      *
-     * <p>当前阶段读取原始 BSDX 基线；后续 BHE 阶段可以把这里的输入换成
-     * BSDX+TSUKUYOMI 成果物，从而继续继承上一层输出。</p>
+     * <p>读取链式输入基线；BHE 侧固定从继承结果构建本层可消费的资源视图。</p>
      */
     private final LoadGraftBaselineStep loadGraftBaselineStep = new LoadGraftBaselineStep();
 
@@ -67,7 +66,7 @@ public class TsukuyomiGraftPipeline {
      * 前置客制化输入收束入口。
      *
      * <p>它把本次 Tsukuyomi graft 需要的 MEK/WAZ/SPM/SE 资源算成闭包，
-     * 后续 step 只消费这个计划，不再自行猜测哪些资源应该被复制。</p>
+     * 下游 step 只消费这个计划，不再自行猜测哪些资源应该被复制。</p>
      */
     private final BuildResourceClosureStep buildResourceClosureStep = new BuildResourceClosureStep();
 
@@ -113,7 +112,7 @@ public class TsukuyomiGraftPipeline {
      * 主 graft 产物写出入口。
      *
      * <p>把 GRP/DAT/MEK/WAZ/SPM/PNG/SE 等资源沉淀到最终输出目录，
-     * 后续 menu/exe/pack 都围绕同一个输出根目录继续工作。</p>
+     * menu/exe/pack 都围绕同一个输出根目录工作。</p>
      */
     private final ImportStaticAssetsStep importStaticAssetsStep = new ImportStaticAssetsStep();
 
@@ -148,7 +147,7 @@ public class TsukuyomiGraftPipeline {
         }
 
         // 0.1 链式基线输入层。
-        // BHE 当前层必须接手 JINKI 成果物基线，不再从目录回退加载原始 BSDX 基线。
+        // BHE 本层必须接手 JINKI 成果物基线，不再从目录回退加载原始 BSDX 基线。
         TsukuyomiBsdxBaselineBundle bsdxBaseline =
                 buildBaselineFromJinkiResultStep.buildBaselineFromJinkiResult(request.getInheritedJinkiResult());
         result.setBsdxBaseline(bsdxBaseline);
@@ -181,21 +180,26 @@ public class TsukuyomiGraftPipeline {
         result.setImportPlan(importPlan);
 
         // 3. 通用 graft 主线的核心映射阶段。
-        // 从这里开始，后续所有 MEK/WAZ/SPM/DAT 重绑都只能消费 TsukuyomiGrpAppendPlan，
+        // 从这里开始，MEK/WAZ/SPM/DAT 重绑都只能消费 TsukuyomiGrpAppendPlan，
         // 不能再各自猜测“源 index 应该落到哪个目标 index”。
         TsukuyomiGrpAppendPlan grpAppendPlan = appendGrpEntriesStep.appendTsukuyomiBranch(request, tsukuyomiPackage, bsdxBaseline, importPlan);
         result.setGrpAppendPlan(grpAppendPlan);
 
         // 4. GRP 扩容后的全局结构补齐。
-        // ProgramMaterial / MapGroup / 基线 MEK 的数组长度都依赖当前 GRP 顶层容量；
-        // 如果只追加 group 而不补齐这些结构，游戏加载时会在长度不一致处崩溃。
+        // ProgramMaterial / MapGroup / 基线 MEK 的数组长度都依赖本层 GRP 顶层容量；
+        // 只追加 group 而不补齐这些结构，游戏加载时会在长度不一致处崩溃。
         result.setSyncedProgramMaterial(syncProgramMaterialStep.syncOuterArrays(request, bsdxBaseline, grpAppendPlan));
         padBaselineMekMaterialStep.padMaterialBlock(bsdxBaseline);
 
         // 5. 主机体资源重绑。
         // MEK/WAZ 重建不是在源对象上原地 patch，而是按 DTO 层级重建目标对象，
         // 这样每个外部引用点都能明确说明消费的是哪张映射表。
-        result.setReboundTsukuyomiMek(rebindMekStep.rebindTsukuyomiMek(request, tsukuyomiPackage, grpAppendPlan));
+        result.setReboundTsukuyomiMek(rebindMekStep.rebindTsukuyomiMek(
+                request,
+                tsukuyomiPackage,
+                grpAppendPlan,
+                convertedBundle.getCommonProjectileAppendPlan()
+        ));
         result.setReboundTsukuyomiWaz(rebindWazStep.rebindTsukuyomiWaz(
                 request,
                 tsukuyomiPackage,
@@ -205,7 +209,7 @@ public class TsukuyomiGraftPipeline {
         ));
 
         // 6. 主线输出沉淀。
-        // 这里写出的目录是最终打包输入；后续所有后置覆盖都必须写回同一目录，
+        // 这里写出的目录是最终打包输入；所有后置覆盖都必须写回同一目录，
         // 否则目录 parity 可能通过局部对象测试，却在打包对象里漏文件。
         TsukuyomiImportedAssetSet importedAssetSet = importStaticAssetsStep.importAssets(
                 request,
@@ -237,8 +241,8 @@ public class TsukuyomiGraftPipeline {
         }
 
         // 8. 兼容 patch 累加。
-        // EXE 补丁的输入是当前基线 exe，输出是本层成果物 exe；
-        // patch site 允许 expected 或 target，是为了支持后续链式成果物继续累加。
+        // EXE 补丁的输入是本层基线 exe，输出是本层成果物 exe；
+        // patch site 允许 expected 或 target，用于支持链式成果物累加。
         TsukuyomiExePatchPlan exePatchPlan = patchExeStep.patchExe(request, bsdxBaseline, grpAppendPlan, result);
         result.setExePatchPlan(exePatchPlan);
 
@@ -252,7 +256,7 @@ public class TsukuyomiGraftPipeline {
 
     private TsukuyomiBsdxBaselineBundle buildBaselineFromJinkiResult(AkaoGraftResult inheritedJinkiResult) {
         // 这里保留一个很薄的代理，只负责把主流程编排层的调用转发到转换层。
-        // 具体“如何从 JINKI 结果拼出当前层基线”的规则，统一收敛到转换包内维护。
+        // 具体“如何从 JINKI 结果拼出本层基线”的规则，统一收敛到转换包内维护。
         return buildBaselineFromJinkiResultStep.buildBaselineFromJinkiResult(inheritedJinkiResult);
     }
 
@@ -269,7 +273,7 @@ public class TsukuyomiGraftPipeline {
 
         // 菜单 pipeline 自己负责落盘和审计，这里还要同步 TsukuyomiImportedAssetSet。
         // 原因是 step10/step11 只知道 TsukuyomiImportedAssetSet 和 outputRoot：
-        // 如果这里不同步，最终 pac 仍能打包文件，但运行摘要/后续 manifest 会漏掉来源记录。
+        // 这里缺少同步时，pac 仍能打包文件，但运行摘要和 manifest 会漏掉来源记录。
         Path outputRoot = importedAssetSet.getOutputRootDir();
         addGeneratedDat(importedAssetSet, outputRoot, "Meka.dat", menuContext.getPatchedMekaDat());
         addGeneratedDat(importedAssetSet, outputRoot, "MekaPilot.dat", menuContext.getPatchedMekaPilotDat());

@@ -46,7 +46,7 @@ public class BheCommonProjectilePrepareStep {
         // redirect 负责公共资源目标 entry 接入、跨资源索引重写，以及 term 包统一语义重编译。
         redirectStep.redirect(request, rawSourceBundle, inheritedBaseline, convertedBundle, appendPlan);
 
-        // TODO 20260417：redirect 接入公共资源前，preparedBaseline 等于继承基线。
+        // redirect 在继承基线上原地接入公共资源，preparedBaseline 指向接入完成后的同一份基线视图。
         convertedBundle.setPreparedBaselineBundle(inheritedBaseline);
     }
 }

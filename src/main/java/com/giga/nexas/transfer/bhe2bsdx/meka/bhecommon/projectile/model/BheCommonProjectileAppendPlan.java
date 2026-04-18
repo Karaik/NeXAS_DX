@@ -12,7 +12,7 @@ import java.util.Map;
  *
  * <p>本模型是公共弹幕资源层的最小承载体。redirect 实现需要补充公共 WAZ、
  * 公共 SPM、公共 SE 聚合组的目标索引和审计信息。Voice 只记录 SOU/MISAKI
- * 外部依赖；term / InfoCollection 通过独立 TODO 子问题承接全量语义转换。</p>
+ * 外部依赖；term / InfoCollection 由 term 包统一完成全量语义转换。</p>
  *
  * <p>BHE 迁入资源在目标侧使用 bhe_* 命名空间，避免覆盖 baseline 里已有的同名文件。
  * 运行时只认 GRP 顶层 index、WAZ skill index、SPM anim/page/image index；
@@ -55,7 +55,7 @@ public class BheCommonProjectileAppendPlan {
     private Map<Integer, String> sourceSpriteIndexToTargetFileName = new LinkedHashMap<>();
 
     /**
-     * BHE 源 `(SeGroup, SeItem)` -> `bhe_common_projectile_se` 聚合组内 item index。
+     * BHE 源 `(SeGroup, SeItem)` -> `BHE_SE_PUBLIC` 聚合组内 item index。
      */
     private Map<String, Integer> sourceSePairToTargetItemIndex = new LinkedHashMap<>();
     private Map<String, String> sourceSePairToTargetFileName = new LinkedHashMap<>();

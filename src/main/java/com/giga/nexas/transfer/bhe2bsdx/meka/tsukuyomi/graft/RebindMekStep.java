@@ -5,7 +5,10 @@ import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEvent;
 import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEventAttack;
 import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEventMove;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.term.BheInfoCollectionObjectGraphRewriter;
+import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.resolve.BheResolvedSeRef;
+import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.resolve.BheResourceIndexResolver;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGrpAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPackageBundle;
@@ -27,14 +30,16 @@ import java.util.Map;
  *     <li>最后按 Mek.java 的分片顺序，逐片重建目标对象</li>
  * </ul>
  *
- * <p>step6 明确会做语义修改的位置包括 {@code MekBasicInfo} 和 MEK AI term：</p>
+ * <p>step6 明确会做语义修改的位置包括 {@code MekBasicInfo}、MEK Material 和 MEK AI term：</p>
  * <ul>
  *     <li>{@code wazFileSequence -> 目标 WazaGroup 索引}</li>
  *     <li>{@code spmFileSequence -> 目标 SpriteGroup 索引}</li>
+ *     <li>{@code MekMaterialBlock -> 公共/私有资源目标索引}</li>
  *     <li>{@code BsdxInfoCollection -> BSDX term 索引空间}</li>
  * </ul>
  *
- * <p>其他分片保持结构级深拷贝，不在 MEK 阶段混入 WAZ/SPM/SE 的普通引用重写。</p>
+ * <p>{@code MekWeaponInfo.wazSequence} 表示主 WAZ 内部 skill index。
+ * BHE 私有 WAZ 采用整文件追加，skill 顺序保持源侧同位语义，因此该字段不重写。</p>
  */
 public class RebindMekStep {
 
@@ -43,7 +48,8 @@ public class RebindMekStep {
     public Mek rebindTsukuyomiMek(
             TsukuyomiGraftRequest request,
             TsukuyomiPackageBundle tsukuyomiPackage,
-            TsukuyomiGrpAppendPlan grpAppendPlan
+            TsukuyomiGrpAppendPlan grpAppendPlan,
+            BheCommonProjectileAppendPlan commonProjectileAppendPlan
     ) {
         if (request == null || tsukuyomiPackage == null || grpAppendPlan == null) {
             return null;
@@ -56,6 +62,7 @@ public class RebindMekStep {
 
         // Step 6-1: 先根据源 Mek 和 step4 的 grp 结果，构建本步专用上下文。
         TsukuyomiMekRebindContext context = buildContext(sourceMek, grpAppendPlan);
+        BheResourceIndexResolver resolver = new BheResourceIndexResolver(commonProjectileAppendPlan, grpAppendPlan);
 
         // Step 6-2: 创建目标 Mek 外壳，只保留最顶层公共信息。
         Mek targetMek = createTargetMekShell(context);
@@ -73,25 +80,25 @@ public class RebindMekStep {
         targetMek.setMekPairBlock(rebuildMekPairBlock(context));
 
         // Step 6-7: 重建武装表。
-        // 当前只做结构级深拷贝，不修改 weapon 内部的 wazSequence。
+        // 武装对象只做结构级深拷贝，不修改 weapon 内部的 wazSequence。
         targetMek.setMekWeaponInfoMap(rebuildWeaponInfoMap(context));
 
         // Step 6-8: 重建 AI 分片。
-        // 当前显式深拷贝 CPU 事件，但不改变 AI 逻辑语义。
+        // AI 分片显式深拷贝 CPU 事件，但不改变 AI 逻辑语义。
         targetMek.setMekAiInfoList(rebuildAiInfoList(context));
 
         // Step 6-9: 重建 Voice 分片。
-        // 当前显式深拷贝，但不改 table 里的 groupId 语义。
+        // Voice 分片显式深拷贝，但不改 table 里的 groupId 语义。
         targetMek.setMekVoiceInfo(rebuildMekVoiceInfo(context));
 
         // Step 6-10: 重建 Material 分片。
-        // 当前显式深拷贝条目和数组，但不改 sprite/se/voice 组内容的语义。
-        targetMek.setMekMaterialBlock(rebuildMekMaterialBlock(context));
+        // Material 分片显式重建条目和数组，只改外层资源索引。
+        targetMek.setMekMaterialBlock(rebuildMekMaterialBlock(context, resolver));
 
         // Step 6-11: MEK AI 中也携带 InfoCollection，必须和 WAZ 共用同一套 term 语义重编译规则。
         termRewriter.rewrite(targetMek, "tsukuyomi MEK " + context.getSourceFileName());
 
-        // Step 6-12: 对当前已经确定会改的字段做结果校验。
+        // Step 6-12: 对本步骤负责改写的字段做结果校验。
         validateRebindResult(targetMek, context);
         return targetMek;
     }
@@ -155,7 +162,7 @@ public class RebindMekStep {
 
         Mek.MekBlocks target = new Mek.MekBlocks();
 
-        // 这里也是纯结构尺寸信息，当前不改语义。
+        // 这里是纯结构尺寸信息，不改语义。
         target.setBodyInfoBlockSize(source.getBodyInfoBlockSize());
         target.setUnknownInfo1BlockSize(source.getUnknownInfo1BlockSize());
         target.setWeaponInfoBlockSize(source.getWeaponInfoBlockSize());
@@ -199,7 +206,7 @@ public class RebindMekStep {
         target.setBoostDashSpeed(source.getBoostDashSpeed());
         target.setAutoHoverHeight(source.getAutoHoverHeight());
 
-        // 这里是 step6 当前第一轮真正有语义改动的两个字段。
+        // 这里是 MEK 顶层真正有语义改动的两个字段。
         target.setWazFileSequence(context.getTargetWazaGroupIndex());
         target.setSpmFileSequence(context.getTargetSpriteGroupIndex());
         return target;
@@ -239,7 +246,7 @@ public class RebindMekStep {
             return target;
         }
 
-        // 当前只做武装对象的结构级深拷贝。
+        // 武装对象做结构级深拷贝。
         // MekWeaponInfo.wazSequence 仍然解释为 Tsukuyomi.waz 内部 skill 索引，不在 step6 修改。
         for (Map.Entry<Integer, Mek.MekWeaponInfo> entry : source.entrySet()) {
             Mek.MekWeaponInfo sourceWeapon = entry.getValue();
@@ -284,7 +291,7 @@ public class RebindMekStep {
             return target;
         }
 
-        // 当前 AI 分片也改成显式深拷贝。
+        // AI 分片显式深拷贝，term 由本方法末尾统一重编译。
         // 但这里只做“保留原语义”，不改变 CPU 事件内部逻辑。
         for (Mek.MekAiInfo sourceAiInfo : source) {
             if (sourceAiInfo == null) {
@@ -434,7 +441,7 @@ public class RebindMekStep {
         target.setVersion(remapBatVoiceGroupIndex(source.getVersion(), context));
         target.builtinEmotionCount = source.builtinEmotionCount;
 
-        // emotions 当前做结构级深拷贝。
+        // emotions 做结构级深拷贝。
         List<Mek.MekVoiceInfo.Emotion> emotions = new ArrayList<>();
         if (source.getEmotions() != null) {
             for (Mek.MekVoiceInfo.Emotion emotion : source.getEmotions()) {
@@ -450,7 +457,7 @@ public class RebindMekStep {
         }
         target.setEmotions(emotions);
 
-        // voiceSlots 当前做结构级深拷贝。
+        // voiceSlots 做结构级深拷贝。
         List<Mek.MekVoiceInfo.VoiceSlot> voiceSlots = new ArrayList<>();
         if (source.getVoiceSlots() != null) {
             for (Mek.MekVoiceInfo.VoiceSlot voiceSlot : source.getVoiceSlots()) {
@@ -466,7 +473,7 @@ public class RebindMekStep {
         }
         target.setVoiceSlots(voiceSlots);
 
-        // table 当前也显式重建容器，但不修改 Entry.groupId。
+        // table 显式重建容器，但不修改 Entry.groupId。
         // 这里的 groupId 在运行时表现为默认 BatVoice group 内的 item index，不是顶层 BatVoiceGroup index。
         List<List<List<Mek.MekVoiceInfo.Entry>>> table = new ArrayList<>();
         if (source.getTable() != null) {
@@ -512,7 +519,10 @@ public class RebindMekStep {
         return context.getSourceBatVoiceGroupIndexToTargetIndex().getOrDefault(sourceGroupIndex, sourceGroupIndex);
     }
 
-    private Mek.MekMaterialBlock rebuildMekMaterialBlock(TsukuyomiMekRebindContext context) {
+    private Mek.MekMaterialBlock rebuildMekMaterialBlock(
+            TsukuyomiMekRebindContext context,
+            BheResourceIndexResolver resolver
+    ) {
         Mek.MekMaterialBlock source = context.getSourceMek().getMekMaterialBlock();
         if (source == null) {
             return null;
@@ -522,21 +532,19 @@ public class RebindMekStep {
         target.setExtraRegularCount(source.getExtraRegularCount());
         target.regularCount = source.regularCount;
 
-        // CMaterial 的 entries / regularEntries / trailingEntries 都可能含有外层 group index。
-        // 统一走 copyPluginEntries，避免只修其中一段导致 confirm 或战斗初始化再错位。
-        target.setEntries(copyPluginEntries(source.getEntries(), context));
+        // CMaterial 的 entries / regularEntries / trailingEntries 都持有外层 group index。
+        // 三段必须走同一套重绑逻辑，避免只修其中一段导致 confirm 或战斗初始化错位。
+        target.setEntries(copyPluginEntries(source.getEntries(), resolver));
 
-        // regularEntries 当前显式重建 PluginEntry 容器。
-        target.setRegularEntries(copyPluginEntries(source.getRegularEntries(), context));
+        target.setRegularEntries(copyPluginEntries(source.getRegularEntries(), resolver));
 
-        // trailingEntries 当前显式重建 PluginEntry 容器。
-        target.setTrailingEntries(copyPluginEntries(source.getTrailingEntries(), context));
+        target.setTrailingEntries(copyPluginEntries(source.getTrailingEntries(), resolver));
         return target;
     }
 
     private List<Mek.MekMaterialBlock.PluginEntry> copyPluginEntries(
             List<Mek.MekMaterialBlock.PluginEntry> source,
-            TsukuyomiMekRebindContext context
+            BheResourceIndexResolver resolver
     ) {
         List<Mek.MekMaterialBlock.PluginEntry> target = new ArrayList<>();
         if (source == null) {
@@ -553,112 +561,111 @@ public class RebindMekStep {
             copied.offset = entry.offset;
             copied.length = entry.length;
 
-            // 只改外层 group index 和确认可映射的 SE item；
-            // sprite/voice 组内 payload 的语义由引擎解释，不能在这里按文件名盲改。
-            copied.setSpriteGroups(remapSpriteGroups(entry.getSpriteGroups(), context));
-            copied.setSeGroups(remapSeGroups(entry.getSeGroups(), context));
-            copied.setVoiceGroups(remapVoiceGroups(entry.getVoiceGroups(), context));
+            // 只改外层 group index 和 SE 的 group 内 item index。
+            // sprite/voice 组内 payload 的含义由引擎解释，不能在这里按文件名或动作名盲改。
+            copied.setSpriteGroups(remapSpriteGroups(entry.getSpriteGroups(), resolver));
+            copied.setSeGroups(remapSeGroups(entry.getSeGroups(), resolver));
+            copied.setVoiceGroups(remapVoiceGroups(entry.getVoiceGroups(), resolver));
             target.add(copied);
         }
         return target;
     }
 
-    private List<int[]> copyIntArrayGroups(List<int[]> source) {
+    private List<int[]> emptyGroupShell(List<int[]> source) {
         List<int[]> target = new ArrayList<>();
         if (source == null) {
             return target;
         }
 
-        for (int[] arr : source) {
-            target.add(arr == null ? null : arr.clone());
+        for (int i = 0; i < source.size(); i++) {
+            target.add(new int[0]);
         }
         return target;
     }
 
-    private List<int[]> remapVoiceGroups(List<int[]> source, TsukuyomiMekRebindContext context) {
-        return remapIndexedGroups(source, context, context == null ? null : context.getSourceBatVoiceGroupIndexToTargetIndex(), null);
-    }
-
-    private List<int[]> remapSpriteGroups(List<int[]> source, TsukuyomiMekRebindContext context) {
-        return remapIndexedGroups(source, context, context == null ? null : context.getSourceSpriteGroupIndexToTargetIndex(), null);
-    }
-
-    private List<int[]> remapSeGroups(List<int[]> source, TsukuyomiMekRebindContext context) {
-        return remapIndexedGroups(
-                source,
-                context,
-                context == null ? null : context.getSourceSeGroupIndexToTargetIndex(),
-                context == null ? null : context.getSourceSeItemIndexToTargetIndexByGroup()
-        );
-    }
-
-    private List<int[]> remapIndexedGroups(
-            List<int[]> source,
-            TsukuyomiMekRebindContext context,
-            Map<Integer, Integer> sourceGroupIndexToTargetIndex,
-            Map<Integer, Map<Integer, Integer>> sourceItemIndexToTargetIndexByGroup
-    ) {
-        List<int[]> copied = copyIntArrayGroups(source);
-        if (copied.isEmpty()
-                || context == null
-                || sourceGroupIndexToTargetIndex == null
-                || sourceGroupIndexToTargetIndex.isEmpty()) {
-            return copied;
+    private List<int[]> remapVoiceGroups(List<int[]> source, BheResourceIndexResolver resolver) {
+        List<int[]> target = emptyGroupShell(source);
+        if (source == null || resolver == null) {
+            return target;
         }
-
-        ensureGroupCapacity(copied, requiredGroupCapacity(copied, sourceGroupIndexToTargetIndex));
-
-        for (Map.Entry<Integer, Integer> mapping : sourceGroupIndexToTargetIndex.entrySet()) {
-            Integer sourceGroupIndex = mapping.getKey();
-            Integer targetGroupIndex = mapping.getValue();
-            if (sourceGroupIndex == null || targetGroupIndex == null || sourceGroupIndex < 0 || targetGroupIndex < 0) {
+        for (int sourceGroupIndex = 0; sourceGroupIndex < source.size(); sourceGroupIndex++) {
+            int[] sourceItems = source.get(sourceGroupIndex);
+            if (isEmpty(sourceItems)) {
                 continue;
             }
-            if (sourceGroupIndex >= copied.size()) {
-                continue;
-            }
-
-            int[] sourceItems = copied.get(sourceGroupIndex);
-            if (sourceItems == null || sourceItems.length == 0) {
-                continue;
-            }
-
-            // SE 有明确的 source item -> target item 映射；sprite/voice 目前只搬外层 group，items 原样保留。
-            int[] remappedItems = remapGroupItems(
-                    sourceItems,
-                    sourceItemIndexToTargetIndexByGroup == null ? null : sourceItemIndexToTargetIndexByGroup.get(sourceGroupIndex)
-            );
-            if (sourceGroupIndex.equals(targetGroupIndex)) {
-                copied.set(targetGroupIndex, remappedItems);
-                continue;
-            }
-
-            int[] targetItems = targetGroupIndex < copied.size() ? copied.get(targetGroupIndex) : null;
-            copied.set(targetGroupIndex, mergeUniqueItems(targetItems, remappedItems));
-            copied.set(sourceGroupIndex, null);
+            int targetGroupIndex = resolver.resolveBatVoiceGroupIndex(sourceGroupIndex);
+            putItems(target, targetGroupIndex, sourceItems);
         }
-        return copied;
+        return target;
     }
 
-    private int requiredGroupCapacity(List<int[]> groups, Map<Integer, Integer> sourceToTargetGroupIndex) {
-        int required = groups == null ? 0 : groups.size();
-        if (sourceToTargetGroupIndex == null) {
-            return required;
+    private List<int[]> remapSpriteGroups(List<int[]> source, BheResourceIndexResolver resolver) {
+        List<int[]> target = emptyGroupShell(source);
+        if (source == null || resolver == null) {
+            return target;
         }
-        for (Map.Entry<Integer, Integer> entry : sourceToTargetGroupIndex.entrySet()) {
-            if (entry.getKey() != null) {
-                required = Math.max(required, entry.getKey() + 1);
+        for (int sourceGroupIndex = 0; sourceGroupIndex < source.size(); sourceGroupIndex++) {
+            int[] sourceItems = source.get(sourceGroupIndex);
+            if (isEmpty(sourceItems)) {
+                continue;
             }
-            if (entry.getValue() != null) {
-                required = Math.max(required, entry.getValue() + 1);
+            int targetGroupIndex = resolver.resolveSpriteGroupIndex(sourceGroupIndex);
+            putItems(target, targetGroupIndex, sourceItems);
+        }
+        return target;
+    }
+
+    private List<int[]> remapSeGroups(List<int[]> source, BheResourceIndexResolver resolver) {
+        List<int[]> target = emptyGroupShell(source);
+        if (source == null || resolver == null) {
+            return target;
+        }
+        for (int sourceGroupIndex = 0; sourceGroupIndex < source.size(); sourceGroupIndex++) {
+            int[] sourceItems = source.get(sourceGroupIndex);
+            if (isEmpty(sourceItems)) {
+                continue;
+            }
+            for (int sourceItemIndex : sourceItems) {
+                BheResolvedSeRef targetRef = resolver.resolveSe(sourceGroupIndex, sourceItemIndex);
+                if (targetRef != null) {
+                    addItem(target, targetRef.targetGroupIndex(), targetRef.targetItemIndex());
+                }
             }
         }
-        return required;
+        return target;
+    }
+
+    private boolean isEmpty(int[] items) {
+        return items == null || items.length == 0;
+    }
+
+    private void putItems(List<int[]> groups, int groupIndex, int[] items) {
+        ensureGroupCapacity(groups, groupIndex + 1);
+        int[] existing = groups.get(groupIndex);
+        groups.set(groupIndex, mergeUniqueItems(existing, items));
+    }
+
+    private void addItem(List<int[]> groups, int groupIndex, int itemIndex) {
+        ensureGroupCapacity(groups, groupIndex + 1);
+        int[] existing = groups.get(groupIndex);
+        if (existing == null || existing.length == 0) {
+            groups.set(groupIndex, new int[]{itemIndex});
+            return;
+        }
+        for (int existingItem : existing) {
+            if (existingItem == itemIndex) {
+                return;
+            }
+        }
+        int[] expanded = new int[existing.length + 1];
+        System.arraycopy(existing, 0, expanded, 0, existing.length);
+        expanded[existing.length] = itemIndex;
+        groups.set(groupIndex, expanded);
     }
 
     private void ensureGroupCapacity(List<int[]> groups, int requiredSize) {
         while (groups.size() < requiredSize) {
-            groups.add(null);
+            groups.add(new int[0]);
         }
     }
 
@@ -684,21 +691,6 @@ public class RebindMekStep {
             result[cursor++] = value;
         }
         return result;
-    }
-
-    private int[] remapGroupItems(int[] sourceItems, Map<Integer, Integer> sourceItemIndexToTargetIndex) {
-        if (sourceItems == null) {
-            return null;
-        }
-        if (sourceItemIndexToTargetIndex == null || sourceItemIndexToTargetIndex.isEmpty()) {
-            return sourceItems.clone();
-        }
-
-        int[] remapped = new int[sourceItems.length];
-        for (int i = 0; i < sourceItems.length; i++) {
-            remapped[i] = sourceItemIndexToTargetIndex.getOrDefault(sourceItems[i], sourceItems[i]);
-        }
-        return remapped;
     }
 
     private void validateRebindResult(Mek targetMek, TsukuyomiMekRebindContext context) {

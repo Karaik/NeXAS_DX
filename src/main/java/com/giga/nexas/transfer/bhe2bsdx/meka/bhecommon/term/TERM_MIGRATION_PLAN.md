@@ -6,7 +6,7 @@
 
 - MEK/AI 审计：`src/test/java/com/giga/nexas/transfer/bhe2bsdx/meka/bhecommon/term/MekInfoCollectionTermAuditTest.java`
 - WAZ/MEK 迁移矩阵审计：`src/test/java/com/giga/nexas/transfer/bhe2bsdx/meka/bhecommon/term/TermMigrationMatrixAuditTest.java`
-- 公共弹幕接入点：`CrossRedirectBheCommonProjectileResourcesStep.redirect(...)` 中的 `TODO 20260417`
+- 公共弹幕接入点：`CrossRedirectBheCommonProjectileResourcesStep.redirect(...)`
 - 审计输出目录：`src/main/resources/out/bhe2bsdx/term-audit/`
 
 ## 职责边界
@@ -144,7 +144,7 @@ BHE-only 语义只能进入三种结果：
 
 - `POS/OBJECT` 中的 `intList3` 基本可按对象位置引用理解。
 - `ANGLE/OBJECT` 中的 `intList3/intList4` 是角度计算的两个对象端点，不能全局硬套 `OBJECTPOS / OBJECTPOS2`。
-- `intList4=[23,0]` 在 BHE `ANGLE/OBJECT` 中会命中 BHE `OBJECTPOS/MULTILOCK_LOCK`，如果硬套 `OBJECTPOS2` 会被误判为越界。
+- `intList4=[23,0]` 在 BHE `ANGLE/OBJECT` 中会命中 BHE `OBJECTPOS/MULTILOCK_LOCK`，硬套 `OBJECTPOS2` 会被误判为越界。
 
 因此 aux list 重写规则必须绑定 `syntaxPathByDescription` 和宿主事件。
 

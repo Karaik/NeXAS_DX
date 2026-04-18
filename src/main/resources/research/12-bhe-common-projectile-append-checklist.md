@@ -2,7 +2,7 @@
 
 > 工作文档。用于记录 `effect / tama01..05 / laser / bomb` 这组 BHE 公共弹幕资源簇接入 `BSDX + JINKI` baseline 的实现口径。
 > 每确认一项后，由 Codex 主动更新勾选状态和结论。
-> 如果用户回答前后不一致、漏答关键点、或出现新的职责冲突，必须暂停实现并重新对齐，不得推进实现。
+> 用户回答前后不一致、漏答关键点、或出现新的职责冲突时，必须暂停实现并重新对齐，不得推进实现。
 > 对应代码入口：
 > `src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/tsukuyomi/convert/TsukuyomiConvertOverviewStep.java`
 > `src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/bhecommon/projectile/BheCommonProjectilePrepareStep.java`
@@ -69,7 +69,7 @@
   - `redirect()`：负责公共资源接入、自重定向、交叉重定向和审计。
 - [x] `redirect()` 内部分两步：
   - `selfRedirect()`：已实现公共 WAZ/SPM 目标 entry、公共 SE 聚合组、容量同步和 source -> target 映射。
-  - `crossRedirect()`：已实现公共 WAZ 指向 WAZ/SPM/SE 的跨资源引用重写；Voice 只记录外部依赖，term 通过独立 TODO 子问题接入。
+  - `crossRedirect()`：已实现公共 WAZ 指向 WAZ/SPM/SE 的跨资源引用重写；Voice 只记录外部依赖，term 通过 term 包完成语义转换。
 - [x] `TsukuyomiConvertOverviewStep` 只调用 `prepare()`，不直接调用公共资源内部的 convert / redirect / self / cross 细节。
 - [x] selfRedirect、crossRedirect 与 term 全量语义转换已实现。
 
@@ -211,7 +211,7 @@
    - `CEventSprite.spmFileSequence`：`sourceSpriteIndex -> baseSpriteGroupSize + compactOrdinal`。
    - `CEventSprite.actionGroupNumber`：保持源侧 anim index。
    - `CEventSe`：`(sourceSeGroupIndex, sourceSeItemIndex) -> (baseSeGroupSize, targetSeItemIndex)`。
-   - `InfoCollection / term`：单独 TODO，不与普通 index 重写混写。
+   - `InfoCollection / term`：由 term 包统一重编译，不与普通 index 重写混写。
 
 5. **同步容量与审计**
    - 同步 WazaGroup / SpriteGroup / SeGroup 顶层 entry 数量。
@@ -282,7 +282,7 @@
   - 结论：公共资源接入结果属于 `preparedBaseline`，不属于单机体 selected 资源闭包。
   - `mergedPackageBundle` 只作为 Tsukuyomi 私有资源转换结果视图。
   - 单机体 graft 以 `preparedBaseline` 为目标基线，并通过只读公共 append plan 处理私有 WAZ 中的公共引用。
-  - 实现护栏：后续接线时必须避免公共 WAZ/SPM/SE 从 `mergedPackageBundle` 进入 `BuildResourceClosureStep / AppendGrpEntriesStep / RebindWazStep` 的普通 selected 路径。
+  - 实现护栏：主线接线必须避免公共 WAZ/SPM/SE 从 `mergedPackageBundle` 进入 `BuildResourceClosureStep / AppendGrpEntriesStep / RebindWazStep` 的普通 selected 路径。
 
 - [x] Q13：主线 graft 是否还能从源目录重新加载 selected 资源？
   - 结论：不能。主线 graft 只能消费第 0 步产出的 `convertedBundle.getSelectedResourceBundle()`。
@@ -319,7 +319,7 @@
 ### 20260418 公共资源输出沉淀审计
 
 - [x] 公共资源输出逻辑放在 `bhecommon/projectile/output/OutputBheCommonProjectileResourcesStep`。
-- [x] 输出 step 由 `ImportStaticAssetsStep` 调用，位置在 GRP/DAT 输出之后、selected 主线资源输出之前。
+- [x] 输出 step 由 `ImportStaticAssetsStep` 调用，位置在 GRP/DAT 输出完成后、selected 主线资源输出前。
 - [x] 公共 WAZ / SPM 从 `preparedBaseline` 生成到 outputRoot。
 - [x] 公共 SE 音频从 `externalStaticAssetRoot` 查找原始文件，输出时使用 `bhe_*` 文件名；真实数据中 668 个公共 SE 音频均可找到。
 - [x] 公共 SPM 图片按公共 WAZ 实际 `CEventSprite` 可达动画收集，不复制整份 SPM.imageData。

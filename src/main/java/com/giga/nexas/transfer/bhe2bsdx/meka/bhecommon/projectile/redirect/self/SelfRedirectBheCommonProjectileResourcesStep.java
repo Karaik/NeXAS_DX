@@ -32,7 +32,7 @@ import java.util.Set;
  *
  * <p>自重定向只处理“公共资源自身如何成为目标侧资源”的问题，不处理 WAZ 指向其他资源的交叉引用。
  * 典型内容包括：新增 8 个 bhe_* WazaGroup entry、12 个 bhe_* SpriteGroup entry、
- * 1 个 bhe_common_projectile_se SeGroup entry、同步 GRP/ProgramMaterial/MEK material 容量。</p>
+ * 1 个 BHE_SE_PUBLIC SeGroup entry、同步 GRP/ProgramMaterial/MEK material 容量。</p>
  */
 public class SelfRedirectBheCommonProjectileResourcesStep {
 
@@ -182,7 +182,7 @@ public class SelfRedirectBheCommonProjectileResourcesStep {
         List<SePair> sourcePairs = collectCommonSePairs(rawSourceBundle);
         SeGroupGrp.SeGroupGroup aggregateGroup = new SeGroupGrp.SeGroupGroup();
         aggregateGroup.setExistFlag(1);
-        // 公共弹幕 SE 聚合组使用固定业务名，便于人工审计和后续单机体阶段稳定引用。
+        // 公共弹幕 SE 聚合组使用固定业务名，便于人工审计和单机体阶段稳定引用。
         aggregateGroup.setSeType(COMMON_SE_GROUP_NAME);
         aggregateGroup.setSeTypeCodeName(COMMON_SE_GROUP_NAME);
 
