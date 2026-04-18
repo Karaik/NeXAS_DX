@@ -10,6 +10,7 @@ import com.giga.nexas.dto.bsdx.grp.groupmap.SpriteGroupGrp;
 import com.giga.nexas.dto.bsdx.grp.groupmap.WazaGroupGrp;
 import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.BheCommonProjectileResources;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.CommonProjectileTestSupport;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.convert.ConvertBheCommonProjectileResourcesStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.redirect.cross.CrossRedirectBheCommonProjectileResourcesStep;
@@ -70,12 +71,13 @@ class OutputBheCommonProjectileResourcesStepSemanticTest {
         TsukuyomiImportedAssetSet assetSet = new TsukuyomiImportedAssetSet();
         outputStep.output(request, baseline, appendPlan, OUTPUT_DIR, assetSet);
 
-        assertEquals(8, assetSet.getGeneratedWazFiles().size());
+        assertEquals(6, assetSet.getGeneratedWazFiles().size());
         assertEquals(12, assetSet.getCopiedSpmFiles().size());
         assertEquals(668, assetSet.getCopiedAudioFiles().size());
         assertTrue(assetSet.getCopiedImageFiles().size() > 0);
-        assertTrue(assetSet.getGeneratedWazFiles().stream().allMatch(path -> path.getFileName().toString().startsWith("bhe_")));
-        assertTrue(assetSet.getCopiedSpmFiles().stream().allMatch(path -> path.getFileName().toString().startsWith("bhe_")));
+        assertEquals(3, assetSet.getCopiedSpmFiles().stream()
+                .filter(path -> path.getFileName().toString().startsWith("bhe_"))
+                .count());
         assertTrue(assetSet.getCopiedImageFiles().stream().allMatch(path -> path.getFileName().toString().startsWith("bhe_")));
         assertTrue(assetSet.getCopiedAudioFiles().stream().allMatch(path -> path.getFileName().toString().startsWith("bhe_")));
         assertKnownMissingImagesOnly(assetSet);
@@ -111,6 +113,7 @@ class OutputBheCommonProjectileResourcesStepSemanticTest {
         bundle.setProgramMaterialGrp(read("src/main/resources/grpBsdxJson/ProgramMaterial.grp.json", ProgramMaterialGrp.class));
         bundle.setMapGroupGrp(read("src/main/resources/grpBsdxJson/MapGroup.grp.json", MapGroupGrp.class));
         bundle.getMekByFileName().put("aki.mek", read("src/main/resources/mekBsdxJson/Aki.mek.json", Mek.class));
+        CommonProjectileTestSupport.loadBsdxHostCommonResources(bundle);
         return bundle;
     }
 

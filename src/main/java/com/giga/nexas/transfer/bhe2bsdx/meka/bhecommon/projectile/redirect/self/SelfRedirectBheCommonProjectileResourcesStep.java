@@ -31,8 +31,9 @@ import java.util.Set;
  * BHE 公共弹幕资源簇的自重定向步骤。
  *
  * <p>自重定向只处理“公共资源自身如何成为目标侧资源”的问题，不处理 WAZ 指向其他资源的交叉引用。
- * 典型内容包括：新增 8 个 bhe_* WazaGroup entry、12 个 bhe_* SpriteGroup entry、
- * 1 个 BHE_SE_PUBLIC SeGroup entry、同步 GRP/ProgramMaterial/MEK material 容量。</p>
+ * 典型内容包括：把 8 份 BHE 公共 WAZ 追加到 BSDX 固定公共宿主 WAZ；
+ * 把同名公共 SPM 追加到 BSDX 宿主 SPM、把 BHE-only SPM 新增为 bhe_* entry；
+ * 新增 1 个 BHE_SE_PUBLIC SeGroup entry，并同步 GRP/ProgramMaterial/MEK material 容量。</p>
  */
 public class SelfRedirectBheCommonProjectileResourcesStep {
 
@@ -102,32 +103,53 @@ public class SelfRedirectBheCommonProjectileResourcesStep {
         appendPlan.setBaseWazaGroupSize(baseSize);
 
         List<String> sourceFiles = BheCommonProjectileResources.commonProjectileWazFiles();
+        List<String> hostFiles = BheCommonProjectileResources.commonProjectileHostWazFiles();
         for (int sourceIndex = 0; sourceIndex < sourceFiles.size(); sourceIndex++) {
             String sourceFileName = sourceFiles.get(sourceIndex);
+            String fallbackHostFileName = hostFiles.get(sourceIndex);
             com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp.WazaGroupEntry sourceEntry =
                     requireSourceWazaGroup(rawSourceBundle, sourceIndex, sourceFileName);
             Waz convertedWaz = requireConvertedWaz(convertedBundle.getCommonProjectileResourceBundle(), sourceFileName);
+            String hostFileName = resolveWazHostFileName(targetGroup, inheritedBaseline, sourceFileName, fallbackHostFileName);
+            IndexedWazaTarget host = requireTargetWazaGroup(targetGroup, hostFileName);
+            int targetIndex = host.index();
+            WazaGroupGrp.WazaGroupEntry hostEntry = host.entry();
+            Waz hostWaz = requireHostWaz(inheritedBaseline, hostFileName);
 
-            String targetFileName = prefixBheFileName(sourceEntry.getWazaDisplayName() + ".waz");
-            convertedWaz.setFileName(stripExtension(targetFileName));
+            /*
+             * BSDX EXE 会预加载公共宿主 WAZ。BHE 公共技能不能新增到 111..118 之类的顶层 WAZ，
+             * 否则运行时会拿不到预加载对象。这里优先追加到继承基线里的同名宿主；
+             * 只有纯 BSDX 基线缺少 Tama03/Tama04 宿主时，才使用固定 fallback 宿主。
+             * 所有 CEventWazaSelect 再统一改成 “宿主 index + skillBase + 源 skill index”。
+             */
+            int skillBase = hostWaz.getSkillList().size();
+            int skillCount = countSkills(convertedWaz);
+            hostWaz.getSkillList().addAll(convertedWaz.getSkillList());
+            hostEntry.setParam(hostWaz.getSkillList().size());
 
-            WazaGroupGrp.WazaGroupEntry targetEntry = new WazaGroupGrp.WazaGroupEntry();
-            targetEntry.setExistFlag(existFlagOrDefault(sourceEntry.getExistFlag()));
-            targetEntry.setWazaName(sourceEntry.getWazaName());
-            targetEntry.setWazaCodeName(prefixCodeName(sourceEntry.getWazaCodeName(), "WAZ_" + sourceIndex));
-            targetEntry.setWazaDisplayName(stripExtension(targetFileName));
-            targetEntry.setParam(countSkills(convertedWaz));
-
-            int targetIndex = baseSize + sourceIndex;
-            targetGroup.getWazaList().add(targetEntry);
-            inheritedBaseline.getWazByFileName().put(targetFileName, convertedWaz);
-
-            appendPlan.getCommonProjectileWazFiles().add(targetFileName);
+            if (!appendPlan.getCommonProjectileWazFiles().contains(hostFileName)) {
+                appendPlan.getCommonProjectileWazFiles().add(hostFileName);
+            }
             appendPlan.getSourceWazIndexToTargetIndex().put(sourceIndex, targetIndex);
-            appendPlan.getSourceWazIndexToTargetFileName().put(sourceIndex, targetFileName);
-            appendPlan.getNotes().add("WAZ " + sourceIndex + " -> " + targetIndex + " " + targetFileName
-                    + " skills=" + targetEntry.getParam());
+            appendPlan.getSourceWazIndexToTargetFileName().put(sourceIndex, hostFileName);
+            appendPlan.getSourceWazIndexToTargetSkillBase().put(sourceIndex, skillBase);
+            appendPlan.getSourceWazIndexToTargetSkillCount().put(sourceIndex, skillCount);
+            appendPlan.getNotes().add("WAZ " + sourceIndex + " -> host " + targetIndex + " " + hostFileName
+                    + " skillBase=" + skillBase + " skillCount=" + skillCount);
         }
+    }
+
+    private String resolveWazHostFileName(
+            WazaGroupGrp targetGroup,
+            TsukuyomiBsdxBaselineBundle inheritedBaseline,
+            String sourceFileName,
+            String fallbackHostFileName
+    ) {
+        IndexedWazaTarget exactHost = findTargetWazaGroup(targetGroup, sourceFileName);
+        if (exactHost != null && hasHostWaz(inheritedBaseline, sourceFileName)) {
+            return exactHost.entry().getWazaDisplayName() + ".waz";
+        }
+        return fallbackHostFileName;
     }
 
     private void appendCommonSpriteGroupEntries(
@@ -146,8 +168,41 @@ public class SelfRedirectBheCommonProjectileResourcesStep {
             IndexedSpriteSource source = requireSourceSpriteGroup(rawSourceBundle, sourceFileName);
             Spm convertedSpm = requireConvertedSpm(convertedBundle.getCommonProjectileResourceBundle(), sourceFileName);
 
-            String targetFileName = prefixBheFileName(source.entry().getSpriteFileName());
             prefixSpmImageNames(convertedSpm);
+            SpriteGroupGrp.SpriteGroupEntry hostEntry = findTargetSpriteGroupByFileName(
+                    targetGroup,
+                    source.entry().getSpriteFileName()
+            );
+            if (hostEntry != null) {
+                /*
+                 * BSDX 已有同名公共 SPM 时，BHE 动画追加到同一份宿主 SPM。
+                 * CEventSprite 除了 spmFileSequence 之外，还会使用 actionGroupNumber 定位动画组，
+                 * 因此这里必须记录 animBase；同时 SPM 内部 page/image 引用也在 appendSpmIntoHost 中同步偏移。
+                 */
+                int targetIndex = targetGroup.getSpriteList().indexOf(hostEntry);
+                Spm hostSpm = requireHostSpm(inheritedBaseline, hostEntry.getSpriteFileName());
+                SpmAppendOffsets offsets = appendSpmIntoHost(hostSpm, convertedSpm, sourceFileName);
+                hostEntry.setParam(countAnims(hostSpm));
+
+                if (!appendPlan.getCommonProjectileSpmFiles().contains(hostEntry.getSpriteFileName())) {
+                    appendPlan.getCommonProjectileSpmFiles().add(hostEntry.getSpriteFileName());
+                }
+                appendPlan.getSourceSpriteIndexToTargetIndex().put(source.index(), targetIndex);
+                appendPlan.getSourceSpriteIndexToTargetFileName().put(source.index(), hostEntry.getSpriteFileName());
+                appendPlan.getSourceSpriteIndexToTargetImageBase().put(source.index(), offsets.imageBase());
+                appendPlan.getSourceSpriteIndexToTargetPageBase().put(source.index(), offsets.pageBase());
+                appendPlan.getSourceSpriteIndexToTargetActionGroupBase().put(source.index(), offsets.animBase());
+                appendPlan.getSourceSpriteIndexToTargetActionGroupCount().put(source.index(), offsets.animCount());
+                appendPlan.getNotes().add("SPM " + source.index() + " -> host " + targetIndex + " "
+                        + hostEntry.getSpriteFileName()
+                        + " imageBase=" + offsets.imageBase()
+                        + " pageBase=" + offsets.pageBase()
+                        + " animBase=" + offsets.animBase()
+                        + " animCount=" + offsets.animCount());
+                continue;
+            }
+
+            String targetFileName = prefixBheFileName(source.entry().getSpriteFileName());
 
             SpriteGroupGrp.SpriteGroupEntry targetEntry = new SpriteGroupGrp.SpriteGroupEntry();
             targetEntry.setExistFlag(existFlagOrDefault(source.entry().getExistFlag()));
@@ -155,14 +210,19 @@ public class SelfRedirectBheCommonProjectileResourcesStep {
             targetEntry.setSpriteCodeName(prefixCodeName(source.entry().getSpriteCodeName(), "SPM_" + compactOrdinal));
             targetEntry.setParam(source.entry().getParam());
 
-            int targetIndex = baseSize + compactOrdinal;
+            int targetIndex = targetGroup.getSpriteList().size();
             targetGroup.getSpriteList().add(targetEntry);
             inheritedBaseline.getSpmByFileName().put(targetFileName, convertedSpm);
 
             appendPlan.getCommonProjectileSpmFiles().add(targetFileName);
             appendPlan.getSourceSpriteIndexToTargetIndex().put(source.index(), targetIndex);
             appendPlan.getSourceSpriteIndexToTargetFileName().put(source.index(), targetFileName);
-            appendPlan.getNotes().add("SPM " + source.index() + " -> " + targetIndex + " " + targetFileName);
+            appendPlan.getSourceSpriteIndexToTargetImageBase().put(source.index(), 0);
+            appendPlan.getSourceSpriteIndexToTargetPageBase().put(source.index(), 0);
+            appendPlan.getSourceSpriteIndexToTargetActionGroupBase().put(source.index(), 0);
+            appendPlan.getSourceSpriteIndexToTargetActionGroupCount().put(source.index(), countAnims(convertedSpm));
+            appendPlan.getNotes().add("SPM " + source.index() + " -> new " + targetIndex + " " + targetFileName
+                    + " animCount=" + countAnims(convertedSpm));
         }
     }
 
@@ -347,6 +407,186 @@ public class SelfRedirectBheCommonProjectileResourcesStep {
                     + sourceIndex + ", expected=" + sourceFileName + ", actual=" + entryFileName);
         }
         return entry;
+    }
+
+    private IndexedWazaTarget requireTargetWazaGroup(
+            WazaGroupGrp targetGroup,
+            String hostFileName
+    ) {
+        IndexedWazaTarget target = findTargetWazaGroup(targetGroup, hostFileName);
+        if (target != null) {
+            return target;
+        }
+        throw new IllegalStateException("公共 WAZ 宿主条目不存在: " + hostFileName);
+    }
+
+    private IndexedWazaTarget findTargetWazaGroup(
+            WazaGroupGrp targetGroup,
+            String hostFileName
+    ) {
+        if (targetGroup == null || targetGroup.getWazaList() == null) {
+            return null;
+        }
+        String normalizedHost = normalizeFileName(hostFileName);
+        for (int i = 0; i < targetGroup.getWazaList().size(); i++) {
+            WazaGroupGrp.WazaGroupEntry entry = targetGroup.getWazaList().get(i);
+            if (entry == null || !isExisting(entry.getExistFlag()) || entry.getWazaDisplayName() == null) {
+                continue;
+            }
+            if (normalizeFileName(entry.getWazaDisplayName() + ".waz").equals(normalizedHost)) {
+                return new IndexedWazaTarget(i, entry);
+            }
+        }
+        return null;
+    }
+
+    private Waz requireHostWaz(TsukuyomiBsdxBaselineBundle inheritedBaseline, String hostFileName) {
+        if (inheritedBaseline.getWazByFileName() == null) {
+            throw new IllegalStateException("公共 WAZ 宿主缺少 wazByFileName");
+        }
+        for (Map.Entry<String, Waz> entry : inheritedBaseline.getWazByFileName().entrySet()) {
+            if (normalizeFileName(entry.getKey()).equals(normalizeFileName(hostFileName))) {
+                Waz waz = entry.getValue();
+                if (waz == null || waz.getSkillList() == null) {
+                    throw new IllegalStateException("公共 WAZ 宿主内容为空: " + hostFileName);
+                }
+                return waz;
+            }
+        }
+        throw new IllegalStateException("公共 WAZ 宿主文件不存在: " + hostFileName);
+    }
+
+    private boolean hasHostWaz(TsukuyomiBsdxBaselineBundle inheritedBaseline, String hostFileName) {
+        if (inheritedBaseline.getWazByFileName() == null) {
+            return false;
+        }
+        for (String fileName : inheritedBaseline.getWazByFileName().keySet()) {
+            if (normalizeFileName(fileName).equals(normalizeFileName(hostFileName))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private SpriteGroupGrp.SpriteGroupEntry findTargetSpriteGroupByFileName(
+            SpriteGroupGrp targetGroup,
+            String sourceFileName
+    ) {
+        if (targetGroup == null || targetGroup.getSpriteList() == null || sourceFileName == null) {
+            return null;
+        }
+        String normalized = normalizeFileName(sourceFileName);
+        for (SpriteGroupGrp.SpriteGroupEntry entry : targetGroup.getSpriteList()) {
+            if (entry == null || !isExisting(entry.getExistFlag()) || entry.getSpriteFileName() == null) {
+                continue;
+            }
+            if (normalizeFileName(entry.getSpriteFileName()).equals(normalized)) {
+                return entry;
+            }
+        }
+        return null;
+    }
+
+    private Spm requireHostSpm(TsukuyomiBsdxBaselineBundle inheritedBaseline, String hostFileName) {
+        if (inheritedBaseline.getSpmByFileName() == null) {
+            throw new IllegalStateException("公共 SPM 宿主缺少 spmByFileName");
+        }
+        for (Map.Entry<String, Spm> entry : inheritedBaseline.getSpmByFileName().entrySet()) {
+            if (normalizeFileName(entry.getKey()).equals(normalizeFileName(hostFileName))) {
+                Spm spm = entry.getValue();
+                if (spm == null) {
+                    throw new IllegalStateException("公共 SPM 宿主内容为空: " + hostFileName);
+                }
+                return spm;
+            }
+        }
+        throw new IllegalStateException("公共 SPM 宿主文件不存在: " + hostFileName);
+    }
+
+    private SpmAppendOffsets appendSpmIntoHost(Spm hostSpm, Spm convertedSpm, String sourceFileName) {
+        ensureSpmLists(hostSpm);
+        ensureSpmLists(convertedSpm);
+        ensureSamePatPageNum(hostSpm, convertedSpm, sourceFileName);
+
+        int imageBase = hostSpm.getImageData().size();
+        int pageBase = hostSpm.getPageData().size();
+        int animBase = hostSpm.getAnimData().size();
+        int animCount = convertedSpm.getAnimData().size();
+
+        /*
+         * SPM 自身也有内部索引：
+         * page.chip.imageNo 指向本 SPM 的 imageData，anim.pat.pageNo 指向本 SPM 的 pageData。
+         * BHE 数据追加进宿主 SPM 后，这两个内部索引必须先加上宿主原有容量。
+         */
+        offsetPageImageNumbers(convertedSpm.getPageData(), imageBase);
+        offsetAnimPageNumbers(convertedSpm.getAnimData(), pageBase);
+
+        hostSpm.getImageData().addAll(convertedSpm.getImageData());
+        hostSpm.getPageData().addAll(convertedSpm.getPageData());
+        hostSpm.getAnimData().addAll(convertedSpm.getAnimData());
+        hostSpm.setNumImageData(hostSpm.getImageData().size());
+        hostSpm.setNumPageData(hostSpm.getPageData().size());
+        hostSpm.setNumAnimData(hostSpm.getAnimData().size());
+        return new SpmAppendOffsets(imageBase, pageBase, animBase, animCount);
+    }
+
+    private void ensureSpmLists(Spm spm) {
+        if (spm.getImageData() == null) {
+            spm.setImageData(new ArrayList<>());
+        }
+        if (spm.getPageData() == null) {
+            spm.setPageData(new ArrayList<>());
+        }
+        if (spm.getAnimData() == null) {
+            spm.setAnimData(new ArrayList<>());
+        }
+    }
+
+    private void ensureSamePatPageNum(Spm hostSpm, Spm convertedSpm, String sourceFileName) {
+        int hostPatPageNum = hostSpm.getPatPageNum() == null ? 0 : hostSpm.getPatPageNum();
+        int sourcePatPageNum = convertedSpm.getPatPageNum() == null ? 0 : convertedSpm.getPatPageNum();
+        if (hostPatPageNum != sourcePatPageNum) {
+            throw new IllegalStateException("公共 SPM 不能追加到 patPageNum 不一致的宿主: "
+                    + sourceFileName + ", host=" + hostPatPageNum + ", source=" + sourcePatPageNum);
+        }
+    }
+
+    private void offsetPageImageNumbers(List<Spm.SPMPageData> pages, int imageBase) {
+        if (pages == null || imageBase == 0) {
+            return;
+        }
+        for (Spm.SPMPageData page : pages) {
+            if (page == null || page.getChipData() == null) {
+                continue;
+            }
+            for (Spm.SPMChipData chip : page.getChipData()) {
+                if (chip != null && chip.getImageNo() != null && chip.getImageNo() >= 0) {
+                    chip.setImageNo(imageBase + chip.getImageNo());
+                }
+            }
+        }
+    }
+
+    private void offsetAnimPageNumbers(List<Spm.SPMAnimData> anims, int pageBase) {
+        if (anims == null || pageBase == 0) {
+            return;
+        }
+        for (Spm.SPMAnimData anim : anims) {
+            if (anim == null || anim.getPatData() == null) {
+                continue;
+            }
+            for (Spm.SPMPatData pat : anim.getPatData()) {
+                if (pat == null || pat.getPageNo() == null) {
+                    continue;
+                }
+                for (int i = 0; i < pat.getPageNo().size(); i++) {
+                    Integer pageNo = pat.getPageNo().get(i);
+                    if (pageNo != null && pageNo >= 0) {
+                        pat.getPageNo().set(i, pageBase + pageNo);
+                    }
+                }
+            }
+        }
     }
 
     private IndexedSpriteSource requireSourceSpriteGroup(
@@ -563,6 +803,10 @@ public class SelfRedirectBheCommonProjectileResourcesStep {
         return waz == null || waz.getSkillList() == null ? 0 : waz.getSkillList().size();
     }
 
+    private int countAnims(Spm spm) {
+        return spm == null || spm.getAnimData() == null ? 0 : spm.getAnimData().size();
+    }
+
     private String buildSeItemCodeName(
             SePair sourcePair,
             com.giga.nexas.dto.bhe.grp.groupmap.SeGroupGrp.SeGroupItem sourceItem
@@ -623,6 +867,12 @@ public class SelfRedirectBheCommonProjectileResourcesStep {
             int index,
             com.giga.nexas.dto.bhe.grp.groupmap.SpriteGroupGrp.SpriteGroupEntry entry
     ) {
+    }
+
+    private record IndexedWazaTarget(int index, WazaGroupGrp.WazaGroupEntry entry) {
+    }
+
+    private record SpmAppendOffsets(int imageBase, int pageBase, int animBase, int animCount) {
     }
 
     private record SePair(int groupIndex, int itemIndex) {

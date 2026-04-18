@@ -14,9 +14,11 @@ import java.util.Map;
  * 公共 SPM、公共 SE 聚合组的目标索引和审计信息。Voice 只记录 SOU/MISAKI
  * 外部依赖；term / InfoCollection 由 term 包统一完成全量语义转换。</p>
  *
- * <p>BHE 迁入资源在目标侧使用 bhe_* 命名空间，避免覆盖 baseline 里已有的同名文件。
+ * <p>公共 WAZ 不新增顶层 WazaGroup，而是追加到 BSDX 已经会预加载的公共宿主 WAZ。
+ * 公共 SPM 按实际数据分两种：BSDX 已有同名宿主时追加到宿主，不存在宿主时新增 bhe_* entry。
  * 运行时只认 GRP 顶层 index、WAZ skill index、SPM anim/page/image index；
- * 因此 append plan 必须记录 sourceIndex 到 targetIndex 的映射，不能让下游步骤靠文件名猜目标位置。</p>
+ * 因此 append plan 必须记录 sourceIndex 到 targetIndex 与内部 base offset 的映射，
+ * 不能让下游步骤靠文件名猜目标位置。</p>
  *
  * <p>公共资源接入不能只追加文件。WAZ/SPM/SE 的顶层数量会影响 GRP、
  * ProgramMaterial 和 MEK material 尾部结构，redirect 写入这些资源前必须同步维护对应容量。</p>
@@ -41,18 +43,29 @@ public class BheCommonProjectileAppendPlan {
     private List<String> notes = new ArrayList<>();
 
     /**
-     * BHE 源公共 WazaGroup index -> preparedBaseline 中新增 bhe_* WazaGroup index。
+     * BHE 源公共 WazaGroup index -> preparedBaseline 中的公共宿主 WazaGroup index。
+     *
+     * <p>公共 WAZ 追加到 Effect/Tama/Laser/Bomb 等宿主文件后，外部引用仍指向宿主顶层 index，
+     * 但 skill index 必须加上追加前的宿主 skill 数。</p>
      */
     private Map<Integer, Integer> sourceWazIndexToTargetIndex = new LinkedHashMap<>();
     private Map<Integer, String> sourceWazIndexToTargetFileName = new LinkedHashMap<>();
+    private Map<Integer, Integer> sourceWazIndexToTargetSkillBase = new LinkedHashMap<>();
+    private Map<Integer, Integer> sourceWazIndexToTargetSkillCount = new LinkedHashMap<>();
 
     /**
-     * BHE 源 SpriteGroup index -> preparedBaseline 中新增 bhe_* SpriteGroup index。
+     * BHE 源 SpriteGroup index -> preparedBaseline 中的目标 SpriteGroup index。
      *
-     * <p>公共 SPM 源 index 不是连续区间，`173` 会映射到紧凑追加段的最后一项。</p>
+     * <p>同名公共 SPM 会追加到 BSDX 宿主文件；BHE-only 公共 SPM 才新增 bhe_* entry。
+     * CEventSprite 除了 spmFileSequence，还带 actionGroupNumber，因此同名宿主追加时也要记录
+     * action group base，供公共 WAZ 与单机体 WAZ 同步偏移。</p>
      */
     private Map<Integer, Integer> sourceSpriteIndexToTargetIndex = new LinkedHashMap<>();
     private Map<Integer, String> sourceSpriteIndexToTargetFileName = new LinkedHashMap<>();
+    private Map<Integer, Integer> sourceSpriteIndexToTargetImageBase = new LinkedHashMap<>();
+    private Map<Integer, Integer> sourceSpriteIndexToTargetPageBase = new LinkedHashMap<>();
+    private Map<Integer, Integer> sourceSpriteIndexToTargetActionGroupBase = new LinkedHashMap<>();
+    private Map<Integer, Integer> sourceSpriteIndexToTargetActionGroupCount = new LinkedHashMap<>();
 
     /**
      * BHE 源 `(SeGroup, SeItem)` -> `BHE_SE_PUBLIC` 聚合组内 item index。

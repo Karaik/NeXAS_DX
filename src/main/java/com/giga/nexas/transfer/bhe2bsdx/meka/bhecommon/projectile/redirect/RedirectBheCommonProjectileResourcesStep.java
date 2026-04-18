@@ -15,9 +15,10 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiRawSourceBundle
  * 这里负责把公共资源接入继承基线，并完成目标侧索引自洽。本类只保留调用骨架，
  * 具体规则由 self redirect、cross redirect 和 term 包分别承接。</p>
  *
- * <p>公共资源接入以 bhe_* 目标命名空间隔离 BHE 文件，并以 append plan 记录所有
- * sourceIndex 到 targetIndex 的映射。这里不能复用 JINKI 的 key-based merge 思路，
- * 否则单机体 graft 会把公共资源当成私有闭包重复合并和重定向。</p>
+ * <p>公共 WAZ 接入 BSDX 固定公共宿主 WAZ，公共 SPM 在同名宿主存在时也接入宿主；
+ * BHE-only SPM 与公共 SE 才使用 bhe_* 命名空间。append plan 必须记录所有 sourceIndex
+ * 到 targetIndex 以及宿主内部 base offset 的映射，单机体 graft 只能消费这些映射，
+ * 不能把公共资源当成私有闭包重复合并和重定向。</p>
  */
 public class RedirectBheCommonProjectileResourcesStep {
 

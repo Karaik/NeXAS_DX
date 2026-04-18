@@ -47,6 +47,9 @@ class OutputBheCommonProjectileResourcesStepTest {
         BheCommonProjectileAppendPlan plan = new BheCommonProjectileAppendPlan();
         plan.getCommonProjectileWazFiles().add("bhe_Effect.waz");
         plan.getCommonProjectileSpmFiles().add("bhe_Tama.spm");
+        plan.getSourceWazIndexToTargetFileName().put(0, "bhe_Effect.waz");
+        plan.getSourceWazIndexToTargetSkillBase().put(0, 0);
+        plan.getSourceWazIndexToTargetSkillCount().put(0, 1);
         plan.getSourceSePairToTargetFileName().put(BheCommonProjectileAppendPlan.sePairKey(1, 123), "bhe_RE_tama10");
 
         step.output(request, baseline, plan, outputRoot, assetSet);
@@ -80,6 +83,9 @@ class OutputBheCommonProjectileResourcesStepTest {
         BheCommonProjectileAppendPlan plan = new BheCommonProjectileAppendPlan();
         plan.getCommonProjectileWazFiles().add("bhe_Effect.waz");
         plan.getCommonProjectileSpmFiles().add("bhe_Tama.spm");
+        plan.getSourceWazIndexToTargetFileName().put(0, "bhe_Effect.waz");
+        plan.getSourceWazIndexToTargetSkillBase().put(0, 0);
+        plan.getSourceWazIndexToTargetSkillCount().put(0, 1);
         plan.getSourceSePairToTargetFileName().put(BheCommonProjectileAppendPlan.sePairKey(1, 124), "bhe_MissingAudio");
 
         step.output(request, baseline, plan, outputRoot, assetSet);

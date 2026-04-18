@@ -65,7 +65,8 @@ public class BheResourceIndexResolver {
             return sourceSkillIndex;
         }
         if (isCommonWazIndex(sourceWazIndex)) {
-            return sourceSkillIndex;
+            Integer skillBase = commonPlan.getSourceWazIndexToTargetSkillBase().get(sourceWazIndex);
+            return skillBase == null ? sourceSkillIndex : skillBase + sourceSkillIndex;
         }
         Map<Integer, Integer> skillMap = privatePlan == null
                 ? null
@@ -88,6 +89,18 @@ public class BheResourceIndexResolver {
             throw new IllegalStateException("找不到源 SpriteGroup 目标索引: " + sourceIndex);
         }
         return targetIndex;
+    }
+
+    public Integer resolveSpriteActionGroupIndex(Integer sourceSpriteIndex, Integer sourceActionGroupIndex) {
+        if (sourceSpriteIndex == null || sourceSpriteIndex < 0
+                || sourceActionGroupIndex == null || sourceActionGroupIndex < 0) {
+            return sourceActionGroupIndex;
+        }
+        if (isCommonSpriteIndex(sourceSpriteIndex)) {
+            Integer actionBase = commonPlan.getSourceSpriteIndexToTargetActionGroupBase().get(sourceSpriteIndex);
+            return actionBase == null ? sourceActionGroupIndex : actionBase + sourceActionGroupIndex;
+        }
+        return sourceActionGroupIndex;
     }
 
     public BheResolvedSeRef resolveSe(Integer sourceGroupIndex, Integer sourceItemIndex) {

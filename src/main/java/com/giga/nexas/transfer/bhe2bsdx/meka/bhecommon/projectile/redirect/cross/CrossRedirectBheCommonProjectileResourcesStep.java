@@ -163,6 +163,10 @@ public class CrossRedirectBheCommonProjectileResourcesStep {
                     + fileName + ", sourceWaz=" + sourceIndex);
         }
         select.setWazFileNo(targetIndex);
+        Integer skillBase = appendPlan.getSourceWazIndexToTargetSkillBase().get(sourceIndex);
+        if (skillBase != null && select.getWazSequenceNo() != null && select.getWazSequenceNo() >= 0) {
+            select.setWazSequenceNo(skillBase + select.getWazSequenceNo());
+        }
     }
 
     private void rewriteSprite(
@@ -180,6 +184,14 @@ public class CrossRedirectBheCommonProjectileResourcesStep {
                     + fileName + ", sourceSprite=" + sourceIndex);
         }
         sprite.setSpmFileSequence(targetIndex);
+        Integer actionBase = appendPlan.getSourceSpriteIndexToTargetActionGroupBase().get(sourceIndex);
+        if (actionBase != null && sprite.getActionGroupNumber() != null && sprite.getActionGroupNumber() >= 0) {
+            /*
+             * 同名公共 SPM 会追加到 BSDX 宿主 SPM，CEventSprite 的 actionGroupNumber
+             * 必须从“源 SPM 内部 anim index”切换成“宿主 SPM 内部 anim index”。
+             */
+            sprite.setActionGroupNumber(actionBase + sprite.getActionGroupNumber());
+        }
     }
 
     private void rewriteSe(

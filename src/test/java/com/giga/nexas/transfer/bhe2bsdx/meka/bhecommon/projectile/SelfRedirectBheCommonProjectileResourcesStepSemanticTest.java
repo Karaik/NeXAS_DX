@@ -80,21 +80,26 @@ class SelfRedirectBheCommonProjectileResourcesStepSemanticTest {
     ) {
         assertEquals(baseWazSize, appendPlan.getBaseWazaGroupSize());
         assertEquals(8, appendPlan.getSourceWazIndexToTargetIndex().size());
-        assertEquals(baseWazSize + 8, baseline.getWazaGroupGrp().getWazaList().size());
+        assertEquals(baseWazSize, baseline.getWazaGroupGrp().getWazaList().size(),
+                "公共 WAZ 追加到 BSDX 宿主 WAZ，不新增 WazaGroup 顶层 entry");
 
         for (int sourceIndex = 0; sourceIndex < BheCommonProjectileResources.COMMON_PROJECTILE_WAZ_FILES.size(); sourceIndex++) {
             Integer targetIndex = appendPlan.getSourceWazIndexToTargetIndex().get(sourceIndex);
-            assertEquals(baseWazSize + sourceIndex, targetIndex);
+            String expectedHostFileName = BheCommonProjectileResources.commonProjectileHostWazFiles().get(sourceIndex);
 
             WazaGroupGrp.WazaGroupEntry targetEntry = baseline.getWazaGroupGrp().getWazaList().get(targetIndex);
             com.giga.nexas.dto.bhe.grp.groupmap.WazaGroupGrp.WazaGroupEntry sourceEntry =
                     rawSourceBundle.getWazaGroupGrp().getWazaList().get(sourceIndex);
             String targetFileName = appendPlan.getSourceWazIndexToTargetFileName().get(sourceIndex);
+            Integer skillBase = appendPlan.getSourceWazIndexToTargetSkillBase().get(sourceIndex);
+            Integer skillCount = appendPlan.getSourceWazIndexToTargetSkillCount().get(sourceIndex);
 
-            assertEquals("bhe_" + sourceEntry.getWazaDisplayName() + ".waz", targetFileName);
-            assertEquals("bhe_" + sourceEntry.getWazaDisplayName(), targetEntry.getWazaDisplayName());
-            assertEquals(sourceEntry.getWazaName(), targetEntry.getWazaName());
-            assertTrue(targetEntry.getWazaCodeName().startsWith("BHE_"));
+            assertEquals(expectedHostFileName, targetFileName);
+            assertEquals(stripExtension(expectedHostFileName), targetEntry.getWazaDisplayName());
+            assertNotNull(skillBase);
+            assertEquals(sourceEntry.getParam(), skillCount);
+            assertTrue(skillBase >= 0);
+            assertTrue(skillBase + skillCount <= targetEntry.getParam());
             assertEquals(countSkills(baseline.getWazByFileName().get(targetFileName)), targetEntry.getParam());
             assertNotNull(baseline.getWazByFileName().get(targetFileName));
         }
@@ -108,8 +113,9 @@ class SelfRedirectBheCommonProjectileResourcesStepSemanticTest {
     ) {
         assertEquals(baseSpriteSize, appendPlan.getBaseSpriteGroupSize());
         assertEquals(12, appendPlan.getSourceSpriteIndexToTargetIndex().size());
-        assertEquals(baseSpriteSize + 12, baseline.getSpriteGroupGrp().getSpriteList().size());
-        assertEquals(baseSpriteSize + 11, appendPlan.getSourceSpriteIndexToTargetIndex().get(173));
+        assertEquals(baseSpriteSize + 3, baseline.getSpriteGroupGrp().getSpriteList().size(),
+                "只有 BSDX 不存在同名宿主的公共 SPM 才新增 bhe_* SpriteGroup entry");
+        assertEquals(baseSpriteSize + 2, appendPlan.getSourceSpriteIndexToTargetIndex().get(173));
 
         for (String sourceFileName : BheCommonProjectileResources.COMMON_PROJECTILE_SPM_FILES) {
             int sourceIndex = findSourceSpriteIndex(rawSourceBundle, sourceFileName);
@@ -118,13 +124,22 @@ class SelfRedirectBheCommonProjectileResourcesStepSemanticTest {
             SpriteGroupGrp.SpriteGroupEntry targetEntry = baseline.getSpriteGroupGrp().getSpriteList().get(targetIndex);
             Spm targetSpm = baseline.getSpmByFileName().get(targetFileName);
 
-            assertEquals("bhe_" + sourceFileName, targetFileName);
             assertEquals(targetFileName, targetEntry.getSpriteFileName());
-            assertTrue(targetEntry.getSpriteCodeName().startsWith("BHE_"));
             assertNotNull(targetSpm);
-            assertTrue(targetSpm.getImageData().stream()
-                    .allMatch(image -> image == null || image.getImageName() == null
-                            || image.getImageName().startsWith("bhe_")));
+            Integer imageBase = appendPlan.getSourceSpriteIndexToTargetImageBase().get(sourceIndex);
+            Integer actionBase = appendPlan.getSourceSpriteIndexToTargetActionGroupBase().get(sourceIndex);
+            Integer actionCount = appendPlan.getSourceSpriteIndexToTargetActionGroupCount().get(sourceIndex);
+            assertNotNull(imageBase);
+            assertNotNull(actionBase);
+            assertNotNull(actionCount);
+            assertTrue(actionBase + actionCount <= targetSpm.getAnimData().size());
+            for (int imageIndex = imageBase; imageIndex < targetSpm.getImageData().size(); imageIndex++) {
+                String imageName = targetSpm.getImageData().get(imageIndex).getImageName();
+                assertTrue(imageName == null || imageName.startsWith("bhe_"));
+            }
+            if (targetFileName.startsWith("bhe_")) {
+                assertTrue(targetEntry.getSpriteCodeName().startsWith("BHE_"));
+            }
         }
     }
 
@@ -219,6 +234,7 @@ class SelfRedirectBheCommonProjectileResourcesStepSemanticTest {
         bundle.setProgramMaterialGrp(read("src/main/resources/grpBsdxJson/ProgramMaterial.grp.json", ProgramMaterialGrp.class));
         bundle.setMapGroupGrp(read("src/main/resources/grpBsdxJson/MapGroup.grp.json", MapGroupGrp.class));
         bundle.getMekByFileName().put("aki.mek", read("src/main/resources/mekBsdxJson/Aki.mek.json", Mek.class));
+        CommonProjectileTestSupport.loadBsdxHostCommonResources(bundle);
         return bundle;
     }
 
@@ -251,6 +267,11 @@ class SelfRedirectBheCommonProjectileResourcesStepSemanticTest {
 
     private int countSkills(Waz waz) {
         return waz == null || waz.getSkillList() == null ? 0 : waz.getSkillList().size();
+    }
+
+    private String stripExtension(String fileName) {
+        int dot = fileName.lastIndexOf('.');
+        return dot <= 0 ? fileName : fileName.substring(0, dot);
     }
 
     private void writeAuditReport(

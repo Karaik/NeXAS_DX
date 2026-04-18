@@ -85,7 +85,7 @@ class BheCommonProjectileBinaryRoundTripTest {
         }
 
         writeSummary(rows, mismatches);
-        assertEquals(25, rows.size(), "公共二进制资源 round-trip 数量应为 8 WAZ + 12 SPM + 5 GRP");
+        assertEquals(23, rows.size(), "公共二进制资源 round-trip 数量应为 6 个公共宿主 WAZ + 12 个公共 SPM + 5 个 GRP");
         assertTrue(mismatches.isEmpty(), "公共资源 generate -> parse 后 JSON 不一致: " + mismatches);
     }
 
@@ -190,6 +190,7 @@ class BheCommonProjectileBinaryRoundTripTest {
         bundle.setProgramMaterialGrp(read("src/main/resources/grpBsdxJson/ProgramMaterial.grp.json", ProgramMaterialGrp.class));
         bundle.setMapGroupGrp(read("src/main/resources/grpBsdxJson/MapGroup.grp.json", MapGroupGrp.class));
         bundle.getMekByFileName().put("aki.mek", read("src/main/resources/mekBsdxJson/Aki.mek.json", Mek.class));
+        CommonProjectileTestSupport.loadBsdxHostCommonResources(bundle);
         return bundle;
     }
 

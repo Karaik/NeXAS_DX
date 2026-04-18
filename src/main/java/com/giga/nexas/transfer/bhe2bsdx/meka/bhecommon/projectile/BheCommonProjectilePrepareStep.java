@@ -17,8 +17,8 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiRawSourceBundle
  *
  * <p>本入口必须与规约文档双向对齐：
  * src/main/resources/research/12-bhe-common-projectile-append-checklist.md。
- * 该文档固定了 bhe_* 命名空间、WAZ/SPM/SE 目标索引映射、term 包语义重编译入口、
- * Voice 特例，以及 preparedBaseline 与 mergedPackageBundle 的业务边界。</p>
+ * 该文档固定了公共 WAZ/SPM 宿主追加、BHE-only 资源命名空间、WAZ/SPM/SE 目标索引映射、
+ * term 包语义重编译入口、Voice 特例，以及 preparedBaseline 与 mergedPackageBundle 的业务边界。</p>
  */
 public class BheCommonProjectilePrepareStep {
 

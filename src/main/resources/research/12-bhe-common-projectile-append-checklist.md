@@ -12,27 +12,30 @@
 - [x] BHE 公共弹幕资源由 Tsukuyomi 首次接入。
 - [x] 单机体移植不重复转换或 append 这组公共资源。
 - [x] Tsukuyomi 外层调用保持不变；第 0 步内部只通过 `BheCommonProjectilePrepareStep.prepare(...)` 接入公共弹幕资源层。
-- [x] 公共弹幕 WAZ 使用 `bhe_*` 独立目标 entry，不写入 baseline 同名 WAZ。
+- [x] 公共弹幕 WAZ 追加到 BSDX/JINKI 已存在的公共宿主 WAZ，不新增 `bhe_*` WazaGroup entry。
+- [x] 公共 SPM 优先追加到 BSDX/JINKI 同名宿主 SPM；目标侧没有宿主的 BHE-only SPM 才新增 `bhe_*` SpriteGroup entry。
 - [x] `AppendGrpEntriesStep` 的 key-based merge 是 JINKI 风格，不适用于 BHE common projectile cluster。
 - [x] 公共弹幕接入层不做静态 PNG/OGG 复制；静态 sidecar 属于 output/import 阶段。
 
 ## 命名空间与容量策略
 
-- [x] BHE 侧迁入的公共资源文件进入 BSDX/JINKI baseline 时使用 `bhe_*` 目标命名空间。
-  - 目标命名空间用于避免覆盖 baseline 中已有的同名资源文件。
+- [x] BHE 公共弹幕资源进入 BSDX/JINKI baseline 时按“宿主追加优先、BHE-only 前缀新增”处理。
+  - 公共 WAZ 追加到 BSDX 已预加载的公共宿主 WAZ，通过 `skillBase + sourceSkillIndex` 定位追加段。
+  - 同名公共 SPM 追加到 BSDX 宿主 SPM，通过 `actionGroupBase + sourceActionGroupNumber` 定位追加段。
+  - BHE-only SPM、公共 SE 音频与公共 SPM 图片继续使用 `bhe_*` 命名空间，避免覆盖 baseline 中已有文件。
   - 运行时引用以 GRP 顶层 index、WAZ 内部 skill index、SPM 内部 anim/page/image index 为准，不使用文件名或 codename 作为运行时 key。
-  - `bhe_*` 是目标侧资源 entry/file 的隔离规则，不改变 BHE 源数据中 index 的语义。
 - [x] `bhe_*` 命名规范：前缀固定小写 `bhe_`，资源主体保留 BHE 源文件原大小写。
-  - 示例：`Effect.waz -> bhe_Effect.waz`。
-  - 示例：`Tama.spm -> bhe_Tama.spm`。
+  - 示例：`Effect.waz` 追加到 BSDX/JINKI `Effect.waz`，不新增 `bhe_Effect.waz`。
+  - 示例：`Tama.spm` 追加到 BSDX/JINKI `Tama.spm`，不新增 `bhe_Tama.spm`。
+  - 示例：`Ice.spm -> bhe_Ice.spm`，因为 BSDX 侧没有同名宿主。
   - 示例：`RE_tama10.ogg -> bhe_RE_tama10.ogg`。
   - 示例：`Tama_001_0001.png -> bhe_Tama_001_0001.png`。
 - [x] 公共 WAZ/SPM 的引用重写必须通过 append plan 中记录的 `sourceIndex -> targetIndex`、`targetName` 完成。
-  - 示例：BHE 公共 WAZ 内的 `spmFileSequence = 10` 不能靠 `MekaEffect.spm` 的名字查找目标位置，而要映射到目标 `SpriteGroup` 中 `bhe_MekaEffect.spm` 对应的 index。
-  - 示例：BHE 公共 WAZ 内的 `wazFileNo = 0` 不能继续指向 baseline 原始 `Effect.waz`，要映射到目标 `WazaGroup` 中 `bhe_Effect.waz` 对应的 index。
+  - 示例：BHE 公共 WAZ 内的 `spmFileSequence = 10` 映射到新增的 `bhe_MekaEffect.spm`，因为 BSDX 无同名宿主。
+  - 示例：BHE 公共 WAZ 内的 `wazFileNo = 3` 映射到 BSDX `Tama05.waz` 宿主，并把 `wazSequenceNo` 加上该源 WAZ 的 `skillBase`。
 - [x] 公共资源 append 不允许只追加二进制文件；必须同步维护承载数量上界的 GRP/ProgramMaterial/MEK 尾部结构。
-  - WAZ 顶层扩容必须同步 `WazaGroup.grp`。
-  - SPM 顶层扩容必须同步 `SpriteGroup.grp`，并同步依赖 Sprite 数量的 ProgramMaterial / MEK material 尾部结构。
+  - 公共 WAZ 当前不做顶层扩容，但必须同步宿主 `WazaGroup.param` 为追加后的 skill 总数。
+  - BHE-only 公共 SPM 顶层扩容必须同步 `SpriteGroup.grp`，并同步依赖 Sprite 数量的 ProgramMaterial / MEK material 尾部结构。
   - SE / BatVoice 顶层扩容必须先完成对应 GRP、ProgramMaterial、MEK material 尾部容量审计，不能直接按 BHE 全量组数盲目追加。
 - [x] 公共资源层产出的 `preparedBaseline` 是单机体移植的输入基线。
   - 单机体阶段不能重复 append 或重定向这批公共资源。
@@ -85,6 +88,10 @@
   - resolver 持有 `BheCommonProjectileAppendPlan` 和 `TsukuyomiGrpAppendPlan`，公共映射优先，私有映射兜底。
   - 不允许把公共映射合并进 `TsukuyomiGrpAppendPlan`。
 - [x] 该护栏用于修正 JINKI 架子的默认假设：扫到的辅助 WAZ 不一定都是单机体迁移资源，BHE 公共 WAZ 是公共资源层的基线组成部分。
+- [x] `CEventChange.bsdxInfoCollectionList2[0].paramList[0..1]` 属于单机体 WAZ 重绑范围。
+  - 运行时 `CWorkWazaSelect` 会把这两个参数解释为 `(wazFileNo, actionGroupNumber)`。
+  - 这不是 term 语义本身，不能只交给 term converter；单机体 `RebindWazStep` 必须用 `BheResourceIndexResolver` 重写它。
+  - 动态验证中 Tsukuyomi 原始 `[11,12]` 必须重写为目标侧 `[111,12]`，否则武装预览结束时会切到错误的 runtime WAZ group。
 
 ## WAZ 运行时引用语义
 
@@ -95,39 +102,55 @@
   - 示例：`wazFileNo = 7, wazSequenceNo = 134` 表示 `Bomb.waz.skillList[134]`。
 - [x] `skillNameEnglish` 可用于审计和人工对照，但 BHE common projectile cluster 不使用 key-based merge 推导运行时目标 index。
 - [x] BHE common projectile cluster 不把 skillList 追加到 baseline 同名 WAZ。
-- [x] 公共 WAZ 以 `bhe_*` 新文件独立接入目标侧，内部 skill index 保持源侧序号。
+- [x] 公共 WAZ 追加到 BSDX/JINKI 宿主 WAZ，内部引用必须落到宿主追加段。
 
 ## 公共资源目标索引映射
 
-- [x] 公共 WAZ 新增 8 个 `bhe_*` 顶层 `WazaGroup` entry。
+- [x] 公共 WAZ 不新增顶层 `WazaGroup` entry，按继承基线中的实际宿主 entry 追加。
   - BHE 源公共 WAZ index 连续为 `0..7`。
-  - 目标映射：`targetWazIndex = baseWazaGroupSize + sourceWazIndex`。
-  - 公共 WAZ 内部 `CEventWazaSelect.wazFileNo` 按该公式重写。
-  - 新 `bhe_*` WAZ 文件独立存在，`wazSequenceNo` 保持源侧 skill index，不加旧同名 WAZ 的 appendStart。
-- [x] 公共 SPM 新增 12 个 `bhe_*` 顶层 `SpriteGroup` entry。
-  - BHE 源公共 SPM index 为 `[0,1,2,3,4,5,6,7,8,9,10,173]`，不是连续 `0..11`。
-  - 目标映射使用紧凑顺序：`sourceSpriteIndex -> baseSpriteGroupSize + compactOrdinal`。
-  - 示例：`0 -> baseSpriteGroupSize + 0`，`10 -> baseSpriteGroupSize + 10`，`173 -> baseSpriteGroupSize + 11`。
-  - 公共 WAZ 内部 `CEventSprite.spmFileSequence` 按该映射重写。
-  - 新 `bhe_*` SPM 文件独立存在，`actionGroupNumber` 保持源侧 anim index，不叠加旧同名 SPM 的 anim 偏移。
+  - 宿主选择规则：优先使用继承基线里的同名 WAZ 宿主；同名宿主不存在时才使用 fallback 表。
+  - 纯 BSDX fallback：`0 -> Effect`，`1 -> Tama01`，`2 -> Tama02`，`3 -> Tama05`，`4 -> Laser`，`5 -> Tama05`，`6 -> Laser`，`7 -> Bomb`。
+  - JINKI 继承基线已经补出 `Tama03/Tama04` 宿主时，`Tama03/Tama04` 使用同名宿主。
+  - 公共 WAZ 内部 `CEventWazaSelect.wazFileNo` 改成宿主 WazaGroup index。
+  - 公共 WAZ 内部 `CEventWazaSelect.wazSequenceNo` 改成 `sourceSkillIndex + sourceWazSkillBase`。
+
+| BHE source WazaGroup | BHE source WAZ | JINKI 继承基线宿主 | 纯 BSDX fallback 宿主 | 处理说明 |
+|---:|---|---|---|---|
+| 0 | `Effect.waz` | `Effect.waz` | `Effect.waz` | 同名宿主追加 |
+| 1 | `Tama01.waz` | `Tama01.waz` | `Tama01.waz` | 同名宿主追加 |
+| 2 | `Tama02.waz` | `Tama02.waz` | `Tama02.waz` | 同名宿主追加 |
+| 3 | `Tama03.waz` | `Tama03.waz` | `Tama05.waz` | JINKI 已补同名宿主；纯 BSDX 才归入“弾(その他)” |
+| 4 | `Tama04.waz` | `Tama04.waz` | `Laser.waz` | JINKI 已补同名宿主；纯 BSDX 才归入光学/レーザー |
+| 5 | `Tama05.waz` | `Tama05.waz` | `Tama05.waz` | 同名宿主追加 |
+| 6 | `Laser.waz` | `Laser.waz` | `Laser.waz` | 同名宿主追加 |
+| 7 | `Bomb.waz` | `Bomb.waz` | `Bomb.waz` | 同名宿主追加 |
+
+- [x] 公共 SPM 按同名宿主优先接入，只有 BHE-only 资源新增 `bhe_*` 顶层 `SpriteGroup` entry。
+  - BHE 源公共 SPM index 为 `[0,1,2,3,4,5,6,7,8,9,10,173]`。
+  - 同名宿主映射：`0 -> Tama.spm`，`1 -> bomb.spm`，`2 -> Elec.spm`，`3 -> Smoke.spm`，`4 -> Mark.spm`，`5 -> Pic.spm`，`7 -> Link.spm`，`8 -> Fire.spm`，`9 -> Wind.spm`。
+  - BHE-only 映射：`6 -> bhe_Ice.spm`，`10 -> bhe_MekaEffect.spm`，`173 -> bhe_設置物：掲示板.spm`。
+  - 公共 WAZ 内部 `CEventSprite.spmFileSequence` 改成目标 SpriteGroup index。
+  - 公共 WAZ 内部 `CEventSprite.actionGroupNumber` 改成 `sourceActionGroupNumber + sourceSpmActionGroupBase`。
 - [x] 公共 SE 新增 1 个 `BHE_SE_PUBLIC` 顶层 `SeGroup` entry。
   - 目标 group：`targetSeGroupIndex = baseSeGroupSize`。
   - 目标 item：`(sourceSeGroupIndex, sourceSeItemIndex) -> targetSeItemIndex`。
   - 公共 WAZ 内部 `CEventSe` 重写为 `(baseSeGroupSize, targetSeItemIndex)`。
 - [x] 单机体 graft 遇到公共资源引用时读取公共 append plan。
-  - 公共 WAZ：`source public waz index -> preparedBaseline bhe_* WazaGroup index`。
+  - 公共 WAZ：`source public waz index -> preparedBaseline 宿主 WazaGroup index + 宿主内部 skillBase`。
   - 公共 SPM：`source public sprite index -> preparedBaseline bhe_* SpriteGroup index`。
   - 公共 SE：`source se pair -> preparedBaseline common SeGroup/item`。
   - 单机体 graft 不重新 append 公共资源。
 
 ### 20260418 selfRedirect 实现审计
 
-- [x] 已实现 8 个公共 WAZ 目标 entry 接入。
+- [x] 已实现 8 个 BHE 公共 WAZ 向 6 个 BSDX/JINKI 公共宿主 WAZ 的 skill 追加。
   - 审计输出：`src/main/resources/out/bhe2bsdx/common-projectile-self-redirect/audit.md`
-  - 目标区间：`baseWazaGroupSize=108`，目标 index `108..115`。
-- [x] 已实现 12 个公共 SPM 目标 entry 接入。
-  - 目标区间：`baseSpriteGroupSize=138`，目标 index `138..149`。
-  - `sourceSpriteIndex=173` 映射到 `targetSpriteIndex=149`。
+  - `baseWazaGroupSize=108`，目标 `WazaGroup` size 仍为 `108`。
+  - 目标宿主 index：`Effect=0`，`Tama01=1`，`Tama02=2`，`Tama05=3`，`Laser=4`，`Bomb=5`。
+- [x] 已实现 12 个公共 SPM 接入。
+  - `baseSpriteGroupSize=138`，目标 `SpriteGroup` size 为 `141`。
+  - 同名宿主 SPM 追加到原 SpriteGroup index：`0,1,2,3,4,5,6,7,8`。
+  - BHE-only SPM 新增 3 个 entry：`Ice -> 138`，`MekaEffect -> 139`，`設置物：掲示板 -> 140`。
 - [x] 已实现 1 个 `BHE_SE_PUBLIC` 聚合 SeGroup。
   - 目标 group：`baseSeGroupSize=38`。
   - 聚合 item 数量：`668`。
@@ -141,10 +164,12 @@
 
 - [x] 已实现公共 WAZ 内部 `CEventWazaSelect` 目标侧重写。
   - 审计数量：`4583`。
-  - 目标 WazaGroup：`108..115`。
+  - 目标 WazaGroup：`[0,1,2,3,4,5]`。
+  - `wazSequenceNo` 已按宿主 `skillBase` 偏移。
 - [x] 已实现公共 WAZ 内部 `CEventSprite` 目标侧重写。
   - 审计数量：`6169` 个有效非负 SPM 引用。
-  - 目标 SpriteGroup：`138..149`。
+  - 目标 SpriteGroup：`[0,1,2,3,4,5,6,7,8,138,139,140]`。
+  - `actionGroupNumber` 已按宿主 `animBase` 偏移。
 - [x] 已实现公共 WAZ 内部 `CEventSe` 目标侧重写。
   - 审计数量：`2993` 个 SE byte entry。
   - 目标 SeGroup：`38`。
@@ -194,22 +219,22 @@
    - `term / InfoCollection`：公共资源阶段接入全量语义转换，规则见 term 包文档。
 
 2. **追加公共目标 entry**
-   - WAZ：新增 8 个 `bhe_*` 顶层 `WazaGroup` entry。
-   - SPM：新增 12 个 `bhe_*` 顶层 `SpriteGroup` entry。
+   - WAZ：8 个 BHE 公共 WAZ 追加到 6 个 BSDX/JINKI 公共宿主 WAZ。
+   - SPM：9 个同名公共 SPM 追加到 BSDX/JINKI 宿主 SPM，3 个 BHE-only SPM 新增 `bhe_*` 顶层 `SpriteGroup` entry。
    - SE：新增 1 个 `BHE_SE_PUBLIC` 顶层 `SeGroup` entry。
    - Voice：`SOU / MISAKI` 作为外部角色语音特例记录，不在公共阶段重建。
 
 3. **写入公共资源文件**
-   - WAZ：输出独立 `bhe_*` WAZ 文件，skill index 保持源侧序号。
-   - SPM：输出独立 `bhe_*` SPM 文件，anim/page/image 内部索引保持源侧语义。
+   - WAZ：输出被追加后的宿主 WAZ 文件，skill index 进入宿主追加段。
+   - SPM：输出被追加后的宿主 SPM 文件；BHE-only SPM 输出独立 `bhe_*` SPM 文件。
    - SE：公共 SE item 的落盘音频名使用 `bhe_*` 前缀。
-   - 静态 PNG/OGG 的复制仍属于 output/import 阶段，但本层必须产出对应 `bhe_*` 引用名。
+   - 静态 PNG/OGG 的复制仍属于 output/import 阶段；BHE 图片与音频使用 `bhe_*` 引用名。
 
 4. **重写公共 WAZ 内部跨资源引用**
-   - `CEventWazaSelect.wazFileNo`：`baseWazaGroupSize + sourceWazIndex`。
-   - `CEventWazaSelect.wazSequenceNo`：保持源侧 skill index。
-   - `CEventSprite.spmFileSequence`：`sourceSpriteIndex -> baseSpriteGroupSize + compactOrdinal`。
-   - `CEventSprite.actionGroupNumber`：保持源侧 anim index。
+   - `CEventWazaSelect.wazFileNo`：`sourceWazIndex -> BSDX/JINKI 宿主 WazaGroup index`。
+   - `CEventWazaSelect.wazSequenceNo`：`sourceSkillIndex + sourceWazSkillBase`。
+   - `CEventSprite.spmFileSequence`：`sourceSpriteIndex -> BSDX/JINKI 宿主或 BHE-only SpriteGroup index`。
+   - `CEventSprite.actionGroupNumber`：`sourceActionGroupNumber + sourceSpmActionGroupBase`。
    - `CEventSe`：`(sourceSeGroupIndex, sourceSeItemIndex) -> (baseSeGroupSize, targetSeItemIndex)`。
    - `InfoCollection / term`：由 term 包统一重编译，不与普通 index 重写混写。
 
@@ -234,24 +259,26 @@
   - 原因 2：baseline 内含 WAZ/SPM/MEK/DAT/GRP 等复杂嵌套对象，且存在多态对象与 byte[]；为了 before/after 语义强行深拷贝会引入额外 transfer 成本和复制错误风险。
 
 - [x] Q3：公共 WAZ 是追加到 baseline 同名 WAZ，还是新增 `bhe_*` 顶层 WAZ entry？
-  - 结论：新增 8 个 `bhe_*` 顶层 `WazaGroup` entry，并输出 8 个独立 `bhe_*` WAZ 文件。
-  - 原因：同名 append 会把 BSDX/JINKI 原公共 WAZ 与 BHE 公共 WAZ 混在同一文件里，破坏公共层隔离，也容易被单机体 closure 重复处理。
-  - 元数据：新 `WazaGroup.param` 等于对应 `bhe_*` WAZ 文件自身 `skillList.size()`，不是旧同名 WAZ 的 `appendStart + appendCount`。
+  - 结论：公共 WAZ 追加到 BSDX/JINKI 已预加载的公共宿主 WAZ，不新增 `bhe_*` 顶层 WAZ entry。
+  - 原因：运行时对公共 WAZ 有固定预加载路径；新增顶层 `bhe_*` WAZ 会导致技能调用时取不到预加载 WAZ 对象。
+  - 元数据：宿主 `WazaGroup.param` 等于追加后的宿主 `skillList.size()`，append plan 记录每个 BHE 源 WAZ 的 `skillBase/skillCount`。
 
 - [x] Q4：公共 WAZ 内部 `CEventWazaSelect.wazSequenceNo` 重写是否只处理公共弹幕资源簇内部引用，不处理单机体主 WAZ 的普通引用？
   - 结论：bhecommon WAZ 子阶段只修公共 WAZ 之间的内部引用，不修任何单机体私有引用。
-  - 范围：`effect / tama01..05 / laser / bomb` 内部相互引用时，`wazFileNo` 重写到 `bhe_*` WazaGroup entry，`wazSequenceNo` 保持源侧 skill index；`tsukuyomi.waz` 等单机体私有 WAZ 的引用由单机体 rebind 处理。
+  - 范围：`effect / tama01..05 / laser / bomb` 内部相互引用时，`wazFileNo` 重写到 BSDX/JINKI 宿主 WazaGroup entry，`wazSequenceNo` 重写到宿主追加段；`tsukuyomi.waz` 等单机体私有 WAZ 的引用由单机体 rebind 处理。
 
 - [x] Q5：`BheCommonProjectileAppendPlan` 是否需要记录公共资源 source -> target 映射？
   - 结论：必须记录 WAZ、SPM、SE 的 source -> target 映射。
-  - WAZ：`sourceWazIndex -> baseWazaGroupSize + sourceWazIndex`。
-  - SPM：`sourceSpriteIndex -> baseSpriteGroupSize + compactOrdinal`。
+  - WAZ：`sourceWazIndex -> hostWazaGroupIndex`，并记录 `sourceWazIndex -> hostSkillBase/skillCount`。
+  - SPM：`sourceSpriteIndex -> hostOrBheOnlySpriteGroupIndex`，并记录 `sourceSpriteIndex -> imageBase/pageBase/actionGroupBase/actionGroupCount`。
   - SE：`(sourceSeGroupIndex, sourceSeItemIndex) -> (baseSeGroupSize, targetSeItemIndex)`。
   - 原因：单机体 graft 只能读取这些映射把私有 WAZ 公共引用落到 preparedBaseline，不能重新 append 公共资源。
 
 - [x] Q6：公共 WAZ 是否依赖 baseline 存在同名 WAZ 才能接入？
-  - 结论：不依赖同名 WAZ 内容 append。
-  - 原因：公共 WAZ 作为 `bhe_*` 新顶层 entry 接入，目标 index 来自 baseline `WazaGroup` 原始 size；baseline 同名 WAZ 可用于审计，但不是 append 起点。
+  - 结论：依赖继承基线中的公共宿主 WAZ。
+  - 原因：公共 WAZ 追加到宿主 WAZ；缺少宿主代表基线不完整，必须 fail。
+  - 数据事实：BHE 链式输入是 `BSDX + JINKI`，JINKI 继承基线已补出 `Tama03/Tama04` 宿主，因此 BHE 层优先使用同名宿主。
+  - 兼容边界：纯 BSDX 基线没有 `Tama03/Tama04` 顶层公共 entry 时，才 fallback 到 `Tama03 -> Tama05`、`Tama04 -> Laser`。
 
 - [x] Q7：`commonProjectileResourceBundle` 缺少固定公共 WAZ/SPM 时是否直接 fail？
   - 结论：直接 fail。
@@ -259,8 +286,8 @@
 
 - [x] Q8：公共 WAZ 接入测试是否只检查结构和 offset，不做字节级一致？
   - 结论：不做字节级一致。
-  - 原因：公共 WAZ 接入产物是 BHE 转换后的 `bhe_*` 新文件，不应与 BHE 原始 WAZ 或 BSDX 原始 WAZ 做 byte parity。
-  - 验收边界：检查 `bhe_*` WazaGroup entry、`WazaGroup.param`、关键跨资源引用落点、以及生成后二进制可重新 parse。
+  - 原因：公共 WAZ 接入产物是 BSDX/JINKI 宿主 WAZ 加 BHE 追加段，不应与 BHE 原始 WAZ 或 BSDX 原始 WAZ 做 byte parity。
+  - 验收边界：检查宿主 `WazaGroup.param`、`skillBase/animBase`、关键跨资源引用落点、以及生成后二进制可重新 parse。
 
 - [x] Q9：`BuildResourceClosureStep / AppendGrpEntriesStep / RebindWazStep` 从哪个阶段消费 common append plan，避免公共 WAZ 进入 key-based merge 路径？
   - 结论：common append plan 只由 `bhecommon/projectile` 内部消费。
@@ -270,7 +297,7 @@
 
 - [x] Q10：公共 WAZ 里的 `term / InfoCollection` 是否属于公共资源阶段必须处理的内容？
   - 结论：属于公共资源阶段，必须处理。
-  - 原因：公共 WAZ 已经被隔离到 `bhe_*` 公共资源层，它内部携带的 term 语义也属于这层自洽的一部分；把 term 留给单机体阶段会破坏公共层独立性。
+  - 原因：公共 WAZ 已经在公共资源层接入宿主追加段，它内部携带的 term 语义也属于这层自洽的一部分；把 term 留给单机体阶段会破坏公共层独立性。
   - 执行口径：公共资源阶段接入全量 BHE term 语义转换，规则和精度损失见 term 包文档。
 
 - [x] Q11：公共资源阶段是否重建 Voice / BatVoice？
@@ -293,8 +320,9 @@
   - 结论：通过 `BheResourceIndexResolver` 统一解析，不把公共映射并入私有 `TsukuyomiGrpAppendPlan`。
   - `BuildResourceClosureStep` 扫到公共 WAZ/SPM/SE 引用时，只写入 common reference 审计字段，不加入普通 selected closure。
   - `RebindWazStep` 重写私有 WAZ 时优先查询 `BheCommonProjectileAppendPlan`，查不到再查询 `TsukuyomiGrpAppendPlan`。
-  - WAZ skill：命中公共 WAZ 时保持源侧 skill index；命中私有 WAZ 时按整文件重绑，源 skill index 等于目标 skill index。
-  - SPM action：命中公共 SPM 时保持源侧 anim index；普通私有路径维持既有逻辑。
+  - WAZ skill：命中公共 WAZ 时解析为 `sourceSkillIndex + sourceWazSkillBase`；命中私有 WAZ 时按整文件重绑，源 skill index 等于目标 skill index。
+  - SPM action：命中公共 SPM 时解析为 `sourceActionGroupNumber + sourceSpmActionGroupBase`；普通私有路径维持既有逻辑。
+  - CEventChange list2 参数：`paramList[0]` 走 WAZ 顶层映射，`paramList[1]` 走对应 WAZ 内部 action/skill 映射。
   - SE：命中公共 pair 时落到 `BHE_SE_PUBLIC` 聚合组；否则走私有 SE 映射。
 
 ### 20260418 selected closure / rebind 接线审计
@@ -336,17 +364,17 @@
 
 ## bhecommon/waz 子阶段实现边界
 
-- 新增 8 个 `bhe_*` 顶层 `WazaGroup` entry。
-- 输出 8 个独立 `bhe_*` WAZ 文件，不写入 baseline 同名 WAZ。
-- `WazaGroup.param` 同步为新 `bhe_*` WAZ 文件自身 `skillList.size()`。
+- 不新增 `bhe_*` 顶层 `WazaGroup` entry。
+- 输出被追加后的 BSDX/JINKI 公共宿主 WAZ 文件。
+- `WazaGroup.param` 同步为宿主 WAZ 追加后的 `skillList.size()`。
 - 重写公共 WAZ 内部 `CEventWazaSelect`：
-  - `wazFileNo = baseWazaGroupSize + sourceWazIndex`
-  - `wazSequenceNo = sourceSequenceNo`
+  - `wazFileNo = sourceWazIndex 对应的宿主 WazaGroup index`
+  - `wazSequenceNo = sourceSequenceNo + sourceWazSkillBase`
 - 记录 audit / notes，必须包含具体数值：
-  - `baseWazaGroupSize`
-  - `sourceWazIndex -> targetWazIndex`
+  - `sourceWazIndex -> hostWazaGroupIndex`
+  - `sourceWazIndex -> skillBase`
   - `sourceSkillCount`
-  - `targetFileName`
+  - `hostFileName`
 - 不处理 PNG/OGG 静态资源复制。
 - 不在 WAZ 子阶段单独处理 SPM/SE/term；对应映射由公共资源层其他子问题提供，WAZ rewrite 只消费映射结果。
 
@@ -354,13 +382,18 @@
 
 - 不塞进 WAZ 子阶段实现；作为同一个 `bhecommon/projectile` 小工程的 SPM 子阶段处理。
 - 需要基于公共 WAZ 引用审计结果加载并转换 12 个公共 SPM。
-- 公共 SPM 新增 12 个 `bhe_*` 顶层 `SpriteGroup` entry，不做 key-based merge、diff merge 或同名复用。
-- 输出 12 个独立 `bhe_*` SPM 文件，不写入 baseline 同名 SPM。
-- `SpriteGroup` 目标映射使用紧凑顺序：
-  - `sourceSpriteIndex -> baseSpriteGroupSize + compactOrdinal`
-  - `173 -> baseSpriteGroupSize + 11`
-- 新 `bhe_*` SPM 文件独立存在，SPM 内部 image/page/anim index 保持源侧语义。
-- 公共 WAZ 内部 `CEventSprite.actionGroupNumber` 保持源侧 anim index。
+- 公共 SPM 优先追加到 BSDX/JINKI 同名宿主 SPM；BHE-only SPM 才新增 `bhe_*` 顶层 `SpriteGroup` entry。
+- 输出 9 个被追加后的宿主 SPM 文件，以及 3 个独立 `bhe_*` SPM 文件。
+- `SpriteGroup` 目标映射来自实际宿主或新增 entry：
+  - `0..5,7,8,9 -> BSDX/JINKI 同名宿主 SpriteGroup index`
+  - `6 -> bhe_Ice.spm`
+  - `10 -> bhe_MekaEffect.spm`
+  - `173 -> bhe_設置物：掲示板.spm`
+- 宿主 SPM 追加时必须偏移内部 `image/page/anim`：
+  - `chip.imageNo += imageBase`
+  - `pat.pageNo += pageBase`
+  - `CEventSprite.actionGroupNumber += actionGroupBase`
+- BHE-only SPM 内部 index 保持源侧语义，图片文件名仍进入 `bhe_*` 命名空间。
 
 ### 20260418 SPM 内部索引审计
 
@@ -369,7 +402,7 @@
 - [x] SPM 内部确定存在的数组索引链只有两类：
   - `SPMPageData.chipData[].imageNo` 指向 `imageData`。
   - `SPMAnimData.patData[].pageNo[]` 指向 `pageData`。
-- [x] `numImageData / numPageData / numAnimData` 是数组长度元数据，目标 `bhe_*` SPM 必须同步为自身数组长度。
+- [x] `numImageData / numPageData / numAnimData` 是数组长度元数据，目标宿主 SPM 或 `bhe_*` SPM 必须同步为自身数组长度。
 - [x] `numChipData / numPat / patPageNum / hitFlag` 是局部长度或局部结构字段，不按 appendStart 偏移。
 - [x] `SPMHitArea`、`SPMRect`、`SPMImageData.imageName`、`waitFrame`、`animRotateDirection`、`animReverseDirection` 不承载跨数组索引。
 - [x] 全量 BHE SPM 统计：
@@ -392,12 +425,12 @@
   - `MekaEffect.spm`: image=18, page=571, anim=28
   - `設置物：掲示板.spm`: image=20, page=56, anim=56
 - [x] 12 个公共 BHE SPM 的 `chip.imageNo` 与 `pat.pageNo` 均无越界、无负值。
-- [x] 公共 SPM 独立 `bhe_*` 文件的实现结论：
-  - 不把公共 SPM 的 `imageData / pageData / animData` 写入 baseline 同名 SPM。
-  - `chip.imageNo` 保持源侧 image index。
-  - `pat.pageNo[]` 保持源侧 page index。
-  - `CEventSprite.actionGroupNumber` 保持源侧 anim index。
-  - `SPMImageData.imageName` 对应的落盘 PNG 名称需要进入 `bhe_*` 命名空间。
+- [x] 公共 SPM 宿主追加实现结论：
+  - 同名公共 SPM 的 `imageData / pageData / animData` 追加到 baseline 同名 SPM。
+  - `chip.imageNo` 加宿主 `imageBase`。
+  - `pat.pageNo[]` 加宿主 `pageBase`。
+  - `CEventSprite.actionGroupNumber` 加宿主 `actionGroupBase`。
+  - `SPMImageData.imageName` 对应的落盘 PNG 名称进入 `bhe_*` 命名空间。
 
 ## 20260418 公共资源独立性审计
 

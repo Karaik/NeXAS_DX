@@ -147,11 +147,31 @@ public class OutputBheCommonProjectileResourcesStep {
             BheCommonProjectileAppendPlan appendPlan
     ) {
         Set<String> imageNames = new LinkedHashSet<>();
-        for (String fileName : appendPlan.getCommonProjectileWazFiles()) {
-            Waz waz = findWaz(preparedBaseline, fileName);
-            collectImageNamesFromWaz(preparedBaseline, waz, imageNames);
+        for (Map.Entry<Integer, String> entry : appendPlan.getSourceWazIndexToTargetFileName().entrySet()) {
+            Integer sourceWazIndex = entry.getKey();
+            Waz waz = findWaz(preparedBaseline, entry.getValue());
+            Integer skillBase = appendPlan.getSourceWazIndexToTargetSkillBase().get(sourceWazIndex);
+            Integer skillCount = appendPlan.getSourceWazIndexToTargetSkillCount().get(sourceWazIndex);
+            collectImageNamesFromWazRange(preparedBaseline, waz, skillBase, skillCount, imageNames);
         }
         return imageNames;
+    }
+
+    private void collectImageNamesFromWazRange(
+            TsukuyomiBsdxBaselineBundle preparedBaseline,
+            Waz waz,
+            Integer skillBase,
+            Integer skillCount,
+            Set<String> imageNames
+    ) {
+        if (waz == null || waz.getSkillList() == null || skillBase == null || skillCount == null) {
+            return;
+        }
+        int end = Math.min(waz.getSkillList().size(), skillBase + skillCount);
+        for (int i = Math.max(0, skillBase); i < end; i++) {
+            Waz.Skill skill = waz.getSkillList().get(i);
+            collectImageNamesFromSkill(preparedBaseline, skill, imageNames);
+        }
     }
 
     private void collectImageNamesFromWaz(
@@ -163,20 +183,28 @@ public class OutputBheCommonProjectileResourcesStep {
             return;
         }
         for (Waz.Skill skill : waz.getSkillList()) {
-            if (skill == null || skill.getPhasesInfo() == null) {
+            collectImageNamesFromSkill(preparedBaseline, skill, imageNames);
+        }
+    }
+
+    private void collectImageNamesFromSkill(
+            TsukuyomiBsdxBaselineBundle preparedBaseline,
+            Waz.Skill skill,
+            Set<String> imageNames
+    ) {
+        if (skill == null || skill.getPhasesInfo() == null) {
+            return;
+        }
+        for (Waz.Skill.SkillPhase phase : skill.getPhasesInfo()) {
+            if (phase == null || phase.getSkillUnitCollection() == null) {
                 continue;
             }
-            for (Waz.Skill.SkillPhase phase : skill.getPhasesInfo()) {
-                if (phase == null || phase.getSkillUnitCollection() == null) {
+            for (SkillUnit unit : phase.getSkillUnitCollection()) {
+                if (unit == null || unit.getSkillInfoObjectList() == null) {
                     continue;
                 }
-                for (SkillUnit unit : phase.getSkillUnitCollection()) {
-                    if (unit == null || unit.getSkillInfoObjectList() == null) {
-                        continue;
-                    }
-                    for (SkillInfoObject object : unit.getSkillInfoObjectList()) {
-                        collectImageNamesFromObject(preparedBaseline, object, imageNames);
-                    }
+                for (SkillInfoObject object : unit.getSkillInfoObjectList()) {
+                    collectImageNamesFromObject(preparedBaseline, object, imageNames);
                 }
             }
         }

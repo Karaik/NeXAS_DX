@@ -129,6 +129,11 @@ public class ImportStaticAssetsStep {
                     importedAssetSet
             );
 
+            // WazaGroup/SpriteGroup 已经是全局新视图，Update3 必须携带这张视图可达的基线 WAZ/SPM。
+            // 只输出“看起来被改过”的局部文件，会让运行时切到原生机体 WAZ/SPM 时拿到空对象。
+            writeBaselineWazFiles(request, bsdxBaseline, outputRoot, importedAssetSet);
+            writeBaselineSpmFiles(request, bsdxBaseline, outputRoot, importedAssetSet);
+
             String targetMekFileName = resolveTargetMekFileName(bsdxBaseline, grpAppendPlan, request.getMekFileName());
 
             // Step 8-3: 再把主 mek / waz 产物直接平铺写到根目录。
@@ -137,7 +142,6 @@ public class ImportStaticAssetsStep {
             // Step 8-3.5: 补齐后的基线机体 .mek 全部写回（grp 追加后 CMaterial 组数需要同步）。
             writePatchedBaselineMeks(bsdxBaseline, targetMekFileName, request.getMekFileName(), outputRoot, importedAssetSet);
             writeReboundWaz(request, reboundTsukuyomiWaz, outputRoot, importedAssetSet);
-            writeInheritedSidecarWazFiles(request, bsdxBaseline, outputRoot, importedAssetSet);
 
             // Step 8-4: 再把私有辅助 WAZ 的重绑产物平铺写到根目录。
             writeRequiredAuxiliaryWazFiles(
@@ -387,7 +391,7 @@ public class ImportStaticAssetsStep {
         importedAssetSet.getGeneratedWazFiles().add(output);
     }
 
-    private void writeInheritedSidecarWazFiles(
+    private void writeBaselineWazFiles(
             TsukuyomiGraftRequest request,
             TsukuyomiBsdxBaselineBundle bsdxBaseline,
             Path outputRoot,
@@ -397,27 +401,49 @@ public class ImportStaticAssetsStep {
             return;
         }
 
-        Path originalBsdxWazDir = request == null || request.getBsdxWazDir() == null
-                ? null
-                : Path.of("").toAbsolutePath().normalize().resolve(request.getBsdxWazDir()).normalize();
         for (Map.Entry<String, Waz> entry : bsdxBaseline.getWazByFileName().entrySet()) {
             String fileName = entry.getKey();
             Waz waz = entry.getValue();
             if (fileName == null || fileName.isBlank() || waz == null) {
                 continue;
             }
-            if (originalBsdxWazDir != null && Files.exists(originalBsdxWazDir.resolve(fileName))) {
-                continue;
-            }
             if (normalize(fileName).equals(normalize(request == null ? null : request.getWazFileName()))) {
                 continue;
             }
-
-            // JINKI 层追加的 AKAO.waz 不在原始 BSDX WAZ 目录中，但会被 AKAO.mek 引用。
-            // BHE 最终包必须继承这些 sidecar WAZ，否则菜单或资源预读会拿到空事件对象。
             Path output = outputRoot.resolve(fileName);
+            if (Files.exists(output)) {
+                continue;
+            }
+
             bsdxBinService.generate(output.toString(), waz, CHARSET);
             importedAssetSet.getGeneratedWazFiles().add(output);
+        }
+    }
+
+    private void writeBaselineSpmFiles(
+            TsukuyomiGraftRequest request,
+            TsukuyomiBsdxBaselineBundle bsdxBaseline,
+            Path outputRoot,
+            TsukuyomiImportedAssetSet importedAssetSet
+    ) throws IOException {
+        if (bsdxBaseline == null || bsdxBaseline.getSpmByFileName() == null) {
+            return;
+        }
+
+        for (Map.Entry<String, Spm> entry : bsdxBaseline.getSpmByFileName().entrySet()) {
+            String fileName = entry.getKey();
+            Spm spm = entry.getValue();
+            if (fileName == null || fileName.isBlank() || spm == null) {
+                continue;
+            }
+            Path output = outputRoot.resolve(fileName);
+            if (Files.exists(output)) {
+                continue;
+            }
+
+            spm.setExtensionName("spm");
+            bsdxBinService.generate(output.toString(), spm, CHARSET);
+            importedAssetSet.getCopiedSpmFiles().add(output);
         }
     }
 

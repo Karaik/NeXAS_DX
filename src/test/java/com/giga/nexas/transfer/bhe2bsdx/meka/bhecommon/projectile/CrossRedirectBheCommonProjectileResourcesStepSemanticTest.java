@@ -285,6 +285,7 @@ class CrossRedirectBheCommonProjectileResourcesStepSemanticTest {
         bundle.setProgramMaterialGrp(read("src/main/resources/grpBsdxJson/ProgramMaterial.grp.json", ProgramMaterialGrp.class));
         bundle.setMapGroupGrp(read("src/main/resources/grpBsdxJson/MapGroup.grp.json", MapGroupGrp.class));
         bundle.getMekByFileName().put("aki.mek", read("src/main/resources/mekBsdxJson/Aki.mek.json", Mek.class));
+        CommonProjectileTestSupport.loadBsdxHostCommonResources(bundle);
         return bundle;
     }
 

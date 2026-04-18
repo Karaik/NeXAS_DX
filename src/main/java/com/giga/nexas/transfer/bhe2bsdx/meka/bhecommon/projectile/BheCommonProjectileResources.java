@@ -32,6 +32,41 @@ public final class BheCommonProjectileResources {
     );
 
     /**
+     * BSDX 侧固定公共 WAZ fallback 宿主。
+     *
+     * <p>运行时会按 BSDX 既有公共 WAZ 入口预加载 Effect/Tama/Laser/Bomb。
+     * BHE 公共 WAZ 只能追加到这些宿主文件里，再通过 skillBase 重定向到追加段。
+     * 接入时会先找继承基线中的同名宿主；找不到同名宿主时才使用本 fallback 表。</p>
+     *
+     * <p>纯 BSDX 基线与 BHE 的公共 WAZ 顶层分类不是一一同构：
+     * BHE `Tama03` 没有 BSDX 顶层 entry，归入 BSDX `Tama05`；
+     * BHE `Tama04` 没有 BSDX 顶层 entry，归入 BSDX `Laser`。
+     * JINKI 继承基线已经补出 `Tama03/Tama04` 宿主时，会优先使用同名宿主，不走这两个 fallback。
+     * 这里的顺序严格对应 {@link #COMMON_PROJECTILE_WAZ_FILES}。</p>
+     *
+     * <pre>
+     * BHE source WazaGroup[0] Effect  -> BSDX host WazaGroup Effect  / Effect.waz
+     * BHE source WazaGroup[1] Tama01  -> BSDX host WazaGroup Tama01  / Tama01.waz
+     * BHE source WazaGroup[2] Tama02  -> BSDX host WazaGroup Tama02  / Tama02.waz
+     * BHE source WazaGroup[3] Tama03  -> fallback BSDX host WazaGroup Tama05 / Tama05.waz
+     * BHE source WazaGroup[4] Tama04  -> fallback BSDX host WazaGroup Laser  / Laser.waz
+     * BHE source WazaGroup[5] Tama05  -> BSDX host WazaGroup Tama05  / Tama05.waz
+     * BHE source WazaGroup[6] Laser   -> BSDX host WazaGroup Laser   / Laser.waz
+     * BHE source WazaGroup[7] Bomb    -> BSDX host WazaGroup Bomb    / Bomb.waz
+     * </pre>
+     */
+    public static final List<String> COMMON_PROJECTILE_HOST_WAZ_FILES = List.of(
+            "Effect.waz",
+            "Tama01.waz",
+            "Tama02.waz",
+            "Tama05.waz",
+            "Laser.waz",
+            "Tama05.waz",
+            "Laser.waz",
+            "Bomb.waz"
+    );
+
+    /**
      * BHE 公共 WAZ 直接引用到的公共 SPM。
      *
      * <p>清单来自 2026-04-18 数据审计：递归扫描 8 个公共 WAZ 中所有
@@ -83,6 +118,10 @@ public final class BheCommonProjectileResources {
 
     public static List<String> commonProjectileWazFiles() {
         return Arrays.asList(commonProjectileWazFileArray());
+    }
+
+    public static List<String> commonProjectileHostWazFiles() {
+        return COMMON_PROJECTILE_HOST_WAZ_FILES;
     }
 
     public static List<String> commonProjectileSpmFiles() {

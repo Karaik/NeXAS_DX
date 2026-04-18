@@ -1,7 +1,9 @@
 package com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft;
 
+import com.giga.nexas.dto.bsdx.BsdxInfoCollection;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventChange;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSe;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSprite;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventWazaSelect;
@@ -12,6 +14,7 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPackageBundle;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,6 +44,7 @@ class RebindWazStepCommonReferenceTest {
         CEventWazaSelect select = (CEventWazaSelect) unit.getSkillInfoObjectList().get(0);
         CEventSprite sprite = (CEventSprite) unit.getSkillInfoObjectList().get(1);
         CEventSe se = (CEventSe) unit.getSkillInfoObjectList().get(2);
+        CEventChange change = (CEventChange) unit.getSkillInfoObjectList().get(3);
 
         assertEquals(108, select.getWazFileNo());
         assertEquals(12, select.getWazSequenceNo());
@@ -48,6 +52,7 @@ class RebindWazStepCommonReferenceTest {
         assertEquals(4, sprite.getActionGroupNumber());
         assertEquals(38, readLittleEndian(se.getByteDataList().get(0), 0));
         assertEquals(656, readLittleEndian(se.getByteDataList().get(0), 4));
+        assertEquals(List.of(200, 12), change.getBsdxInfoCollectionList2().get(0).getParamList());
     }
 
     @Test
@@ -101,14 +106,29 @@ class RebindWazStepCommonReferenceTest {
         CEventSe se = new CEventSe(23);
         se.setCount(1);
         se.getByteDataList().add(seBytes(47, 55));
+        CEventChange change = new CEventChange(34);
+        change.setFlag(0);
+        change.setInt1(0);
+        change.getBsdxInfoCollectionList2().add(wazaSelectCollection(11, 12));
 
         unit.getSkillInfoObjectList().add(select);
         unit.getSkillInfoObjectList().add(sprite);
         unit.getSkillInfoObjectList().add(se);
+        unit.getSkillInfoObjectList().add(change);
         phase.getSkillUnitCollection().add(unit);
         skill.getPhasesInfo().add(phase);
         waz.getSkillList().add(skill);
         return waz;
+    }
+
+    private BsdxInfoCollection wazaSelectCollection(int sourceWazIndex, int sourceActionGroupIndex) {
+        BsdxInfoCollection collection = new BsdxInfoCollection();
+        collection.setInt1(0);
+        collection.getTypeList().add(0);
+        collection.getParamList().add(sourceWazIndex);
+        collection.getParamList().add(sourceActionGroupIndex);
+        collection.setInt2(0);
+        return collection;
     }
 
     private Waz wazWithNamedSkills(String... names) {

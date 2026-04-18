@@ -1,13 +1,29 @@
 package com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.convert;
 
+import com.giga.nexas.dto.ResponseDTO;
+import com.giga.nexas.dto.bsdx.Bsdx;
 import com.giga.nexas.dto.bsdx.dat.Dat;
+import com.giga.nexas.dto.bsdx.mek.Mek;
+import com.giga.nexas.dto.bsdx.spm.Spm;
+import com.giga.nexas.dto.bsdx.waz.Waz;
+import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBundle;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class BuildBaselineFromJinkiResultStep {
+
+    private static final String CHARSET = "windows-31j";
+
+    private final BsdxBinService bsdxBinService = new BsdxBinService();
 
     /**
      * 把 JINKI 层结果整理成 BHE Tsukuyomi 层可以直接消费的基线视图。
@@ -58,6 +74,8 @@ public class BuildBaselineFromJinkiResultStep {
         inheritedBaseline.getSpmByFileName().putAll(jinkiBaseline.getSpmByFileName());
         inheritedBaseline.getWazByFileName().putAll(jinkiBaseline.getWazByFileName());
 
+        inheritJinkiSidecarBinaryAssets(inheritedJinkiResult, inheritedBaseline);
+
         if (inheritedJinkiResult.getReboundAkaoMek() != null) {
             inheritedBaseline.getMekByFileName().entrySet().removeIf(entry ->
                     entry.getValue() == inheritedJinkiResult.getReboundAkaoMek()
@@ -98,6 +116,65 @@ public class BuildBaselineFromJinkiResultStep {
         }
 
         return inheritedBaseline;
+    }
+
+    private void inheritJinkiSidecarBinaryAssets(
+            AkaoGraftResult inheritedJinkiResult,
+            TsukuyomiBsdxBaselineBundle inheritedBaseline
+    ) {
+        if (inheritedJinkiResult.getImportedAssetSet() == null
+                || inheritedJinkiResult.getImportedAssetSet().getOutputRootDir() == null) {
+            return;
+        }
+        Path outputRoot = inheritedJinkiResult.getImportedAssetSet().getOutputRootDir();
+        if (!Files.isDirectory(outputRoot)) {
+            return;
+        }
+
+        /*
+         * JINKI 层已经会把同名公共 WAZ 做 key-based merge 后落盘。
+         * BHE 公共弹幕会继续往 Effect/Tama/Laser/Bomb 这些宿主 WAZ 里追加技能，
+         * 因此这里必须以 JINKI sidecar 目录里的二进制成果物覆盖内存基线。
+         * 否则 BHE 层会拿原始 BSDX WAZ 当宿主，导致 JINKI 公共技能被回退。
+         */
+        inheritSidecarFiles(outputRoot, "*.waz", Waz.class, inheritedBaseline.getWazByFileName());
+        /*
+         * SPM 和 MEK 也按同一条链式规则继承：
+         * SPM 可能被 JINKI 菜单或公共资源写回，MEK 尾部 material 容量也会随 GRP 扩容补齐。
+         * 这里不重新解释 JINKI 业务，只把上一层真实落盘的二进制状态接成当前层基线。
+         */
+        inheritSidecarFiles(outputRoot, "*.spm", Spm.class, inheritedBaseline.getSpmByFileName());
+        inheritSidecarFiles(outputRoot, "*.mek", Mek.class, inheritedBaseline.getMekByFileName());
+    }
+
+    private <T extends Bsdx> void inheritSidecarFiles(
+            Path outputRoot,
+            String glob,
+            Class<T> expectedType,
+            Map<String, T> target
+    ) {
+        if (target == null) {
+            return;
+        }
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(outputRoot, glob)) {
+            for (Path path : stream) {
+                ResponseDTO<?> dto = bsdxBinService.parse(path.toString(), CHARSET);
+                Object data = dto.getData();
+                if (!expectedType.isInstance(data)) {
+                    continue;
+                }
+                String fileName = path.getFileName().toString();
+                putReplacingCaseInsensitive(target, fileName, expectedType.cast(data));
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("继承 JINKI sidecar 二进制成果物失败: " + outputRoot, e);
+        }
+    }
+
+    private <T> void putReplacingCaseInsensitive(Map<String, T> target, String fileName, T value) {
+        String normalized = normalizeFileName(fileName);
+        target.entrySet().removeIf(entry -> normalizeFileName(entry.getKey()).equals(normalized));
+        target.put(fileName, value);
     }
 
     private String resolveInheritedAkaoMekFileName(
@@ -151,6 +228,10 @@ public class BuildBaselineFromJinkiResultStep {
 
     private boolean hasExtension(String fileName, String extension) {
         return fileName != null && fileName.toLowerCase(java.util.Locale.ROOT).endsWith(extension);
+    }
+
+    private String normalizeFileName(String fileName) {
+        return fileName == null ? "" : fileName.trim().toLowerCase(Locale.ROOT);
     }
 
     private Dat resolveInheritedWeaponEquipDat(AkaoGraftResult inheritedJinkiResult) {

@@ -1,8 +1,10 @@
 package com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.giga.nexas.dto.bsdx.BsdxInfoCollection;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventChange;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSe;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSprite;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventVoice;
@@ -83,6 +85,7 @@ public class RebindWazStep {
 
         // Step 7-5: WAZ 结构重建完成后统一重编译 term，避免嵌套 CEvent 残留 BHE term 索引空间。
         termRewriter.rewrite(targetWaz, "tsukuyomi main WAZ " + request.getWazFileName());
+        rewriteCEventChangeWazaSelectParams(targetWaz, resolver);
 
         // Step 7-6: 对这一步已经明确会改的外部引用做结果校验。
         validateRebindResult(targetWaz, context);
@@ -111,6 +114,7 @@ public class RebindWazStep {
         // 因此 wazSequenceNo 保持源文件内部 skill index，AppendGrpEntriesStep 只提供 identity skill 映射。
         targetWaz.setSkillList(rebuildSkillList(context, resolver));
         termRewriter.rewrite(targetWaz, "tsukuyomi auxiliary WAZ " + targetWaz.getFileName());
+        rewriteCEventChangeWazaSelectParams(targetWaz, resolver);
         validateRebindResult(targetWaz, context);
         return targetWaz;
     }
@@ -437,6 +441,11 @@ public class RebindWazStep {
         // CEventSprite 的 spmFileSequence 在存在非负值时，解释的是外部 sprite 顶层序号。
         // 所以这里也要按“源侧 sprite 索引 -> 目标 BSDX sprite 索引”去回写。
         target.setSpmFileSequence(resolver.resolveSpriteGroupIndex(source.getSpmFileSequence()));
+        // 公共 SPM 可能追加到 BSDX 同名宿主 SPM，actionGroupNumber 也要同步切换到宿主内部 anim index。
+        target.setActionGroupNumber(resolver.resolveSpriteActionGroupIndex(
+                source.getSpmFileSequence(),
+                source.getActionGroupNumber()
+        ));
         return target;
     }
 
@@ -616,6 +625,93 @@ public class RebindWazStep {
             }
 
             writeLittleEndianInt(bytes, 0, targetGroupIndex);
+        }
+    }
+
+    private void rewriteCEventChangeWazaSelectParams(Waz targetWaz, BheResourceIndexResolver resolver) {
+        if (targetWaz == null || targetWaz.getSkillList() == null || resolver == null) {
+            return;
+        }
+        for (Waz.Skill skill : targetWaz.getSkillList()) {
+            if (skill == null || skill.getPhasesInfo() == null) {
+                continue;
+            }
+            for (Waz.Skill.SkillPhase phase : skill.getPhasesInfo()) {
+                if (phase == null || phase.getSkillUnitCollection() == null) {
+                    continue;
+                }
+                for (SkillUnit unit : phase.getSkillUnitCollection()) {
+                    if (unit == null || unit.getSkillInfoObjectList() == null) {
+                        continue;
+                    }
+                    for (SkillInfoObject object : unit.getSkillInfoObjectList()) {
+                        rewriteCEventChangeWazaSelectParams(object, resolver);
+                    }
+                }
+            }
+        }
+    }
+
+    private void rewriteCEventChangeWazaSelectParams(
+            SkillInfoObject object,
+            BheResourceIndexResolver resolver
+    ) {
+        if (object == null) {
+            return;
+        }
+        if (object instanceof CEventChange change) {
+            rewriteCEventChangeList2(change, resolver);
+        }
+
+        /*
+         * CEventChange 的第二组 InfoCollection 在运行时会被 CWorkWazaSelect 解释成
+         * “目标 WAZ / 目标 action group”。这不是 term 语义本身，而是资源索引参数；
+         * termRewriter 只能保证 collection 可解析，不能替我们把源 WazaGroup index 改成目标 index。
+         * 因此这里复用 WAZ 重绑阶段的 resolver，专门修正 list2.paramList[0..1]。
+         */
+        for (Field field : getAllFields(object.getClass())) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            if (!List.class.isAssignableFrom(field.getType())
+                    || !field.getName().toLowerCase(Locale.ROOT).endsWith("unitlist")) {
+                continue;
+            }
+            field.setAccessible(true);
+            try {
+                List<?> units = (List<?>) field.get(object);
+                if (units == null) {
+                    continue;
+                }
+                for (Object unit : units) {
+                    SkillInfoObject nested = tryGetUnitData(unit);
+                    if (nested != null) {
+                        rewriteCEventChangeWazaSelectParams(nested, resolver);
+                    }
+                }
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException("重写 CEventChange WAZ 参数失败: " + field.getName(), e);
+            }
+        }
+    }
+
+    private void rewriteCEventChangeList2(CEventChange change, BheResourceIndexResolver resolver) {
+        if (change.getBsdxInfoCollectionList2() == null || change.getBsdxInfoCollectionList2().isEmpty()) {
+            return;
+        }
+        for (BsdxInfoCollection collection : change.getBsdxInfoCollectionList2()) {
+            if (collection == null || collection.getParamList() == null || collection.getParamList().size() < 2) {
+                continue;
+            }
+            Integer sourceWazIndex = collection.getParamList().get(0);
+            Integer sourceActionGroupIndex = collection.getParamList().get(1);
+            if (sourceWazIndex == null || sourceWazIndex < 0 || sourceActionGroupIndex == null || sourceActionGroupIndex < 0) {
+                continue;
+            }
+            Integer targetWazIndex = resolver.resolveWazGroupIndex(sourceWazIndex);
+            Integer targetActionGroupIndex = resolver.resolveWazSkillIndex(sourceWazIndex, sourceActionGroupIndex);
+            collection.getParamList().set(0, targetWazIndex);
+            collection.getParamList().set(1, targetActionGroupIndex);
         }
     }
 

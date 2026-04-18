@@ -14,6 +14,7 @@ import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bhe.spm.Spm;
 import com.giga.nexas.dto.bhe.waz.Waz;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.BheCommonProjectileResources;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.CommonProjectileTestSupport;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.convert.ConvertBheCommonProjectileResourcesStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.redirect.self.SelfRedirectBheCommonProjectileResourcesStep;
@@ -155,11 +156,13 @@ class RebindMekStepBheResourceRebindTest {
         for (Mek.MekMaterialBlock.PluginEntry targetEntry : allMaterialEntries(rebound)) {
             Mek.MekMaterialBlock.PluginEntry sourceEntry = findSourceEntry(sourceMek, targetEntry.offset);
             for (Integer sourceGroupIndex : sourceSpriteGroups) {
-                assertTrue(isEmpty(groupAt(targetEntry.getSpriteGroups(), sourceGroupIndex)),
-                        "源 SpriteGroup[" + sourceGroupIndex + "] 不能残留在目标 MEK material 原槽位");
                 int targetGroupIndex = sourceGroupIndex == 13
                         ? TARGET_SPRITE_GROUP
                         : commonPlan.getSourceSpriteIndexToTargetIndex().get(sourceGroupIndex);
+                if (targetGroupIndex != sourceGroupIndex) {
+                    assertTrue(isEmpty(groupAt(targetEntry.getSpriteGroups(), sourceGroupIndex)),
+                            "源 SpriteGroup[" + sourceGroupIndex + "] 不能残留在目标 MEK material 原槽位");
+                }
                 assertArrayEquals(
                         groupAt(sourceEntry.getSpriteGroups(), sourceGroupIndex),
                         groupAt(targetEntry.getSpriteGroups(), targetGroupIndex),
@@ -263,6 +266,7 @@ class RebindMekStepBheResourceRebindTest {
         bundle.setBatVoiceGrp(read("src/main/resources/grpBsdxJson/BatVoice.grp.json", BatVoiceGrp.class));
         bundle.setProgramMaterialGrp(read("src/main/resources/grpBsdxJson/ProgramMaterial.grp.json", ProgramMaterialGrp.class));
         bundle.setMapGroupGrp(read("src/main/resources/grpBsdxJson/MapGroup.grp.json", MapGroupGrp.class));
+        CommonProjectileTestSupport.loadBsdxHostCommonResources(bundle);
         return bundle;
     }
 
