@@ -17,7 +17,7 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiRawSourceBundle
  *
  * <p>本入口必须与规约文档双向对齐：
  * src/main/resources/research/12-bhe-common-projectile-append-checklist.md。
- * 该文档固定了 bhe_* 命名空间、WAZ/SPM/SE 目标索引映射、term 独立 TODO、
+ * 该文档固定了 bhe_* 命名空间、WAZ/SPM/SE 目标索引映射、term 包语义重编译入口、
  * Voice 特例，以及 preparedBaseline 与 mergedPackageBundle 的业务边界。</p>
  */
 public class BheCommonProjectilePrepareStep {
@@ -43,7 +43,7 @@ public class BheCommonProjectilePrepareStep {
         BheCommonProjectileAppendPlan appendPlan = new BheCommonProjectileAppendPlan();
         convertedBundle.setCommonProjectileAppendPlan(appendPlan);
 
-        // TODO 20260417：在 redirect 内继续实现公共 WAZ 交叉重写、Voice 特例审计和 term 全量语义转换。
+        // redirect 负责公共资源目标 entry 接入、跨资源索引重写，以及 term 包统一语义重编译。
         redirectStep.redirect(request, rawSourceBundle, inheritedBaseline, convertedBundle, appendPlan);
 
         // TODO 20260417：redirect 接入公共资源前，preparedBaseline 等于继承基线。

@@ -8,6 +8,7 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventVoice;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventWazaSelect;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.term.BheInfoCollectionObjectGraphRewriter;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiConvertedBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
@@ -30,10 +31,11 @@ import java.util.Set;
  * 典型内容包括：WAZ -> WAZ、WAZ -> SPM、WAZ -> SeGroup/SeItem。</p>
  *
  * <p>CEventVoice 只记录 SOU/MISAKI 外部角色语音依赖，不在公共资源阶段重建 BatVoice。
- * term / InfoCollection 属于公共资源阶段的全量语义转换分支，但重建规则独立且复杂；
- * 这里保留单独 TODO，避免和 WAZ/SPM/SE 的 index 重写混成一团。</p>
+ * term / InfoCollection 由 term 包统一重编译，避免和 WAZ/SPM/SE 的普通 index 重写混成一团。</p>
  */
 public class CrossRedirectBheCommonProjectileResourcesStep {
+
+    private final BheInfoCollectionObjectGraphRewriter termRewriter = new BheInfoCollectionObjectGraphRewriter();
 
     public void redirect(
             TsukuyomiGraftRequest request,
@@ -45,9 +47,9 @@ public class CrossRedirectBheCommonProjectileResourcesStep {
         validateInputs(rawSourceBundle, convertedBundle, appendPlan);
         for (Map.Entry<String, Waz> entry : convertedBundle.getCommonProjectileResourceBundle().getWazByFileName().entrySet()) {
             rewriteCommonWaz(entry.getKey(), entry.getValue(), rawSourceBundle, appendPlan);
+            // 格式转换阶段只把字段搬到 BSDX DTO；公共资源接入阶段负责把 BHE term 索引空间重编译成 BSDX term 索引空间。
+            termRewriter.rewrite(entry.getValue(), "common projectile WAZ " + entry.getKey());
         }
-
-        // TODO 20260417：接入全量 BHE InfoCollection/term 语义转换，具体方法和策略单独解决。
     }
 
     private void validateInputs(

@@ -13,7 +13,7 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiRawSourceBundle
  *
  * <p>redirect 是公共资源准备层的第二步：第一步 convert 只负责格式转换；
  * 这里负责把公共资源接入继承基线，并完成目标侧索引自洽。本类只保留调用骨架，
- * 具体规则通过带时间戳的 TODO 逐项落地。</p>
+ * 具体规则由 self redirect、cross redirect 和 term 包分别承接。</p>
  *
  * <p>公共资源接入以 bhe_* 目标命名空间隔离 BHE 文件，并以 append plan 记录所有
  * sourceIndex 到 targetIndex 的映射。这里不能复用 JINKI 的 key-based merge 思路，
@@ -33,8 +33,9 @@ public class RedirectBheCommonProjectileResourcesStep {
             TsukuyomiConvertedBundle convertedBundle,
             BheCommonProjectileAppendPlan appendPlan
     ) {
-        // TODO 20260417：实现公共资源目标 entry 接入、容量同步和跨资源引用重写。
+        // self redirect 先追加公共资源目标 entry 并建立 source -> target 映射。
         selfRedirectStep.redirect(request, rawSourceBundle, inheritedBaseline, convertedBundle, appendPlan);
+        // cross redirect 再消费映射结果，重写公共 WAZ 内部引用和 term 语义。
         crossRedirectStep.redirect(request, rawSourceBundle, inheritedBaseline, convertedBundle, appendPlan);
     }
 }

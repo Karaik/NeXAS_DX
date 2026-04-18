@@ -10,6 +10,7 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventWazaSelect;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoUnknown;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.term.BheInfoCollectionObjectGraphRewriter;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.resolve.BheResolvedSeRef;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.resolve.BheResourceIndexResolver;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
@@ -51,6 +52,8 @@ import java.util.Map;
  */
 public class RebindWazStep {
 
+    private final BheInfoCollectionObjectGraphRewriter termRewriter = new BheInfoCollectionObjectGraphRewriter();
+
     public Waz rebindTsukuyomiWaz(
             TsukuyomiGraftRequest request,
             TsukuyomiPackageBundle tsukuyomiPackage,
@@ -78,7 +81,10 @@ public class RebindWazStep {
         // Step 7-4: 再按 Waz -> Skill -> Phase -> Unit -> Object 的顺序逐层重建。
         targetWaz.setSkillList(rebuildSkillList(context, resolver));
 
-        // Step 7-5: 对这一步已经明确会改的外部引用做结果校验。
+        // Step 7-5: WAZ 结构重建完成后统一重编译 term，避免嵌套 CEvent 残留 BHE term 索引空间。
+        termRewriter.rewrite(targetWaz, "tsukuyomi main WAZ " + request.getWazFileName());
+
+        // Step 7-6: 对这一步已经明确会改的外部引用做结果校验。
         validateRebindResult(targetWaz, context);
         return targetWaz;
     }
@@ -115,6 +121,7 @@ public class RebindWazStep {
         if (skillIndexMap == null || skillIndexMap.isEmpty()) {
             // 没有 skill merge 计划时，说明这个 WAZ 不需要 key-based graft，走完整源 WAZ 重建即可。
             targetWaz.setSkillList(rebuildSkillList(context, resolver));
+            termRewriter.rewrite(targetWaz, "tsukuyomi auxiliary WAZ " + targetWaz.getFileName());
             return targetWaz;
         }
 
@@ -131,6 +138,8 @@ public class RebindWazStep {
                     targetSkills.add(new Waz.Skill());
                 }
                 Waz.Skill rebuilt = rebuildSkill(sourceSkills.get(sourceIndex), context, resolver);
+                // key-based merge 中 baseline skill 已经是 BSDX term 空间，只能重编译新增的 BHE skill。
+                termRewriter.rewrite(rebuilt, "tsukuyomi auxiliary WAZ " + targetWaz.getFileName() + " skill " + sourceIndex);
                 if (targetSkills.size() == targetIndex) {
                     targetSkills.add(rebuilt);
                 } else {

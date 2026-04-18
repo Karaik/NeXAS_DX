@@ -5,6 +5,7 @@ import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEvent;
 import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEventAttack;
 import com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEventMove;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.term.BheInfoCollectionObjectGraphRewriter;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGrpAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPackageBundle;
@@ -26,15 +27,18 @@ import java.util.Map;
  *     <li>最后按 Mek.java 的分片顺序，逐片重建目标对象</li>
  * </ul>
  *
- * <p>当前 step6 已明确会做语义修改的只有 {@code MekBasicInfo}：</p>
+ * <p>step6 明确会做语义修改的位置包括 {@code MekBasicInfo} 和 MEK AI term：</p>
  * <ul>
  *     <li>{@code wazFileSequence -> 目标 WazaGroup 索引}</li>
  *     <li>{@code spmFileSequence -> 目标 SpriteGroup 索引}</li>
+ *     <li>{@code BsdxInfoCollection -> BSDX term 索引空间}</li>
  * </ul>
  *
- * <p>其他分片当前先做“结构级深拷贝”，不强行改它们的内部语义。</p>
+ * <p>其他分片保持结构级深拷贝，不在 MEK 阶段混入 WAZ/SPM/SE 的普通引用重写。</p>
  */
 public class RebindMekStep {
+
+    private final BheInfoCollectionObjectGraphRewriter termRewriter = new BheInfoCollectionObjectGraphRewriter();
 
     public Mek rebindTsukuyomiMek(
             TsukuyomiGraftRequest request,
@@ -84,7 +88,10 @@ public class RebindMekStep {
         // 当前显式深拷贝条目和数组，但不改 sprite/se/voice 组内容的语义。
         targetMek.setMekMaterialBlock(rebuildMekMaterialBlock(context));
 
-        // Step 6-11: 对当前已经确定会改的字段做结果校验。
+        // Step 6-11: MEK AI 中也携带 InfoCollection，必须和 WAZ 共用同一套 term 语义重编译规则。
+        termRewriter.rewrite(targetMek, "tsukuyomi MEK " + context.getSourceFileName());
+
+        // Step 6-12: 对当前已经确定会改的字段做结果校验。
         validateRebindResult(targetMek, context);
         return targetMek;
     }
