@@ -1,11 +1,14 @@
 package com.giga.nexas.bhe2bsdx.byJinki;
 
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.TsukuyomiTransfer;
+import com.giga.nexas.transfer.bhe2bsdx.meka.freja.FrejaTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.yuri.YuriTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuLayoutPolicy;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuOverrideSpec;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftResult;
+import com.giga.nexas.transfer.bhe2bsdx.model.freja.FrejaGraftRequest;
+import com.giga.nexas.transfer.bhe2bsdx.model.freja.FrejaGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.yuri.YuriGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.yuri.YuriGraftResult;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
@@ -73,6 +76,26 @@ public class TestBheByJinkiRunner {
         yuriRequest.setMenuOverrideSpec(yuriMenuOverrideSpec());
 
         YuriGraftResult yuriResult = YuriTransfer.process(yuriRequest);
+
+        Path frejaGeneratedExeRelative = projectRoot.relativize(
+                yuriResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
+        );
+        Path frejaGeneratedAssetDirRelative = projectRoot.relativize(
+                yuriResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
+        );
+
+        // 4. freja
+        FrejaGraftRequest frejaRequest = new FrejaGraftRequest();
+        frejaRequest.setJinkiGeneratedExePath(frejaGeneratedExeRelative);
+        frejaRequest.setJinkiGeneratedAssetDir(frejaGeneratedAssetDirRelative);
+        frejaRequest.setInheritedJinkiResult(jinkiResult);
+        frejaRequest.setPreviousCharacterResult(yuriResult);
+        frejaRequest.setBheGameResourceRoot(null);
+        frejaRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
+        frejaRequest.setPatchMenuData(true);
+        frejaRequest.setMenuOverrideSpec(frejaMenuOverrideSpec());
+
+        FrejaGraftResult frejaResult = FrejaTransfer.process(frejaRequest);
     }
 
     // 2. tsukuyomi
