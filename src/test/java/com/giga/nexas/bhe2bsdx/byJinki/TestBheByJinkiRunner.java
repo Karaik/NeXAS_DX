@@ -3,6 +3,7 @@ package com.giga.nexas.bhe2bsdx.byJinki;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.TsukuyomiTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.freja.FrejaTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.misaki.MisakiTransfer;
+import com.giga.nexas.transfer.bhe2bsdx.meka.naoto.NaotoTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.nagi.NagiTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.yuri.YuriTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuLayoutPolicy;
@@ -13,6 +14,8 @@ import com.giga.nexas.transfer.bhe2bsdx.model.freja.FrejaGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.freja.FrejaGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.misaki.MisakiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.misaki.MisakiGraftResult;
+import com.giga.nexas.transfer.bhe2bsdx.model.naoto.NaotoGraftRequest;
+import com.giga.nexas.transfer.bhe2bsdx.model.naoto.NaotoGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.nagi.NagiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.nagi.NagiGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.yuri.YuriGraftRequest;
@@ -142,6 +145,26 @@ public class TestBheByJinkiRunner {
         misakiRequest.setMenuOverrideSpec(misakiMenuOverrideSpec());
 
         MisakiGraftResult misakiResult = MisakiTransfer.process(misakiRequest);
+
+        Path naotoGeneratedExeRelative = projectRoot.relativize(
+                misakiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
+        );
+        Path naotoGeneratedAssetDirRelative = projectRoot.relativize(
+                misakiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
+        );
+
+        // 7. naoto
+        NaotoGraftRequest naotoRequest = new NaotoGraftRequest();
+        naotoRequest.setJinkiGeneratedExePath(naotoGeneratedExeRelative);
+        naotoRequest.setJinkiGeneratedAssetDir(naotoGeneratedAssetDirRelative);
+        naotoRequest.setInheritedJinkiResult(jinkiResult);
+        naotoRequest.setPreviousCharacterResult(misakiResult);
+        naotoRequest.setBheGameResourceRoot(null);
+        naotoRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
+        naotoRequest.setPatchMenuData(true);
+        naotoRequest.setMenuOverrideSpec(naotoMenuOverrideSpec());
+
+        NaotoGraftResult naotoResult = NaotoTransfer.process(naotoRequest);
     }
 
     // 2. tsukuyomi
