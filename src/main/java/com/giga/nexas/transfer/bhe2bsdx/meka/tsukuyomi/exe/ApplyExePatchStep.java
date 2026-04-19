@@ -4,6 +4,7 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiExePatchPlan;
 
 import java.io.IOException;
+import com.giga.nexas.transfer.util.ExeOutputNameSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -205,10 +206,6 @@ public class ApplyExePatchStep {
     }
 
     private String buildTimestampedExeName(Path sourceExe) {
-        String fileName = sourceExe.getFileName().toString();
-        int dot = fileName.lastIndexOf('.');
-        String baseName = dot >= 0 ? fileName.substring(0, dot) : fileName;
-        String ext = dot >= 0 ? fileName.substring(dot) : ".exe";
-        return baseName + "_" + LocalDateTime.now().format(TS) + ext;
+        return ExeOutputNameSupport.buildTimestampedExeName(sourceExe, TS);
     }
 }

@@ -65,6 +65,7 @@ public class TsukuyomiGraftRequest {
 
     private boolean patchMenuData = true;
     private boolean planExeCapacityPatch = true;
+    private boolean packUpdatePac = true;
     /**
      * 菜单覆盖输入由调用方提供。
      *

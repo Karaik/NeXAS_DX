@@ -51,6 +51,7 @@ public class TestBheByJinkiRunner {
         Path jinkiGeneratedAssetDirRelative = projectRoot.relativize(
                 jinkiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
         );
+        log.info("01 akao patch append end!");
 
         //-----------------------------------------------------------------------
         // BHE
@@ -65,9 +66,11 @@ public class TestBheByJinkiRunner {
         tsukuyomiRequest.setTsukuyomiResourceDir(Paths.get("tsukuyomi"));
         tsukuyomiRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
         tsukuyomiRequest.setPatchMenuData(true);
+        tsukuyomiRequest.setPackUpdatePac(false);
         tsukuyomiRequest.setMenuOverrideSpec(tsukuyomiMenuOverrideSpec());
 
         TsukuyomiGraftResult tsukuyomiResult = TsukuyomiTransfer.process(tsukuyomiRequest);
+        log.info("02 tsukuyomi patch append end!");
 
         Path yuriGeneratedExeRelative = projectRoot.relativize(
                 tsukuyomiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
@@ -85,9 +88,11 @@ public class TestBheByJinkiRunner {
         yuriRequest.setBheGameResourceRoot(null);
         yuriRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
         yuriRequest.setPatchMenuData(true);
+        yuriRequest.setPackUpdatePac(false);
         yuriRequest.setMenuOverrideSpec(yuriMenuOverrideSpec());
 
         YuriGraftResult yuriResult = YuriTransfer.process(yuriRequest);
+        log.info("03 yuri patch append end!");
 
         Path frejaGeneratedExeRelative = projectRoot.relativize(
                 yuriResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
@@ -105,9 +110,11 @@ public class TestBheByJinkiRunner {
         frejaRequest.setBheGameResourceRoot(null);
         frejaRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
         frejaRequest.setPatchMenuData(true);
+        frejaRequest.setPackUpdatePac(false);
         frejaRequest.setMenuOverrideSpec(frejaMenuOverrideSpec());
 
         FrejaGraftResult frejaResult = FrejaTransfer.process(frejaRequest);
+        log.info("04 freja patch append end!");
 
         Path nagiGeneratedExeRelative = projectRoot.relativize(
                 frejaResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
@@ -125,9 +132,11 @@ public class TestBheByJinkiRunner {
         nagiRequest.setBheGameResourceRoot(null);
         nagiRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
         nagiRequest.setPatchMenuData(true);
+        nagiRequest.setPackUpdatePac(false);
         nagiRequest.setMenuOverrideSpec(nagiMenuOverrideSpec());
 
         NagiGraftResult nagiResult = NagiTransfer.process(nagiRequest);
+        log.info("05 nagi patch append end!");
 
         Path misakiGeneratedExeRelative = projectRoot.relativize(
                 nagiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
@@ -145,9 +154,11 @@ public class TestBheByJinkiRunner {
         misakiRequest.setBheGameResourceRoot(null);
         misakiRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
         misakiRequest.setPatchMenuData(true);
+        misakiRequest.setPackUpdatePac(false);
         misakiRequest.setMenuOverrideSpec(misakiMenuOverrideSpec());
 
         MisakiGraftResult misakiResult = MisakiTransfer.process(misakiRequest);
+        log.info("06 misaki patch append end!");
 
         Path naotoGeneratedExeRelative = projectRoot.relativize(
                 misakiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
@@ -165,9 +176,11 @@ public class TestBheByJinkiRunner {
         naotoRequest.setBheGameResourceRoot(null);
         naotoRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
         naotoRequest.setPatchMenuData(true);
+        naotoRequest.setPackUpdatePac(false);
         naotoRequest.setMenuOverrideSpec(naotoMenuOverrideSpec());
 
         NaotoGraftResult naotoResult = NaotoTransfer.process(naotoRequest);
+        log.info("07 naoto patch append end!");
 
         Path katouGeneratedExeRelative = projectRoot.relativize(
                 naotoResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
@@ -185,9 +198,11 @@ public class TestBheByJinkiRunner {
         katouRequest.setBheGameResourceRoot(null);
         katouRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
         katouRequest.setPatchMenuData(true);
+        katouRequest.setPackUpdatePac(true);
         katouRequest.setMenuOverrideSpec(katouMenuOverrideSpec());
 
         KatouGraftResult katouResult = KatouTransfer.process(katouRequest);
+        log.info("08 katou patch append end!");
     }
 
     // 2. tsukuyomi

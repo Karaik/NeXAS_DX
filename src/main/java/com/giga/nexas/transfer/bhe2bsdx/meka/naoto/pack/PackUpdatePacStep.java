@@ -21,6 +21,14 @@ public class PackUpdatePacStep {
             return plan;
         }
 
+        if (!request.isPackUpdatePac()) {
+            Path sourceFolder = importedAssetSet.getOutputRootDir().toAbsolutePath().normalize();
+            plan.setSourceFolder(sourceFolder);
+            plan.setCompressMode(request.getPacCompressMode());
+            plan.setPacked(false);
+            return plan;
+        }
+
         Path sourceFolder = importedAssetSet.getOutputRootDir().toAbsolutePath().normalize();
         plan.setSourceFolder(sourceFolder);
         plan.setCompressMode(request.getPacCompressMode());

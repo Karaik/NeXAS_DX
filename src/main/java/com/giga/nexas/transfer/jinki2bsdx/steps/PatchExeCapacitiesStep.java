@@ -7,6 +7,7 @@ import com.giga.nexas.transfer.jinki2bsdx.model.ExePatchPlan;
 import com.giga.nexas.transfer.jinki2bsdx.model.GrpAppendPlan;
 
 import java.io.IOException;
+import com.giga.nexas.transfer.util.ExeOutputNameSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -611,10 +612,6 @@ public class PatchExeCapacitiesStep {
     }
 
     private String buildTimestampedExeName(Path sourceExe) {
-        String fileName = sourceExe.getFileName().toString();
-        int dot = fileName.lastIndexOf('.');
-        String baseName = dot >= 0 ? fileName.substring(0, dot) : fileName;
-        String ext = dot >= 0 ? fileName.substring(dot) : ".exe";
-        return baseName + "_" + LocalDateTime.now().format(TS) + ext;
+        return ExeOutputNameSupport.buildTimestampedExeName(sourceExe, TS);
     }
 }
