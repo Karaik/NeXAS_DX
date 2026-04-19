@@ -7,6 +7,7 @@ import com.giga.nexas.transfer.bhe2bsdx.meka.misaki.MisakiTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.motoki.MotokiTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.naoto.NaotoTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.nagi.NagiTransfer;
+import com.giga.nexas.transfer.bhe2bsdx.meka.sou.SouTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.wilhelm.WilhelmTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.yuri.YuriTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuLayoutPolicy;
@@ -25,6 +26,8 @@ import com.giga.nexas.transfer.bhe2bsdx.model.naoto.NaotoGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.naoto.NaotoGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.nagi.NagiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.nagi.NagiGraftResult;
+import com.giga.nexas.transfer.bhe2bsdx.model.sou.SouGraftRequest;
+import com.giga.nexas.transfer.bhe2bsdx.model.sou.SouGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.wilhelm.WilhelmGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.wilhelm.WilhelmGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.yuri.YuriGraftRequest;
@@ -248,11 +251,33 @@ public class TestBheByJinkiRunner {
         motokiRequest.setBheGameResourceRoot(null);
         motokiRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
         motokiRequest.setPatchMenuData(true);
-        motokiRequest.setPackUpdatePac(true);
+        motokiRequest.setPackUpdatePac(false);
         motokiRequest.setMenuOverrideSpec(motokiMenuOverrideSpec());
 
         MotokiGraftResult motokiResult = MotokiTransfer.process(motokiRequest);
         log.info("10 motoki patch append end!");
+
+        Path souGeneratedExeRelative = projectRoot.relativize(
+                motokiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
+        );
+        Path souGeneratedAssetDirRelative = projectRoot.relativize(
+                motokiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
+        );
+
+        // 11. sou
+        SouGraftRequest souRequest = new SouGraftRequest();
+        souRequest.setJinkiGeneratedExePath(souGeneratedExeRelative);
+        souRequest.setJinkiGeneratedAssetDir(souGeneratedAssetDirRelative);
+        souRequest.setInheritedJinkiResult(jinkiResult);
+        souRequest.setPreviousCharacterResult(motokiResult);
+        souRequest.setBheGameResourceRoot(null);
+        souRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
+        souRequest.setPatchMenuData(true);
+        souRequest.setPackUpdatePac(true);
+        souRequest.setMenuOverrideSpec(souMenuOverrideSpec());
+
+        SouGraftResult souResult = SouTransfer.process(souRequest);
+        log.info("11 sou patch append end!");
     }
 
     // 2. tsukuyomi
@@ -411,6 +436,24 @@ public class TestBheByJinkiRunner {
                 List.of(
                         "MOD_001_SelectMekaMenuMeka_Shinatsuhiko_001.png",
                         "MOD_001_SelectMekaMenuMeka_Shinatsuhiko_002.png"
+                ),
+                MenuLayoutPolicy.HELL_PILOT_TOP_ANCHOR,
+                MenuLayoutPolicy.ORIGIN_CENTER
+        );
+    }
+
+    // 11. sou
+    private MenuOverrideSpec souMenuOverrideSpec() {
+        return new MenuOverrideSpec(
+                34,
+                33,
+                List.of(
+                        "MOD_001_HELL_SOU_001.png",
+                        "MOD_001_HELL_MEKA_SOU_001.png"
+                ),
+                List.of(
+                        "MOD_001_SelectMekaMenuMeka_Schwertiger_001.png",
+                        "MOD_001_SelectMekaMenuMeka_Schwertiger_002.png"
                 ),
                 MenuLayoutPolicy.HELL_PILOT_TOP_ANCHOR,
                 MenuLayoutPolicy.ORIGIN_CENTER
