@@ -2,6 +2,7 @@ package com.giga.nexas.bhe2bsdx.byJinki;
 
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.TsukuyomiTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.freja.FrejaTransfer;
+import com.giga.nexas.transfer.bhe2bsdx.meka.nagi.NagiTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.yuri.YuriTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuLayoutPolicy;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuOverrideSpec;
@@ -9,6 +10,8 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.freja.FrejaGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.freja.FrejaGraftResult;
+import com.giga.nexas.transfer.bhe2bsdx.model.nagi.NagiGraftRequest;
+import com.giga.nexas.transfer.bhe2bsdx.model.nagi.NagiGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.yuri.YuriGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.yuri.YuriGraftResult;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
@@ -96,6 +99,26 @@ public class TestBheByJinkiRunner {
         frejaRequest.setMenuOverrideSpec(frejaMenuOverrideSpec());
 
         FrejaGraftResult frejaResult = FrejaTransfer.process(frejaRequest);
+
+        Path nagiGeneratedExeRelative = projectRoot.relativize(
+                frejaResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
+        );
+        Path nagiGeneratedAssetDirRelative = projectRoot.relativize(
+                frejaResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
+        );
+
+        // 5. nagi
+        NagiGraftRequest nagiRequest = new NagiGraftRequest();
+        nagiRequest.setJinkiGeneratedExePath(nagiGeneratedExeRelative);
+        nagiRequest.setJinkiGeneratedAssetDir(nagiGeneratedAssetDirRelative);
+        nagiRequest.setInheritedJinkiResult(jinkiResult);
+        nagiRequest.setPreviousCharacterResult(frejaResult);
+        nagiRequest.setBheGameResourceRoot(null);
+        nagiRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
+        nagiRequest.setPatchMenuData(true);
+        nagiRequest.setMenuOverrideSpec(nagiMenuOverrideSpec());
+
+        NagiGraftResult nagiResult = NagiTransfer.process(nagiRequest);
     }
 
     // 2. tsukuyomi
