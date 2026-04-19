@@ -1,7 +1,9 @@
 package com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi;
 
 import com.giga.nexas.dto.bsdx.dat.Dat;
+import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.spm.Spm;
+import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.convert.BuildBaselineFromJinkiResultStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.convert.TsukuyomiConvertOverviewStep;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiConvertedBundle;
@@ -15,6 +17,7 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPackageBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPacPackPlan;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
+import com.giga.nexas.transfer.bhe2bsdx.meka.initializer.EnsureInitializerWeaponStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.exe.PatchExeStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.AppendGrpEntriesStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.BuildResourceClosureStep;
@@ -108,6 +111,14 @@ public class TsukuyomiGraftPipeline {
     private final RebindWazStep rebindWazStep = new RebindWazStep();
 
     /**
+     * initializer 武装补齐入口。
+     *
+     * <p>该步骤必须在 MEK/WAZ 重绑完成后执行。initializer 补齐会新增目标侧武装行和 material 行；
+     * 如果提前放进 selected 转换层，前置资源闭包会把这些后置补齐内容误判为 BHE 源侧资源。</p>
+     */
+    private final EnsureInitializerWeaponStep ensureInitializerWeaponStep = new EnsureInitializerWeaponStep();
+
+    /**
      * 主 graft 产物写出入口。
      *
      * <p>把 GRP/DAT/MEK/WAZ/SPM/PNG/SE 等资源沉淀到最终输出目录，
@@ -193,19 +204,34 @@ public class TsukuyomiGraftPipeline {
         // 5. 主机体资源重绑。
         // MEK/WAZ 重建不是在源对象上原地 patch，而是按 DTO 层级重建目标对象，
         // 这样每个外部引用点都能明确说明消费的是哪张映射表。
-        result.setReboundTsukuyomiMek(rebindMekStep.rebindTsukuyomiMek(
+        Mek reboundTsukuyomiMek = rebindMekStep.rebindTsukuyomiMek(
                 request,
                 tsukuyomiPackage,
                 grpAppendPlan,
                 convertedBundle.getCommonProjectileAppendPlan()
-        ));
-        result.setReboundTsukuyomiWaz(rebindWazStep.rebindTsukuyomiWaz(
+        );
+        Waz reboundTsukuyomiWaz = rebindWazStep.rebindTsukuyomiWaz(
                 request,
                 tsukuyomiPackage,
                 importPlan,
                 grpAppendPlan,
                 convertedBundle.getCommonProjectileAppendPlan()
-        ));
+        );
+
+        // 5-1. initializer 补齐。
+        // 该补齐只操作重绑后的目标 MEK/WAZ。模板 skill 内部引用的是 BSDX 原生资源，
+        // 不能再回到 BHE 源侧资源闭包，也不能被 RebindWazStep 按 BHE 索引重写。
+        ensureInitializerWeaponStep.ensureAfterRebind(
+                request.getWazFileName(),
+                reboundTsukuyomiMek,
+                reboundTsukuyomiWaz,
+                convertedBundle.getNotes()
+        );
+        // initializer 位于 WazaGroup.param 回写之后；当前策略不强塞外部 WAZ skill，但如果未来某机体已有
+        // initializer skill 或策略变化导致 skill 数变化，这里仍统一回写，避免 WazaGroup.param 与 WAZ 实际数量分叉。
+        syncMainWazaSkillCountAfterInitializer(bsdxBaseline, grpAppendPlan, reboundTsukuyomiWaz);
+        result.setReboundTsukuyomiMek(reboundTsukuyomiMek);
+        result.setReboundTsukuyomiWaz(reboundTsukuyomiWaz);
 
         // 6. 主线输出沉淀。
         // 这里写出的目录是最终打包输入；所有后置覆盖都必须写回同一目录，
@@ -257,6 +283,30 @@ public class TsukuyomiGraftPipeline {
         // 这里保留一个很薄的代理，只负责把主流程编排层的调用转发到转换层。
         // 具体“如何从 JINKI 结果拼出本层基线”的规则，统一收敛到转换包内维护。
         return buildBaselineFromJinkiResultStep.buildBaselineFromJinkiResult(inheritedJinkiResult);
+    }
+
+    private void syncMainWazaSkillCountAfterInitializer(
+            TsukuyomiBsdxBaselineBundle bsdxBaseline,
+            TsukuyomiGrpAppendPlan grpAppendPlan,
+            Waz reboundTsukuyomiWaz
+    ) {
+        if (bsdxBaseline == null
+                || bsdxBaseline.getWazaGroupGrp() == null
+                || bsdxBaseline.getWazaGroupGrp().getWazaList() == null
+                || grpAppendPlan == null
+                || reboundTsukuyomiWaz == null
+                || reboundTsukuyomiWaz.getSkillList() == null) {
+            return;
+        }
+
+        int targetWazaIndex = grpAppendPlan.getWazaGroupIndex();
+        if (targetWazaIndex < 0 || targetWazaIndex >= bsdxBaseline.getWazaGroupGrp().getWazaList().size()) {
+            throw new IllegalStateException("initializer 后同步 WazaGroup.param 时目标索引越界: " + targetWazaIndex);
+        }
+
+        bsdxBaseline.getWazaGroupGrp().getWazaList()
+                .get(targetWazaIndex)
+                .setParam(reboundTsukuyomiWaz.getSkillList().size());
     }
 
     private void applyMenuContextToResultAndAssetSet(
