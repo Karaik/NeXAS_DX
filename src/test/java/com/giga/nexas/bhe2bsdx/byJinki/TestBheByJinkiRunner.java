@@ -87,4 +87,130 @@ public class TestBheByJinkiRunner {
                 MenuLayoutPolicy.ORIGIN_CENTER
         );
     }
+
+    // 4. freja
+    private MenuOverrideSpec frejaMenuOverrideSpec() {
+        return new MenuOverrideSpec(
+                27,
+                26,
+                List.of(
+                        "MOD_001_HELL_FREJA_001.png",
+                        "MOD_001_HELL_MEKA_FREJA_001.png"
+                ),
+                List.of(
+                        "MOD_001_SelectMekaMenuMeka_Strjeljets_001.png",
+                        "MOD_001_SelectMekaMenuMeka_Strjeljets_002.png"
+                ),
+                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.ORIGIN_CENTER
+        );
+    }
+
+    // 5. nagi
+    private MenuOverrideSpec nagiMenuOverrideSpec() {
+        return new MenuOverrideSpec(
+                28,
+                27,
+                List.of(
+                        "MOD_001_HELL_NAGI_001.png",
+                        "MOD_001_HELL_MEKA_NAGI_001.png"
+                ),
+                List.of(
+                        "MOD_001_SelectMekaMenuMeka_EdelWeiss_001.png",
+                        "MOD_001_SelectMekaMenuMeka_EdelWeiss_002.png"
+                ),
+                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.ORIGIN_CENTER
+        );
+    }
+
+    // 6. misaki
+    private MenuOverrideSpec misakiMenuOverrideSpec() {
+        return new MenuOverrideSpec(
+                29,
+                28,
+                List.of(
+                        "MOD_001_HELL_MISAKI_001.png",
+                        "MOD_001_HELL_MEKA_MISAKI_001.png"
+                ),
+                List.of(
+                        "MOD_001_SelectMekaMenuMeka_Misaki_001.png",
+                        "MOD_001_SelectMekaMenuMeka_Misaki_002.png"
+                ),
+                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.ORIGIN_CENTER
+        );
+    }
+
+    // 7. naoto
+    private MenuOverrideSpec naotoMenuOverrideSpec() {
+        return new MenuOverrideSpec(
+                30,
+                29,
+                List.of(
+                        "MOD_001_HELL_NAOTO_001.png",
+                        "MOD_001_HELL_MEKA_NAOTO_001.png"
+                ),
+                List.of(
+                        "MOD_001_SelectMekaMenuMeka_Shiden_001.png",
+                        "MOD_001_SelectMekaMenuMeka_Shiden_002.png"
+                ),
+                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.ORIGIN_CENTER
+        );
+    }
+
+    // 8. katou
+    private MenuOverrideSpec katouMenuOverrideSpec() {
+        return new MenuOverrideSpec(
+                31,
+                30,
+                List.of(
+                        "MOD_001_HELL_KATOU_001.png",
+                        "MOD_001_HELL_MEKA_KATOU_001.png"
+                ),
+                List.of(
+                        "MOD_001_SelectMekaMenuMeka_MorgueMan_001.png",
+                        "MOD_001_SelectMekaMenuMeka_MorgueMan_002.png"
+                ),
+                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.ORIGIN_CENTER
+        );
+    }
+
+    // 9. wilhelm
+    private MenuOverrideSpec wilhelmMenuOverrideSpec() {
+        return new MenuOverrideSpec(
+                32,
+                31,
+                List.of(
+                        "MOD_001_HELL_WILHELM_001.png",
+                        "MOD_001_HELL_MEKA_WILHELM_001.png"
+                ),
+                List.of(
+                        "MOD_001_SelectMekaMenuMeka_Gestoeber_001.png",
+                        "MOD_001_SelectMekaMenuMeka_Gestoeber_002.png"
+                ),
+                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.ORIGIN_CENTER
+        );
+    }
+
+    // 10. motoki
+    private MenuOverrideSpec motokiMenuOverrideSpec() {
+        return new MenuOverrideSpec(
+                33,
+                32,
+                List.of(
+                        "MOD_001_HELL_MOTOKI_001.png",
+                        "MOD_001_HELL_MEKA_MOTOKI_001.png"
+                ),
+                List.of(
+                        "MOD_001_SelectMekaMenuMeka_Shinatsuhiko_001.png",
+                        "MOD_001_SelectMekaMenuMeka_Shinatsuhiko_002.png"
+                ),
+                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.ORIGIN_CENTER
+        );
+    }
 }
