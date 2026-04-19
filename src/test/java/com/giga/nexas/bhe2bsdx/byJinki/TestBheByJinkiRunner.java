@@ -4,6 +4,7 @@ import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.TsukuyomiTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.freja.FrejaTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.katou.KatouTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.misaki.MisakiTransfer;
+import com.giga.nexas.transfer.bhe2bsdx.meka.motoki.MotokiTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.naoto.NaotoTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.nagi.NagiTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.wilhelm.WilhelmTransfer;
@@ -18,6 +19,8 @@ import com.giga.nexas.transfer.bhe2bsdx.model.katou.KatouGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.katou.KatouGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.misaki.MisakiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.misaki.MisakiGraftResult;
+import com.giga.nexas.transfer.bhe2bsdx.model.motoki.MotokiGraftRequest;
+import com.giga.nexas.transfer.bhe2bsdx.model.motoki.MotokiGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.naoto.NaotoGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.naoto.NaotoGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.nagi.NagiGraftRequest;
@@ -223,11 +226,33 @@ public class TestBheByJinkiRunner {
         wilhelmRequest.setBheGameResourceRoot(null);
         wilhelmRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
         wilhelmRequest.setPatchMenuData(true);
-        wilhelmRequest.setPackUpdatePac(true);
+        wilhelmRequest.setPackUpdatePac(false);
         wilhelmRequest.setMenuOverrideSpec(wilhelmMenuOverrideSpec());
 
         WilhelmGraftResult wilhelmResult = WilhelmTransfer.process(wilhelmRequest);
         log.info("09 wilhelm patch append end!");
+
+        Path motokiGeneratedExeRelative = projectRoot.relativize(
+                wilhelmResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
+        );
+        Path motokiGeneratedAssetDirRelative = projectRoot.relativize(
+                wilhelmResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
+        );
+
+        // 10. motoki
+        MotokiGraftRequest motokiRequest = new MotokiGraftRequest();
+        motokiRequest.setJinkiGeneratedExePath(motokiGeneratedExeRelative);
+        motokiRequest.setJinkiGeneratedAssetDir(motokiGeneratedAssetDirRelative);
+        motokiRequest.setInheritedJinkiResult(jinkiResult);
+        motokiRequest.setPreviousCharacterResult(wilhelmResult);
+        motokiRequest.setBheGameResourceRoot(null);
+        motokiRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
+        motokiRequest.setPatchMenuData(true);
+        motokiRequest.setPackUpdatePac(true);
+        motokiRequest.setMenuOverrideSpec(motokiMenuOverrideSpec());
+
+        MotokiGraftResult motokiResult = MotokiTransfer.process(motokiRequest);
+        log.info("10 motoki patch append end!");
     }
 
     // 2. tsukuyomi
