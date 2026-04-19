@@ -111,7 +111,7 @@ public class TestBheByJinkiRunner {
                         "MOD_001_SelectMekaMenuMeka_Sakurabi_001.png",
                         "MOD_001_SelectMekaMenuMeka_Sakurabi_002.png"
                 ),
-                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.HELL_PILOT_TOP_ANCHOR,
                 MenuLayoutPolicy.ORIGIN_CENTER
         );
     }
@@ -129,7 +129,7 @@ public class TestBheByJinkiRunner {
                         "MOD_001_SelectMekaMenuMeka_GrimmTail_001.png",
                         "MOD_001_SelectMekaMenuMeka_GrimmTail_002.png"
                 ),
-                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.HELL_PILOT_TOP_ANCHOR,
                 MenuLayoutPolicy.ORIGIN_CENTER
         );
     }
@@ -147,7 +147,7 @@ public class TestBheByJinkiRunner {
                         "MOD_001_SelectMekaMenuMeka_Strjeljets_001.png",
                         "MOD_001_SelectMekaMenuMeka_Strjeljets_002.png"
                 ),
-                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.HELL_PILOT_TOP_ANCHOR,
                 MenuLayoutPolicy.ORIGIN_CENTER
         );
     }
@@ -165,7 +165,7 @@ public class TestBheByJinkiRunner {
                         "MOD_001_SelectMekaMenuMeka_EdelWeiss_001.png",
                         "MOD_001_SelectMekaMenuMeka_EdelWeiss_002.png"
                 ),
-                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.HELL_PILOT_TOP_ANCHOR,
                 MenuLayoutPolicy.ORIGIN_CENTER
         );
     }
@@ -183,7 +183,7 @@ public class TestBheByJinkiRunner {
                         "MOD_001_SelectMekaMenuMeka_Misaki_001.png",
                         "MOD_001_SelectMekaMenuMeka_Misaki_002.png"
                 ),
-                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.HELL_PILOT_TOP_ANCHOR,
                 MenuLayoutPolicy.ORIGIN_CENTER
         );
     }
@@ -201,7 +201,7 @@ public class TestBheByJinkiRunner {
                         "MOD_001_SelectMekaMenuMeka_Shiden_001.png",
                         "MOD_001_SelectMekaMenuMeka_Shiden_002.png"
                 ),
-                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.HELL_PILOT_TOP_ANCHOR,
                 MenuLayoutPolicy.ORIGIN_CENTER
         );
     }
@@ -219,7 +219,7 @@ public class TestBheByJinkiRunner {
                         "MOD_001_SelectMekaMenuMeka_MorgueMan_001.png",
                         "MOD_001_SelectMekaMenuMeka_MorgueMan_002.png"
                 ),
-                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.HELL_PILOT_TOP_ANCHOR,
                 MenuLayoutPolicy.ORIGIN_CENTER
         );
     }
@@ -237,7 +237,7 @@ public class TestBheByJinkiRunner {
                         "MOD_001_SelectMekaMenuMeka_Gestoeber_001.png",
                         "MOD_001_SelectMekaMenuMeka_Gestoeber_002.png"
                 ),
-                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.HELL_PILOT_TOP_ANCHOR,
                 MenuLayoutPolicy.ORIGIN_CENTER
         );
     }
@@ -255,7 +255,7 @@ public class TestBheByJinkiRunner {
                         "MOD_001_SelectMekaMenuMeka_Shinatsuhiko_001.png",
                         "MOD_001_SelectMekaMenuMeka_Shinatsuhiko_002.png"
                 ),
-                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.HELL_PILOT_TOP_ANCHOR,
                 MenuLayoutPolicy.ORIGIN_CENTER
         );
     }

@@ -32,6 +32,9 @@ public class MenuSpmImageChainRebuilder {
     public record ResolvedImageSlot(int imageDataIndex, boolean appended) {
     }
 
+    private static final double HELL_PILOT_SCALE_MULTIPLIER = 1.22;
+    private static final int HELL_PILOT_LEFT_SHIFT = 60;
+
     public void rebuild(
             Spm target,
             int animIndex,
@@ -189,6 +192,12 @@ public class MenuSpmImageChainRebuilder {
         if (policy == MenuLayoutPolicy.FIT_DONOR_BOX_BOTTOM_CENTER) {
             return calculateFitDonorBoxBottomCenterRect(size, templatePage);
         }
+        if (policy == MenuLayoutPolicy.HELL_PILOT_TOP_ANCHOR) {
+            if (patIndex == 0) {
+                return calculateHellPilotTopAnchorRect(size, templatePage);
+            }
+            return calculateFitDonorBoxBottomCenterRect(size, templatePage);
+        }
         if (policy == MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR) {
             return calculateMekaPilotMedianRect(target, animIndex, patIndex, size);
         }
@@ -213,6 +222,24 @@ public class MenuSpmImageChainRebuilder {
         // 使用 donor 原页的中心 X / 底边作为约束框，不写角色专用坐标。
         // PNG 过高时只缩小到 donor 可视框内，避免选人画面只露出脚。
         return newRect(left, bottom - drawHeight, left + drawWidth, bottom);
+    }
+
+    public Spm.SPMRect calculateHellPilotTopAnchorRect(ImageSize size, Spm.SPMPageData templatePage) {
+        if (templatePage == null || templatePage.getPageRect() == null) {
+            return calculateOriginCenteredRect(size);
+        }
+        Spm.SPMRect donorRect = templatePage.getPageRect();
+        int donorWidth = Math.max(1, donorRect.getRight() - donorRect.getLeft());
+        int donorHeight = Math.max(1, donorRect.getBottom() - donorRect.getTop());
+        double fitScale = Math.min(donorWidth / (double) size.width(), donorHeight / (double) size.height());
+        double scale = Math.min(1.0, fitScale * HELL_PILOT_SCALE_MULTIPLIER);
+
+        int drawWidth = Math.max(1, (int) Math.round(size.width() * scale));
+        int drawHeight = Math.max(1, (int) Math.round(size.height() * scale));
+        double donorCenterX = (donorRect.getLeft() + donorRect.getRight()) / 2.0;
+        int left = (int) Math.round(donorCenterX - drawWidth / 2.0) - HELL_PILOT_LEFT_SHIFT;
+        int top = donorRect.getTop();
+        return newRect(left, top, left + drawWidth, top + drawHeight);
     }
 
     public Spm.SPMRect calculateOriginCenteredRect(ImageSize size) {
