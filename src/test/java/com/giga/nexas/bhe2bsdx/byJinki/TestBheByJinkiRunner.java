@@ -1,10 +1,13 @@
 package com.giga.nexas.bhe2bsdx.byJinki;
 
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.TsukuyomiTransfer;
+import com.giga.nexas.transfer.bhe2bsdx.meka.yuri.YuriTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuLayoutPolicy;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuOverrideSpec;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftResult;
+import com.giga.nexas.transfer.bhe2bsdx.model.yuri.YuriGraftRequest;
+import com.giga.nexas.transfer.bhe2bsdx.model.yuri.YuriGraftResult;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftRequest;
 import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
 import com.giga.nexas.transfer.jinki2bsdx.v2.Jinki2BsdxTransferV2;
@@ -50,6 +53,26 @@ public class TestBheByJinkiRunner {
         tsukuyomiRequest.setMenuOverrideSpec(tsukuyomiMenuOverrideSpec());
 
         TsukuyomiGraftResult tsukuyomiResult = TsukuyomiTransfer.process(tsukuyomiRequest);
+
+        Path yuriGeneratedExeRelative = projectRoot.relativize(
+                tsukuyomiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
+        );
+        Path yuriGeneratedAssetDirRelative = projectRoot.relativize(
+                tsukuyomiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
+        );
+
+        // 3. yuri
+        YuriGraftRequest yuriRequest = new YuriGraftRequest();
+        yuriRequest.setJinkiGeneratedExePath(yuriGeneratedExeRelative);
+        yuriRequest.setJinkiGeneratedAssetDir(yuriGeneratedAssetDirRelative);
+        yuriRequest.setInheritedJinkiResult(jinkiResult);
+        yuriRequest.setPreviousCharacterResult(tsukuyomiResult);
+        yuriRequest.setBheGameResourceRoot(null);
+        yuriRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
+        yuriRequest.setPatchMenuData(true);
+        yuriRequest.setMenuOverrideSpec(yuriMenuOverrideSpec());
+
+        YuriGraftResult yuriResult = YuriTransfer.process(yuriRequest);
     }
 
     // 2. tsukuyomi
