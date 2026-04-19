@@ -2,6 +2,7 @@ package com.giga.nexas.bhe2bsdx.byJinki;
 
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.TsukuyomiTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.freja.FrejaTransfer;
+import com.giga.nexas.transfer.bhe2bsdx.meka.misaki.MisakiTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.nagi.NagiTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.yuri.YuriTransfer;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuLayoutPolicy;
@@ -10,6 +11,8 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.freja.FrejaGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.freja.FrejaGraftResult;
+import com.giga.nexas.transfer.bhe2bsdx.model.misaki.MisakiGraftRequest;
+import com.giga.nexas.transfer.bhe2bsdx.model.misaki.MisakiGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.nagi.NagiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.nagi.NagiGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.yuri.YuriGraftRequest;
@@ -119,6 +122,26 @@ public class TestBheByJinkiRunner {
         nagiRequest.setMenuOverrideSpec(nagiMenuOverrideSpec());
 
         NagiGraftResult nagiResult = NagiTransfer.process(nagiRequest);
+
+        Path misakiGeneratedExeRelative = projectRoot.relativize(
+                nagiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
+        );
+        Path misakiGeneratedAssetDirRelative = projectRoot.relativize(
+                nagiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
+        );
+
+        // 6. misaki
+        MisakiGraftRequest misakiRequest = new MisakiGraftRequest();
+        misakiRequest.setJinkiGeneratedExePath(misakiGeneratedExeRelative);
+        misakiRequest.setJinkiGeneratedAssetDir(misakiGeneratedAssetDirRelative);
+        misakiRequest.setInheritedJinkiResult(jinkiResult);
+        misakiRequest.setPreviousCharacterResult(nagiResult);
+        misakiRequest.setBheGameResourceRoot(null);
+        misakiRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
+        misakiRequest.setPatchMenuData(true);
+        misakiRequest.setMenuOverrideSpec(misakiMenuOverrideSpec());
+
+        MisakiGraftResult misakiResult = MisakiTransfer.process(misakiRequest);
     }
 
     // 2. tsukuyomi
@@ -283,21 +306,4 @@ public class TestBheByJinkiRunner {
         );
     }
 
-    // 2. yuri
-    private MenuOverrideSpec yuriMenuOverrideSpec() {
-        return new MenuOverrideSpec(
-                26,
-                25,
-                List.of(
-                        "MOD_001_HELL_YURI_001.png",
-                        "MOD_001_HELL_MEKA_YURI_001.png"
-                ),
-                List.of(
-                        "MOD_001_SelectMekaMenuMeka_GrimmTail_001.png",
-                        "MOD_001_SelectMekaMenuMeka_GrimmTail_002.png"
-                ),
-                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
-                MenuLayoutPolicy.ORIGIN_CENTER
-        );
-    }
 }
