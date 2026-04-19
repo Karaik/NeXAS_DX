@@ -282,4 +282,22 @@ public class TestBheByJinkiRunner {
                 MenuLayoutPolicy.ORIGIN_CENTER
         );
     }
+
+    // 2. yuri
+    private MenuOverrideSpec yuriMenuOverrideSpec() {
+        return new MenuOverrideSpec(
+                26,
+                25,
+                List.of(
+                        "MOD_001_HELL_YURI_001.png",
+                        "MOD_001_HELL_MEKA_YURI_001.png"
+                ),
+                List.of(
+                        "MOD_001_SelectMekaMenuMeka_GrimmTail_001.png",
+                        "MOD_001_SelectMekaMenuMeka_GrimmTail_002.png"
+                ),
+                MenuLayoutPolicy.MEKA_PILOT_MEDIAN_ANCHOR,
+                MenuLayoutPolicy.ORIGIN_CENTER
+        );
+    }
 }
