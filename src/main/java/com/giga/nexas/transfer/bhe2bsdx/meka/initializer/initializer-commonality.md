@@ -70,7 +70,7 @@ BSDX 中共找到 69 个 initializer 武装行。字段共性如下：
 | `21` | `CEventValRandom` | 保留。 |
 | `24/26/27/28/30` | `CEventVal + CEventVal` | 保留。 |
 | `36/38/47/68/70` | `CEventVal` | 保留。 |
-| `52` | `CEventSe + CEventSe` | 清空；模板 SE 是机体/资源专属，跨机体会污染。 |
+| `52` | `CEventSe + CEventSe` | ???Aki / Gregory / Zako116a / ?? Zako ????? SE ??????? BSDX ?? initializer SE? |
 | `53` | `CEventVoice`，仅部分机体存在 | 清空；不能套模板角色语音。 |
 | `59` | `CEventValRandom + CEventValRandom` | 保留，和画面缩放/演出相关。 |
 | `62` | `CEventScreenEffect` | 保留，全屏暗化/画面演出的核心候选。 |
@@ -86,7 +86,7 @@ BSDX 中共找到 69 个 initializer 武装行。字段共性如下：
 | 尝试 | 结果 | 结论 |
 |---|---|---|
 | BHE `zako116a.waz` 转换后追加 | 运行时 `std::length_error("vector<T> too long")` | BHE 事件结构不能直接塞给 BSDX。 |
-| BSDX `Zako116a.waz` initializer 原样追加 | hover initializer 时崩溃 | BSDX 原生 skill 也带模板机体专属 sprite/SE/voice/material，不能跨机体原样复制。 |
+| BSDX `Zako116a.waz` initializer ???? | hover initializer ??? | BSDX ?? skill ???????? sprite/voice/material???????????? unit 52 ? SE ????? BSDX ?? initializer ????????? |
 | 指向当前机体 STAND/0 号 skill | 不崩，但语义不完整 | 只能作为排障 fallback，不能作为最终实现。 |
 | 清洗版 initializer skill | 保留共性 screen/change/blur，替换/清空专属资源 | 当前实现策略。 |
 
@@ -107,5 +107,6 @@ MEK 尾部 `MekMaterialBlock.trailingEntries` 与武装表按同位顺序消费�
 |---|---|
 | 只在 MEK/WAZ 重绑后执行 | 避免补齐内容污染 BHE 源侧资源闭包。 |
 | 新增 WAZ skill 后必须同步 `WazaGroup.param` | 引擎按该值理解 WAZ skill 数量。 |
-| 不复用模板 SE/Voice | 角色语音和 SE 链属于当前机体/资源簇，不允许隐式套用。 |
+| ????? Voice | ???????????????????? |
+| ???? unit 52 ?? SE | ?? BSDX initializer ?????? Zako?????? SE????? initializer ????? |
 | 允许本包内保留模板路径魔法值 | 用户已明确允许，但必须记录来源和原因。 |

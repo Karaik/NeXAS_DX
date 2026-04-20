@@ -13,6 +13,7 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSprite;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.service.BsdxBinService;
+import com.giga.nexas.transfer.bhe2bsdx.meka.shared.ImportStaticAssetRuntimeCache;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.output.OutputBheCommonProjectileResourcesStep;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
@@ -88,6 +89,8 @@ public class ImportStaticAssetsStep {
     private final RebindWazStep rebindWazStep = new RebindWazStep();
     private final OutputBheCommonProjectileResourcesStep outputCommonProjectileResourcesStep =
             new OutputBheCommonProjectileResourcesStep();
+    private final ImportStaticAssetRuntimeCache importStaticAssetRuntimeCache =
+            new ImportStaticAssetRuntimeCache(bsdxBinService);
 
     public TsukuyomiImportedAssetSet importAssets(
             TsukuyomiGraftRequest request,
@@ -105,6 +108,7 @@ public class ImportStaticAssetsStep {
             return importedAssetSet;
         }
 
+        importStaticAssetRuntimeCache.reset();
         importedAssetSet.getWazFiles().addAll(importPlan.getRequiredWazFiles());
         importedAssetSet.getSpmFiles().addAll(importPlan.getRequiredSpmFiles());
         importedAssetSet.getAuxiliaryFiles().addAll(importPlan.getRequiredMekFiles());
@@ -633,14 +637,7 @@ public class ImportStaticAssetsStep {
     }
 
     private Waz parseOutputWaz(Path outputRoot, String fileName) throws IOException {
-        Path output = outputRoot.resolve(fileName);
-        if (!Files.exists(output)) {
-            output = resolveFileCaseInsensitive(outputRoot, fileName);
-        }
-        if (output == null || !Files.exists(output)) {
-            return null;
-        }
-        return (Waz) bsdxBinService.parse(output.toString(), CHARSET).getData();
+        return importStaticAssetRuntimeCache.parseOutputWaz(outputRoot, fileName, CHARSET);
     }
 
     private void collectImageNamesFromReachableSkill(
@@ -833,9 +830,9 @@ public class ImportStaticAssetsStep {
             TsukuyomiPackageBundle tsukuyomiPackage,
             Path outputRoot
     ) throws IOException {
-        Path outputSpm = resolveFileCaseInsensitive(outputRoot, fileName);
-        if (outputSpm != null && Files.exists(outputSpm)) {
-            return (Spm) bsdxBinService.parse(outputSpm.toString(), CHARSET).getData();
+        Spm outputSpm = importStaticAssetRuntimeCache.parseOutputSpm(outputRoot, fileName, CHARSET);
+        if (outputSpm != null) {
+            return outputSpm;
         }
 
         Spm spm = findSpm(tsukuyomiPackage.getSpmByFileName(), fileName);
@@ -859,13 +856,7 @@ public class ImportStaticAssetsStep {
     }
 
     private List<Field> getAllFields(Class<?> type) {
-        List<Field> fields = new ArrayList<>();
-        Class<?> current = type;
-        while (current != null && current != Object.class) {
-            fields.addAll(List.of(current.getDeclaredFields()));
-            current = current.getSuperclass();
-        }
-        return fields;
+        return importStaticAssetRuntimeCache.getAllFields(type);
     }
 
     private void copyRequiredAudioAssets(
@@ -1109,13 +1100,7 @@ public class ImportStaticAssetsStep {
     }
 
     private Path resolveExternalFileCaseInsensitive(Path root, String fileName) throws IOException {
-        try (Stream<Path> stream = Files.walk(root)) {
-            return stream
-                    .filter(Files::isRegularFile)
-                    .filter(path -> normalize(path.getFileName().toString()).equals(normalize(fileName)))
-                    .findFirst()
-                    .orElse(null);
-        }
+        return importStaticAssetRuntimeCache.resolveExternalFileCaseInsensitive(root, fileName);
     }
 
     private Path resolveFileCaseInsensitive(Path dir, String fileName) throws IOException {

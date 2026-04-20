@@ -82,11 +82,11 @@
 - 替换 `unit 0` 的 sprite
   - 不用模板 sprite
   - 改成当前机体自己的 `STAND` skill 的 `unit 0`
-- 清空模板音频
-  - `unit 52` 的 `SE`
-  - `unit 53` 的 `Voice`
+- ??????
+  - `unit 53` ? `Voice`
 
-这一步的目的，是保留“关灯 / 变化 / 慢动作风格”的 initializer 共性，同时避免跨机体资源污染。
+`unit 52` ??? `SE` ?????
+??? Aki / Gregory / ?? `Zako*.waz` ? `INITIALIZER`????????????? BSDX ?? initializer ?? SE?
 
 ### 3.3 Material trailing
 
@@ -204,10 +204,13 @@ syncMainWazaSkillCountAfterInitializer(
 它不是只看 `weaponCategory=2` 就结束的。
 如果没有同位 `material`、没有对应 `WAZ`、没有同步 `WazaGroup.param`，都会出问题。
 
-### 9.2 不要直接复制模板的 sprite / SE / Voice
+### 9.2 ????????? sprite / Voice
 
 模板资源链是模板机体自己的，不是通用资源。
 跨机体直接复制，动态上已经验证会炸。
+- Voice???
+- SE???? `unit 52` ??? initializer SE
+- material?????????????
 
 ### 9.3 这一步是“后置目标侧补齐”
 
