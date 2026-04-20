@@ -162,8 +162,8 @@ public class EnsureInitializerWeaponStep {
                 }
                 if (unit.getUnitQuantity() == 0) {
                     replaceSpriteUnitWithCurrentMek(unit, safeSpriteUnit);
-                } else if (unit.getUnitQuantity() == 52 || unit.getUnitQuantity() == 53) {
-                    clearActorSpecificAudio(unit);
+                } else if (unit.getUnitQuantity() == 53) {
+                    clearActorSpecificVoice(unit);
                 }
             }
         }
@@ -197,12 +197,13 @@ public class EnsureInitializerWeaponStep {
         targetUnit.setSkillInfoUnknownList(new java.util.ArrayList<SkillInfoUnknown>(safeSpriteUnit.getSkillInfoUnknownList()));
     }
 
-    private void clearActorSpecificAudio(SkillUnit unit) {
-        // unit 52/53 在 initializer 共性中分别承载 SE/Voice；跨机体复制会引入模板角色的声音链。
+    private void clearActorSpecificVoice(SkillUnit unit) {
+        // unit 53 ?????? Voice??????
+        // unit 52 ? SE ? BSDX initializer ???Aki / Gregory / Zako116a / ?? Zako???????
+        // ?? initializer ???? SE?????
         unit.setSkillInfoObjectList(new java.util.ArrayList<>());
         unit.setSkillInfoUnknownList(new java.util.ArrayList<>());
     }
-
     private void appendInitializerWeaponAndMaterial(Mek targetMek, int initializerSkillIndex) {
         Mek templateMek = loadTemplateMek();
         int templateWeaponIndex = findInitializerWeaponIndex(templateMek);

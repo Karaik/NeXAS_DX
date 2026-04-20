@@ -3,6 +3,7 @@ package com.giga.nexas.transfer.bhe2bsdx.meka.nagi.pack;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportedAssetSet;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPacPackPlan;
+import com.giga.nexas.transfer.util.BaldrSkyCrashDumpScriptWriter;
 import com.giga.nexas.util.PacUtil;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ public class PackUpdatePacStep {
 
             Path outputPac = sourceFolder.resolveSibling("Update3.pac");
             Files.move(pacNew, outputPac, StandardCopyOption.REPLACE_EXISTING);
+            BaldrSkyCrashDumpScriptWriter.writeScripts(outputPac.getParent());
             plan.setOutputPacPath(outputPac);
             plan.setPacked(true);
             return plan;
