@@ -1,6 +1,6 @@
 package com.giga.nexas.transfer.bhe2bsdx.model.nagi;
 
-import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftResult;
+import com.giga.nexas.transfer.bhe2bsdx.model.followup.FollowupGraftResult;
 
-public class NagiGraftResult extends TsukuyomiGraftResult {
+public class NagiGraftResult extends FollowupGraftResult {
 }
