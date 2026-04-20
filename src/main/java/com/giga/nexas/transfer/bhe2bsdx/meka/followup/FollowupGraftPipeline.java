@@ -39,6 +39,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
+/**
+ * 后续单机体公共主线。
+ *
+ * <p>这里承接 `tsukuyomi` 之后的所有 follow-up 机体：
+ * `yuri / freja / nagi / misaki / naoto / katou / wilhelm / motoki / sou`。
+ * 主线职责固定为：
+ * 基线继承 -> convert -> closure -> grp append -> rebind -> 落盘 -> 菜单覆盖 -> exe patch -> pack。
+ * 各机体如果以后出现单独特例，只允许通过 `FollowupMekaCustomizer` 在落盘前插一次客制化，
+ * 不再把 if 散回主线步骤里。</p>
+ */
 public class FollowupGraftPipeline {
 
     private static final String CHARSET = "windows-31j";
@@ -58,6 +68,13 @@ public class FollowupGraftPipeline {
     private final PatchExeStep patchExeStep = new PatchExeStep();
     private final PackUpdatePacStep packUpdatePacStep = new PackUpdatePacStep();
 
+    /**
+     * 执行一轮 follow-up 单机体 graft。
+     *
+     * <p>这里保留一个泛型 `resultFactory`，原因是外层仍希望拿到各机体自己的 Result 子类，
+     * 但主线内部不再复制 9 份相同实现。`customizer` 是唯一保留的机体扩展点，
+     * 当前默认都接 no-op。</p>
+     */
     public <R extends FollowupGraftResult> R execute(
             FollowupGraftRequest request,
             Supplier<R> resultFactory,
@@ -72,6 +89,8 @@ public class FollowupGraftPipeline {
                 request.getPreviousCharacterResult() != null
                         ? request.getPreviousCharacterResult().getBsdxBaseline()
                         : buildBaselineFromJinkiResult(request.getInheritedJinkiResult());
+        // follow-up 机体都站在“上一机体已经写回菜单覆盖”的成果物上继续追加，
+        // 所以本层基线不是固定原始 BSDX，而是上一路结果。
         overlayPreviousMenuOutputs(request, bsdxBaseline);
         result.setBsdxBaseline(bsdxBaseline);
 
@@ -110,6 +129,8 @@ public class FollowupGraftPipeline {
         result.setSyncedProgramMaterial(syncedProgramMaterial);
         padBaselineMekMaterialStep.padMaterialBlock(bsdxBaseline);
 
+        // 主机体 MEK/WAZ 在这里完成目标索引空间重绑。
+        // 这之后才允许跑 initializer 和客制化，因为它们都必须作用在目标侧 DTO 上。
         Mek reboundMek = rebindMekStep.rebindFollowupMek(
                 request,
                 selectedPackage,
@@ -134,6 +155,8 @@ public class FollowupGraftPipeline {
         result.setReboundTsukuyomiMek(reboundMek);
         result.setReboundTsukuyomiWaz(reboundWaz);
 
+        // 这是公共主线唯一保留的机体特例入口。
+        // 约束：只能做单机体的落盘前修正，不能回头改公共资源层或主 rebind 规则。
         FollowupMekaContext context = new FollowupMekaContext();
         context.setRequest(request);
         context.setBaseline(bsdxBaseline);
@@ -162,6 +185,8 @@ public class FollowupGraftPipeline {
         result.setReboundTsukuyomiMek(reboundMek);
         result.setReboundTsukuyomiWaz(reboundWaz);
 
+        // 从这里开始进入“产物沉淀层”。后续 pack 只打这棵目录，
+        // 所以所有最终物料必须先统一落到 importedAssetSet.outputRootDir。
         TsukuyomiImportedAssetSet importedAssetSet = importStaticAssetsStep.importAssets(
                 request,
                 selectedPackage,
@@ -195,10 +220,20 @@ public class FollowupGraftPipeline {
         return result;
     }
 
+    /**
+     * 把 JINKI 结果翻译成当前 follow-up 层可继续追加的基线视图。
+     */
     private TsukuyomiBsdxBaselineBundle buildBaselineFromJinkiResult(AkaoGraftResult inheritedJinkiResult) {
         return buildBaselineFromJinkiResultStep.buildBaselineFromJinkiResult(inheritedJinkiResult);
     }
 
+    /**
+     * 继承上一机体已经写回的菜单产物。
+     *
+     * <p>follow-up 角色是链式追加，不是各跑各的菜单覆盖。
+     * 所以这里必须先把上一机体已经改过的 DAT/SPM 再叠到当前基线上，
+     * 否则后一个角色会把前一个角色的菜单结果覆盖回旧值。</p>
+     */
     private void overlayPreviousMenuOutputs(
             FollowupGraftRequest request,
             TsukuyomiBsdxBaselineBundle bsdxBaseline
@@ -226,6 +261,9 @@ public class FollowupGraftPipeline {
         overlayPreviousWeaponEquipDat(request, bsdxBaseline);
     }
 
+    /**
+     * `WeaponEquip.dat` 不在结果对象里长期挂 DTO，所以这里按上一轮输出目录反解回来。
+     */
     private void overlayPreviousWeaponEquipDat(
             FollowupGraftRequest request,
             TsukuyomiBsdxBaselineBundle bsdxBaseline
@@ -254,6 +292,9 @@ public class FollowupGraftPipeline {
         }
     }
 
+    /**
+     * initializer 可能追加新 skill，因此要把主 WazaGroup.param 同步到真实 skill 数。
+     */
     private void syncMainWazaSkillCountAfterInitializer(
             TsukuyomiBsdxBaselineBundle bsdxBaseline,
             TsukuyomiGrpAppendPlan grpAppendPlan,
@@ -274,6 +315,10 @@ public class FollowupGraftPipeline {
         bsdxBaseline.getWazaGroupGrp().getWazaList().get(targetWazaIndex).setParam(reboundWaz.getSkillList().size());
     }
 
+    /**
+     * 菜单覆盖步骤自己会写文件，但结果对象和 importedAssetSet 也要同步记录，
+     * 否则后续 manifest / pack / 审计看不到这些菜单产物来自哪里。
+     */
     private void applyMenuContextToResultAndAssetSet(
             MenuOverrideContext menuContext,
             FollowupGraftResult result,

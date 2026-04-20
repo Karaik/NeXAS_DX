@@ -11,6 +11,13 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPackageBundle;
 import lombok.Data;
 
+/**
+ * 落盘前客制化上下文。
+ *
+ * <p>这里集中放“当前单机体这一轮已经算出来的结果”，避免客制化实现再去
+ * 重新找 request / baseline / importPlan / rebind 结果。当前设计是只读+就地修正，
+ * 不再额外长出第二套 pipeline 状态对象。</p>
+ */
 @Data
 public class FollowupMekaContext {
 

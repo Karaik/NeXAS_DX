@@ -42,23 +42,26 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-
+/**
+ * follow-up 单机体的静态资源沉淀层。
+ *
+ * <p>职责只有一件事：把当前 follow-up 机体这轮需要进入最终包的
+ * `grp/dat/mek/waz/spm/png/audio` 全部落到同一个 outputRoot。
+ * 这里不决定业务规则，不决定索引映射，只消费前面步骤已经算好的结果。</p>
+ */
 public class ImportStaticAssetsStep {
 
-    
     private static final String CHARSET = "windows-31j";
 
-    
     private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS");
 
-    
     private final BsdxBinService bsdxBinService = new BsdxBinService();
 
-    
     private final RebindWazStep rebindWazStep = new RebindWazStep();
     private final PadBaselineMekMaterialStep padBaselineMekMaterialStep = new PadBaselineMekMaterialStep();
     private final OutputBheCommonProjectileResourcesStep outputCommonProjectileResourcesStep =
             new OutputBheCommonProjectileResourcesStep();
+    // 这里只缓存“怎么找到文件”和“怎么重复读取输出文件”，不改任何资源选择规则。
     private final ImportStaticAssetRuntimeCache importStaticAssetRuntimeCache =
             new ImportStaticAssetRuntimeCache(bsdxBinService);
 
@@ -84,9 +87,11 @@ public class ImportStaticAssetsStep {
         importedAssetSet.getAuxiliaryFiles().addAll(importPlan.getRequiredMekFiles());
 
         try {
+            // outputRoot 仍然按机体名落盘，原因是你后面看产物目录时要一眼知道当前是哪一轮机体。
             Path outputRoot = request.getExeOutputDir().resolve(resolveOutputPrefix(request) + "_assets_" + LocalDateTime.now().format(TS));
             Files.createDirectories(outputRoot);
             importedAssetSet.setOutputRootDir(outputRoot);
+            // follow-up 机体是在上一轮目录基础上继续追加，不是从空目录重建完整世界。
             copyInheritedJinkiAssets(request, outputRoot, importedAssetSet);
             writePatchedGrpOutputs(bsdxBaseline, syncedProgramMaterial, outputRoot, importedAssetSet);
             writePatchedConfigDatOutputs(tsukuyomiPackage, bsdxBaseline, outputRoot, importedAssetSet);
@@ -154,6 +159,8 @@ public class ImportStaticAssetsStep {
             return;
         }
 
+        // 这里复制的是“上一轮已经确认正确的最终物料”，不是源资源。
+        // 因此只跳过 exe/pac，其余文件都先继承下来，再由本轮产物覆盖。
         try (Stream<Path> stream = Files.walk(inheritedAssetDir)) {
             for (Path source : stream.filter(Files::isRegularFile).toList()) {
                 String fileName = source.getFileName().toString();
@@ -559,6 +566,9 @@ public class ImportStaticAssetsStep {
             return imageNames;
         }
 
+        // 这段是当前落盘层里最贵的部分：从重绑后的 skill 递归追到 sprite/waz，再落到图片名。
+        // 前面已经把输出 WAZ/SPM parse 和外部资源目录扫描做了缓存；后续如果还要继续提速，
+        // 第一优先级就是给 `(wazFile, skillIndex)` 的可达图片集合再加 memo，而不是改业务规则。
         for (String fileName : importPlan.getRequiredWazFiles()) {
             Integer sourceWazGroupIndex = findSourceWazGroupIndex(importPlan, fileName);
             if (sourceWazGroupIndex == null) {
@@ -1087,6 +1097,8 @@ public class ImportStaticAssetsStep {
     }
 
     private String resolveOutputPrefix(TsukuyomiGraftRequest request) {
+        // follow-up 公共层仍然保留“按机体名命名目录”的行为，
+        // 这样 byte compare 时目录名可变，但人工排查产物时仍然能直接定位是哪个机体。
         if (request != null && request.getTsukuyomiResourceDir() != null && request.getTsukuyomiResourceDir().getFileName() != null) {
             return normalize(request.getTsukuyomiResourceDir().getFileName().toString());
         }
