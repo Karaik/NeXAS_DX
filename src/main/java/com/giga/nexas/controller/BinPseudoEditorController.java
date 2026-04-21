@@ -7,8 +7,12 @@ import com.giga.nexas.dto.bsdx.bin.consts.OperandDocRegistry;
 import com.giga.nexas.dto.bsdx.bin.pseudo.recognizer.BsdxBinRecognizer;
 import com.giga.nexas.dto.bsdx.bin.pseudo.renderer.BsdxBinRenderer;
 import com.giga.nexas.service.BsdxBinService;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Bounds;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -19,7 +23,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.skin.TextAreaSkin;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -29,13 +32,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BinPseudoEditorController {
 
     private static final Map<Path, Stage> OPEN_WINDOWS = new HashMap<>();
     private static final String DEFAULT_CHARSET = "windows-31j";
+    private static final Pattern TOKEN_PATTERN = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
 
     @FXML private BorderPane root;
     @FXML private Label fileLabel;
@@ -108,13 +116,13 @@ public class BinPseudoEditorController {
         pseudoModeButton.setOnAction(event -> switchMode(EditorMode.PSEUDO));
         reloadButton.setOnAction(event -> reloadFromDisk());
         compileButton.setOnAction(event -> compileBack());
-        pseudoArea.addEventHandler(MouseEvent.MOUSE_MOVED, this::handlePseudoHover);
-        pseudoArea.addEventHandler(MouseEvent.MOUSE_EXITED, event -> hideOperandTooltip());
-        pseudoArea.addEventHandler(MouseEvent.MOUSE_PRESSED, event -> hideOperandTooltip());
+        pseudoArea.selectedTextProperty().addListener((obs, oldText, newText) -> scheduleOperandTooltipUpdate());
+        pseudoArea.caretPositionProperty().addListener((obs, oldValue, newValue) -> scheduleOperandTooltipUpdate());
         pseudoArea.textProperty().addListener((obs, oldText, newText) -> {
             if (!suppressDirtyTracking) {
                 setDirty(true);
             }
+            hideOperandTooltip();
         });
     }
 
@@ -155,7 +163,7 @@ public class BinPseudoEditorController {
             currentBin = parsed;
             refreshEditorText();
             setDirty(false);
-            setStatus("Loaded " + currentMode.label + " view for " + binPath.getFileName());
+            updateEditorHintStatus("Loaded " + currentMode.label + " view for " + binPath.getFileName());
             logger.accept("Opened pseudo code editor for " + binPath.getFileName());
         } catch (Exception ex) {
             suppressDirtyTracking = false;
@@ -200,6 +208,20 @@ public class BinPseudoEditorController {
         statusLabel.setText(text);
     }
 
+    private void updateEditorHintStatus(String baseText) {
+        if (currentMode != EditorMode.PSEUDO) {
+            setStatus(baseText);
+            return;
+        }
+
+        int documentedCount = countDocumentedFunctionTokens(pseudoArea.getText());
+        if (documentedCount > 0) {
+            setStatus(baseText + " Select a function name to view docs. " + documentedCount + " documented function names found in this file.");
+            return;
+        }
+        setStatus(baseText + " Select a function name to view docs.");
+    }
+
     private void switchMode(EditorMode targetMode) {
         if (suppressModeEvents || targetMode == currentMode) {
             return;
@@ -214,7 +236,7 @@ public class BinPseudoEditorController {
         currentMode = targetMode;
         refreshEditorText();
         setDirty(false);
-        setStatus(targetMode == EditorMode.ASM
+        updateEditorHintStatus(targetMode == EditorMode.ASM
                 ? "ASM mode: strict reversible editing enabled."
                 : "Pseudo mode: lossless pseudo enabled; unchanged lines replay exact IR.");
     }
@@ -235,6 +257,7 @@ public class BinPseudoEditorController {
         pseudoArea.setEditable(true);
         compileButton.setDisable(false);
         suppressDirtyTracking = false;
+        hideOperandTooltip();
         restoreModeSelection();
     }
 
@@ -321,7 +344,13 @@ public class BinPseudoEditorController {
         if (text == null || text.isEmpty()) {
             return new String[0];
         }
-        return text.replace("\r\n", "\n").replace('\r', '\n').split("\n", -1);
+        String[] lines = text.replace("\r\n", "\n").replace('\r', '\n').split("\n", -1);
+        if (lines.length > 0 && lines[lines.length - 1].isEmpty()) {
+            String[] trimmed = new String[lines.length - 1];
+            System.arraycopy(lines, 0, trimmed, 0, trimmed.length);
+            return trimmed;
+        }
+        return lines;
     }
 
     private void setDirty(boolean dirty) {
@@ -348,74 +377,126 @@ public class BinPseudoEditorController {
         alert.showAndWait();
     }
 
-    private void handlePseudoHover(MouseEvent event) {
-        if (currentMode != EditorMode.PSEUDO || currentBin == null) {
+    private void scheduleOperandTooltipUpdate() {
+        Platform.runLater(this::updateOperandTooltipForSelection);
+    }
+
+    private void updateOperandTooltipForSelection() {
+        if (currentMode != EditorMode.PSEUDO || currentBin == null || !(pseudoArea.getSkin() instanceof TextAreaSkin skin)) {
             hideOperandTooltip();
             return;
         }
 
-        if (pseudoArea.getSkin() == null) {
-            hideOperandTooltip();
-            return;
-        }
-        TextAreaSkin skin = (TextAreaSkin) pseudoArea.getSkin();
-        int charIndex = skin.getIndex(event.getX(), event.getY()).getCharIndex();
-        String token = extractTokenAt(pseudoArea.getText(), charIndex);
-        if (token == null) {
+        String selectedText = pseudoArea.getSelectedText();
+        if (selectedText == null || selectedText.isBlank() || selectedText.indexOf('\n') >= 0 || selectedText.indexOf('\r') >= 0) {
             hideOperandTooltip();
             return;
         }
 
-        OperandDocEntry entry = OperandDocRegistry.findByName(token);
+        OperandDocEntry entry = resolveOperandDocEntryFromSelection(selectedText);
         if (entry == null) {
             hideOperandTooltip();
             return;
         }
 
-        operandTooltip.setText(entry.toTooltipText());
-        if (!operandTooltip.isShowing()) {
-            var screen = pseudoArea.localToScreen(event.getX() + 14, event.getY() + 18);
-            if (screen != null) {
-                operandTooltip.show(pseudoArea, screen.getX(), screen.getY());
-            }
+        Bounds screenBounds = resolveSelectionAnchorScreenBounds(skin);
+        if (screenBounds == null) {
+            hideOperandTooltip();
             return;
         }
-        var screen = pseudoArea.localToScreen(event.getX() + 14, event.getY() + 18);
-        if (screen != null) {
-            operandTooltip.setAnchorX(screen.getX());
-            operandTooltip.setAnchorY(screen.getY());
-        }
+
+        operandTooltip.setText(entry.toTooltipText());
+        double anchorX = screenBounds.getMinX();
+        double anchorY = screenBounds.getMaxY() + 6;
+        operandTooltip.hide();
+        operandTooltip.show(pseudoArea, anchorX, anchorY);
     }
 
     private void hideOperandTooltip() {
         operandTooltip.hide();
     }
 
-    private String extractTokenAt(String text, int charIndex) {
-        if (text == null || text.isEmpty()) {
+    private OperandDocEntry resolveOperandDocEntryFromSelection(String selectedText) {
+        String normalized = selectedText == null ? "" : selectedText.trim();
+        if (normalized.isEmpty()) {
             return null;
         }
-        int index = Math.max(0, Math.min(charIndex, text.length() - 1));
-        if (!isTokenChar(text.charAt(index)) && index > 0 && isTokenChar(text.charAt(index - 1))) {
-            index--;
+
+        OperandDocEntry direct = OperandDocRegistry.findByName(normalized);
+        if (direct != null) {
+            return direct;
         }
-        if (!isTokenChar(text.charAt(index))) {
+
+        if (normalized.startsWith("call ")) {
+            normalized = normalized.substring("call ".length()).trim();
+        } else if (normalized.startsWith("syscall ")) {
+            normalized = normalized.substring("syscall ".length()).trim();
+        }
+
+        int paren = normalized.indexOf('(');
+        if (paren >= 0) {
+            normalized = normalized.substring(0, paren).trim();
+        }
+
+        Matcher matcher = TOKEN_PATTERN.matcher(normalized);
+        if (!matcher.find()) {
             return null;
         }
-        int start = index;
-        int end = index + 1;
-        while (start > 0 && isTokenChar(text.charAt(start - 1))) {
-            start--;
-        }
-        while (end < text.length() && isTokenChar(text.charAt(end))) {
-            end++;
-        }
-        String token = text.substring(start, end);
-        return Character.isLetter(token.charAt(0)) || token.charAt(0) == '_' ? token : null;
+        return OperandDocRegistry.findByName(matcher.group());
     }
 
-    private boolean isTokenChar(char c) {
-        return Character.isLetterOrDigit(c) || c == '_';
+    private Bounds resolveSelectionAnchorScreenBounds(TextAreaSkin skin) {
+        Bounds selectionBounds = resolveSelectedTextScreenBounds(skin);
+        if (selectionBounds != null) {
+            return selectionBounds;
+        }
+        Bounds caretBounds = resolveCaretScreenBounds(skin);
+        if (caretBounds != null) {
+            return caretBounds;
+        }
+        return null;
+    }
+
+    private Bounds resolveSelectedTextScreenBounds(TextAreaSkin skin) {
+        var selection = pseudoArea.getSelection();
+        if (selection == null || selection.getLength() <= 0) {
+            return null;
+        }
+
+        int anchorIndex = Math.max(selection.getEnd() - 1, selection.getStart());
+        Rectangle2D charBounds = skin.getCharacterBounds(anchorIndex);
+        if (charBounds == null) {
+            return null;
+        }
+        return pseudoArea.localToScreen(new BoundingBox(
+                charBounds.getMinX(),
+                charBounds.getMinY(),
+                Math.max(1, charBounds.getWidth()),
+                Math.max(1, charBounds.getHeight())
+        ));
+    }
+
+    private Bounds resolveCaretScreenBounds(TextAreaSkin skin) {
+        Bounds caretBounds = skin.getCaretBounds();
+        if (caretBounds == null) {
+            return null;
+        }
+        return pseudoArea.localToScreen(caretBounds);
+    }
+
+    private int countDocumentedFunctionTokens(String text) {
+        if (text == null || text.isBlank()) {
+            return 0;
+        }
+        Set<String> documented = new LinkedHashSet<>();
+        Matcher matcher = TOKEN_PATTERN.matcher(text);
+        while (matcher.find()) {
+            String token = matcher.group();
+            if (OperandDocRegistry.findByName(token) != null) {
+                documented.add(token);
+            }
+        }
+        return documented.size();
     }
 
     private enum EditorMode {
