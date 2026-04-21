@@ -4,16 +4,17 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane fx:id="root" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.giga.nexas.controller.BinPseudoEditorController">
+            fx:controller="com.giga.nexas.controller.BinPseudoEditorController"
+            style="-fx-background-color: #f6f7fb;">
     <top>
         <VBox spacing="8.0">
             <padding>
                 <Insets top="10.0" right="12.0" bottom="10.0" left="12.0"/>
             </padding>
-            <Label fx:id="fileLabel" wrapText="true" maxWidth="Infinity"/>
+            <Label fx:id="fileLabel" wrapText="true" maxWidth="Infinity" style="-fx-text-fill: #222222;"/>
             <HBox spacing="12.0" alignment="CENTER_LEFT">
                 <HBox spacing="6.0" alignment="CENTER_LEFT">
-                    <Label text="Mode"/>
+                    <Label text="Mode" style="-fx-text-fill: #222222;"/>
                     <RadioButton fx:id="asmModeButton" text="ASM"/>
                     <RadioButton fx:id="pseudoModeButton" text="Pseudo"/>
                 </HBox>
@@ -25,10 +26,10 @@
     </top>
     <center>
         <TextArea fx:id="pseudoArea" wrapText="false"
-                  style="-fx-font-family: 'Consolas'; -fx-font-size: 12px;"/>
+                  style="-fx-font-family: 'Consolas'; -fx-font-size: 12px; -fx-control-inner-background: white; -fx-text-fill: #111111;"/>
     </center>
     <bottom>
-        <Label fx:id="statusLabel" wrapText="true" maxWidth="Infinity">
+        <Label fx:id="statusLabel" wrapText="true" maxWidth="Infinity" style="-fx-text-fill: #333333;">
             <BorderPane.margin>
                 <Insets top="8.0" right="12.0" bottom="10.0" left="12.0"/>
             </BorderPane.margin>

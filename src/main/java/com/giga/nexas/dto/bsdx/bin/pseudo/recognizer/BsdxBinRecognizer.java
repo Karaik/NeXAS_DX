@@ -37,8 +37,18 @@ public class BsdxBinRecognizer {
                 if (tryReplayLosslessPseudo(pseudoLine, context)) {
                     continue;
                 }
+                boolean standaloneSyscall = line.startsWith("syscall") && pseudoLine.irHash() == null;
+                if (standaloneSyscall) {
+                    context.injectStandaloneSyscallPrelude();
+                }
+                context.beginSemanticLine(pseudoLine.irEntries());
                 compileLine(line, context);
+                context.endSemanticLine();
+                if (standaloneSyscall) {
+                    context.injectStandaloneSyscallPostlude();
+                }
             } catch (RuntimeException ex) {
+                context.endSemanticLine();
                 throw new IllegalArgumentException(
                         "line " + lineNumber + ": " + line + " -> " + ex.getMessage(),
                         ex
@@ -78,7 +88,7 @@ public class BsdxBinRecognizer {
             return;
         }
         if (line.startsWith("label ")) {
-            context.labels.put(line.substring("label ".length()).trim(), context.instructions.size());
+            context.registerLabel(line.substring("label ".length()).trim());
             return;
         }
         if (line.startsWith("entry ")) {
@@ -90,8 +100,8 @@ public class BsdxBinRecognizer {
             return;
         }
         if (line.startsWith("jmp_direct ")) {
-            int index = context.addInstruction(OPCODE_DIRECT_JUMP, 0);
-            context.unresolvedLabels.put(index, line.substring("jmp_direct ".length()).trim());
+            Bin.Instruction inst = context.addInstruction(OPCODE_DIRECT_JUMP, 0);
+            context.unresolvedLabels.put(inst, line.substring("jmp_direct ".length()).trim());
             return;
         }
         if (line.startsWith("jmp ")) {
@@ -122,6 +132,11 @@ public class BsdxBinRecognizer {
         }
         if (isRawInstruction(line)) {
             compileRawInstruction(line, context);
+            return;
+        }
+        if (isQuotedLiteral(line)) {
+            context.addInstruction(0, context.requireStringIndex(unquote(line)));
+            context.addInstruction(5, 1);
             return;
         }
 
@@ -172,7 +187,7 @@ public class BsdxBinRecognizer {
         }
 
         if (pseudoLine.irEntries().size() == 1 && pseudoLine.irEntries().get(0).startsWith("CONST:")) {
-            // Unmodified global lines keep the original 68-byte table/constants block untouched.
+            context.replayConstant(pseudoLine.irEntries().get(0));
             return true;
         }
 
@@ -196,7 +211,7 @@ public class BsdxBinRecognizer {
             }
             int opcodeNum = parseFlexibleInt(entry.substring(0, comma).trim());
             int operandNum = parseFlexibleInt(entry.substring(comma + 1).trim());
-            context.replayInstruction(context.replayedInstructions.size(), opcodeNum, operandNum);
+            context.replayInstruction(opcodeNum, operandNum);
         }
         return true;
     }
@@ -220,6 +235,7 @@ public class BsdxBinRecognizer {
                 }
             }
         }
+        context.constantLineCount++;
         context.constants.put(index, refs.toArray(new Integer[0]));
         context.constantsTouched = true;
     }
@@ -252,11 +268,11 @@ public class BsdxBinRecognizer {
         emitExpression(conditionExpr, context, EmitMode.R0);
 
         if (tail.startsWith("jmp_direct ")) {
-            int index = context.addInstruction(
+            Bin.Instruction inst = context.addInstruction(
                     negateDirect ? OPCODE_DIRECT_JUMP_IF_FALSE : OPCODE_DIRECT_JUMP_IF_TRUE,
                     0
             );
-            context.unresolvedLabels.put(index, tail.substring("jmp_direct ".length()).trim());
+            context.unresolvedLabels.put(inst, tail.substring("jmp_direct ".length()).trim());
             return;
         }
         if (tail.startsWith("jmp2 ")) {
@@ -478,6 +494,18 @@ public class BsdxBinRecognizer {
         }
     }
 
+    private boolean isQuotedLiteral(String line) {
+        String trimmed = line.trim();
+        return trimmed.length() >= 2 && trimmed.startsWith("\"") && trimmed.endsWith("\"");
+    }
+
+    private String unquote(String line) {
+        String trimmed = line.trim();
+        return trimmed.substring(1, trimmed.length() - 1)
+                .replace("\\\"", "\"")
+                .replace("\\\\", "\\");
+    }
+
     private static int parseFlexibleInt(String value) {
         String trimmed = value.trim();
         if (trimmed.startsWith("0x") || trimmed.startsWith("0X")) {
@@ -579,16 +607,22 @@ public class BsdxBinRecognizer {
         private final Bin template;
         private final List<String> properties;
         private final List<String> strings;
-        private final List<Bin.Instruction> instructions = new ArrayList<>();
-        private final List<IndexedInstruction> replayedInstructions = new ArrayList<>();
+        private final List<OrderedInstruction> orderedInstructions = new ArrayList<>();
         private final Map<String, Integer> propertyIndices = new LinkedHashMap<>();
         private final Map<String, Integer> globalSymbolIndices = new LinkedHashMap<>();
         private final Map<String, Integer> stringIndices = new LinkedHashMap<>();
-        private final Map<String, Integer> labels = new HashMap<>();
-        private final Map<Integer, String> unresolvedLabels = new LinkedHashMap<>();
+        private final Map<String, Bin.Instruction> labelMarkers = new LinkedHashMap<>();
+        private final Map<Bin.Instruction, String> unresolvedLabels = new LinkedHashMap<>();
         private final Map<Integer, Integer[]> constants = new LinkedHashMap<>();
         private boolean constantsTouched;
-        private boolean semanticCompilationUsed;
+        private int constantLineCount;
+        private List<Integer> currentLineAnchors = List.of();
+        private int currentLineAnchorCursor;
+        private long currentLineOverflow;
+        private long nextSyntheticSortKey = 1L << 48;
+        private int insertionOrder;
+        private int standaloneSyscallReadCount = 6;
+        private int standaloneSyscallUnknownCount = 0x7D;
 
         private CompilerContext(Bin template) {
             this.template = template;
@@ -615,16 +649,47 @@ public class BsdxBinRecognizer {
             }
         }
 
-        private int addInstruction(int opcodeNum, int operandNum) {
-            semanticCompilationUsed = true;
+        private void beginSemanticLine(List<String> irEntries) {
+            this.currentLineAnchors = extractSourceAnchors(irEntries);
+            this.currentLineAnchorCursor = 0;
+            this.currentLineOverflow = 0L;
+        }
+
+        private void endSemanticLine() {
+            this.currentLineAnchors = List.of();
+            this.currentLineAnchorCursor = 0;
+            this.currentLineOverflow = 0L;
+        }
+
+        private Bin.Instruction addInstruction(int opcodeNum, int operandNum) {
             Bin.Instruction inst = buildInstruction(opcodeNum, operandNum);
-            inst.setIndex(instructions.size());
-            instructions.add(inst);
-            return instructions.size() - 1;
+            orderedInstructions.add(new OrderedInstruction(nextInstructionSortKey(), insertionOrder++, inst));
+            return inst;
         }
 
         private void replayInstruction(int sourceIndex, int opcodeNum, int operandNum) {
-            replayedInstructions.add(new IndexedInstruction(sourceIndex, buildInstruction(opcodeNum, operandNum)));
+            Bin.Instruction inst = buildInstruction(opcodeNum, operandNum);
+            orderedInstructions.add(new OrderedInstruction(sourceIndexToSortKey(sourceIndex), insertionOrder++, inst));
+        }
+
+        private void replayInstruction(int opcodeNum, int operandNum) {
+            Bin.Instruction inst = buildInstruction(opcodeNum, operandNum);
+            orderedInstructions.add(new OrderedInstruction(nextSyntheticSortKey++, insertionOrder++, inst));
+        }
+
+        private void registerLabel(String labelName) {
+            Bin.Instruction marker = buildInstruction(0xFF, 0);
+            orderedInstructions.add(new OrderedInstruction(nextInstructionSortKey(), insertionOrder++, marker));
+            labelMarkers.put(labelName, marker);
+        }
+
+        private void injectStandaloneSyscallPrelude() {
+            addInstruction(0x1D, standaloneSyscallReadCount++);
+            addInstruction(0x2C, standaloneSyscallUnknownCount++);
+        }
+
+        private void injectStandaloneSyscallPostlude() {
+            addInstruction(0x1D, standaloneSyscallReadCount++);
         }
 
         private void addCallInstruction(String target, int argc) {
@@ -683,14 +748,57 @@ public class BsdxBinRecognizer {
             return index;
         }
 
-        private void resolveLabels() {
-            for (Map.Entry<Integer, String> entry : unresolvedLabels.entrySet()) {
-                Integer targetIndex = labels.get(entry.getValue());
-                if (targetIndex == null) {
-                    throw new IllegalArgumentException("Unknown label: " + entry.getValue());
-                }
-                instructions.get(entry.getKey()).setOperandNum(targetIndex - 1);
+        private void replayConstant(String entry) {
+            int firstColon = entry.indexOf(':');
+            int secondColon = entry.indexOf(':', firstColon + 1);
+            if (firstColon < 0 || secondColon < 0) {
+                return;
             }
+            int index = parseFlexibleInt(entry.substring(firstColon + 1, secondColon).trim());
+            constantLineCount++;
+            if (template == null || template.getConstants() == null) {
+                return;
+            }
+            Integer[] original = template.getConstants().get(index);
+            if (original == null) {
+                return;
+            }
+            Integer[] copied = new Integer[original.length];
+            System.arraycopy(original, 0, copied, 0, original.length);
+            constants.put(index, copied);
+        }
+
+        private void resolveLabels() {
+        }
+
+        private List<Integer> extractSourceAnchors(List<String> irEntries) {
+            if (irEntries == null || irEntries.isEmpty()) {
+                return List.of();
+            }
+            List<Integer> anchors = new ArrayList<>();
+            for (String entry : irEntries) {
+                int at = entry.indexOf('@');
+                if (at < 0) {
+                    continue;
+                }
+                anchors.add(parseFlexibleInt(entry.substring(0, at).trim()));
+            }
+            return anchors;
+        }
+
+        private long nextInstructionSortKey() {
+            if (currentLineAnchors.isEmpty()) {
+                return nextSyntheticSortKey++;
+            }
+            if (currentLineAnchorCursor < currentLineAnchors.size()) {
+                return sourceIndexToSortKey(currentLineAnchors.get(currentLineAnchorCursor++));
+            }
+            int lastAnchor = currentLineAnchors.get(currentLineAnchors.size() - 1);
+            return sourceIndexToSortKey(lastAnchor) + (++currentLineOverflow);
+        }
+
+        private long sourceIndexToSortKey(int sourceIndex) {
+            return ((long) sourceIndex) << 32;
         }
 
         private Bin build() {
@@ -704,27 +812,59 @@ public class BsdxBinRecognizer {
                 result.setGlobalSymbols(template.getGlobalSymbols() == null ? null : new ArrayList<>(template.getGlobalSymbols()));
                 result.setTailRaw(template.tailRaw);
                 result.setConstants2(template.getConstants2());
-                if (!constantsTouched) {
+                int templateConstantCount = template.getConstants() == null ? 0 : template.getConstants().size();
+                boolean rebuildConstants = constantsTouched
+                        || (constantLineCount > 0 && constantLineCount != templateConstantCount);
+                if (!rebuildConstants) {
                     result.setTable(template.getTable() == null ? null : new ArrayList<>(template.getTable()));
                     result.setConstants(template.getConstants() == null ? null : new LinkedHashMap<>(template.getConstants()));
                 } else {
                     result.setTable(null);
+                    result.setConstants(new LinkedHashMap<>(constants));
                 }
             }
             result.setProperties(properties);
             result.setStringTable(strings);
-            List<Bin.Instruction> finalInstructions;
-            if (!semanticCompilationUsed && !replayedInstructions.isEmpty()) {
-                replayedInstructions.sort((a, b) -> Integer.compare(a.sourceIndex(), b.sourceIndex()));
-                finalInstructions = new ArrayList<>(replayedInstructions.size());
-                for (IndexedInstruction indexedInstruction : replayedInstructions) {
-                    finalInstructions.add(indexedInstruction.instruction());
+            List<OrderedInstruction> sortedEntries = new ArrayList<>(orderedInstructions);
+            sortedEntries.sort((left, right) -> {
+                int orderCompare = Long.compare(left.sortKey(), right.sortKey());
+                if (orderCompare != 0) {
+                    return orderCompare;
                 }
-            } else {
-                finalInstructions = instructions;
+                return Integer.compare(left.insertionOrder(), right.insertionOrder());
+            });
+
+            List<Bin.Instruction> finalInstructions = new ArrayList<>(sortedEntries.size());
+            for (OrderedInstruction entry : sortedEntries) {
+                finalInstructions.add(entry.instruction());
             }
+
+            Map<String, Bin.Instruction> resolvedLabels = new HashMap<>();
+            for (Map.Entry<String, Bin.Instruction> entry : labelMarkers.entrySet()) {
+                int markerIndex = finalInstructions.indexOf(entry.getValue());
+                if (markerIndex < 0) {
+                    continue;
+                }
+                int targetIndex = markerIndex + 1;
+                while (targetIndex < finalInstructions.size() && finalInstructions.get(targetIndex).getOpcodeNum() == 0xFF) {
+                    targetIndex++;
+                }
+                if (targetIndex < finalInstructions.size()) {
+                    resolvedLabels.put(entry.getKey(), finalInstructions.get(targetIndex));
+                }
+            }
+
+            finalInstructions.removeIf(inst -> inst.getOpcodeNum() == 0xFF);
+            for (Map.Entry<Bin.Instruction, String> entry : unresolvedLabels.entrySet()) {
+                Bin.Instruction target = resolvedLabels.get(entry.getValue());
+                if (target == null) {
+                    throw new IllegalArgumentException("Unknown label: " + entry.getValue());
+                }
+                entry.getKey().setOperandNum(finalInstructions.indexOf(target) - 1);
+            }
+
             result.setInstructions(finalInstructions);
-            if (constantsTouched) {
+            if (template == null && (constantsTouched || constantLineCount > 0)) {
                 result.setConstants(constants);
             }
 
@@ -775,7 +915,7 @@ public class BsdxBinRecognizer {
     private record PseudoLine(String content, String irHash, List<String> irEntries) {
     }
 
-    private record IndexedInstruction(int sourceIndex, Bin.Instruction instruction) {
+    private record OrderedInstruction(long sortKey, int insertionOrder, Bin.Instruction instruction) {
     }
 
     private interface Expr {

@@ -65,6 +65,14 @@ public class ModeTreeController {
         }
     }
 
+    /**
+     * 供其他模式在退出时恢复主工作区状态栏使用。
+     */
+    public void refreshViewState() {
+        updateSummary();
+        updateStatus();
+    }
+
     private void rebuildTree() {
         Platform.runLater(() -> {
             TreeItem<WorkspaceTreeNode> rootItem = buildRoot();

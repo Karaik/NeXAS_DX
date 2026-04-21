@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
 <BorderPane fx:id="root" xmlns:fx="http://javafx.com/fxml" fx:controller="com.giga.nexas.controller.MainViewController">
@@ -28,6 +29,7 @@
                 </VBox>
 
                 <Pane HBox.hgrow="ALWAYS"/>
+                <Button fx:id="scriptEditorModeButton" text="Script Editor" minWidth="110.0"/>
                 <CheckBox fx:id="alwaysOnTop" text="Always on Top"/>
             </HBox>
 
@@ -36,78 +38,232 @@
     </top>
 
     <center>
-        <SplitPane dividerPositions="0.27">
+        <StackPane fx:id="modeContentPane">
+            <SplitPane fx:id="workspacePane" dividerPositions="0.27">
 
-            <VBox spacing="8.0" prefWidth="260.0">
-                <TreeView fx:id="tree" VBox.vgrow="ALWAYS"/>
-            </VBox>
+                <VBox spacing="8.0" prefWidth="260.0">
+                    <TreeView fx:id="tree" VBox.vgrow="ALWAYS"/>
+                </VBox>
 
-            <BorderPane>
+                <BorderPane>
+                    <top>
+                        <StackPane>
+                            <padding>
+                                <Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/>
+                            </padding>
+
+                            <VBox spacing="8.0" maxWidth="Infinity" fillWidth="true" StackPane.alignment="TOP_LEFT">
+                                <GridPane hgap="8.0" vgap="8.0">
+                                    <columnConstraints>
+                                        <ColumnConstraints halignment="RIGHT" prefWidth="45.0"/>
+                                        <ColumnConstraints hgrow="ALWAYS"/>
+                                        <ColumnConstraints prefWidth="40.0"/>
+                                    </columnConstraints>
+
+                                    <Label text="Input" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                    <TextField fx:id="inputField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                    <Button fx:id="inputBrowse" text="..." GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+
+                                    <Label text="Output" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                    <TextField fx:id="outputField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                    <Button fx:id="outputBrowse" text="..." GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                                </GridPane>
+
+                                <HBox spacing="10.0" alignment="CENTER_RIGHT">
+                                    <CheckBox fx:id="lockOutPutPath" text="Lock output path"/>
+                                    <Button fx:id="reloadButton" text="Reload" minWidth="80.0"/>
+                                    <Button fx:id="actionButton" text="Run selected" minWidth="110.0"/>
+                                    <Button fx:id="processAllButton" text="Run all" minWidth="90.0"/>
+                                </HBox>
+                            </VBox>
+                        </StackPane>
+                    </top>
+
+                    <center>
+                        <ScrollPane fx:id="branchScroll" fitToWidth="true">
+                            <BorderPane.margin>
+                                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                            </BorderPane.margin>
+                            <content>
+                                <TilePane fx:id="branchGrid" hgap="12.0" vgap="12.0" prefColumns="2">
+                                    <padding>
+                                        <Insets top="4.0" right="4.0" bottom="4.0" left="4.0"/>
+                                    </padding>
+                                </TilePane>
+                            </content>
+                        </ScrollPane>
+                    </center>
+
+                    <bottom>
+                        <BorderPane>
+                            <padding>
+                                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                            </padding>
+                            <top>
+                                <Label text="Log"/>
+                            </top>
+                            <center>
+                                <TextArea fx:id="logArea" editable="false" prefRowCount="8"
+                                          style="-fx-control-inner-background: black; -fx-text-fill: white;"/>
+                            </center>
+                        </BorderPane>
+                    </bottom>
+                </BorderPane>
+            </SplitPane>
+
+            <BorderPane fx:id="hellScriptEditorPane" visible="false" managed="false">
                 <top>
-                    <StackPane>
+                    <VBox spacing="8.0">
                         <padding>
                             <Insets top="12.0" right="16.0" bottom="12.0" left="16.0"/>
                         </padding>
-
-                        <VBox spacing="8.0" maxWidth="Infinity" fillWidth="true" StackPane.alignment="TOP_LEFT">
-                            <GridPane hgap="8.0" vgap="8.0">
-                                <columnConstraints>
-                                    <ColumnConstraints halignment="RIGHT" prefWidth="45.0"/>
-                                    <ColumnConstraints hgrow="ALWAYS"/>
-                                    <ColumnConstraints prefWidth="40.0"/>
-                                </columnConstraints>
-
-                                <Label text="Input" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                                <TextField fx:id="inputField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-                                <Button fx:id="inputBrowse" text="..." GridPane.rowIndex="0" GridPane.columnIndex="2"/>
-
-                                <Label text="Output" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                                <TextField fx:id="outputField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-                                <Button fx:id="outputBrowse" text="..." GridPane.rowIndex="1" GridPane.columnIndex="2"/>
-                            </GridPane>
-
-                            <HBox spacing="10.0" alignment="CENTER_RIGHT">
-                                <CheckBox fx:id="lockOutPutPath" text="Lock output path"/>
-                                <Button fx:id="reloadButton" text="Reload" minWidth="80.0"/>
-                                <Button fx:id="actionButton" text="Run selected" minWidth="110.0"/>
-                                <Button fx:id="processAllButton" text="Run all" minWidth="90.0"/>
-                            </HBox>
-                        </VBox>
-                    </StackPane>
+                        <Label fx:id="hellSessionRootLabel" text="Root: -"/>
+                        <Label fx:id="hellSessionModLabel" text="Mod: -"/>
+                        <Label fx:id="hellEditorStatusLabel" text="Hell Script Editor is idle." wrapText="true"/>
+                        <HBox spacing="10.0" alignment="CENTER_RIGHT">
+                            <Pane HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="packageHellModButton" text="Package Update4.pac"/>
+                        </HBox>
+                    </VBox>
                 </top>
-
                 <center>
-                    <ScrollPane fx:id="branchScroll" fitToWidth="true">
-                        <BorderPane.margin>
-                            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
-                        </BorderPane.margin>
-                        <content>
-                            <TilePane fx:id="branchGrid" hgap="12.0" vgap="12.0" prefColumns="2">
-                                <padding>
-                                    <Insets top="4.0" right="4.0" bottom="4.0" left="4.0"/>
-                                </padding>
-                            </TilePane>
-                        </content>
-                    </ScrollPane>
-                </center>
+                    <SplitPane dividerPositions="0.22,0.57">
+                        <VBox spacing="10.0" prefWidth="320.0">
+                            <padding>
+                                <Insets top="8.0" right="10.0" bottom="8.0" left="10.0"/>
+                            </padding>
+                            <Label text="Append stage from selected blueprint" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                            <GridPane hgap="10.0" vgap="8.0">
+                                <columnConstraints>
+                                    <ColumnConstraints halignment="RIGHT" prefWidth="82.0"/>
+                                    <ColumnConstraints hgrow="ALWAYS"/>
+                                </columnConstraints>
+                                <Label text="Blueprint" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <Label fx:id="hellAppendBlueprintLabel" text="Select a stage first." wrapText="true" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                <Label text="New title" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                <TextField fx:id="hellAppendTitleField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                <Label text="New script" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                <Label fx:id="hellAppendScriptHintLabel" text="A new mod script file name will be generated automatically." wrapText="true" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                            </GridPane>
+                            <Button fx:id="appendHellStageButton" text="Append Stage To Mod" maxWidth="Infinity"/>
+                            <Separator/>
+                            <Label text="Hell stages"/>
+                            <TreeView fx:id="hellStageTree" VBox.vgrow="ALWAYS"/>
+                        </VBox>
+                        <ScrollPane fitToWidth="true">
+                            <content>
+                                <VBox spacing="12.0">
+                                    <padding>
+                                        <Insets top="8.0" right="12.0" bottom="8.0" left="12.0"/>
+                                    </padding>
+                                    <Label text="Stage metadata" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                                    <GridPane hgap="10.0" vgap="8.0">
+                                        <columnConstraints>
+                                            <ColumnConstraints halignment="RIGHT" prefWidth="90.0"/>
+                                            <ColumnConstraints hgrow="ALWAYS"/>
+                                        </columnConstraints>
+                                        <Label text="Title" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellStageTitleField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                        <Label text="Script" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                        <Label fx:id="hellStageScriptLabel" text="-" wrapText="true" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                        <Label text="Source" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                        <Label fx:id="hellStageLayerLabel" text="-" wrapText="true" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                        <Label text="Map" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellStageMapField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                                        <Label text="Map name" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                        <Label fx:id="hellMapNameLabel" text="-" wrapText="true" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                                        <Label text="Map resource" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                                        <Label fx:id="hellMapResourceLabel" text="-" wrapText="true" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                                        <Label text="Hell level" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellStageHellLevelField" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                                        <Label text="Shop" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellStageShopField" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                                        <Label text="Portrait" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellStagePortraitField" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+                                        <Label text="Balloon" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellStageBalloonField" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+                                    </GridPane>
+                                    <Label text="Description"/>
+                                    <TextArea fx:id="hellStageDescriptionArea" wrapText="true" prefRowCount="6"/>
+                                    <Label text="Map preview"/>
+                                    <StackPane minHeight="320.0" prefHeight="320.0" style="-fx-background-color: #f5f6f8; -fx-border-color: #b7bcc7; -fx-border-radius: 4; -fx-background-radius: 4;">
+                                        <ImageView fx:id="hellMapPreviewImageView" fitHeight="280.0" preserveRatio="true" managed="false" visible="false"/>
+                                        <Label fx:id="hellMapPreviewStatusLabel" text="Select a stage to inspect the current map." wrapText="true" style="-fx-text-fill: #444444;"/>
+                                    </StackPane>
+                                    <Label text="Enemy slots"/>
+                                    <GridPane hgap="10.0" vgap="8.0">
+                                        <columnConstraints>
+                                            <ColumnConstraints halignment="RIGHT" prefWidth="50.0"/>
+                                            <ColumnConstraints prefWidth="100.0"/>
+                                            <ColumnConstraints hgrow="ALWAYS"/>
+                                            <ColumnConstraints prefWidth="100.0"/>
+                                        </columnConstraints>
+                                        <Label text="Slot" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                        <Label text="Enemy type id" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                        <Label text="Meka" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                                        <Label text="Param" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
 
-                <!-- 右侧面板：去掉原来的 bottom 状态行，仅保留 Log 区域 -->
-                <bottom>
-                    <BorderPane>
-                        <padding>
-                            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
-                        </padding>
-                        <top>
-                            <Label text="Log"/>
-                        </top>
-                        <center>
-                            <TextArea fx:id="logArea" editable="false" prefRowCount="8"
-                                      style="-fx-control-inner-background: black; -fx-text-fill: white;"/>
-                        </center>
-                    </BorderPane>
-                </bottom>
+                                        <Label text="0" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellEnemyType0Field" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                        <Label fx:id="hellEnemyType0NameLabel" text="-" wrapText="true" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                                        <TextField fx:id="hellEnemyCount0Field" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+                                        <Label text="1" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellEnemyType1Field" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                        <Label fx:id="hellEnemyType1NameLabel" text="-" wrapText="true" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+                                        <TextField fx:id="hellEnemyCount1Field" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
+                                        <Label text="2" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellEnemyType2Field" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                                        <Label fx:id="hellEnemyType2NameLabel" text="-" wrapText="true" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+                                        <TextField fx:id="hellEnemyCount2Field" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
+                                        <Label text="3" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellEnemyType3Field" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                                        <Label fx:id="hellEnemyType3NameLabel" text="-" wrapText="true" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+                                        <TextField fx:id="hellEnemyCount3Field" GridPane.rowIndex="4" GridPane.columnIndex="3"/>
+                                        <Label text="4" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellEnemyType4Field" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                                        <Label fx:id="hellEnemyType4NameLabel" text="-" wrapText="true" GridPane.rowIndex="5" GridPane.columnIndex="2"/>
+                                        <TextField fx:id="hellEnemyCount4Field" GridPane.rowIndex="5" GridPane.columnIndex="3"/>
+                                        <Label text="5" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellEnemyType5Field" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                                        <Label fx:id="hellEnemyType5NameLabel" text="-" wrapText="true" GridPane.rowIndex="6" GridPane.columnIndex="2"/>
+                                        <TextField fx:id="hellEnemyCount5Field" GridPane.rowIndex="6" GridPane.columnIndex="3"/>
+                                        <Label text="6" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellEnemyType6Field" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                                        <Label fx:id="hellEnemyType6NameLabel" text="-" wrapText="true" GridPane.rowIndex="7" GridPane.columnIndex="2"/>
+                                        <TextField fx:id="hellEnemyCount6Field" GridPane.rowIndex="7" GridPane.columnIndex="3"/>
+                                        <Label text="7" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+                                        <TextField fx:id="hellEnemyType7Field" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+                                        <Label fx:id="hellEnemyType7NameLabel" text="-" wrapText="true" GridPane.rowIndex="8" GridPane.columnIndex="2"/>
+                                        <TextField fx:id="hellEnemyCount7Field" GridPane.rowIndex="8" GridPane.columnIndex="3"/>
+                                    </GridPane>
+                                    <HBox spacing="10.0" alignment="CENTER_RIGHT">
+                                        <Button fx:id="saveHellMetadataButton" text="Save Metadata"/>
+                                    </HBox>
+                                    <Separator/>
+                                    <Label text="Meka lookup" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                                    <TextField fx:id="hellMekaLookupFilterField" promptText="Filter by meka id, name, code or file"/>
+                                    <Label fx:id="hellMekaLookupHintLabel" text="Focus an enemy type field, then double-click a meka row to fill it." wrapText="true"/>
+                                    <TableView fx:id="hellMekaLookupTable" prefHeight="340.0"/>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                        <VBox spacing="8.0" prefWidth="520.0">
+                            <padding>
+                                <Insets top="8.0" right="10.0" bottom="8.0" left="10.0"/>
+                            </padding>
+                            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                <Label text="Embedded script editor" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                                <Pane HBox.hgrow="ALWAYS"/>
+                                <Button fx:id="openSelectedHellScriptButton" text="Reload Current Script"/>
+                            </HBox>
+                            <StackPane fx:id="hellScriptEditorHost" VBox.vgrow="ALWAYS" style="-fx-background-color: #f6f7fb; -fx-border-color: #b7bcc7; -fx-border-radius: 4; -fx-background-radius: 4;">
+                                <Label fx:id="hellScriptEditorPlaceholderLabel" text="Select a stage to edit pseudo code here." wrapText="true" style="-fx-text-fill: #444444;"/>
+                            </StackPane>
+                        </VBox>
+                    </SplitPane>
+                </center>
             </BorderPane>
-        </SplitPane>
+        </StackPane>
     </center>
 
     <bottom>

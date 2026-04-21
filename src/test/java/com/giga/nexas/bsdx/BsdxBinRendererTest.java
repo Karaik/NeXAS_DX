@@ -113,6 +113,103 @@ class BsdxBinRendererTest {
     }
 
     /**
+     * 验证 pseudo 文本只改一行时，未修改行的 IR 回放结果仍然会保留在最终输出里。
+     *
+     * <p>这个回归测试覆盖脚本编辑器最常见的工作流：
+     * 先从 renderer 生成带 IR 注释的 pseudo，
+     * 再把其中一行改成新的语义文本，
+     * 最后回编后仍然保留其它未修改语句。
+     */
+    @Test
+    void renderPseudoKeepsUnchangedLinesWhenOnlyOneLineIsEdited() {
+        Bin original = new Bin();
+        original.setExtensionName("bin");
+        original.setCharset(CHARSET);
+        original.setPreCount(0);
+        original.setPreInstructions(new byte[0]);
+        original.setProperties(List.of("flag"));
+        original.setStringTable(List.of("stage_start"));
+        original.setConstants(Map.of(0, new Integer[]{0}));
+
+        List<Bin.Instruction> instructions = new ArrayList<>();
+        instructions.add(inst(0x1B, 1));
+        instructions.add(inst(0, 0));
+        instructions.add(inst(5, 1));
+        instructions.add(inst(0, 13));
+        instructions.add(inst(5, 0));
+        instructions.add(inst(7, (2 << 16) | 375));
+        instructions.add(inst(0, 0));
+        instructions.add(inst(8, 0));
+        instructions.add(inst(0x41, 9));
+        instructions.add(inst(1, 0x20));
+        instructions.add(inst(0, 1));
+        instructions.add(inst(0x2F, 0));
+        original.setInstructions(instructions);
+
+        String pseudo = renderer.renderPseudo(original);
+        String editedPseudo = pseudo.replace("flag += 1", "flag += 2");
+
+        Bin compiled = recognizer.compile(original, editedPseudo);
+        String reRendered = renderer.renderPseudo(compiled);
+
+        Assertions.assertEquals(original.getInstructions().size(), compiled.getInstructions().size());
+        for (int i = 0; i < original.getInstructions().size(); i++) {
+            Bin.Instruction originalInst = original.getInstructions().get(i);
+            Bin.Instruction compiledInst = compiled.getInstructions().get(i);
+            if (i == 10) {
+                Assertions.assertEquals(originalInst.getOpcodeNum(), compiledInst.getOpcodeNum());
+                Assertions.assertEquals(2, compiledInst.getOperandNum());
+                continue;
+            }
+            Assertions.assertEquals(originalInst.getOpcodeNum(), compiledInst.getOpcodeNum(), "opcode mismatch at " + i);
+            Assertions.assertEquals(originalInst.getOperandNum(), compiledInst.getOperandNum(), "operand mismatch at " + i);
+        }
+        Assertions.assertTrue(reRendered.contains("entry 1"));
+        Assertions.assertTrue(reRendered.contains("syscall SEPlay(\"stage_start\", 13)"));
+        Assertions.assertTrue(reRendered.contains("if(flag) jmp_direct label_0"));
+        Assertions.assertTrue(reRendered.contains("label label_0"));
+        Assertions.assertTrue(reRendered.contains("flag += 2"));
+    }
+
+    @Test
+    void compileStandaloneSyscallWithoutMetadataKeepsScriptCsWrapperInstructions() {
+        Bin template = new Bin();
+        template.setExtensionName("bin");
+        template.setCharset(CHARSET);
+        template.setPreCount(0);
+        template.setPreInstructions(new byte[0]);
+        template.setInstructions(new ArrayList<>());
+        template.setProperties(new ArrayList<>());
+        template.setStringTable(new ArrayList<>());
+
+        String pseudo = ""
+                + "entry 1\r\n"
+                + "syscall 0x0177(\"stage_start\", 13)\r\n";
+
+        Bin compiled = recognizer.compile(template, pseudo);
+
+        Assertions.assertEquals(9, compiled.getInstructions().size());
+        Assertions.assertEquals(0x1B, compiled.getInstructions().get(0).getOpcodeNum());
+        Assertions.assertEquals(1, compiled.getInstructions().get(0).getOperandNum());
+        Assertions.assertEquals(0x1D, compiled.getInstructions().get(1).getOpcodeNum());
+        Assertions.assertEquals(6, compiled.getInstructions().get(1).getOperandNum());
+        Assertions.assertEquals(0x2C, compiled.getInstructions().get(2).getOpcodeNum());
+        Assertions.assertEquals(0x7D, compiled.getInstructions().get(2).getOperandNum());
+        Assertions.assertEquals(0, compiled.getInstructions().get(3).getOpcodeNum());
+        Assertions.assertEquals(0, compiled.getInstructions().get(3).getOperandNum());
+        Assertions.assertEquals(5, compiled.getInstructions().get(4).getOpcodeNum());
+        Assertions.assertEquals(1, compiled.getInstructions().get(4).getOperandNum());
+        Assertions.assertEquals(0, compiled.getInstructions().get(5).getOpcodeNum());
+        Assertions.assertEquals(13, compiled.getInstructions().get(5).getOperandNum());
+        Assertions.assertEquals(5, compiled.getInstructions().get(6).getOpcodeNum());
+        Assertions.assertEquals(0, compiled.getInstructions().get(6).getOperandNum());
+        Assertions.assertEquals(7, compiled.getInstructions().get(7).getOpcodeNum());
+        Assertions.assertEquals((2 << 16) | 0x0177, compiled.getInstructions().get(7).getOperandNum());
+        Assertions.assertEquals(0x1D, compiled.getInstructions().get(8).getOpcodeNum());
+        Assertions.assertEquals(7, compiled.getInstructions().get(8).getOperandNum());
+    }
+
+    /**
      * 验证 BSDX `bin` 解析时已经自动注入同目录 `__GLOBAL.bin` 的符号表。
      *
      * <p>这一步是符号化伪代码显示的前提：如果 service 没先加载全局环境，

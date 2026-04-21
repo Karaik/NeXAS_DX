@@ -267,6 +267,32 @@ call CallScript(str[n], var[0], 99999, ...)
 - 它更像敌机种类集合或战斗摘要
 - 真实摆放坐标、数量和出场时机仍然写在 `HellXXX.bin` 里
 
+### 6.2.1 这些值是 `mekaIndex`，不是 `Meka.dat` 行号
+
+`row[3]..row[10]` 里的数字，当前已经可以更精确地解释成：
+
+- 敌机的 `mekaIndex / meka id`
+- 也就是脚本里 `LoadMek / InitDeployMek / CreateMekWithoutDeploy` 直接使用的那个机体参数
+
+如果要把这组值和 `Meka.dat` 关联，正确做法是：
+
+- 按 `Meka.dat` 第 `0` 列去匹配
+- 不要把它误当成 `Meka.dat` 的行号直接取
+
+当前样本可直接对上的几个值如下：
+
+- `21` -> `Meka.dat` 中“第 0 列 = 21”的那一行，当前是 row `19`
+- `0` -> `Meka.dat` 中“第 0 列 = 0”的那一行，当前是 row `0`
+- `26` -> `Meka.dat` 中“第 0 列 = 26”的那一行，当前是 row `23`
+- `18` -> `Meka.dat` 中“第 0 列 = 18”的那一行，当前是 row `17`
+- `19` -> `Meka.dat` 中“第 0 列 = 19”的那一行，当前是 row `18`
+- `2` -> `Meka.dat` 中“第 0 列 = 2”的那一行，当前是 row `4`
+
+所以从编辑器建模角度看：
+
+- `Enemy type` 最好显示成 “`mekaIndex` + 反查到的机体名/代号”
+- 不要在 UI 上把它解释成 `Meka.dat rowIndex`
+
 ### 6.3 敌机槽位附加参数
 
 `row[11]..row[18]` 和 `row[3]..row[10]` 是一一对应的。
@@ -314,7 +340,7 @@ call CallScript(str[n], var[0], 99999, ...)
 这说明：
 
 - `row[2]` 对应地图
-- `row[3]` 对应主敌机类型
+- `row[3]` 对应主敌机 `mekaIndex`
 - `row[11]` 是与这个敌机槽位绑定的附加参数
 
 ### 7.2 `Hell352：悪夢`
@@ -348,7 +374,7 @@ call CallScript(str[n], var[0], 99999, ...)
 
 这个样本强力证明：
 
-- `row[3]..row[10]` 确实是敌机类型槽位
+- `row[3]..row[10]` 确实是敌机 `mekaIndex` 槽位
 - `row[11]..row[18]` 是这些槽位的附加参数，而不是无关字段
 
 ### 7.3 `Hell451：障害物を壊せ.bin`
@@ -417,6 +443,12 @@ call CallScript(str[n], var[0], 99999, ...)
 - 节点地图：`HellConfig[i][2]`
 - 节点敌机摘要：`HellConfig[i][3..10]`
 - 节点脚本：`Hell.bin.stringTable[i + 3]`
+
+如果右侧详情想比“只显示数字”更进一步，当前最稳妥的补充就是：
+
+- 把 `HellConfig[i][3..10]` 当成敌机 `mekaIndex`
+- 再按 `Meka.dat` 第 `0` 列反查机体资料
+- 显示成 “`mekaIndex -> 机体名 / codename`”
 
 也就是：
 
