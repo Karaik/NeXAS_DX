@@ -112,6 +112,67 @@ class BsdxBinRendererTest {
         }
     }
 
+    /**
+     * 验证 BSDX `bin` 解析时已经自动注入同目录 `__GLOBAL.bin` 的符号表。
+     *
+     * <p>这一步是符号化伪代码显示的前提：如果 service 没先加载全局环境，
+     * renderer 就只能退回到裸索引，无法稳定显示全局符号别名。
+     */
+    @Test
+    void bsdxServiceLoadsGlobalSymbolsBeforeNormalBinParsing() throws Exception {
+        Path sample = GAME_BIN_DIR.resolve("Hell.bin");
+        if (!Files.exists(sample)) {
+            return;
+        }
+
+        ResponseDTO<?> dto = bsdxBinService.parse(sample.toString(), CHARSET);
+        Bin bin = (Bin) dto.getData();
+
+        Assertions.assertNotNull(bin.getGlobalSymbols(), "Global symbols should be injected before normal bin parsing.");
+        Assertions.assertEquals(442, bin.getGlobalSymbols().size(), "Unexpected __GLOBAL symbol count.");
+        Assertions.assertEquals("LUCK_TABLE", bin.getGlobalSymbols().get(0));
+    }
+
+    /**
+     * 验证当伪代码里显示的是全局符号别名时，依然能够无损回编。
+     *
+     * <p>这里不依赖真实样本，而是用最小可控样本验证：
+     * `global[g0_xxx] = {g76_xxx}` 这样的文本能被 recognizer 精确还原回原始索引。
+     */
+    @Test
+    void symbolicGlobalNamesStillCompileBackToIdenticalBinary() throws IOException {
+        Bin original = new Bin();
+        original.setExtensionName("bin");
+        original.setCharset(CHARSET);
+        original.setPreCount(0);
+        original.setPreInstructions(new byte[0]);
+        original.setGlobalSymbols(buildSyntheticGlobalSymbols(77));
+        original.setConstants(Map.of(0, new Integer[]{76}));
+        original.setInstructions(new ArrayList<>());
+
+        String pseudo = renderer.renderPseudo(original);
+        Assertions.assertTrue(pseudo.contains("g0_LUCK_TABLE"));
+        Assertions.assertTrue(pseudo.contains("g76_ATK_NANOHA_12"));
+
+        Bin compiled = recognizer.compile(original, pseudo);
+        compiled.setExtensionName("bin");
+        compiled.setCharset(CHARSET);
+
+        Path tempDir = Files.createTempDirectory("bin-symbolic-global-roundtrip");
+        try {
+            Path originalPath = tempDir.resolve("original.bin");
+            Path compiledPath = tempDir.resolve("compiled.bin");
+            binGenerator.generate(originalPath.toString(), original, CHARSET);
+            binGenerator.generate(compiledPath.toString(), compiled, CHARSET);
+
+            byte[] originalBytes = Files.readAllBytes(originalPath);
+            byte[] compiledBytes = Files.readAllBytes(compiledPath);
+            Assertions.assertArrayEquals(originalBytes, compiledBytes);
+        } finally {
+            FileUtil.del(tempDir.toFile());
+        }
+    }
+
     @Test
     void hellStageBinsStrictRoundTripToIdenticalBinary() throws IOException {
         if (!Files.exists(GAME_BIN_DIR)) {
@@ -241,5 +302,18 @@ class BsdxBinRendererTest {
         inst.setOpcodeNum(opcodeNum);
         inst.setOperandNum(operandNum);
         return inst;
+    }
+
+    /**
+     * 构造一个最小的全局符号表样本，专门用于验证符号别名显示与回编。
+     */
+    private List<String> buildSyntheticGlobalSymbols(int size) {
+        List<String> symbols = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            symbols.add("GLOBAL_" + i);
+        }
+        symbols.set(0, "LUCK_TABLE");
+        symbols.set(76, "ATK_NANOHA[12]");
+        return symbols;
     }
 }

@@ -31,6 +31,9 @@ public class Bin extends Bsdx {
     // 属性表2
     private List<String> properties2;
 
+    // 仅 BSDX 使用的全局符号表，来源于同目录 __GLOBAL.bin 的第一张符号名表
+    private List<String> globalSymbols;
+
     // 常量表 key: 索引号, value: 常量数组
     private Map<Integer, Integer[]> constants;
      

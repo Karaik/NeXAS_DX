@@ -1,6 +1,7 @@
 package com.giga.nexas.dto.bsdx.bin.pseudo.renderer;
 
 import com.giga.nexas.dto.bsdx.bin.Bin;
+import com.giga.nexas.dto.bsdx.bin.BsdxGlobalSymbolUtil;
 import com.giga.nexas.dto.bsdx.bin.consts.BinConst;
 import com.giga.nexas.dto.bsdx.bin.consts.Opcode;
 
@@ -466,7 +467,7 @@ public class BsdxBinRenderer {
                         }
                     }
                     appendLine(out,
-                            "global[" + entry.getKey() + "] = {" + String.join(",", values) + "}",
+                            "global[" + renderGlobalConstantIndex(bin, entry.getKey()) + "] = {" + String.join(",", values) + "}",
                             List.of("CONST:" + entry.getKey() + ":" + String.join(",", values)));
                 });
         return out.toString();
@@ -501,7 +502,15 @@ public class BsdxBinRenderer {
     private String propertyName(Bin bin, int index) {
         List<String> properties = bin == null ? null : bin.getProperties();
         if (properties != null && index >= 0 && index < properties.size()) {
-            return properties.get(index);
+            String name = properties.get(index);
+            if (isSafeIdentifier(name)) {
+                return name;
+            }
+            return BsdxGlobalSymbolUtil.aliasForProperty(index, name);
+        }
+        String globalAlias = globalSymbolAlias(bin, index);
+        if (globalAlias != null) {
+            return globalAlias;
         }
         return "p[" + index + "]";
     }
@@ -515,8 +524,27 @@ public class BsdxBinRenderer {
     }
 
     private String propertyReference(Bin bin, int index) {
-        String name = propertyName(bin, index);
-        return isSafeIdentifier(name) ? name : "p[" + index + "]";
+        return propertyName(bin, index);
+    }
+
+    /**
+     * 把 `__GLOBAL.bin` 的原始全局符号转成旧 pseudo 可安全显示的别名。
+     */
+    private String globalSymbolAlias(Bin bin, int index) {
+        if (bin == null || bin.getGlobalSymbols() == null) {
+            return null;
+        }
+        return BsdxGlobalSymbolUtil.aliasFor(bin.getGlobalSymbols(), index);
+    }
+
+    /**
+     * 为常量表左值生成可回编的 `global[...]` 索引文本。
+     *
+     * <p>如果同目录 `__GLOBAL.bin` 里存在符号名，就显示别名；否则回退到原始数字索引。
+     */
+    private String renderGlobalConstantIndex(Bin bin, int index) {
+        String alias = globalSymbolAlias(bin, index);
+        return alias != null ? alias : Integer.toString(index);
     }
 
     private String resolveStringLiteral(Bin bin, Integer literalIndex, String expression) {

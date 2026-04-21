@@ -109,7 +109,8 @@ public class BinPseudoEditorController {
         reloadButton.setOnAction(event -> reloadFromDisk());
         compileButton.setOnAction(event -> compileBack());
         pseudoArea.addEventHandler(MouseEvent.MOUSE_MOVED, this::handlePseudoHover);
-        pseudoArea.addEventHandler(MouseEvent.MOUSE_EXITED, event -> operandTooltip.hide());
+        pseudoArea.addEventHandler(MouseEvent.MOUSE_EXITED, event -> hideOperandTooltip());
+        pseudoArea.addEventHandler(MouseEvent.MOUSE_PRESSED, event -> hideOperandTooltip());
         pseudoArea.textProperty().addListener((obs, oldText, newText) -> {
             if (!suppressDirtyTracking) {
                 setDirty(true);
@@ -119,6 +120,20 @@ public class BinPseudoEditorController {
 
     private void bindStage(Stage stage) {
         this.stage = stage;
+        stage.xProperty().addListener((obs, oldValue, newValue) -> hideOperandTooltip());
+        stage.yProperty().addListener((obs, oldValue, newValue) -> hideOperandTooltip());
+        stage.widthProperty().addListener((obs, oldValue, newValue) -> hideOperandTooltip());
+        stage.heightProperty().addListener((obs, oldValue, newValue) -> hideOperandTooltip());
+        stage.focusedProperty().addListener((obs, oldValue, newValue) -> {
+            if (!newValue) {
+                hideOperandTooltip();
+            }
+        });
+        stage.iconifiedProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue) {
+                hideOperandTooltip();
+            }
+        });
     }
 
     private void initializeDocument(Path binPath, String charset, Consumer<String> logger) {
@@ -335,25 +350,25 @@ public class BinPseudoEditorController {
 
     private void handlePseudoHover(MouseEvent event) {
         if (currentMode != EditorMode.PSEUDO || currentBin == null) {
-            operandTooltip.hide();
+            hideOperandTooltip();
             return;
         }
 
         if (pseudoArea.getSkin() == null) {
-            operandTooltip.hide();
+            hideOperandTooltip();
             return;
         }
         TextAreaSkin skin = (TextAreaSkin) pseudoArea.getSkin();
         int charIndex = skin.getIndex(event.getX(), event.getY()).getCharIndex();
         String token = extractTokenAt(pseudoArea.getText(), charIndex);
         if (token == null) {
-            operandTooltip.hide();
+            hideOperandTooltip();
             return;
         }
 
         OperandDocEntry entry = OperandDocRegistry.findByName(token);
         if (entry == null) {
-            operandTooltip.hide();
+            hideOperandTooltip();
             return;
         }
 
@@ -370,6 +385,10 @@ public class BinPseudoEditorController {
             operandTooltip.setAnchorX(screen.getX());
             operandTooltip.setAnchorY(screen.getY());
         }
+    }
+
+    private void hideOperandTooltip() {
+        operandTooltip.hide();
     }
 
     private String extractTokenAt(String text, int charIndex) {

@@ -1,6 +1,7 @@
 package com.giga.nexas.dto.bsdx.bin.pseudo.recognizer;
 
 import com.giga.nexas.dto.bsdx.bin.Bin;
+import com.giga.nexas.dto.bsdx.bin.BsdxGlobalSymbolUtil;
 import com.giga.nexas.dto.bsdx.bin.consts.BinConst;
 import com.giga.nexas.dto.bsdx.bin.consts.Opcode;
 
@@ -208,7 +209,7 @@ public class BsdxBinRecognizer {
         if (leftBracket < 0 || rightBracket < 0 || leftBrace < 0 || rightBrace < leftBrace) {
             throw new IllegalArgumentException("Invalid global line: " + line);
         }
-        int index = parseFlexibleInt(line.substring(leftBracket + 1, rightBracket).trim());
+        int index = context.resolveGlobalConstantIndex(line.substring(leftBracket + 1, rightBracket).trim());
         String body = line.substring(leftBrace + 1, rightBrace).trim();
         List<Integer> refs = new ArrayList<>();
         if (!body.isEmpty()) {
@@ -581,6 +582,7 @@ public class BsdxBinRecognizer {
         private final List<Bin.Instruction> instructions = new ArrayList<>();
         private final List<IndexedInstruction> replayedInstructions = new ArrayList<>();
         private final Map<String, Integer> propertyIndices = new LinkedHashMap<>();
+        private final Map<String, Integer> globalSymbolIndices = new LinkedHashMap<>();
         private final Map<String, Integer> stringIndices = new LinkedHashMap<>();
         private final Map<String, Integer> labels = new HashMap<>();
         private final Map<Integer, String> unresolvedLabels = new LinkedHashMap<>();
@@ -598,6 +600,15 @@ public class BsdxBinRecognizer {
                     : new ArrayList<>();
             for (int i = 0; i < properties.size(); i++) {
                 propertyIndices.putIfAbsent(properties.get(i), i);
+                propertyIndices.putIfAbsent(BsdxGlobalSymbolUtil.aliasForProperty(i, properties.get(i)), i);
+            }
+            if (template != null && template.getGlobalSymbols() != null) {
+                for (int i = 0; i < template.getGlobalSymbols().size(); i++) {
+                    String alias = BsdxGlobalSymbolUtil.aliasFor(template.getGlobalSymbols(), i);
+                    if (alias != null) {
+                        globalSymbolIndices.putIfAbsent(alias, i);
+                    }
+                }
             }
             for (int i = 0; i < strings.size(); i++) {
                 stringIndices.putIfAbsent(strings.get(i), i);
@@ -634,10 +645,31 @@ public class BsdxBinRecognizer {
             if (existing != null) {
                 return existing;
             }
+            Integer global = globalSymbolIndices.get(name);
+            if (global != null) {
+                return global;
+            }
             int index = properties.size();
             properties.add(name);
             propertyIndices.put(name, index);
             return index;
+        }
+
+        /**
+         * 解析 `global[...]` 左值里的索引文本。
+         *
+         * <p>这里既接受原始数字索引，也接受通过 `__GLOBAL.bin` 符号表渲染出来的别名。
+         */
+        private int resolveGlobalConstantIndex(String token) {
+            Integer global = globalSymbolIndices.get(token);
+            if (global != null) {
+                return global;
+            }
+            Integer parsedAlias = BsdxGlobalSymbolUtil.tryParseAliasIndex(token);
+            if (parsedAlias != null) {
+                return parsedAlias;
+            }
+            return parseFlexibleInt(token);
         }
 
         private int requireStringIndex(String value) {
@@ -669,6 +701,7 @@ public class BsdxBinRecognizer {
                 result.setPreCount(template.getPreCount());
                 result.setPreInstructions(template.getPreInstructions());
                 result.setProperties2(template.getProperties2() == null ? null : new ArrayList<>(template.getProperties2()));
+                result.setGlobalSymbols(template.getGlobalSymbols() == null ? null : new ArrayList<>(template.getGlobalSymbols()));
                 result.setTailRaw(template.tailRaw);
                 result.setConstants2(template.getConstants2());
                 if (!constantsTouched) {

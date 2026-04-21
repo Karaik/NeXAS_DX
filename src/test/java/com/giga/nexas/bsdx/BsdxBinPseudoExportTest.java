@@ -4,6 +4,7 @@ import com.giga.nexas.dto.ResponseDTO;
 import com.giga.nexas.dto.bsdx.bin.Bin;
 import com.giga.nexas.dto.bsdx.bin.lossless.BsdxBinLosslessPipeline;
 import com.giga.nexas.dto.bsdx.bin.lossless.BsdxBinLosslessProgram;
+import com.giga.nexas.dto.bsdx.bin.pseudo.renderer.BsdxBinRenderer;
 import com.giga.nexas.dto.bsdx.bin.strictir.BsdxBinStrictIr;
 import com.giga.nexas.service.BsdxBinService;
 import org.junit.jupiter.api.Assertions;
@@ -43,8 +44,14 @@ class BsdxBinPseudoExportTest {
      */
     private static final Path EXPORT_DIR = Paths.get("src/main/resources/tmp/bsdx-lossless-pseudo-export");
 
+    /**
+     * 导入 `__GLOBAL.bin` 符号后的旧 pseudo 导出目录。
+     */
+    private static final Path SYMBOLIC_EXPORT_DIR = Paths.get("src/main/resources/tmp/bsdx-symbolic-pseudo-export");
+
     private final BsdxBinService bsdxBinService = new BsdxBinService();
     private final BsdxBinLosslessPipeline pipeline = new BsdxBinLosslessPipeline();
+    private final BsdxBinRenderer renderer = new BsdxBinRenderer();
 
     /**
      * 导出全部 {@code Hell*.bin} 的 lossless pseudo DSL。
@@ -94,6 +101,55 @@ class BsdxBinPseudoExportTest {
         Assertions.assertTrue(
                 failures.isEmpty(),
                 "Some Hell BIN pseudo exports failed. See summary under tmp.\n" + String.join("\n", failures)
+        );
+    }
+
+    /**
+     * 导出注入 `__GLOBAL.bin` 符号后的旧 pseudo 文本。
+     *
+     * <p>这份导出直接面向编辑器与人工阅读：
+     * 它保留现有 pseudo compile 链可回编的文本格式，同时把能识别的全局符号别名显示出来。
+     */
+    @Test
+    void exportHellBinsAsSymbolicPseudoForManualInspection() throws Exception {
+        if (!Files.exists(GAME_BIN_DIR)) {
+            return;
+        }
+
+        Files.createDirectories(SYMBOLIC_EXPORT_DIR);
+
+        List<String> exported = new ArrayList<>();
+        List<String> failures = new ArrayList<>();
+
+        try (Stream<Path> stream = Files.list(GAME_BIN_DIR)) {
+            List<Path> hellBins = stream
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().startsWith("Hell"))
+                    .filter(path -> path.getFileName().toString().endsWith(".bin"))
+                    .sorted()
+                    .toList();
+
+            for (Path path : hellBins) {
+                String fileName = path.getFileName().toString();
+                try {
+                    Bin original = parseBin(path);
+                    String pseudo = renderer.renderPseudo(original);
+
+                    Path output = SYMBOLIC_EXPORT_DIR.resolve(fileName + ".symbolic.pseudo.txt");
+                    Files.writeString(output, pseudo, StandardCharsets.UTF_8);
+                    exported.add(output.getFileName().toString());
+                } catch (Exception ex) {
+                    failures.add(fileName + " " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
+                }
+            }
+        }
+
+        writeSummary(SYMBOLIC_EXPORT_DIR, "BSDX Hell BIN symbolic pseudo export summary", exported, failures);
+
+        Assertions.assertFalse(exported.isEmpty(), "No symbolic pseudo files were exported.");
+        Assertions.assertTrue(
+                failures.isEmpty(),
+                "Some symbolic pseudo exports failed. See summary under tmp.\n" + String.join("\n", failures)
         );
     }
 
@@ -149,9 +205,16 @@ class BsdxBinPseudoExportTest {
      * <p>这样即使终端输出被截断，也可以直接打开文件看到成功和失败情况。
      */
     private void writeSummary(List<String> exported, List<String> failures) throws Exception {
+        writeSummary(EXPORT_DIR, "BSDX Hell BIN pseudo export summary", exported, failures);
+    }
+
+    /**
+     * 把指定目录的导出结果和失败清单写成摘要文件。
+     */
+    private void writeSummary(Path outputDir, String title, List<String> exported, List<String> failures) throws Exception {
         List<String> lines = new ArrayList<>();
-        lines.add("BSDX Hell BIN pseudo export summary");
-        lines.add("export_dir=" + EXPORT_DIR.toAbsolutePath());
+        lines.add(title);
+        lines.add("export_dir=" + outputDir.toAbsolutePath());
         lines.add("exported_count=" + exported.size());
         lines.add("failure_count=" + failures.size());
         lines.add("");
@@ -164,7 +227,7 @@ class BsdxBinPseudoExportTest {
         lines.add("hint=open Hell.bin.lossless.pseudo.txt first");
 
         Files.write(
-                EXPORT_DIR.resolve("__export-summary.txt"),
+                outputDir.resolve("__export-summary.txt"),
                 lines,
                 StandardCharsets.UTF_8
         );
