@@ -138,6 +138,7 @@
             <artifactId>poi-ooxml</artifactId>
             <version>${poi.version}</version>
         </dependency>
+
     </dependencies>
 
     <build>
@@ -148,6 +149,7 @@
                     <include>exe/**</include>
                     <include>fxml/**</include>
                     <include>images/**</include>
+                    <include>research/bin立即数.csv</include>
                 </includes>
             </resource>
         </resources>

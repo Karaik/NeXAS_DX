@@ -51,6 +51,9 @@ public class MainViewController {
         ModeTreeController treeController = new ModeTreeController(this, state, gridController);
         treeController.setup();
 
+        TreeContextMenuController treeContextMenuController = new TreeContextMenuController(this, state);
+        treeContextMenuController.setup();
+
         FilePickerController pickerController = new FilePickerController(this, state, new DirectoryScanner());
         pickerController.setup();
 

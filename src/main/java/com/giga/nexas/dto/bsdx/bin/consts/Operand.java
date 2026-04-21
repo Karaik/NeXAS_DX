@@ -5,9 +5,11 @@ package com.giga.nexas.dto.bsdx.bin.consts;
  * 每个操作数编号对应一个具体的引擎内部函数调用，
  * 另，还有许多游戏内针对游戏行为的函数，均待逆向测试
  */
+@OperandDocSource(classpath = "/research/bin立即数.csv")
 public enum Operand {
     InitSystem(0),
     Exit(11),
+    // CSV: 生成随机整数
     Random(13),
     GetCharCode(14),
     PlayMovie(15),
@@ -142,6 +144,7 @@ public enum Operand {
     WaitPinbokeVisual(185),
     WaitFadeVisual(186),
     WaitFlashVisual(187),
+    // CSV: 地狱关卡文件不执行的话就显示不出地图
     FadeIn(189),
     FadeOut(190),
     FlashIn(191),
@@ -328,6 +331,7 @@ public enum Operand {
     VoiceStop(372),
     SetVoiceVolume(373),
     WaitVoice(374),
+    // CSV: 播放SE
     SEPlay(375),
     SELoopPlay(376),
     SEFadePlay(377),
@@ -362,12 +366,160 @@ public enum Operand {
     GetBGMNo(406),
 
     // 自己写的
+    // CSV: 设置倒计时
     StartCountdown(471),
+    // CSV: ES/剧情进入战斗
+    EnterBattleEsStory(483),
+    // CSV: 显示OPEN COMBAT
+    ShowOpenCombat(486),
+    // CSV: 返回难度，0 VE, 1 E, 2 N, 3 H, 4 VH
+    GetDifficulty(490),
+    // CSV: 地狱21D、21E加载机体后面跟着
+    HellLoadMekFollow21D21E(498),
+    // CSV: 地狱21D加载机体后面跟着
+    HellLoadMekFollow21D(500),
+    // CSV: 加载地图
     LoadMap(506),
+    // CSV: waz/mapobj登场
     InitDeployTama(515),
+    // CSV: 激活地图自带的waz/mapobj的场地编号，使其变得可被207之类的函数调整
+    ActivateMapObjSlot(516),
+    // CSV: 设置waz/mapobj锁定优先
+    SetMapObjLockPriority(519),
+    // CSV: 设置waz/mapobj是否可被武装干涉
+    SetMapObjWeaponInterference(520),
+    // CSV: 返回waz/mapobj血量百分比
+    GetMapObjHealthPercent(522),
+    // CSV: 移动waz/mapobj？
+    MoveMapObj(523),
+    // CSV: MapObj版256
+    MapObjVariant256(524),
+    // CSV: MapObj版257
+    MapObjVariant257(525),
+    // CSV: MapObj版281
+    MapObjVariant281(526),
+    // CSV: MapObj版28B
+    MapObjVariant28B(527),
+    // CSV: 使waz/mapobject隐形
+    HideMapObj(528),
+    // CSV: 制造重影
+    CreateMapObjAfterimage(529),
+    // CSV: 在机体列表中创建机体，但不立刻登场，与214、29C之类的设置登场函数配合使用
+    CreateMekWithoutDeploy(530),
+    // CSV: 清除机体
+    ClearMekBySlot(531),
+    // CSV: 让已创建的机体登场
+    DeployCreatedMek(532),
+    // CSV: 设置血量，不超过上限，和234或246有微妙差异
+    SetMekHealthClampedA(534),
+    // CSV: 设置血量，不超过上限，和234或247有微妙差异
+    SetMekHealthClampedATimes10(535),
+    // CSV: 基于等级设置血量，自机还要加上插件提供的血量
+    SetMekHealthByLevelA(536),
+    // CSV: 基于等级设置血量，自机还要加上插件提供的血量
+    SetMekHealthByLevelATimes10(537),
+    // CSV: 返回机体血量值
+    GetMekHealthValue(538),
+    // CSV: 返回机体血量百分比
+    GetMekHealthPercent(539),
+    // CSV: 返回机体血量上限
+    GetMekHealthMax(540),
+    // CSV: 加载机体（比21E优先）
     LoadMek(541),
+    // CSV: 加载机体
+    LoadMekAlt(542),
+    // CSV: 指定自机武装位
+    SetPlayerWeaponSlot(545),
+    // CSV: 清空自机武装位
+    ClearPlayerWeaponSlot(546),
+    // CSV: 机体登场
     InitDeployMek(553),
-    MidDeployMek(668);
+    // CSV: 清理机体信息
+    ClearMekInfo(554),
+    // CSV: 返回机体是否存活，0代表阵亡，1代表存活
+    IsMekAlive(555),
+    // CSV: 设置机体位置
+    SetMekPosition(556),
+    // CSV: 设置机体角度，b、c参数好像和是否调整机体图像有关，但懒得研究了
+    SetMekAngle(557),
+    // CSV: 可能是贴图
+    SetMekTextureModeA(558),
+    // CSV: 可能是贴图
+    SetMekTextureModeB(559),
+    // CSV: 可能是贴图
+    SetMekTextureModeC(560),
+    // CSV: 放大/缩小
+    ScaleMek(562),
+    // CSV: 可能是贴图
+    SetMekTextureModeD(563),
+    // CSV: 设置血量（和236、237有微妙的不同）
+    SetMekHealthVariantA(564),
+    // CSV: 设置血量（和236、237有微妙的不同）
+    SetMekHealthVariantATimes10(565),
+    // CSV: 设置血量
+    SetMekHealth(566),
+    // CSV: 设置血量（地狱默认使用）
+    SetMekHealthHellDefault(567),
+    // CSV: 增加血量
+    AddMekHealth(568),
+    // CSV: 增加血量
+    AddMekHealthTimes10(569),
+    // CSV: 增加血量上限
+    AddMekHealthMax(570),
+    // CSV: 增加血量上限
+    AddMekHealthMaxTimes10(571),
+    // CSV: 设置能量
+    SetMekEnergy(572),
+    // CSV: 设置机体AI
+    SetMekAi(573),
+    // CSV: 设置等级
+    SetMekLevel(574),
+    // CSV: 设置自动悬浮高度
+    SetMekAutoHoverHeight(575),
+    // CSV: 让机体变得透明?
+    SetMekTransparencyMode(576),
+    // CSV: 设置机体透明度
+    SetMekTransparency(577),
+    // CSV: 设置机体是否受到武装影响
+    SetMekWeaponAffectMode(578),
+    // CSV: 设置机体在一定时间后爆炸
+    SetMekExplodeAfterTime(580),
+    // CSV: 设置机体在被击败时是否爆炸
+    SetMekExplodeOnDeathMode(581),
+    // CSV: 设置机体锁定优先
+    SetMekLockPriority(584),
+    // CSV: 设置Buff值
+    SetMekBuff(586),
+    // CSV: 添加Buff值
+    AddMekBuff(587),
+    // CSV: 返回机体血量百分比
+    GetMekHealthPercentAlt(588),
+    // CSV: 返回初始横坐标
+    GetMekInitialX(590),
+    // CSV: 返回初始纵坐标
+    GetMekInitialY(591),
+    // CSV: 返回初始高度
+    GetMekInitialZ(592),
+    // CSV: 和降落动画有关
+    SetMekLandingMotion(601),
+    // CSV: 使机体隐形，但做出动作后会解除
+    HideMekUntilAction(608),
+    // CSV: 制造重影
+    CreateMekAfterimage(609),
+    // CSV: 设置机体的残影特效
+    SetMekAfterimageEffectRecovery(645),
+    // CSV: 设置机体的残影特效
+    SetMekAfterimageEffectRetreat(646),
+    // CSV: 机体中途登场
+    MidDeployMek(668),
+    // CSV: 机体中途登场，地狱与212一起用
+    MidDeployPreparedMek(669),
+    // CSV: 设置条件（例如胜利条件）
+    SetCondition(671),
+    // CSV: 和条件有关
+    GetConditionRelated(673),
+    // CSV: 返回29F设置的胜利条件是否已被满足，1代表满足
+    IsConditionSatisfied(677);
 
     public final int code;
 
