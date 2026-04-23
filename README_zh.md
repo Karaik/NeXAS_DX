@@ -47,7 +47,7 @@
 |-----------|------|------|------|
 | **BSDX** (Baldr Sky DiveX) | `.waz` `.mek` `.spm` `.grp` `.bin` `.dat` | 同左 | 覆盖度最高 |
 | **BHE** (Baldr Heart EXE) | `.waz` `.mek` `.spm` `.grp` | `.spm` `.grp` | 用于对照/迁移 |
-| **CLARIAS** | `.dat` | `.dat` | |
+| **CLARIAS** | `.dat` `.mek` `.grp` | `.dat` `.mek` `.grp` | `mek/grp` 当前按现有 CLARIAS 伪代码/反编译证据实现，待真实样本补入后再做实测校准 |
 
 ---
 

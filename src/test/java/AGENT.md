@@ -32,12 +32,16 @@
 | 类 | 说明 |
 | --- | --- |
 | `com.giga.nexas.clarias.TestDat` | 逻辑与 BSDX `TestDat` 完全一致，目录为 `datClariasJson` / `datClariasGenerated` / `datClariasCsvGenerated`。 | 
+| `com.giga.nexas.clarias.TestMek` | 目录为 `mekClariasJson` / `mekClariasGenerated`。当前仓库内 `game/clarias/mek` 真实样本已可完成 parse → JSON → generate → binary consistency。 |
+| `com.giga.nexas.clarias.TestGrp` | 结构参照 BSDX `TestGrp`，目录为 `grpClariasJson` / `grpClariasGenerated`。若仓库尚未放入 `game/clarias/grp` 样本则会自动跳过。 |
 
 **运行提示**
 1. `ending.dat` 达 400+ MB，解析时会把首个 `int` 误读为 `469,762,048` 列 → 非常容易 OOM。推荐：
    - 临时移动/重命名 `src/main/resources/game/clarias/dat/ending.dat`，或
    - 提前增大堆：`set MAVEN_OPTS=-Xmx4g` 再运行 `mvn "-Dtest=com.giga.nexas.clarias.TestDat#testGenerateDatJsonFiles" test`
 2. 流程结束（且无错误）会自动清空 JSON/Generated 目录，与 BSDX 行为一致。
+3. `mek` 当前已在仓库内 `clarias/mek` 真实样本集上通过 round-trip binary consistency。为保证 1:1 回写，部分未完全命名的块仍保留 raw-block fallback。
+4. `grp` 当前按现有 `CLARIAS` 反汇编中出现的同名 group 资源与现有 BSDX/BHE group 结构接入；在真实 `clarias/grp` 样本入库前，同样只能做编译与目录存在性级别验证。
 
 ---
 

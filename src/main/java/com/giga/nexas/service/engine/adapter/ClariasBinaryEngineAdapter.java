@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giga.nexas.dto.ResponseDTO;
 import com.giga.nexas.dto.clarias.Clarias;
 import com.giga.nexas.dto.clarias.dat.Dat;
+import com.giga.nexas.dto.clarias.grp.Grp;
+import com.giga.nexas.dto.clarias.mek.Mek;
 import com.giga.nexas.exception.OperationException;
 import com.giga.nexas.service.ClariasBinService;
 import com.giga.nexas.service.engine.BinaryEngineAdapter;
@@ -17,6 +19,8 @@ import java.nio.file.Path;
 import java.util.Set;
 
 import static com.giga.nexas.controller.consts.MainConst.DAT_EXT;
+import static com.giga.nexas.controller.consts.MainConst.GRP_EXT;
+import static com.giga.nexas.controller.consts.MainConst.MEK_EXT;
 
 /**
  * Adapter for CLARIAS workflows.
@@ -65,6 +69,8 @@ public class ClariasBinaryEngineAdapter implements BinaryEngineAdapter {
     private Clarias mapPayload(String ext, String json) throws IOException {
         return switch (ext) {
             case DAT_EXT -> mapper.readValue(json, Dat.class);
+            case GRP_EXT -> mapper.readValue(json, Grp.class);
+            case MEK_EXT -> mapper.readValue(json, Mek.class);
             default -> throw new OperationException(500, "unsupported CLARIAS extension: " + ext);
         };
     }

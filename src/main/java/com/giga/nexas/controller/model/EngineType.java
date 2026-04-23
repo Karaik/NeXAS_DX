@@ -19,8 +19,8 @@ public enum EngineType {
 
     CLARIAS("CLARIAS",
             "windows-31j",
-            Set.of("dat"),
-            Set.of("dat")),
+            Set.of("dat", "mek", "grp"),
+            Set.of("dat", "mek", "grp")),
 
     KINGDOM("KINGDOM",
                     "windows-31j",

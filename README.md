@@ -47,7 +47,7 @@ If you're interested—even without coding experience—feel free to reach out.
 |-------------|-------|----------|-------|
 | **BSDX** (Baldr Sky DiveX) | `.waz` `.mek` `.spm` `.grp` `.bin` `.dat` | Same | Most complete coverage |
 | **BHE** (Baldr Heart EXE) | `.waz` `.mek` `.spm` `.grp` | `.spm` `.grp` | Used for comparison/transfer |
-| **CLARIAS** | `.dat` | `.dat` | |
+| **CLARIAS** | `.dat` `.mek` `.grp` | `.dat` `.mek` `.grp` | `mek/grp` currently follow the available CLARIAS pseudocode/decompile evidence; real samples are still needed for calibration |
 
 ---
 

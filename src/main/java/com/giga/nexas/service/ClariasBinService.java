@@ -7,6 +7,10 @@ import com.giga.nexas.dto.clarias.ClariasGenerator;
 import com.giga.nexas.dto.clarias.ClariasParser;
 import com.giga.nexas.dto.clarias.dat.generator.DatGenerator;
 import com.giga.nexas.dto.clarias.dat.parser.DatParser;
+import com.giga.nexas.dto.clarias.grp.generator.GrpGenerator;
+import com.giga.nexas.dto.clarias.grp.parser.GrpParser;
+import com.giga.nexas.dto.clarias.mek.generator.MekGenerator;
+import com.giga.nexas.dto.clarias.mek.parser.MekParser;
 import com.giga.nexas.exception.OperationException;
 
 import java.io.IOException;
@@ -23,7 +27,11 @@ public class ClariasBinService {
 
     public ClariasBinService() {
         registerParser(new DatParser());
+        registerParser(new GrpParser());
+        registerParser(new MekParser());
         registerGenerator(new DatGenerator());
+        registerGenerator(new GrpGenerator());
+        registerGenerator(new MekGenerator());
     }
 
     public ClariasBinService(List<ClariasParser<?>> parsers) {
