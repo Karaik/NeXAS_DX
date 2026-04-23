@@ -16,6 +16,8 @@ import java.util.Map;
 
 public class MekGenerator implements ClariasGenerator<Mek> {
 
+    private static final int MATERIAL_FIXED_REGULAR_ENTRY_COUNT = 7;
+
     @Override
     public String supportExtension() {
         return "mek";
@@ -26,11 +28,11 @@ public class MekGenerator implements ClariasGenerator<Mek> {
         FileUtil.mkdir(FileUtil.getParent(path, 1));
         File newFile = new File(path);
 
-        byte[] block1 = hasRaw(mek.getRawBlock1()) ? mek.getRawBlock1() : serializeBlock1(mek, charset);
-        byte[] block2 = hasRaw(mek.getRawBlock2()) ? mek.getRawBlock2() : serializePairBlock(mek);
-        byte[] block3 = hasRaw(mek.getRawBlock3()) ? mek.getRawBlock3() : serializeMekWeaponInfoMap(mek, charset);
-        byte[] block4 = hasRaw(mek.getRawBlock4()) ? mek.getRawBlock4() : serializeMekAiInfoMap(mek, charset);
-        byte[] block5 = hasRaw(mek.getRawBlock5()) ? mek.getRawBlock5() : serializeSimpleBlock(mek, charset);
+        byte[] block1 = serializeBlock1(mek, charset);
+        byte[] block2 = serializePairBlock(mek);
+        byte[] block3 = serializeMekWeaponInfoMap(mek, charset);
+        byte[] block4 = serializeMekAiInfoMap(mek, charset);
+        byte[] block5 = serializeMekVoiceInfo(mek, charset);
         byte[] block6 = serializeTailBlock(mek);
 
         int sequence1 = 24;
@@ -60,40 +62,41 @@ public class MekGenerator implements ClariasGenerator<Mek> {
 
     private static byte[] serializeBlock1(Mek mek, String charset) throws IOException {
         Mek.MekBasicInfo info = mek.getMekBasicInfo();
-        Mek.MekPairBlock pairBlock = mek.getMekPairBlock();
-
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             BinaryWriter writer = new BinaryWriter(baos, charset)) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (BinaryWriter writer = new BinaryWriter(baos, charset)) {
             writer.writeNullTerminatedString(info.getStringField1());
             writer.writeNullTerminatedString(info.getStringField2());
             writer.writeNullTerminatedString(info.getStringField3());
             writer.writeNullTerminatedString(info.getStringField4());
             writer.writeNullTerminatedString(info.getStringField5());
 
-            for (Integer value : info.getLeadingInts()) {
-                writer.writeInt(value);
-            }
-            writer.writeByte(info.getFlagByte() == null ? 0 : info.getFlagByte());
-            for (Integer value : info.getTrailingInts()) {
-                writer.writeInt(value);
-            }
-
-            if (pairBlock.getRawBytes() != null && pairBlock.getRawBytes().length > 0) {
-                writer.writeBytes(pairBlock.getRawBytes());
-            } else {
-                for (Mek.MekPairBlock.Pair pair : pairBlock.getUnkPair()) {
-                    writer.writeInt(pair.getInt1());
-                    writer.writeInt(pair.getInt2());
-                }
-            }
-            return baos.toByteArray();
+            writer.writeInt(info.getIntField1());
+            writer.writeInt(info.getIntField2());
+            writer.writeInt(info.getIntField3());
+            writer.writeInt(info.getIntField4());
+            writer.writeInt(info.getIntField5());
+            writer.writeInt(info.getIntField6());
+            writer.writeInt(info.getIntField7());
+            writer.writeInt(info.getIntField8());
+            writer.writeInt(info.getIntField9());
+            writer.writeInt(info.getIntField10());
+            writer.writeInt(info.getIntField11());
+            writer.writeInt(info.getIntField12());
+            writer.writeByte(info.getByteField1() == null ? 0 : info.getByteField1());
+            writer.writeInt(info.getIntField13());
+            writer.writeInt(info.getIntField14());
+            writer.writeInt(info.getIntField15());
+            writer.writeInt(info.getIntField16());
+            writer.writeInt(info.getIntField17());
+            writer.writeInt(info.getIntField18());
         }
+        return baos.toByteArray();
     }
 
     private static byte[] serializeMekWeaponInfoMap(Mek mek, String charset) throws IOException {
         Map<Integer, Mek.MekWeaponInfo> weaponInfoMap = mek.getMekWeaponInfoMap();
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             BinaryWriter writer = new BinaryWriter(baos, charset)) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (BinaryWriter writer = new BinaryWriter(baos, charset)) {
             writer.writeInt(weaponInfoMap.size());
             for (Mek.MekWeaponInfo weaponInfo : weaponInfoMap.values()) {
                 writer.writeInt(weaponInfo.getEnabled() == null ? 0 : weaponInfo.getEnabled());
@@ -126,14 +129,14 @@ public class MekGenerator implements ClariasGenerator<Mek> {
                     writer.writeInt(variant.getInt7());
                 }
             }
-            return baos.toByteArray();
         }
+        return baos.toByteArray();
     }
 
     private static byte[] serializeMekAiInfoMap(Mek mek, String charset) throws IOException {
         List<Mek.MekAiInfo> aiInfos = mek.getMekAiInfoList();
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             BinaryWriter writer = new BinaryWriter(baos, charset)) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (BinaryWriter writer = new BinaryWriter(baos, charset)) {
             writer.writeInt(aiInfos.size());
             for (Mek.MekAiInfo ai : aiInfos) {
                 writer.writeNullTerminatedString(ai.getStringField1());
@@ -144,68 +147,145 @@ public class MekGenerator implements ClariasGenerator<Mek> {
                 for (CCpuEvent cpuEvent : events) {
                     short type = cpuEvent.getType();
                     writer.writeShort(type);
-                    if (type == 1 || type == 2) {
-                        cpuEvent.writeInfo(writer);
-                    } else {
-                        throw new OperationException(500, "unexpected AI type: " + type);
+                    cpuEvent.writeInfo(writer);
+                }
+            }
+            int trailingZeroByteCount = mek.getAiTrailingZeroByteCount() == null ? 0 : mek.getAiTrailingZeroByteCount();
+            for (int i = 0; i < trailingZeroByteCount; i++) {
+                writer.writeByte((byte) 0);
+            }
+        }
+        return baos.toByteArray();
+    }
+
+    private static byte[] serializeMekVoiceInfo(Mek mek, String charset) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (BinaryWriter writer = new BinaryWriter(baos, charset)) {
+            Mek.MekVoiceInfo voiceInfo = mek.getMekVoiceInfo();
+            List<Mek.MekVoiceInfo.Emotion> emotions = voiceInfo.getEmotions();
+            List<Mek.MekVoiceInfo.VoiceSlot> voiceSlots = voiceInfo.getVoiceSlots();
+
+            writer.writeInt(voiceInfo.getVersion());
+
+            writer.writeInt(emotions.size());
+            for (Mek.MekVoiceInfo.Emotion emotion : emotions) {
+                writer.writeNullTerminatedString(emotion.getName());
+                writer.writeNullTerminatedString(emotion.getToken());
+            }
+
+            writer.writeInt(voiceSlots.size());
+            for (Mek.MekVoiceInfo.VoiceSlot voiceSlot : voiceSlots) {
+                writer.writeNullTerminatedString(voiceSlot.getName());
+                writer.writeNullTerminatedString(voiceSlot.getToken());
+            }
+
+            int slotCount = voiceSlots.size();
+            for (List<List<Mek.MekVoiceInfo.Entry>> row : voiceInfo.getTable()) {
+                for (int i = 0; i < slotCount; i++) {
+                    List<Mek.MekVoiceInfo.Entry> cell = row.get(i);
+                    writer.writeInt(cell.size());
+                    for (Mek.MekVoiceInfo.Entry entry : cell) {
+                        writer.writeInt(entry.getVoiceType() == null ? 0 : entry.getVoiceType());
+                        writer.writeInt(entry.getGroupId() == null ? 0 : entry.getGroupId());
+                        writer.writeInt(entry.getWeight() == null ? 0 : entry.getWeight());
                     }
                 }
             }
-            return baos.toByteArray();
         }
-    }
-
-    private static byte[] serializeSimpleBlock(Mek mek, String charset) throws IOException {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             BinaryWriter writer = new BinaryWriter(baos, charset)) {
-            writer.writeInt(mek.getMekSimpleBlockEntries().size());
-            for (Mek.MekSimpleBlockEntry entry : mek.getMekSimpleBlockEntries()) {
-                writer.writeInt(entry.getInt1());
-                writer.writeInt(entry.getInt2());
-                writer.writeInt(entry.getInt3());
-            }
-            return baos.toByteArray();
-        }
+        return baos.toByteArray();
     }
 
     private static byte[] serializeTailBlock(Mek mek) {
         Mek.MekMaterialBlock block = mek.getMekMaterialBlock();
-        if (hasRaw(block.getRawBytes())) {
-            return block.getRawBytes();
-        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (BinaryWriter writer = new BinaryWriter(baos, "windows-31j")) {
+            List<Mek.MekMaterialBlock.PluginEntry> stream = buildMaterialEntryStream(block);
 
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             BinaryWriter writer = new BinaryWriter(baos, "windows-31j")) {
-            for (Mek.MekMaterialBlock.MaterialSnapshot snapshot : block.getSnapshots()) {
-                writePairGroupSegment(writer, snapshot.getGroupSegment1());
-                writeIntGroupSegment(writer, snapshot.getGroupSegment2());
-                writeIntGroupSegment(writer, snapshot.getGroupSegment3());
+            for (int i = 0; i < MATERIAL_FIXED_REGULAR_ENTRY_COUNT; i++) {
+                writeMaterialEntry(writer, stream.get(i));
             }
-            return baos.toByteArray();
+
+            int extraRegularCount = resolveExtraRegularCount(block);
+            writer.writeInt(extraRegularCount);
+
+            for (int i = 0; i < extraRegularCount; i++) {
+                writeMaterialEntry(writer, stream.get(MATERIAL_FIXED_REGULAR_ENTRY_COUNT + i));
+            }
+
+            for (int i = MATERIAL_FIXED_REGULAR_ENTRY_COUNT + extraRegularCount; i < stream.size(); i++) {
+                writeMaterialEntry(writer, stream.get(i));
+            }
         } catch (IOException e) {
             throw new RuntimeException("failed to serialize clarias mek material block", e);
         }
+        return baos.toByteArray();
     }
 
     private static byte[] serializePairBlock(Mek mek) throws IOException {
         Mek.MekPairBlock pairBlock = mek.getMekPairBlock();
-        byte[] rawBytes = pairBlock.getRawBytes();
-        if (rawBytes != null && rawBytes.length > 0) {
-            return rawBytes;
-        }
-
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             BinaryWriter writer = new BinaryWriter(baos, "windows-31j")) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (BinaryWriter writer = new BinaryWriter(baos, "windows-31j")) {
             for (Mek.MekPairBlock.Pair pair : pairBlock.getUnkPair()) {
                 writer.writeInt(pair.getInt1());
                 writer.writeInt(pair.getInt2());
             }
-            return baos.toByteArray();
         }
+        return baos.toByteArray();
     }
 
-    private static boolean hasRaw(byte[] rawBytes) {
-        return rawBytes != null && rawBytes.length > 0;
+    private static List<Mek.MekMaterialBlock.PluginEntry> buildMaterialEntryStream(Mek.MekMaterialBlock block) {
+        List<Mek.MekMaterialBlock.PluginEntry> regularEntries = block.getRegularEntries();
+        List<Mek.MekMaterialBlock.PluginEntry> trailingEntries = block.getTrailingEntries();
+        List<Mek.MekMaterialBlock.PluginEntry> entries = block.getEntries();
+
+        int regularCount = resolveRegularCount(block);
+        if (regularCount < MATERIAL_FIXED_REGULAR_ENTRY_COUNT) {
+            throw new OperationException(500, "materialBlock regularCount < " + MATERIAL_FIXED_REGULAR_ENTRY_COUNT);
+        }
+
+        List<Mek.MekMaterialBlock.PluginEntry> stream = new java.util.ArrayList<>();
+        if (regularEntries != null && !regularEntries.isEmpty()) {
+            stream.addAll(regularEntries);
+        } else if (entries != null && entries.size() >= regularCount) {
+            stream.addAll(entries.subList(0, regularCount));
+        } else {
+            throw new OperationException(500, "materialBlock missing regular entries");
+        }
+
+        if (trailingEntries != null && !trailingEntries.isEmpty()) {
+            stream.addAll(trailingEntries);
+        } else if (entries != null && entries.size() > regularCount) {
+            stream.addAll(entries.subList(regularCount, entries.size()));
+        }
+
+        if (stream.size() < regularCount) {
+            throw new OperationException(500, "materialBlock stream size < regularCount");
+        }
+        return stream;
+    }
+
+    private static int resolveRegularCount(Mek.MekMaterialBlock block) {
+        if (block.getRegularEntries() != null && !block.getRegularEntries().isEmpty()) {
+            return block.getRegularEntries().size();
+        }
+        if (block.getRegularCount() != null) {
+            return block.getRegularCount();
+        }
+        if (block.getExtraRegularCount() != null) {
+            return MATERIAL_FIXED_REGULAR_ENTRY_COUNT + block.getExtraRegularCount();
+        }
+        throw new OperationException(500, "materialBlock requires regularEntries/regularCount/extraRegularCount");
+    }
+
+    private static int resolveExtraRegularCount(Mek.MekMaterialBlock block) {
+        int regularCount = resolveRegularCount(block);
+        return regularCount - MATERIAL_FIXED_REGULAR_ENTRY_COUNT;
+    }
+
+    private static void writeMaterialEntry(BinaryWriter writer, Mek.MekMaterialBlock.PluginEntry entry) throws IOException {
+        writePairGroupSegment(writer, entry.getSpriteGroups());
+        writeIntGroupSegment(writer, entry.getSeGroups());
+        writeIntGroupSegment(writer, entry.getVoiceGroups());
     }
 
     private static void writePairGroupSegment(BinaryWriter writer, List<int[]> groups) throws IOException {

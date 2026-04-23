@@ -40,7 +40,7 @@
    - 临时移动/重命名 `src/main/resources/game/clarias/dat/ending.dat`，或
    - 提前增大堆：`set MAVEN_OPTS=-Xmx4g` 再运行 `mvn "-Dtest=com.giga.nexas.clarias.TestDat#testGenerateDatJsonFiles" test`
 2. 流程结束（且无错误）会自动清空 JSON/Generated 目录，与 BSDX 行为一致。
-3. `mek` 当前已在仓库内 `clarias/mek` 真实样本集上通过 round-trip binary consistency。为保证 1:1 回写，部分未完全命名的块仍保留 raw-block fallback。
+3. `mek` 当前已在仓库内 `clarias/mek` 真实样本集上通过 round-trip binary consistency；当前实现已移除原始块兜底，AI/voice/material 等嵌套块均走结构化 DTO 回写。
 4. `grp` 当前按现有 `CLARIAS` 反汇编中出现的同名 group 资源与现有 BSDX/BHE group 结构接入；在真实 `clarias/grp` 样本入库前，同样只能做编译与目录存在性级别验证。
 
 ---

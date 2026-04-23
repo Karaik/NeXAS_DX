@@ -14,10 +14,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true, defaultImpl = CCpuEventUnknown.class)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = CCpuEventMove.class, name = "1"),
-        @JsonSubTypes.Type(value = CCpuEventAttack.class, name = "2")
+        @JsonSubTypes.Type(value = CCpuEventAttack.class, name = "2"),
+        @JsonSubTypes.Type(value = CCpuEventUnknown.class, name = "3"),
+        @JsonSubTypes.Type(value = CCpuEventUnknown.class, name = "7"),
+        @JsonSubTypes.Type(value = CCpuEventUnknown.class, name = "8"),
+        @JsonSubTypes.Type(value = CCpuEventUnknown.class, name = "21")
 })
 @Data
 public class CCpuEvent {
@@ -95,6 +99,11 @@ public class CCpuEvent {
     private Short shortField4;
     private Short shortField5;
     private Byte byteField1;
+    private Integer intField31;
+    private Integer intField32;
+    private Integer intField33;
+    private Integer intField34;
+    private Integer intField35;
     private List<ClariasInfoCollection> clariasInfoCollectionList = new ArrayList<>();
 
     public void readInfo(BinaryReader reader) {
@@ -138,6 +147,11 @@ public class CCpuEvent {
         this.shortField4 = reader.readShort();
         this.shortField5 = reader.readShort();
         this.byteField1 = reader.readByte();
+        this.intField31 = reader.readInt();
+        this.intField32 = reader.readInt();
+        this.intField33 = reader.readInt();
+        this.intField34 = reader.readInt();
+        this.intField35 = reader.readInt();
     }
 
     public void writeInfo(BinaryWriter writer) throws IOException {
@@ -180,5 +194,10 @@ public class CCpuEvent {
         writer.writeShort(this.shortField4);
         writer.writeShort(this.shortField5);
         writer.writeByte(this.byteField1);
+        writer.writeInt(this.intField31);
+        writer.writeInt(this.intField32);
+        writer.writeInt(this.intField33);
+        writer.writeInt(this.intField34);
+        writer.writeInt(this.intField35);
     }
 }
