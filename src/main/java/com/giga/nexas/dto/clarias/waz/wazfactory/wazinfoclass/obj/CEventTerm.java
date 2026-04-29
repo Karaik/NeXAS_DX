@@ -1,5 +1,6 @@
 package com.giga.nexas.dto.clarias.waz.wazfactory.wazinfoclass.obj;
 
+import com.giga.nexas.dto.clarias.ClariasInfoCollection;
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
 import lombok.Data;
@@ -11,6 +12,8 @@ import java.io.IOException;
 @NoArgsConstructor
 public class CEventTerm extends SkillInfoObject {
 
+    private ClariasInfoCollection term = new ClariasInfoCollection();
+
     public CEventTerm(Integer typeId) {
         super(typeId);
     }
@@ -18,10 +21,13 @@ public class CEventTerm extends SkillInfoObject {
     @Override
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
+        this.term = new ClariasInfoCollection();
+        this.term.readCollection(reader);
     }
 
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
+        this.term.writeCollection(writer);
     }
 }

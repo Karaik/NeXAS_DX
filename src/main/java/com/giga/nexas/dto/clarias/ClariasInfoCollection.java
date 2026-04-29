@@ -10,13 +10,14 @@ import java.util.List;
 
 @Data
 public class ClariasInfoCollection {
+    // Clarias RTTI/reverse notes: this is the same binary structure as CTerm.
 
     private Integer int1;
     private List<Integer> typeList;
     private List<Integer> paramList;
     private List<Integer> intList3;
     private List<Integer> intList4;
-    private List<IntPair> pairList;
+    private List<IntPair> pairList; //diff
     private Integer int2;
 
     @Data
@@ -56,13 +57,13 @@ public class ClariasInfoCollection {
             intList4.add(reader.readInt());
         }
 
-        int pairCount = reader.readInt();
-        this.pairList = new ArrayList<>();
-        for (int i = 0; i < pairCount; i++) {
-            IntPair pair = new IntPair();
-            pair.setIntField1(reader.readInt());
-            pair.setIntField2(reader.readInt());
-            this.pairList.add(pair);
+        int pairCount = reader.readInt(); //diff
+        this.pairList = new ArrayList<>(); //diff
+        for (int i = 0; i < pairCount; i++) { //diff
+            IntPair pair = new IntPair(); //diff
+            pair.setIntField1(reader.readInt()); //diff
+            pair.setIntField2(reader.readInt()); //diff
+            this.pairList.add(pair); //diff
         }
 
         setInt2(reader.readInt());
@@ -91,10 +92,10 @@ public class ClariasInfoCollection {
             writer.writeInt(val);
         }
 
-        writer.writeInt(pairList.size());
-        for (IntPair pair : pairList) {
-            writer.writeInt(pair.getIntField1());
-            writer.writeInt(pair.getIntField2());
+        writer.writeInt(pairList.size()); //diff
+        for (IntPair pair : pairList) { //diff
+            writer.writeInt(pair.getIntField1()); //diff
+            writer.writeInt(pair.getIntField2()); //diff
         }
 
         writer.writeInt(this.int2);

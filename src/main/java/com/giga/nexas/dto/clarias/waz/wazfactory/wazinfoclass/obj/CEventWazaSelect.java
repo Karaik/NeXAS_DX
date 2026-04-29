@@ -11,6 +11,9 @@ import java.io.IOException;
 @NoArgsConstructor
 public class CEventWazaSelect extends SkillInfoObject {
 
+    private Integer wazFileNo;
+    private Integer wazSequenceNo;
+
     public CEventWazaSelect(Integer typeId) {
         super(typeId);
     }
@@ -18,10 +21,15 @@ public class CEventWazaSelect extends SkillInfoObject {
     @Override
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
+
+        this.wazFileNo = reader.readInt();
+        this.wazSequenceNo = reader.readInt();
     }
 
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
+        writer.writeInt(this.wazFileNo);
+        writer.writeInt(this.wazSequenceNo);
     }
 }

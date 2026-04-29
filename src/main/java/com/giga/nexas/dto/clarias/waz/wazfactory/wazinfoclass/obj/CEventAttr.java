@@ -11,6 +11,8 @@ import java.io.IOException;
 @NoArgsConstructor
 public class CEventAttr extends SkillInfoObject {
 
+    private Short short1;
+
     public CEventAttr(Integer typeId) {
         super(typeId);
     }
@@ -18,10 +20,12 @@ public class CEventAttr extends SkillInfoObject {
     @Override
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
+        this.short1 = reader.readShort();
     }
 
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
+        writer.writeShort(this.short1);
     }
 }

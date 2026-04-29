@@ -101,7 +101,7 @@ public class SkillInfoObject {
     public void writeInfo(BinaryWriter writer) throws IOException {
         writer.writeInt(this.startFrame);
         writer.writeInt(this.endFrame);
-        writer.writeByte(this.enabled == null ? 0 : this.enabled); //diff
+        writer.writeByte(this.enabled); //diff
     }
 
 }

@@ -11,6 +11,10 @@ import java.io.IOException;
 @NoArgsConstructor
 public class CEventSprite extends SkillInfoObject {
 
+    private Integer spmFileSequence;
+    private Integer actionGroupNumber;
+    private Integer actionNumber;
+
     public CEventSprite(Integer typeId) {
         super(typeId);
     }
@@ -18,10 +22,17 @@ public class CEventSprite extends SkillInfoObject {
     @Override
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
+
+        this.spmFileSequence = reader.readInt();
+        this.actionGroupNumber = reader.readInt();
+        this.actionNumber = reader.readInt();
     }
 
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
+        writer.writeInt(this.spmFileSequence);
+        writer.writeInt(this.actionGroupNumber);
+        writer.writeInt(this.actionNumber);
     }
 }
