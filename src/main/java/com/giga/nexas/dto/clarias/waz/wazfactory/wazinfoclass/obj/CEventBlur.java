@@ -9,9 +9,9 @@ import java.io.IOException;
 
 @Data
 @NoArgsConstructor
-public class CEventValRandom extends SkillInfoObject {
+public class CEventBlur extends SkillInfoObject {
 
-    public CEventValRandom(Integer typeId) {
+    public CEventBlur(Integer typeId) {
         super(typeId);
     }
 

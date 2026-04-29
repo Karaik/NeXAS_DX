@@ -6,10 +6,13 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class SkillInfoTypeEntry {
+
     private Integer type;
     private Integer address;
     private String description;
-    private Integer flag;
-    private Integer groupId;
-    private Integer flags;
+
+    public Integer getFlags() {
+        return 0;
+    }
+
 }

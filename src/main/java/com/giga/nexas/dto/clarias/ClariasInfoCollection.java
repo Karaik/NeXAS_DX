@@ -16,13 +16,21 @@ public class ClariasInfoCollection {
     private List<Integer> paramList;
     private List<Integer> intList3;
     private List<Integer> intList4;
+    private List<IntPair> pairList;
     private Integer int2;
+
+    @Data
+    public static class IntPair {
+        private Integer intField1;
+        private Integer intField2;
+    }
 
     public ClariasInfoCollection() {
         this.typeList = new ArrayList<>();
         this.paramList = new ArrayList<>();
         this.intList3 = new ArrayList<>();
         this.intList4 = new ArrayList<>();
+        this.pairList = new ArrayList<>();
     }
 
     public void readCollection(BinaryReader reader) {
@@ -46,6 +54,15 @@ public class ClariasInfoCollection {
         int count4 = reader.readInt();
         for (int i = 0; i < count4; i++) {
             intList4.add(reader.readInt());
+        }
+
+        int pairCount = reader.readInt();
+        this.pairList = new ArrayList<>();
+        for (int i = 0; i < pairCount; i++) {
+            IntPair pair = new IntPair();
+            pair.setIntField1(reader.readInt());
+            pair.setIntField2(reader.readInt());
+            this.pairList.add(pair);
         }
 
         setInt2(reader.readInt());
@@ -72,6 +89,12 @@ public class ClariasInfoCollection {
         writer.writeInt(intList4.size());
         for (Integer val : intList4) {
             writer.writeInt(val);
+        }
+
+        writer.writeInt(pairList.size());
+        for (IntPair pair : pairList) {
+            writer.writeInt(pair.getIntField1());
+            writer.writeInt(pair.getIntField2());
         }
 
         writer.writeInt(this.int2);

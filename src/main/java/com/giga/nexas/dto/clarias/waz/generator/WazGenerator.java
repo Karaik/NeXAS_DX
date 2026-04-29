@@ -19,34 +19,50 @@ import java.util.List;
 
 @Slf4j
 public class WazGenerator implements ClariasGenerator<Waz> {
+
     @Override
     public String supportExtension() {
         return "waz";
     }
 
     @Override
-    public void generate(String path, Waz waz, String charset) throws IOException {
+    public void generate(String path, Waz waz, String charsetName) throws IOException {
         FileUtil.mkdir(FileUtil.getParent(path, 1));
+
         try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(path));
-             BinaryWriter writer = new BinaryWriter(outputStream, charset)) {
-for (Waz.Skill skill : waz.getSkillList()) {
+             BinaryWriter writer = new BinaryWriter(outputStream, charsetName)) {
+
+            List<Waz.Skill> skills = waz.getSkillList();
+            for (Waz.Skill skill : skills) {
                 if (skill.isEmpty() || skill.getPhaseQuantity() == null) {
                     writer.writeInt(0);
                     continue;
                 }
+
                 writer.writeInt(1);
                 writer.writeNullTerminatedString(skill.getSkillNameJapanese());
                 writer.writeNullTerminatedString(skill.getSkillNameEnglish());
-                writer.writeInt(skill.getPhaseQuantity());
-                for (Waz.Skill.SkillPhase phase : skill.getPhasesInfo()) {
-                    writeSkillPhaseInfo(phase, writer);
+
+                try {
+                    int phaseQuantity = skill.getPhaseQuantity();
+                    writer.writeInt(phaseQuantity);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
-                writer.writeInt(skill.getSkillSuffixList().size());
-                for (Waz.Skill.SkillSuffix suffix : skill.getSkillSuffixList()) {
+
+                List<Waz.Skill.SkillPhase> phaseInfoList = skill.getPhasesInfo();
+                for (Waz.Skill.SkillPhase skillPhase : phaseInfoList) {
+                    writeSkillPhaseInfo(skillPhase, writer);
+                }
+
+                List<Waz.Skill.SkillSuffix> suffixList = skill.getSkillSuffixList();
+                writer.writeInt(suffixList.size());
+                for (Waz.Skill.SkillSuffix suffix : suffixList) {
                     writer.writeInt(suffix.getInt1());
                     writer.writeInt(suffix.getInt2());
                 }
             }
+
         } catch (Exception e) {
             log.info("path === {}", path);
             log.info("error === {}", e.getMessage());
@@ -54,27 +70,46 @@ for (Waz.Skill skill : waz.getSkillList()) {
         }
     }
 
-    private void writeSkillPhaseInfo(Waz.Skill.SkillPhase phase, BinaryWriter writer) throws IOException {
-        List<SkillUnit> units = phase.getSkillUnitCollection();
-        for (int i = 0; i < SkillInfoFactory.SLOT_COUNT; i++) {
-SkillUnit matched = null;
-            for (SkillUnit unit : units) {
-                if (unit.getUnitQuantity() != null && unit.getUnitQuantity() == i) {
-                    matched = unit;
+    private void writeSkillPhaseInfo(Waz.Skill.SkillPhase skillPhase, BinaryWriter writer) throws IOException {
+        List<SkillUnit> skillUnitCollection = skillPhase.getSkillUnitCollection();
+
+        for (int i = 0; i < 112; i++) { //diff
+            if ((SkillInfoFactory.SKILL_INFO_TYPE_ENTRIES_CLARIAS[i].getFlags() & 2) != 0) { //diff
+                continue; //diff
+            } //diff
+            SkillUnit matchedUnit = null;
+            for (SkillUnit unit : skillUnitCollection) {
+                if (unit.getUnitQuantity() == i) {
+                    matchedUnit = unit;
                     break;
                 }
             }
-            List<SkillInfoObject> objects = matched == null ? new ArrayList<>() : matched.getSkillInfoObjectList();
-            writer.writeInt(objects.size());
-            for (SkillInfoObject object : objects) {
-                object.writeInfo(writer);
+
+            List<SkillInfoObject> skillInfoObjectList;
+            if (matchedUnit != null) {
+                skillInfoObjectList = matchedUnit.getSkillInfoObjectList();
+            } else {
+                skillInfoObjectList = new ArrayList<>();
             }
-            List<SkillInfoUnknown> unknowns = matched == null ? new ArrayList<>() : matched.getSkillInfoUnknownList();
-            writer.writeInt(unknowns.size());
-            for (SkillInfoUnknown unknown : unknowns) {
+
+            writer.writeInt(skillInfoObjectList.size());
+            for (SkillInfoObject obj : skillInfoObjectList) {
+                obj.writeInfo(writer);
+            }
+
+            List<SkillInfoUnknown> skillInfoUnknownList;
+            if (matchedUnit != null) {
+                skillInfoUnknownList = matchedUnit.getSkillInfoUnknownList();
+            } else {
+                skillInfoUnknownList = new ArrayList<>();
+            }
+
+            writer.writeInt(skillInfoUnknownList.size());
+            for (SkillInfoUnknown unknown : skillInfoUnknownList) {
                 unknown.writeInfo(writer);
             }
         }
-        writer.writeNullTerminatedString(phase.getPhaseTail());
+
+        writer.writeNullTerminatedString(skillPhase.getPhaseTail() == null ? "" : skillPhase.getPhaseTail()); //diff
     }
 }
