@@ -108,6 +108,14 @@ public class WazGenerator implements ClariasGenerator<Waz> {
             for (SkillInfoUnknown unknown : skillInfoUnknownList) {
                 unknown.writeInfo(writer);
             }
+
+            if (i == 71 && !skillInfoUnknownList.isEmpty()) { //diff
+                byte[] secondaryTailBytes = matchedUnit == null ? new byte[0] : matchedUnit.getSecondaryTailBytes();
+                if (secondaryTailBytes.length == 0) {
+                    throw new IllegalStateException("missing secondaryTailBytes for clarias slot 71"); //diff
+                }
+                writer.writeBytes(secondaryTailBytes);
+            }
         }
 
         writer.writeNullTerminatedString(skillPhase.getPhaseTail() == null ? "" : skillPhase.getPhaseTail()); //diff

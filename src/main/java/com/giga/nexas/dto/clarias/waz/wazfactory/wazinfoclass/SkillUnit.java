@@ -15,6 +15,7 @@ public class SkillUnit {
 
     private List<SkillInfoObject> skillInfoObjectList;
     private List<SkillInfoUnknown> skillInfoUnknownList;
+    private byte[] secondaryTailBytes = new byte[0]; //diff
 
     public SkillUnit() {
         this.skillInfoObjectList = new ArrayList<>();

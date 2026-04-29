@@ -83,6 +83,7 @@ public class SkillInfoObject {
     public Integer typeId;
     private Integer startFrame;
     private Integer endFrame;
+    private Byte enabled; //diff
 
     public SkillInfoObject(Integer typeId) {
         this.typeId = typeId;
@@ -94,11 +95,13 @@ public class SkillInfoObject {
 
         this.startFrame = reader.readInt();
         this.endFrame = reader.readInt();
+        this.enabled = reader.readByte(); //diff
     }
 
     public void writeInfo(BinaryWriter writer) throws IOException {
         writer.writeInt(this.startFrame);
         writer.writeInt(this.endFrame);
+        writer.writeByte(this.enabled == null ? 0 : this.enabled); //diff
     }
 
 }

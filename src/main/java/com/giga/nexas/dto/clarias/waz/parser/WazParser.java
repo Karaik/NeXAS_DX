@@ -94,7 +94,7 @@ public class WazParser implements ClariasParser<Waz> {
             int count2 = reader.readInt();
             for (int j = 0; j < count2; j++) {
                 try {
-                    SkillInfoUnknown wazInfoUnknown = new SkillInfoUnknown(0xFF);
+                    SkillInfoUnknown wazInfoUnknown = createSecondaryObject(i, j, count2); //diff
                     wazInfoUnknown.readInfo(reader);
                     wazInfoUnknownList.add(wazInfoUnknown);
                 } catch (Exception e) {
@@ -103,11 +103,22 @@ public class WazParser implements ClariasParser<Waz> {
                 }
             }
 
+            if (i == 71 && count2 > 0) { //diff
+                skillUnit.setSecondaryTailBytes(reader.readBytes(1));
+            }
+
             if (!skillInfoObjectList.isEmpty() || !wazInfoUnknownList.isEmpty()) {
                 skillUnitCollection.add(skillUnit);
             }
         }
 
         skillPhase.setPhaseTail(reader.readNullTerminatedString()); //diff
+    }
+
+    private SkillInfoUnknown createSecondaryObject(int slot, int index, int count) { //diff
+        if (slot == 69 && index == 0 && count == 2) {
+            return new SkillInfoUnknown(0xFF, 2, true);
+        }
+        return new SkillInfoUnknown(0xFF);
     }
 }
