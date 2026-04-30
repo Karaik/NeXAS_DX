@@ -1,15 +1,58 @@
 package com.giga.nexas.dto.clarias.waz.wazfactory.wazinfoclass.obj;
 
+import com.giga.nexas.exception.OperationException;
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.giga.nexas.dto.clarias.waz.wazfactory.SkillInfoFactory.createCEventObjectByTypeClarias;
 
 @Data
 @NoArgsConstructor
 public class CEventMultiLockStartEnd extends SkillInfoObject {
+    @Data
+    @AllArgsConstructor
+    public static class CEventMultiLockStartEndType {
+        private Integer type;
+        private String description;
+    }
+
+    public static final CEventMultiLockStartEndType[] CEVENT_MULTI_LOCK_START_END_ENTRIES = {
+            new CEventMultiLockStartEndType(0xFFFFFFFF, "開始・終了タイプ"),
+            new CEventMultiLockStartEndType(0x9, "開始OBJ"),
+            new CEventMultiLockStartEndType(0xFFFFFFFF, "ロック対象"),
+            new CEventMultiLockStartEndType(0xFFFFFFFF, "拡大速度(%)"),
+            new CEventMultiLockStartEndType(0xFFFFFFFF, "直径開始値(100 = 200 dot)"),
+            new CEventMultiLockStartEndType(0xFFFFFFFF, "直径最大値(100 = 200 dot)"),
+            new CEventMultiLockStartEndType(0xFFFFFFFF, "フラグ")
+    };
+
+    public static final String[] CEVENT_MULTI_LOCK_START_END_EXTRA_ENTRIES = {
+            "親ロック範囲を適応",
+            "現在拡大率を開始拡大率に変換",
+            "敵",
+            "味方",
+            "親メカ"
+    };
+
+    public Integer fieldTableAddress = 0x00C37330;
+    public Integer wrapperTableAddress = 0x00B628F8;
+
+    @Data
+    public static class CEventMultiLockStartEndUnit {
+        private Integer unitSlotNum;
+        private Integer buffer;
+        private String description;
+        private SkillInfoObject data;
+    }
+
+    private List<CEventMultiLockStartEndUnit> unitList = new ArrayList<>();
 
     public CEventMultiLockStartEnd(Integer typeId) {
         super(typeId);
@@ -18,10 +61,54 @@ public class CEventMultiLockStartEnd extends SkillInfoObject {
     @Override
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
+
+        this.unitList.clear();
+        for (int i = 0; i < 7; i++) {
+            int buffer = reader.readInt();
+
+            CEventMultiLockStartEndUnit unit = new CEventMultiLockStartEndUnit();
+            unit.setUnitSlotNum(i);
+            unit.setBuffer(buffer);
+            unit.setDescription(CEVENT_MULTI_LOCK_START_END_ENTRIES[i].getDescription());
+
+            int innerTypeId = CEVENT_MULTI_LOCK_START_END_ENTRIES[i].getType();
+            if (buffer != 0) {
+                if (innerTypeId == 0xFFFFFFFF) {
+                    throw new OperationException(500, "unexpected non-zero multiLockStartEnd wrapper buffer at slot " + i);
+                }
+                SkillInfoObject obj = createCEventObjectByTypeClarias(innerTypeId);
+                if (obj == null) {
+                    throw new OperationException(500, "missing multiLockStartEnd wrapper type at slot " + i + ": " + innerTypeId);
+                }
+                obj.readInfo(reader);
+                unit.setData(obj);
+            }
+
+            this.unitList.add(unit);
+        }
     }
 
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
+
+        for (int i = 0; i < 7; i++) {
+            CEventMultiLockStartEndUnit target = null;
+            for (CEventMultiLockStartEndUnit unit : this.unitList) {
+                if (unit.getUnitSlotNum() == i) {
+                    target = unit;
+                    break;
+                }
+            }
+
+            if (target != null) {
+                writer.writeInt(target.getBuffer());
+                if (target.getBuffer() != 0 && target.getData() != null) {
+                    target.getData().writeInfo(writer);
+                }
+            } else {
+                writer.writeInt(0);
+            }
+        }
     }
 }
