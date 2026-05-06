@@ -157,17 +157,10 @@ public class CEventEffect extends SkillInfoObject {
         writer.writeInt(this.flatInt9);
         writer.writeInt(this.flatInt10);
         for (int i = 0; i < 46; i++) {
-            CEventEffectUnit target = null;
-            for (CEventEffectUnit unit : this.unitList) {
-                if (unit.getUnitSlotNum() == i) { target = unit; break; }
-            }
-            if (target != null) {
-                writer.writeInt(target.getBuffer());
-                if (target.getBuffer() != 0 && target.getData() != null) {
-                    target.getData().writeInfo(writer);
-                }
-            } else {
-                writer.writeInt(0);
+            CEventEffectUnit unit = this.unitList.get(i);
+            writer.writeInt(unit.getBuffer());
+            if (unit.getBuffer() != 0) {
+                unit.getData().writeInfo(writer);
             }
         }
     }
