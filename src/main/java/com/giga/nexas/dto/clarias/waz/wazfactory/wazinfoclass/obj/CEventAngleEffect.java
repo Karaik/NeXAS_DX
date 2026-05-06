@@ -78,18 +78,19 @@ public class CEventAngleEffect extends SkillInfoObject {
             this.unitList.add(unit);
         }
 
-        if (this.angleType != null && Byte.toUnsignedInt(this.angleType) == 2) {
-            this.rotationDirection = 2;
-            for (CEventAngleEffectUnit unit : this.unitList) {
-                if (unit.getUnitSlotNum() == 2 && unit.getData() instanceof CEventVal val) {
-                    val.setInt1(1);
-                    val.setInt2(0);
-                    val.setInt3(0);
-                    val.setInt4(360);
-                    break;
-                }
-            }
-        }
+        // exe 内会设置为固定值，不复刻，此处保留信息
+        // if (this.angleType != null && Byte.toUnsignedInt(this.angleType) == 2) {
+        //     this.rotationDirection = 2;
+        //     for (CEventAngleEffectUnit unit : this.unitList) {
+        //         if (unit.getUnitSlotNum() == 2 && unit.getData() instanceof CEventVal val) {
+        //             val.setInt1(1);
+        //             val.setInt2(0);
+        //             val.setInt3(0);
+        //             val.setInt4(360);
+        //             break;
+        //         }
+        //     }
+        // }
     }
 
     @Override
