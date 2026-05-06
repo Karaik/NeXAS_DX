@@ -54,6 +54,7 @@ public class CEventCamera extends SkillInfoObject {
         private SkillInfoObject data;
     }
 
+    private Short extraFlags; // diff: Clarias field table 0x00C36C10 reads 2 bytes at this+40 before wrapper slots
     private List<CEventCameraUnit> unitList = new ArrayList<>();
 
     public CEventCamera(Integer typeId) { super(typeId); }
@@ -61,6 +62,7 @@ public class CEventCamera extends SkillInfoObject {
     @Override
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
+        this.extraFlags = reader.readShort();
         this.unitList.clear();
         for (int i = 0; i < 5; i++) {
             int buffer = reader.readInt();
@@ -87,6 +89,7 @@ public class CEventCamera extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
+        writer.writeShort(this.extraFlags != null ? this.extraFlags : 0);
         for (int i = 0; i < 5; i++) {
             CEventCameraUnit target = null;
             for (CEventCameraUnit unit : this.unitList) {
