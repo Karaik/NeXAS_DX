@@ -1,6 +1,5 @@
 package com.giga.nexas.dto.clarias.waz.wazfactory.wazinfoclass.obj;
 
-import com.giga.nexas.exception.OperationException;
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
 import lombok.AllArgsConstructor;
@@ -46,6 +45,13 @@ public class CEventCpuButton extends SkillInfoObject {
         private SkillInfoObject data;
     }
 
+    private Integer int1;
+    private Integer int2;
+    private Integer int3;
+    private Integer int4;
+    private Integer int5;
+    private Short short1;
+    private Short short2;
     private List<CEventCpuButtonUnit> unitList = new ArrayList<>();
 
     public CEventCpuButton(Integer typeId) { super(typeId); }
@@ -53,45 +59,45 @@ public class CEventCpuButton extends SkillInfoObject {
     @Override
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
+
+        this.int1 = reader.readInt();
+        this.int2 = reader.readInt();
+        this.int3 = reader.readInt();
+        this.int4 = reader.readInt();
+        this.int5 = reader.readInt();
+        this.short1 = reader.readShort();
+        this.short2 = reader.readShort();
+
         this.unitList.clear();
-        for (int i = 0; i < 8; i++) {
-            int buffer = reader.readInt();
-            CEventCpuButtonUnit unit = new CEventCpuButtonUnit();
-            unit.setUnitSlotNum(i);
-            unit.setBuffer(buffer);
-            unit.setDescription(CEVENT_CPU_BUTTON_ENTRIES[i].getDescription());
-            int innerTypeId = CEVENT_CPU_BUTTON_ENTRIES[i].getType();
-            if (buffer != 0) {
-                if (innerTypeId == 0xFFFFFFFF) {
-                    throw new OperationException(500, "unexpected non-zero cpuButton wrapper buffer at slot " + i);
-                }
-                SkillInfoObject obj = createCEventObjectByTypeClarias(innerTypeId);
-                if (obj == null) {
-                    throw new OperationException(500, "missing cpuButton wrapper type at slot " + i + ": " + innerTypeId);
-                }
-                obj.readInfo(reader);
-                unit.setData(obj);
-            }
-            this.unitList.add(unit);
+
+        int buffer = reader.readInt();
+        CEventCpuButtonUnit unit = new CEventCpuButtonUnit();
+        unit.setUnitSlotNum(0);
+        unit.setBuffer(buffer);
+        unit.setDescription(CEVENT_CPU_BUTTON_ENTRIES[0].getDescription());
+        if (buffer != 0) {
+            SkillInfoObject obj = createCEventObjectByTypeClarias(CEVENT_CPU_BUTTON_ENTRIES[0].getType());
+            obj.readInfo(reader);
+            unit.setData(obj);
         }
+        this.unitList.add(unit);
     }
 
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
-        for (int i = 0; i < 8; i++) {
-            CEventCpuButtonUnit target = null;
-            for (CEventCpuButtonUnit unit : this.unitList) {
-                if (unit.getUnitSlotNum() == i) { target = unit; break; }
-            }
-            if (target != null) {
-                writer.writeInt(target.getBuffer());
-                if (target.getBuffer() != 0 && target.getData() != null) {
-                    target.getData().writeInfo(writer);
-                }
-            } else {
-                writer.writeInt(0);
-            }
+        writer.writeInt(this.int1);
+        writer.writeInt(this.int2);
+        writer.writeInt(this.int3);
+        writer.writeInt(this.int4);
+        writer.writeInt(this.int5);
+        writer.writeShort(this.short1);
+        writer.writeShort(this.short2);
+
+        CEventCpuButtonUnit unit = this.unitList.get(0);
+        writer.writeInt(unit.getBuffer());
+        if (unit.getBuffer() != 0) {
+            unit.getData().writeInfo(writer);
         }
     }
 }

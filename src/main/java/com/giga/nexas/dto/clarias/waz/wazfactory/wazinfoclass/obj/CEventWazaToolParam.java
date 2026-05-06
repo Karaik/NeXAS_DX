@@ -1,6 +1,5 @@
 package com.giga.nexas.dto.clarias.waz.wazfactory.wazinfoclass.obj;
 
-import com.giga.nexas.exception.OperationException;
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
 import lombok.AllArgsConstructor;
@@ -89,13 +88,7 @@ public class CEventWazaToolParam extends SkillInfoObject {
 
             int innerTypeId = CEVENT_WAZA_TOOL_PARAM_ENTRIES[i].getType();
             if (buffer != 0) {
-                if (innerTypeId == 0xFFFFFFFF) {
-                    throw new OperationException(500, "unexpected non-zero wazaToolParam wrapper buffer at slot " + i);
-                }
                 SkillInfoObject obj = createCEventObjectByTypeClarias(innerTypeId);
-                if (obj == null) {
-                    throw new OperationException(500, "missing wazaToolParam wrapper type at slot " + i + ": " + innerTypeId);
-                }
                 obj.readInfo(reader);
                 unit.setData(obj);
             }

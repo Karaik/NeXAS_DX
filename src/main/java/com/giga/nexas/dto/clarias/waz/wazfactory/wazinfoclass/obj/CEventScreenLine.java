@@ -1,6 +1,5 @@
 package com.giga.nexas.dto.clarias.waz.wazfactory.wazinfoclass.obj;
 
-import com.giga.nexas.exception.OperationException;
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
 import lombok.AllArgsConstructor;
@@ -70,13 +69,7 @@ public class CEventScreenLine extends SkillInfoObject {
             unit.setDescription(CEVENT_SCREEN_LINE_ENTRIES[i].getDescription());
             int innerTypeId = CEVENT_SCREEN_LINE_ENTRIES[i].getType();
             if (buffer != 0) {
-                if (innerTypeId == 0xFFFFFFFF) {
-                    throw new OperationException(500, "unexpected non-zero screenLine wrapper buffer at slot " + i);
-                }
                 SkillInfoObject obj = createCEventObjectByTypeClarias(innerTypeId);
-                if (obj == null) {
-                    throw new OperationException(500, "missing screenLine wrapper type at slot " + i + ": " + innerTypeId);
-                }
                 obj.readInfo(reader);
                 unit.setData(obj);
             }
