@@ -72,13 +72,6 @@ public class DatParser implements ClariasParser<Dat> {
         for (int i = 0; i < columnCount; i++) {
             int typeFlag = reader.readInt();
             String type = resolveColumnType(typeFlag);
-
-            if (type == null) {
-                // 保持原有“遇到未知类型就提前结束”的语义，不抛异常
-                log.warn("Unknown column type flag: {} at index {}", typeFlag, i);
-                return types;
-            }
-
             types.add(type);
         }
 

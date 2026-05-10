@@ -11,7 +11,6 @@ import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collections;
 import java.util.List;
 
 import static com.giga.nexas.util.ParserUtil.DAT_COLUMN_TYPE_DATA;
@@ -38,18 +37,11 @@ public class DatGenerator implements ClariasGenerator<Dat> {
 
     @Override
     public void generate(String path, Dat dat, String charsetName) throws IOException {
-        if (dat == null) {
-            throw new IllegalArgumentException("dat object must not be null");
-        }
-
         List<String> columnTypes = dat.getColumnTypes();
-        if (columnTypes == null || columnTypes.isEmpty()) {
-            throw new IllegalArgumentException("columnTypes must not be empty");
-        }
 
         FileUtil.mkdir(FileUtil.getParent(path, 1));
 
-        String effectiveCharset = StrUtil.isBlank(charsetName) ? DEFAULT_CHARSET : charsetName;
+        String effectiveCharset = charsetName;
         try (OutputStream os = new BufferedOutputStream(new FileOutputStream(path));
              BinaryWriter writer = new BinaryWriter(os, effectiveCharset)) {
 
@@ -59,7 +51,7 @@ public class DatGenerator implements ClariasGenerator<Dat> {
     }
 
     private void writeColumnDefinitions(BinaryWriter writer, int columnCount, List<String> columnTypes) throws IOException {
-        int effectiveColumnCount = columnCount > 0 ? columnCount : columnTypes.size();
+        int effectiveColumnCount = columnCount;
         if (effectiveColumnCount != columnTypes.size()) {
             log.warn("columnCount({}) != columnTypes.size({}), fallback to columnTypes size.", columnCount, columnTypes.size());
             effectiveColumnCount = columnTypes.size();
@@ -72,12 +64,10 @@ public class DatGenerator implements ClariasGenerator<Dat> {
     }
 
     private void writeRows(BinaryWriter writer, List<String> columnTypes, List<List<Object>> rows) throws IOException {
-        List<List<Object>> safeRows = rows == null ? Collections.emptyList() : rows;
-        for (List<Object> row : safeRows) {
-            List<Object> safeRow = row == null ? Collections.emptyList() : row;
+        for (List<Object> row : rows) {
             for (int i = 0; i < columnTypes.size(); i++) {
                 String columnType = columnTypes.get(i);
-                Object value = i < safeRow.size() ? safeRow.get(i) : null;
+                Object value = row.get(i);
                 writeValue(writer, columnType, value);
             }
         }
@@ -86,7 +76,7 @@ public class DatGenerator implements ClariasGenerator<Dat> {
     private void writeValue(BinaryWriter writer, String columnType, Object value) throws IOException {
         switch (columnType) {
             case TYPE_STRING:
-                writer.writeNullTerminatedString(value == null ? "" : String.valueOf(value));
+                writer.writeNullTerminatedString(String.valueOf(value));
                 break;
             case TYPE_INT:
             case TYPE_INT_NEW:
@@ -94,7 +84,7 @@ public class DatGenerator implements ClariasGenerator<Dat> {
                 break;
             default:
                 log.warn("Unsupported column type '{}', fallback to string serialization.", columnType);
-                writer.writeNullTerminatedString(value == null ? "" : String.valueOf(value));
+                writer.writeNullTerminatedString(String.valueOf(value));
         }
     }
 

@@ -91,13 +91,9 @@ public class CEventMultiLock extends SkillInfoObject {
                 }
             }
 
-            if (target != null) {
-                writer.writeInt(target.getBuffer());
-                if (target.getBuffer() != 0 && target.getData() != null) {
-                    target.getData().writeInfo(writer);
-                }
-            } else {
-                writer.writeInt(0);
+            writer.writeInt(target.getBuffer());
+            if (target.getBuffer() != 0) {
+                target.getData().writeInfo(writer);
             }
         }
     }

@@ -82,7 +82,7 @@ public class MekGenerator implements ClariasGenerator<Mek> {
             writer.writeInt(info.getIntField10());
             writer.writeInt(info.getIntField11());
             writer.writeInt(info.getIntField12());
-            writer.writeByte(info.getByteField1() == null ? 0 : info.getByteField1());
+            writer.writeByte(info.getByteField1());
             writer.writeInt(info.getIntField13());
             writer.writeInt(info.getIntField14());
             writer.writeInt(info.getIntField15());
@@ -99,8 +99,8 @@ public class MekGenerator implements ClariasGenerator<Mek> {
         try (BinaryWriter writer = new BinaryWriter(baos, charset)) {
             writer.writeInt(weaponInfoMap.size());
             for (Mek.MekWeaponInfo weaponInfo : weaponInfoMap.values()) {
-                writer.writeInt(weaponInfo.getEnabled() == null ? 0 : weaponInfo.getEnabled());
-                if (weaponInfo.getEnabled() == null || weaponInfo.getEnabled() == 0) {
+                writer.writeInt(weaponInfo.getEnabled());
+                if (weaponInfo.getEnabled() == 0) {
                     continue;
                 }
                 writer.writeNullTerminatedString(weaponInfo.getStringField1());
@@ -110,13 +110,13 @@ public class MekGenerator implements ClariasGenerator<Mek> {
                 for (Integer value : weaponInfo.getLeadingInts()) {
                     writer.writeInt(value);
                 }
-                writer.writeByte(weaponInfo.getFlagByte() == null ? 0 : weaponInfo.getFlagByte());
+                writer.writeByte(weaponInfo.getFlagByte());
                 for (Integer value : weaponInfo.getTrailingInts()) {
                     writer.writeInt(value);
                 }
 
                 List<Mek.MekWeaponInfo.Variant> variants = weaponInfo.getVariants();
-                int variantCount = weaponInfo.getVariantCount() == null ? variants.size() : weaponInfo.getVariantCount();
+                int variantCount = weaponInfo.getVariantCount();
                 writer.writeInt(variantCount);
                 for (int i = 0; i < variantCount; i++) {
                     Mek.MekWeaponInfo.Variant variant = variants.get(i);
@@ -150,7 +150,7 @@ public class MekGenerator implements ClariasGenerator<Mek> {
                     cpuEvent.writeInfo(writer);
                 }
             }
-            int trailingZeroByteCount = mek.getAiTrailingZeroByteCount() == null ? 0 : mek.getAiTrailingZeroByteCount();
+            int trailingZeroByteCount = mek.getAiTrailingZeroByteCount();
             for (int i = 0; i < trailingZeroByteCount; i++) {
                 writer.writeByte((byte) 0);
             }
@@ -185,9 +185,9 @@ public class MekGenerator implements ClariasGenerator<Mek> {
                     List<Mek.MekVoiceInfo.Entry> cell = row.get(i);
                     writer.writeInt(cell.size());
                     for (Mek.MekVoiceInfo.Entry entry : cell) {
-                        writer.writeInt(entry.getVoiceType() == null ? 0 : entry.getVoiceType());
-                        writer.writeInt(entry.getGroupId() == null ? 0 : entry.getGroupId());
-                        writer.writeInt(entry.getWeight() == null ? 0 : entry.getWeight());
+                        writer.writeInt(entry.getVoiceType());
+                        writer.writeInt(entry.getGroupId());
+                        writer.writeInt(entry.getWeight());
                     }
                 }
             }
@@ -244,17 +244,17 @@ public class MekGenerator implements ClariasGenerator<Mek> {
         }
 
         List<Mek.MekMaterialBlock.PluginEntry> stream = new java.util.ArrayList<>();
-        if (regularEntries != null && !regularEntries.isEmpty()) {
+        if (!regularEntries.isEmpty()) {
             stream.addAll(regularEntries);
-        } else if (entries != null && entries.size() >= regularCount) {
+        } else if (entries.size() >= regularCount) {
             stream.addAll(entries.subList(0, regularCount));
         } else {
             throw new OperationException(500, "materialBlock missing regular entries");
         }
 
-        if (trailingEntries != null && !trailingEntries.isEmpty()) {
+        if (!trailingEntries.isEmpty()) {
             stream.addAll(trailingEntries);
-        } else if (entries != null && entries.size() > regularCount) {
+        } else if (entries.size() > regularCount) {
             stream.addAll(entries.subList(regularCount, entries.size()));
         }
 
@@ -265,16 +265,10 @@ public class MekGenerator implements ClariasGenerator<Mek> {
     }
 
     private static int resolveRegularCount(Mek.MekMaterialBlock block) {
-        if (block.getRegularEntries() != null && !block.getRegularEntries().isEmpty()) {
+        if (!block.getRegularEntries().isEmpty()) {
             return block.getRegularEntries().size();
         }
-        if (block.getRegularCount() != null) {
-            return block.getRegularCount();
-        }
-        if (block.getExtraRegularCount() != null) {
-            return MATERIAL_FIXED_REGULAR_ENTRY_COUNT + block.getExtraRegularCount();
-        }
-        throw new OperationException(500, "materialBlock requires regularEntries/regularCount/extraRegularCount");
+        return MATERIAL_FIXED_REGULAR_ENTRY_COUNT + block.getExtraRegularCount();
     }
 
     private static int resolveExtraRegularCount(Mek.MekMaterialBlock block) {
@@ -289,17 +283,11 @@ public class MekGenerator implements ClariasGenerator<Mek> {
     }
 
     private static void writePairGroupSegment(BinaryWriter writer, List<int[]> groups) throws IOException {
-        int groupCount = groups == null ? 0 : groups.size();
+        int groupCount = groups.size();
         writer.writeInt(groupCount);
-        if (groups == null) {
-            return;
-        }
         for (int[] arr : groups) {
-            int pairCount = arr == null ? 0 : arr.length / 2;
+            int pairCount = arr.length / 2;
             writer.writeInt(pairCount);
-            if (arr == null) {
-                continue;
-            }
             for (int i = 0; i < pairCount; i++) {
                 writer.writeInt(arr[i * 2]);
                 writer.writeInt(arr[i * 2 + 1]);
@@ -308,17 +296,11 @@ public class MekGenerator implements ClariasGenerator<Mek> {
     }
 
     private static void writeIntGroupSegment(BinaryWriter writer, List<int[]> groups) throws IOException {
-        int groupCount = groups == null ? 0 : groups.size();
+        int groupCount = groups.size();
         writer.writeInt(groupCount);
-        if (groups == null) {
-            return;
-        }
         for (int[] arr : groups) {
-            int len = arr == null ? 0 : arr.length;
+            int len = arr.length;
             writer.writeInt(len);
-            if (arr == null) {
-                continue;
-            }
             for (int value : arr) {
                 writer.writeInt(value);
             }

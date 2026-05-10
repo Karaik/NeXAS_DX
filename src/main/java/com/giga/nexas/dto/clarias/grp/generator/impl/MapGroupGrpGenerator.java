@@ -27,9 +27,9 @@ public class MapGroupGrpGenerator implements GrpFileGenerator<Grp> {
             for (MapGroupGrp.MapGroup group : obj.getGroupList()) {
                 writer.writeInt(group.getExistFlag());
                 if (group.getExistFlag() != 0) {
-                    writer.writeNullTerminatedString(nullToEmpty(group.getGroupName()));
-                    writer.writeNullTerminatedString(nullToEmpty(group.getGroupCodeName()));
-                    writer.writeNullTerminatedString(nullToEmpty(group.getGroupResourceName()));
+                    writer.writeNullTerminatedString(group.getGroupName());
+                    writer.writeNullTerminatedString(group.getGroupCodeName());
+                    writer.writeNullTerminatedString(group.getGroupResourceName());
                     writer.writeInt(group.getInt1());
 
                     writer.writeInt(group.getItems().size());
@@ -55,13 +55,10 @@ public class MapGroupGrpGenerator implements GrpFileGenerator<Grp> {
         for (MapGroupGrp.IntArray arr : list) {
             writer.writeInt(arr.getValues().size());
             for (Integer v : arr.getValues()) {
-                writer.writeInt(v != null ? v : 0);
+                writer.writeInt(v);
             }
         }
     }
 
-    private String nullToEmpty(String s) {
-        return s == null ? "" : s;
-    }
 }
 

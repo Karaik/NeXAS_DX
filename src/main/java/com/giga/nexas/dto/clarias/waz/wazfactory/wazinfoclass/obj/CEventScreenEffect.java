@@ -89,13 +89,9 @@ public class CEventScreenEffect extends SkillInfoObject {
             for (CEventScreenEffectUnit unit : this.unitList) {
                 if (unit.getUnitSlotNum() == i) { target = unit; break; }
             }
-            if (target != null) {
-                writer.writeInt(target.getBuffer());
-                if (target.getBuffer() != 0 && target.getData() != null) {
-                    target.getData().writeInfo(writer);
-                }
-            } else {
-                writer.writeInt(0);
+            writer.writeInt(target.getBuffer());
+            if (target.getBuffer() != 0) {
+                target.getData().writeInfo(writer);
             }
         }
     }

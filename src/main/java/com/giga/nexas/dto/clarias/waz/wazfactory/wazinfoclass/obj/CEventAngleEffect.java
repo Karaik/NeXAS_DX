@@ -72,7 +72,7 @@ public class CEventAngleEffect extends SkillInfoObject {
         }
 
         // exe 内会设置为固定值，不复刻，此处保留信息
-        // if (this.angleType != null && Byte.toUnsignedInt(this.angleType) == 2) {
+        // if (Byte.toUnsignedInt(this.angleType) == 2) {
         //     this.rotationDirection = 2;
         //     for (CEventAngleEffectUnit unit : this.unitList) {
         //         if (unit.getUnitSlotNum() == 2 && unit.getData() instanceof CEventVal val) {
@@ -101,13 +101,9 @@ public class CEventAngleEffect extends SkillInfoObject {
                 }
             }
 
-            if (target != null) {
-                writer.writeInt(target.getBuffer());
-                if (target.getBuffer() != 0 && target.getData() != null) {
-                    target.getData().writeInfo(writer);
-                }
-            } else {
-                writer.writeInt(0);
+            writer.writeInt(target.getBuffer());
+            if (target.getBuffer() != 0) {
+                target.getData().writeInfo(writer);
             }
         }
     }

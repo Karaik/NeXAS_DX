@@ -29,7 +29,7 @@ import lombok.Data;
 @Data
 public class Grp extends Clarias {
 
-    // 鏂囦欢鍚?
+    // 鏂囦欢鍚
     private String fileName;
 
 }

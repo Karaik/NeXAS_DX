@@ -36,7 +36,7 @@ public class ProgramMaterialGrpGenerator implements GrpFileGenerator<Grp> {
         for (ProgramMaterialGrp.IntArray arr : list) {
             writer.writeInt(arr.getValues().size());
             for (Integer v : arr.getValues()) {
-                writer.writeInt(v != null ? v : 0);
+                writer.writeInt(v);
             }
         }
     }

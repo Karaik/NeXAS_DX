@@ -82,19 +82,15 @@ public class CEventCamera extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
-        writer.writeShort(this.extraFlags != null ? this.extraFlags : 0);
+        writer.writeShort(this.extraFlags);
         for (int i = 0; i < 5; i++) {
             CEventCameraUnit target = null;
             for (CEventCameraUnit unit : this.unitList) {
                 if (unit.getUnitSlotNum() == i) { target = unit; break; }
             }
-            if (target != null) {
-                writer.writeInt(target.getBuffer());
-                if (target.getBuffer() != 0 && target.getData() != null) {
-                    target.getData().writeInfo(writer);
-                }
-            } else {
-                writer.writeInt(0);
+            writer.writeInt(target.getBuffer());
+            if (target.getBuffer() != 0) {
+                target.getData().writeInfo(writer);
             }
         }
     }

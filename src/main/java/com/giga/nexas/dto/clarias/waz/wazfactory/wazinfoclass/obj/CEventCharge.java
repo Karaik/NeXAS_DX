@@ -61,11 +61,8 @@ public class CEventCharge extends SkillInfoObject {
             if (buffer != 0) {
                 int innerTypeId = CEVENT_CHARGE_ENTRIES[i].getType();
                 SkillInfoObject obj = createCEventObjectByTypeClarias(innerTypeId);
-
-                if (obj != null) {
-                    obj.readInfo(reader);
-                    unit.setData(obj);
-                }
+                obj.readInfo(reader);
+                unit.setData(obj);
                 this.ceventChargeUnitList.add(unit);
             }
         }
@@ -85,13 +82,9 @@ public class CEventCharge extends SkillInfoObject {
                 }
             }
 
-            if (target != null) {
-                writer.writeInt(target.getBuffer());
-                if (target.getBuffer() != 0 && target.getData() != null) {
-                    target.getData().writeInfo(writer);
-                }
-            } else {
-                writer.writeInt(0);
+            writer.writeInt(target.getBuffer());
+            if (target.getBuffer() != 0) {
+                target.getData().writeInfo(writer);
             }
         }
     }

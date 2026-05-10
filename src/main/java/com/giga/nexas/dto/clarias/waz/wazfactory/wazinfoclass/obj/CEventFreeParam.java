@@ -43,10 +43,8 @@ public class CEventFreeParam extends SkillInfoObject {
                 unit.setKey(reader.readInt());
 
                 SkillInfoObject obj = createCEventObjectByTypeClarias(FREE_PARAM_VALUE_TYPE_ID);
-                if (obj != null) {
-                    obj.readInfo(reader);
-                    unit.setData(obj);
-                }
+                obj.readInfo(reader);
+                unit.setData(obj);
 
                 this.unitList.add(unit);
             }
@@ -59,9 +57,7 @@ public class CEventFreeParam extends SkillInfoObject {
         writer.writeInt(this.count);
         for (CEventFreeParamUnit unit : this.unitList) {
             writer.writeInt(unit.getKey());
-            if (unit.getData() != null) {
-                unit.getData().writeInfo(writer);
-            }
+            unit.getData().writeInfo(writer);
         }
     }
 }

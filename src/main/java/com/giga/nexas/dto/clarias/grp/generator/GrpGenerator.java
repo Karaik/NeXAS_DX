@@ -20,10 +20,10 @@ import java.util.Map;
  */
 public class GrpGenerator implements ClariasGenerator<Grp> {
 
-    private final Map<String, GrpFileGenerator<? extends Grp>> generatorMap = new HashMap<>();
+    private final Map<String, GrpFileGenerator<Grp>> generatorMap = new HashMap<>();
 
     public GrpGenerator() {
-        // 娉ㄥ唽瑙ｆ瀽鍣?
+        // 娉ㄥ唽瑙ｆ瀽鍣
         registerGenerator(new BatVoiceGrpGenerator());
         registerGenerator(new MapGroupGrpGenerator());
         registerGenerator(new MekaGroupGrpGenerator());
@@ -34,12 +34,12 @@ public class GrpGenerator implements ClariasGenerator<Grp> {
         registerGenerator(new WazaGroupGrpGenerator());
     }
 
-    private void registerGenerator(GrpFileGenerator<? extends Grp> Generator) {
+    private void registerGenerator(GrpFileGenerator<Grp> Generator) {
         String key = getGeneratorKey(Generator);
         generatorMap.put(key.toLowerCase(), Generator);
     }
 
-    private String getGeneratorKey(GrpFileGenerator<?> generator) {
+    private String getGeneratorKey(GrpFileGenerator<Grp> generator) {
         return generator.getGeneratorKey();
     }
     
@@ -50,10 +50,7 @@ public class GrpGenerator implements ClariasGenerator<Grp> {
 
     @Override
     public void generate(String path, Grp grp, String charset) throws IOException {
-        GrpFileGenerator<? extends Grp> matchedGenerator = generatorMap.get(grp.getFileName().toLowerCase());
-        if (matchedGenerator == null) {
-            throw new OperationException(500, "unsupported .grp file for generation: " + grp.getFileName());
-        }
+        GrpFileGenerator<Grp> matchedGenerator = generatorMap.get(grp.getFileName().toLowerCase());
 
         FileUtil.mkdir(FileUtil.getParent(path, 1));
         try (OutputStream os = new BufferedOutputStream(new FileOutputStream(path));

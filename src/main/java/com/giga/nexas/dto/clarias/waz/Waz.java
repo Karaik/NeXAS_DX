@@ -40,11 +40,8 @@ public class Waz extends Clarias {
         private List<SkillSuffix> skillSuffixList = new ArrayList<>();
 
         public boolean isEmpty() {
-            return phaseQuantity == null &&
-                    skillNameJapanese == null &&
-                    skillNameEnglish == null &&
-                    phasesInfo.isEmpty() &&
-                    skillSuffixList == null;
+            return phasesInfo.isEmpty() &&
+                    skillSuffixList.isEmpty();
         }
 
         /**

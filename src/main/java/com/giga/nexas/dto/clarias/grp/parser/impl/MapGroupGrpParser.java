@@ -35,9 +35,9 @@ public class MapGroupGrpParser implements GrpFileParser<Grp> {
             if (existFlag != 0) {
                 // 璇诲彇缁勫悕
                 group.setGroupName(reader.readNullTerminatedString());
-                // 璇诲彇缁勪唬鍙?
+                // 璇诲彇缁勪唬鍙
                 group.setGroupCodeName(reader.readNullTerminatedString());
-                // 璇诲彇璧勬簮鍚?
+                // 璇诲彇璧勬簮鍚
                 group.setGroupResourceName(reader.readNullTerminatedString());
                 // 鏈煡鏁村瀷1
                 group.setInt1(reader.readInt());

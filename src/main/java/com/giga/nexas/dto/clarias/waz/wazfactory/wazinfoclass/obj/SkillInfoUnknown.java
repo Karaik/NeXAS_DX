@@ -61,7 +61,7 @@ public class SkillInfoUnknown extends SkillInfoObject {
             writer.writeInt(this.int3);
         }
         if (this.hasByteField) { //diff
-            writer.writeByte(this.byteField == null ? 0 : this.byteField);
+            writer.writeByte(this.byteField);
         }
     }
 

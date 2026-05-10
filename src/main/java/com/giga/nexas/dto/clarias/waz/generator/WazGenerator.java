@@ -34,7 +34,7 @@ public class WazGenerator implements ClariasGenerator<Waz> {
 
             List<Waz.Skill> skills = waz.getSkillList();
             for (Waz.Skill skill : skills) {
-                if (skill.isEmpty() || skill.getPhaseQuantity() == null) {
+                if (skill.isEmpty()) {
                     writer.writeInt(0);
                     continue;
                 }
@@ -85,24 +85,14 @@ public class WazGenerator implements ClariasGenerator<Waz> {
                 }
             }
 
-            List<SkillInfoObject> skillInfoObjectList;
-            if (matchedUnit != null) {
-                skillInfoObjectList = matchedUnit.getSkillInfoObjectList();
-            } else {
-                skillInfoObjectList = new ArrayList<>();
-            }
+            List<SkillInfoObject> skillInfoObjectList = matchedUnit.getSkillInfoObjectList();
 
             writer.writeInt(skillInfoObjectList.size());
             for (SkillInfoObject obj : skillInfoObjectList) {
                 obj.writeInfo(writer);
             }
 
-            List<SkillInfoUnknown> skillInfoUnknownList;
-            if (matchedUnit != null) {
-                skillInfoUnknownList = matchedUnit.getSkillInfoUnknownList();
-            } else {
-                skillInfoUnknownList = new ArrayList<>();
-            }
+            List<SkillInfoUnknown> skillInfoUnknownList = matchedUnit.getSkillInfoUnknownList();
 
             writer.writeInt(skillInfoUnknownList.size());
             for (SkillInfoUnknown unknown : skillInfoUnknownList) {
@@ -110,7 +100,7 @@ public class WazGenerator implements ClariasGenerator<Waz> {
             }
 
             if (i == 71 && !skillInfoUnknownList.isEmpty()) { //diff
-                byte[] secondaryTailBytes = matchedUnit == null ? new byte[0] : matchedUnit.getSecondaryTailBytes();
+                byte[] secondaryTailBytes = matchedUnit.getSecondaryTailBytes();
                 if (secondaryTailBytes.length == 0) {
                     throw new IllegalStateException("missing secondaryTailBytes for clarias slot 71"); //diff
                 }
@@ -118,6 +108,6 @@ public class WazGenerator implements ClariasGenerator<Waz> {
             }
         }
 
-        writer.writeNullTerminatedString(skillPhase.getPhaseTail() == null ? "" : skillPhase.getPhaseTail()); //diff
+        writer.writeNullTerminatedString(skillPhase.getPhaseTail()); //diff
     }
 }

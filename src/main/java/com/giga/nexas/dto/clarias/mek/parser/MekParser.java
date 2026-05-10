@@ -494,7 +494,7 @@ public class MekParser implements ClariasParser<Mek> {
     }
 
     private static boolean isPlausibleAiHeaderString(String value) {
-        if (value == null || value.isEmpty() || value.length() > 64) {
+        if (value.isEmpty() || value.length() > 64) {
             return false;
         }
         for (int i = 0; i < value.length(); i++) {

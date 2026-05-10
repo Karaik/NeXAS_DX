@@ -16,10 +16,10 @@ import java.util.Map;
  */
 public class GrpParser implements ClariasParser<Grp> {
 
-    private final Map<String, GrpFileParser<? extends Grp>> parserMap = new HashMap<>();
+    private final Map<String, GrpFileParser<Grp>> parserMap = new HashMap<>();
 
     public GrpParser() {
-        // 娉ㄥ唽瑙ｆ瀽鍣?
+        // 娉ㄥ唽瑙ｆ瀽鍣
         registerParser(new BatVoiceGrpParser());
         registerParser(new MapGroupGrpParser());
         registerParser(new MekaGroupGrpParser());
@@ -30,12 +30,12 @@ public class GrpParser implements ClariasParser<Grp> {
         registerParser(new WazaGroupGrpParser());
     }
 
-    private void registerParser(GrpFileParser<? extends Grp> parser) {
+    private void registerParser(GrpFileParser<Grp> parser) {
         String key = getParserKey(parser);
         parserMap.put(key, parser);
     }
 
-    private String getParserKey(GrpFileParser<?> parser) {
+    private String getParserKey(GrpFileParser<Grp> parser) {
         return parser.getParserKey();
     }
 
@@ -46,10 +46,7 @@ public class GrpParser implements ClariasParser<Grp> {
 
     @Override
     public Grp parse(byte[] data, String filename, String charset) {
-        GrpFileParser<? extends Grp> matchedParser = parserMap.get(filename);
-        if (matchedParser == null) {
-            throw new OperationException(500, "unsupported .grp file for parsing: " + filename);
-        }
+        GrpFileParser<Grp> matchedParser = parserMap.get(filename);
 
         BinaryReader reader = new BinaryReader(data);
         reader.setCharset(charset);

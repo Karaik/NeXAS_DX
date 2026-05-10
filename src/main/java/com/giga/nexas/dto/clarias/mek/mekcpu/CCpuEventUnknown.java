@@ -48,13 +48,9 @@ public class CCpuEventUnknown extends CCpuEvent {
             super.writeInfo(writer);
         }
         for (Integer value : trailingIntFields) {
-            writer.writeInt(value == null ? 0 : value);
+            writer.writeInt(value);
         }
-        if (this.trailingShortField != null) {
-            writer.writeShort(this.trailingShortField);
-        }
-        if (this.trailingByteField != null) {
-            writer.writeByte(this.trailingByteField);
-        }
+        writer.writeShort(this.trailingShortField);
+        writer.writeByte(this.trailingByteField);
     }
 }

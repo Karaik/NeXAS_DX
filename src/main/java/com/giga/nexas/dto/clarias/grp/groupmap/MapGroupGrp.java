@@ -17,7 +17,7 @@ public class MapGroupGrp extends Grp {
     private List<MapGroup> groupList = new ArrayList<>();
 
     /**
-     * existFlag, 3涓瓧绗︿覆, 1涓湭鐭nt(int1), N涓狪tem(姣忛」4涓猧nt), 涓夋 鏁扮粍鐨勬暟缁?
+     * existFlag, 3涓瓧绗︿覆, 1涓湭鐭nt(int1), N涓狪tem(姣忛」4涓猧nt), 涓夋 鏁扮粍鐨勬暟缁
      */
     @Data
     public static class MapGroup {

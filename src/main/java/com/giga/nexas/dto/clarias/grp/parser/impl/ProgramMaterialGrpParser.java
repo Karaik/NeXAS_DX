@@ -25,7 +25,7 @@ public class ProgramMaterialGrpParser implements GrpFileParser<Grp> {
         // 鍒涘缓缁撴灉瀵硅薄
         ProgramMaterialGrp result = new ProgramMaterialGrp();
 
-        // 璇诲彇涓夋鏁扮粍鐨勬暟缁?
+        // 璇诲彇涓夋鏁扮粍鐨勬暟缁
         result.setArray1(readIntArraySegment(reader));
         result.setArray2(readIntArraySegment(reader));
         result.setArray3(readIntArraySegment(reader));
