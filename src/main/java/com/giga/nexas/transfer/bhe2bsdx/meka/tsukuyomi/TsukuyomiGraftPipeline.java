@@ -32,6 +32,8 @@ import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.menu.MenuOverridePipeline
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.pack.PackUpdatePacStep;
 
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Tsukuyomi -> BSDX 主流程编排。
@@ -194,6 +196,7 @@ public class TsukuyomiGraftPipeline {
         // 不能再各自猜测“源 index 应该落到哪个目标 index”。
         TsukuyomiGrpAppendPlan grpAppendPlan = appendGrpEntriesStep.appendTsukuyomiBranch(request, tsukuyomiPackage, bsdxBaseline, importPlan);
         result.setGrpAppendPlan(grpAppendPlan);
+        result.setCumulativeSourceBatVoiceGroupIndexToTargetIndex(buildCumulativeVoiceGroupMap(null, grpAppendPlan));
 
         // 4. GRP 扩容后的全局结构补齐。
         // ProgramMaterial / MapGroup / 基线 MEK 的数组长度都依赖本层 GRP 顶层容量；
@@ -245,7 +248,8 @@ public class TsukuyomiGraftPipeline {
                 result.getReboundTsukuyomiMek(),
                 result.getReboundTsukuyomiWaz(),
                 grpAppendPlan,
-                convertedBundle.getCommonProjectileAppendPlan()
+                convertedBundle.getCommonProjectileAppendPlan(),
+                result.getCumulativeSourceBatVoiceGroupIndexToTargetIndex()
         );
         result.setImportedAssetSet(importedAssetSet);
 
@@ -283,6 +287,20 @@ public class TsukuyomiGraftPipeline {
         // 这里保留一个很薄的代理，只负责把主流程编排层的调用转发到转换层。
         // 具体“如何从 JINKI 结果拼出本层基线”的规则，统一收敛到转换包内维护。
         return buildBaselineFromJinkiResultStep.buildBaselineFromJinkiResult(inheritedJinkiResult);
+    }
+
+    private Map<Integer, Integer> buildCumulativeVoiceGroupMap(
+            TsukuyomiGraftResult previousResult,
+            TsukuyomiGrpAppendPlan currentPlan
+    ) {
+        Map<Integer, Integer> merged = new LinkedHashMap<>();
+        if (previousResult != null && previousResult.getCumulativeSourceBatVoiceGroupIndexToTargetIndex() != null) {
+            merged.putAll(previousResult.getCumulativeSourceBatVoiceGroupIndexToTargetIndex());
+        }
+        if (currentPlan != null && currentPlan.getSourceBatVoiceGroupIndexToTargetIndex() != null) {
+            merged.putAll(currentPlan.getSourceBatVoiceGroupIndexToTargetIndex());
+        }
+        return merged;
     }
 
     private void syncMainWazaSkillCountAfterInitializer(

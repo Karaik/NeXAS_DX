@@ -38,6 +38,7 @@ public class OutputBheCommonProjectileResourcesStep {
     private static final String CHARSET = "windows-31j";
 
     private final BsdxBinService bsdxBinService;
+    private final BheCommonProjectileVoiceRebinder voiceRebinder = new BheCommonProjectileVoiceRebinder();
 
     public OutputBheCommonProjectileResourcesStep() {
         this(new BsdxBinService());
@@ -51,6 +52,7 @@ public class OutputBheCommonProjectileResourcesStep {
             TsukuyomiGraftRequest request,
             TsukuyomiBsdxBaselineBundle preparedBaseline,
             BheCommonProjectileAppendPlan appendPlan,
+            Map<Integer, Integer> cumulativeSourceBatVoiceGroupIndexToTargetIndex,
             Path outputRoot,
             TsukuyomiImportedAssetSet importedAssetSet
     ) throws IOException {
@@ -58,7 +60,13 @@ public class OutputBheCommonProjectileResourcesStep {
             return;
         }
 
-        writeCommonWazFiles(preparedBaseline, appendPlan, outputRoot, importedAssetSet);
+        writeCommonWazFiles(
+                preparedBaseline,
+                appendPlan,
+                cumulativeSourceBatVoiceGroupIndexToTargetIndex,
+                outputRoot,
+                importedAssetSet
+        );
         writeCommonSpmFiles(request, preparedBaseline, appendPlan, outputRoot, importedAssetSet);
         copyCommonSpmImages(request, preparedBaseline, appendPlan, outputRoot, importedAssetSet);
         copyCommonSeAudio(request, appendPlan, outputRoot, importedAssetSet);
@@ -67,6 +75,7 @@ public class OutputBheCommonProjectileResourcesStep {
     private void writeCommonWazFiles(
             TsukuyomiBsdxBaselineBundle preparedBaseline,
             BheCommonProjectileAppendPlan appendPlan,
+            Map<Integer, Integer> cumulativeSourceBatVoiceGroupIndexToTargetIndex,
             Path outputRoot,
             TsukuyomiImportedAssetSet importedAssetSet
     ) throws IOException {
@@ -76,9 +85,14 @@ public class OutputBheCommonProjectileResourcesStep {
                 importedAssetSet.getMissingAssets().add("缺少公共 WAZ 产物: " + fileName);
                 continue;
             }
-            waz.setExtensionName("waz");
+            /*
+             * 公共 WAZ 是跨机体共享的 preparedBaseline 对象。
+             * 落盘前只复制输出对象并重写 CEventVoice group，避免把共享基线里的 BHE 源 group 改没。
+             */
+            Waz outputWaz = voiceRebinder.copyForOutput(waz, cumulativeSourceBatVoiceGroupIndexToTargetIndex);
+            outputWaz.setExtensionName("waz");
             Path output = outputRoot.resolve(fileName);
-            bsdxBinService.generate(output.toString(), waz, CHARSET);
+            bsdxBinService.generate(output.toString(), outputWaz, CHARSET);
             importedAssetSet.getGeneratedWazFiles().add(output);
             importedAssetSet.getWazFiles().add(fileName);
         }

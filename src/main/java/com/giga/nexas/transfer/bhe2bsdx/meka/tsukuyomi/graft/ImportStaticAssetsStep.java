@@ -101,7 +101,8 @@ public class ImportStaticAssetsStep {
             Mek reboundTsukuyomiMek,
             Waz reboundTsukuyomiWaz,
             TsukuyomiGrpAppendPlan grpAppendPlan,
-            BheCommonProjectileAppendPlan commonProjectileAppendPlan
+            BheCommonProjectileAppendPlan commonProjectileAppendPlan,
+            Map<Integer, Integer> cumulativeSourceBatVoiceGroupIndexToTargetIndex
     ) {
         TsukuyomiImportedAssetSet importedAssetSet = new TsukuyomiImportedAssetSet();
         if (request == null || tsukuyomiPackage == null || bsdxBaseline == null || importPlan == null) {
@@ -129,6 +130,7 @@ public class ImportStaticAssetsStep {
                     request,
                     bsdxBaseline,
                     commonProjectileAppendPlan,
+                    cumulativeSourceBatVoiceGroupIndexToTargetIndex,
                     outputRoot,
                     importedAssetSet
             );
@@ -166,7 +168,18 @@ public class ImportStaticAssetsStep {
             copyRequiredImageFiles(request, tsukuyomiPackage, bsdxBaseline, importPlan, grpAppendPlan, outputRoot, importedAssetSet);
 
             // Step 8-7: 最后只补单机体资源链真实关联到的音频，不再整组打包。
-            copyRequiredAudioAssets(request, tsukuyomiPackage, importPlan, reboundTsukuyomiMek, reboundTsukuyomiWaz, outputRoot, importedAssetSet);
+            copyRequiredAudioAssets(
+                    request,
+                    tsukuyomiPackage,
+                    bsdxBaseline,
+                    importPlan,
+                    commonProjectileAppendPlan,
+                    cumulativeSourceBatVoiceGroupIndexToTargetIndex,
+                    reboundTsukuyomiMek,
+                    reboundTsukuyomiWaz,
+                    outputRoot,
+                    importedAssetSet
+            );
             return importedAssetSet;
         } catch (IOException e) {
             throw new IllegalStateException("step8 静态资源落盘失败", e);
@@ -862,7 +875,10 @@ public class ImportStaticAssetsStep {
     private void copyRequiredAudioAssets(
             TsukuyomiGraftRequest request,
             TsukuyomiPackageBundle tsukuyomiPackage,
+            TsukuyomiBsdxBaselineBundle bsdxBaseline,
             TsukuyomiImportPlan importPlan,
+            BheCommonProjectileAppendPlan commonProjectileAppendPlan,
+            Map<Integer, Integer> cumulativeSourceBatVoiceGroupIndexToTargetIndex,
             Mek reboundTsukuyomiMek,
             Waz reboundTsukuyomiWaz,
             Path outputRoot,
@@ -876,6 +892,14 @@ public class ImportStaticAssetsStep {
         Set<String> requiredBaseNames = new LinkedHashSet<>();
         requiredBaseNames.addAll(collectRequiredSeBaseNames(tsukuyomiPackage, importPlan));
         requiredBaseNames.addAll(collectRequiredVoiceBaseNames(tsukuyomiPackage, reboundTsukuyomiMek, reboundTsukuyomiWaz, request.getMekaCodeName()));
+        requiredBaseNames.addAll(collectRequiredOutputWazVoiceBaseNames(
+                bsdxBaseline,
+                importPlan,
+                commonProjectileAppendPlan,
+                cumulativeSourceBatVoiceGroupIndexToTargetIndex,
+                request.getWazFileName(),
+                outputRoot
+        ));
 
         if (requiredBaseNames.isEmpty()) {
             return;
@@ -925,6 +949,72 @@ public class ImportStaticAssetsStep {
             }
         }
         return baseNames;
+    }
+
+    private Set<String> collectRequiredOutputWazVoiceBaseNames(
+            TsukuyomiBsdxBaselineBundle bsdxBaseline,
+            TsukuyomiImportPlan importPlan,
+            BheCommonProjectileAppendPlan commonProjectileAppendPlan,
+            Map<Integer, Integer> cumulativeSourceBatVoiceGroupIndexToTargetIndex,
+            String mainWazFileName,
+            Path outputRoot
+    ) throws IOException {
+        Set<String> baseNames = new LinkedHashSet<>();
+        if (bsdxBaseline == null || bsdxBaseline.getBatVoiceGrp() == null || bsdxBaseline.getBatVoiceGrp().getVoiceList() == null) {
+            return baseNames;
+        }
+
+        Set<Integer> migratedTargetVoiceGroups = new LinkedHashSet<>();
+        if (cumulativeSourceBatVoiceGroupIndexToTargetIndex != null) {
+            migratedTargetVoiceGroups.addAll(cumulativeSourceBatVoiceGroupIndexToTargetIndex.values());
+        }
+        if (migratedTargetVoiceGroups.isEmpty()) {
+            return baseNames;
+        }
+
+        /*
+         * 公共 WAZ 落盘后已经写成 BSDX 目标 group。这里只扫描“迁移链自己写出的 WAZ”，
+         * 并且只接受累计映射里的目标 group，避免把 baseline 原生 WAZ 的语音误判成 BHE 资源。
+         */
+        Set<VoiceRef> refs = new LinkedHashSet<>();
+        for (String fileName : collectMigratedOutputWazFileNames(importPlan, commonProjectileAppendPlan, mainWazFileName)) {
+            Waz outputWaz = importStaticAssetRuntimeCache.parseOutputWaz(outputRoot, fileName, CHARSET);
+            collectUsedVoiceRefs(outputWaz, migratedTargetVoiceGroups, refs);
+        }
+
+        for (VoiceRef ref : refs) {
+            if (ref.groupIndex() < 0 || ref.groupIndex() >= bsdxBaseline.getBatVoiceGrp().getVoiceList().size()) {
+                continue;
+            }
+            BatVoiceGrp.BatVoiceGroup group = bsdxBaseline.getBatVoiceGrp().getVoiceList().get(ref.groupIndex());
+            if (group == null || group.getVoices() == null || ref.itemIndex() < 0 || ref.itemIndex() >= group.getVoices().size()) {
+                continue;
+            }
+            BatVoiceGrp.BatVoice voice = group.getVoices().get(ref.itemIndex());
+            if (voice == null || !isExisting(voice.getExistFlag()) || voice.getVoiceFileName() == null || voice.getVoiceFileName().isBlank()) {
+                continue;
+            }
+            baseNames.add(voice.getVoiceFileName());
+        }
+        return baseNames;
+    }
+
+    private Set<String> collectMigratedOutputWazFileNames(
+            TsukuyomiImportPlan importPlan,
+            BheCommonProjectileAppendPlan commonProjectileAppendPlan,
+            String mainWazFileName
+    ) {
+        Set<String> fileNames = new LinkedHashSet<>();
+        if (mainWazFileName != null && !mainWazFileName.isBlank()) {
+            fileNames.add(mainWazFileName);
+        }
+        if (importPlan != null && importPlan.getRequiredWazFiles() != null) {
+            fileNames.addAll(importPlan.getRequiredWazFiles());
+        }
+        if (commonProjectileAppendPlan != null && commonProjectileAppendPlan.getCommonProjectileWazFiles() != null) {
+            fileNames.addAll(commonProjectileAppendPlan.getCommonProjectileWazFiles());
+        }
+        return fileNames;
     }
 
     private Set<String> collectRequiredVoiceBaseNames(
@@ -989,7 +1079,7 @@ public class ImportStaticAssetsStep {
 
     private List<Integer> collectUsedVoiceIndices(Waz waz) {
         List<Integer> indices = new ArrayList<>();
-        if (waz.getSkillList() == null) {
+        if (waz == null || waz.getSkillList() == null) {
             return indices;
         }
 
@@ -1031,6 +1121,112 @@ public class ImportStaticAssetsStep {
                 indices.add(readLittleEndianInt(bytes, 4));
             }
         }
+
+        for (Field field : getAllFields(object.getClass())) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            if (!List.class.isAssignableFrom(field.getType())
+                    || !field.getName().toLowerCase(Locale.ROOT).endsWith("unitlist")) {
+                continue;
+            }
+            field.setAccessible(true);
+            try {
+                List<?> units = (List<?>) field.get(object);
+                if (units == null) {
+                    continue;
+                }
+                for (Object unit : units) {
+                    SkillInfoObject nested = tryGetUnitData(unit);
+                    if (nested != null) {
+                        collectUsedVoiceIndicesFromObject(nested, indices);
+                    }
+                }
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException("收集嵌套 WAZ 语音索引失败: " + field.getName(), e);
+            }
+        }
+    }
+
+    private void collectUsedVoiceRefs(
+            Waz waz,
+            Set<Integer> allowedGroupIndices,
+            Set<VoiceRef> refs
+    ) {
+        if (waz == null || waz.getSkillList() == null || allowedGroupIndices == null || refs == null) {
+            return;
+        }
+
+        for (Waz.Skill skill : waz.getSkillList()) {
+            if (skill == null || skill.getPhasesInfo() == null) {
+                continue;
+            }
+            for (Waz.Skill.SkillPhase phase : skill.getPhasesInfo()) {
+                if (phase == null || phase.getSkillUnitCollection() == null) {
+                    continue;
+                }
+                for (SkillUnit unit : phase.getSkillUnitCollection()) {
+                    if (unit == null || unit.getSkillInfoObjectList() == null) {
+                        continue;
+                    }
+                    for (SkillInfoObject object : unit.getSkillInfoObjectList()) {
+                        collectUsedVoiceRefsFromObject(object, allowedGroupIndices, refs);
+                    }
+                }
+            }
+        }
+    }
+
+    private void collectUsedVoiceRefsFromObject(
+            Object object,
+            Set<Integer> allowedGroupIndices,
+            Set<VoiceRef> refs
+    ) {
+        if (object == null) {
+            return;
+        }
+
+        if (object instanceof com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventVoice voice
+                && voice.getByteDataList() != null) {
+            for (byte[] bytes : voice.getByteDataList()) {
+                if (bytes == null || bytes.length < 8) {
+                    continue;
+                }
+                int groupIndex = readLittleEndianInt(bytes, 0);
+                int itemIndex = readLittleEndianInt(bytes, 4);
+                if (groupIndex >= 0 && itemIndex >= 0 && allowedGroupIndices.contains(groupIndex)) {
+                    refs.add(new VoiceRef(groupIndex, itemIndex));
+                }
+            }
+        }
+
+        for (Field field : getAllFields(object.getClass())) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            if (!List.class.isAssignableFrom(field.getType())
+                    || !field.getName().toLowerCase(Locale.ROOT).endsWith("unitlist")) {
+                continue;
+            }
+            field.setAccessible(true);
+            try {
+                List<?> units = (List<?>) field.get(object);
+                if (units == null) {
+                    continue;
+                }
+                for (Object unit : units) {
+                    SkillInfoObject nested = tryGetUnitData(unit);
+                    if (nested != null) {
+                        collectUsedVoiceRefsFromObject(nested, allowedGroupIndices, refs);
+                    }
+                }
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException("收集嵌套 WAZ 语音引用失败: " + field.getName(), e);
+            }
+        }
+    }
+
+    private record VoiceRef(int groupIndex, int itemIndex) {
     }
 
     private BatVoiceGrp.BatVoiceGroup findTsukuyomiVoiceGroup(BatVoiceGrp batVoiceGrp, String codeName) {

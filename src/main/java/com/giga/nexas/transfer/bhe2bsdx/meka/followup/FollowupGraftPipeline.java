@@ -28,6 +28,7 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBun
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiConvertedBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiExePatchPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGrpAppendPlan;
+import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftResult;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportedAssetSet;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPacPackPlan;
@@ -37,6 +38,8 @@ import com.giga.nexas.transfer.jinki2bsdx.model.AkaoGraftResult;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -124,6 +127,9 @@ public class FollowupGraftPipeline {
                 importPlan
         );
         result.setGrpAppendPlan(grpAppendPlan);
+        result.setCumulativeSourceBatVoiceGroupIndexToTargetIndex(
+                buildCumulativeVoiceGroupMap(request.getPreviousCharacterResult(), grpAppendPlan)
+        );
 
         ProgramMaterialGrp syncedProgramMaterial = syncProgramMaterialStep.syncOuterArrays(request, bsdxBaseline, grpAppendPlan);
         result.setSyncedProgramMaterial(syncedProgramMaterial);
@@ -181,6 +187,9 @@ public class FollowupGraftPipeline {
         result.setTsukuyomiPackage(selectedPackage);
         result.setImportPlan(importPlan);
         result.setGrpAppendPlan(grpAppendPlan);
+        result.setCumulativeSourceBatVoiceGroupIndexToTargetIndex(
+                buildCumulativeVoiceGroupMap(request.getPreviousCharacterResult(), grpAppendPlan)
+        );
         result.setSyncedProgramMaterial(syncedProgramMaterial);
         result.setReboundTsukuyomiMek(reboundMek);
         result.setReboundTsukuyomiWaz(reboundWaz);
@@ -196,7 +205,8 @@ public class FollowupGraftPipeline {
                 reboundMek,
                 reboundWaz,
                 grpAppendPlan,
-                convertedBundle.getCommonProjectileAppendPlan()
+                convertedBundle.getCommonProjectileAppendPlan(),
+                result.getCumulativeSourceBatVoiceGroupIndexToTargetIndex()
         );
         result.setImportedAssetSet(importedAssetSet);
 
@@ -225,6 +235,20 @@ public class FollowupGraftPipeline {
      */
     private TsukuyomiBsdxBaselineBundle buildBaselineFromJinkiResult(AkaoGraftResult inheritedJinkiResult) {
         return buildBaselineFromJinkiResultStep.buildBaselineFromJinkiResult(inheritedJinkiResult);
+    }
+
+    private Map<Integer, Integer> buildCumulativeVoiceGroupMap(
+            TsukuyomiGraftResult previousResult,
+            TsukuyomiGrpAppendPlan currentPlan
+    ) {
+        Map<Integer, Integer> merged = new LinkedHashMap<>();
+        if (previousResult != null && previousResult.getCumulativeSourceBatVoiceGroupIndexToTargetIndex() != null) {
+            merged.putAll(previousResult.getCumulativeSourceBatVoiceGroupIndexToTargetIndex());
+        }
+        if (currentPlan != null && currentPlan.getSourceBatVoiceGroupIndexToTargetIndex() != null) {
+            merged.putAll(currentPlan.getSourceBatVoiceGroupIndexToTargetIndex());
+        }
+        return merged;
     }
 
     /**
