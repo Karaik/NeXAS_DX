@@ -51,6 +51,7 @@ public class CEventHeight extends SkillInfoObject {
         private SkillInfoObject data;
     }
 
+    private Integer int1;
     private List<CEventHeightUnit> unitList = new ArrayList<>();
 
     public CEventHeight(Integer typeId) {
@@ -61,8 +62,10 @@ public class CEventHeight extends SkillInfoObject {
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
 
+        this.int1 = reader.readInt();
+
         this.unitList.clear();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             int buffer = reader.readInt();
 
             CEventHeightUnit unit = new CEventHeightUnit();
@@ -84,8 +87,9 @@ public class CEventHeight extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
+        writer.writeInt(this.int1);
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             CEventHeightUnit target = null;
             for (CEventHeightUnit unit : this.unitList) {
                 if (unit.getUnitSlotNum() == i) {

@@ -49,6 +49,8 @@ public class CEventGamePadShake extends SkillInfoObject {
         private SkillInfoObject data;
     }
 
+    private Integer int1;
+    private Integer int2;
     private List<CEventGamePadShakeUnit> unitList = new ArrayList<>();
 
     public CEventGamePadShake(Integer typeId) {
@@ -58,6 +60,9 @@ public class CEventGamePadShake extends SkillInfoObject {
     @Override
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
+
+        this.int1 = reader.readInt();
+        this.int2 = reader.readInt();
 
         this.unitList.clear();
         for (int i = 0; i < 3; i++) {
@@ -82,6 +87,8 @@ public class CEventGamePadShake extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
+        writer.writeInt(this.int1);
+        writer.writeInt(this.int2);
 
         for (int i = 0; i < 3; i++) {
             CEventGamePadShakeUnit target = null;

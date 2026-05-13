@@ -63,8 +63,8 @@ public class CEventCharge extends SkillInfoObject {
                 SkillInfoObject obj = createCEventObjectByTypeClarias(innerTypeId);
                 obj.readInfo(reader);
                 unit.setData(obj);
-                this.ceventChargeUnitList.add(unit);
             }
+            this.ceventChargeUnitList.add(unit);
         }
     }
 

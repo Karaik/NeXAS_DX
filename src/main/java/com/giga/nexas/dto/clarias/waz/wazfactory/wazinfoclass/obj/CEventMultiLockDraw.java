@@ -39,6 +39,8 @@ public class CEventMultiLockDraw extends SkillInfoObject {
         private SkillInfoObject data;
     }
 
+    private Byte byte1;
+    private Byte byte2;
     private List<CEventMultiLockDrawUnit> unitList = new ArrayList<>();
 
     public CEventMultiLockDraw(Integer typeId) {
@@ -48,6 +50,8 @@ public class CEventMultiLockDraw extends SkillInfoObject {
     @Override
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
+        this.byte1 = reader.readByte();
+        this.byte2 = reader.readByte();
         this.unitList.clear();
         for (int i = 0; i < 3; i++) {
             int buffer = reader.readInt();
@@ -68,6 +72,8 @@ public class CEventMultiLockDraw extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
+        writer.writeByte(this.byte1);
+        writer.writeByte(this.byte2);
         for (int i = 0; i < 3; i++) {
             CEventMultiLockDrawUnit target = null;
             for (CEventMultiLockDrawUnit unit : this.unitList) {

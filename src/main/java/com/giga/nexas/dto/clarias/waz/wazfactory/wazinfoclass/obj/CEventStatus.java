@@ -114,8 +114,8 @@ public class CEventStatus extends SkillInfoObject {
                 SkillInfoObject obj = createCEventObjectByTypeClarias(innerTypeId);
                 obj.readInfo(reader);
                 unit.setData(obj);
-                this.ceventStatusUnitList.add(unit);
             }
+            this.ceventStatusUnitList.add(unit);
         }
     }
 

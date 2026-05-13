@@ -51,6 +51,12 @@ public class CEventMultiLockStartEnd extends SkillInfoObject {
         private SkillInfoObject data;
     }
 
+    private Integer int1;
+    private Byte byte1;
+    private Integer int2;
+    private Integer int3;
+    private Integer int4;
+    private Short short1;
     private List<CEventMultiLockStartEndUnit> unitList = new ArrayList<>();
 
     public CEventMultiLockStartEnd(Integer typeId) {
@@ -60,6 +66,13 @@ public class CEventMultiLockStartEnd extends SkillInfoObject {
     @Override
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
+
+        this.int1 = reader.readInt();
+        this.byte1 = reader.readByte();
+        this.int2 = reader.readInt();
+        this.int3 = reader.readInt();
+        this.int4 = reader.readInt();
+        this.short1 = reader.readShort();
 
         this.unitList.clear();
         for (int i = 0; i < 7; i++) {
@@ -84,6 +97,13 @@ public class CEventMultiLockStartEnd extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
+
+        writer.writeInt(this.int1);
+        writer.writeByte(this.byte1);
+        writer.writeInt(this.int2);
+        writer.writeInt(this.int3);
+        writer.writeInt(this.int4);
+        writer.writeShort(this.short1);
 
         for (int i = 0; i < 7; i++) {
             CEventMultiLockStartEndUnit target = null;

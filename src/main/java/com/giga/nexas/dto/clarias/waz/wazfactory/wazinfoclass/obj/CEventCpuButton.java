@@ -23,7 +23,7 @@ public class CEventCpuButton extends SkillInfoObject {
     }
 
     public static final CEventCpuButtonType[] CEVENT_CPU_BUTTON_ENTRIES = {
-            new CEventCpuButtonType(0x0B, "チェック方向"),
+            new CEventCpuButtonType(0x0E, "チェック方向"),
             new CEventCpuButtonType(0xFFFFFFFF, "チェック方向補正"),
             new CEventCpuButtonType(0xFFFFFFFF, "チェック範囲"),
             new CEventCpuButtonType(0xFFFFFFFF, "チェック範囲（高さ）"),

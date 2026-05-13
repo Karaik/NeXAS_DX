@@ -32,9 +32,6 @@ public class CEventPosChange extends SkillInfoObject {
     private Integer int1;
     private Integer int2;
     private Integer int3;
-    private Integer int4;
-    private Integer int5;
-    private Integer int6;
 
     @Data
     public static class CEventPosChangeUnit {
@@ -57,9 +54,6 @@ public class CEventPosChange extends SkillInfoObject {
         this.int1 = reader.readInt();
         this.int2 = reader.readInt();
         this.int3 = reader.readInt();
-        this.int4 = reader.readInt();
-        this.int5 = reader.readInt();
-        this.int6 = reader.readInt();
 
         this.unitList.clear();
         for (int i = 0; i < 3; i++) {
@@ -87,9 +81,6 @@ public class CEventPosChange extends SkillInfoObject {
         writer.writeInt(this.int1);
         writer.writeInt(this.int2);
         writer.writeInt(this.int3);
-        writer.writeInt(this.int4);
-        writer.writeInt(this.int5);
-        writer.writeInt(this.int6);
 
         for (int i = 0; i < 3; i++) {
             CEventPosChangeUnit target = null;
