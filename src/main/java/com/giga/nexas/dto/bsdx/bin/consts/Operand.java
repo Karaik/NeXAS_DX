@@ -426,8 +426,8 @@ public enum Operand {
     GetMekHealthMax(540),
     // CSV: 加载机体（比21E优先）
     LoadMek(541),
-    // CSV: 加载机体
-    LoadMekAlt(542),
+    // CSV: 删除机体
+    EraseMek(542),
     // CSV: 指定自机武装位
     SetPlayerWeaponSlot(545),
     // CSV: 清空自机武装位
