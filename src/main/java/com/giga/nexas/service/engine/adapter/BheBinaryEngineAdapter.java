@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.giga.nexas.dto.ResponseDTO;
 import com.giga.nexas.dto.bhe.Bhe;
 import com.giga.nexas.dto.bhe.grp.Grp;
+import com.giga.nexas.dto.bhe.map.MapData;
 import com.giga.nexas.dto.bhe.spm.Spm;
 import com.giga.nexas.exception.OperationException;
 import com.giga.nexas.service.BheBinService;
@@ -16,6 +17,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
+
+import static com.giga.nexas.controller.consts.MainConst.MAP_EXT;
 
 /**
  * Adapter for BHE engine parse/generate workflows.
@@ -65,6 +68,7 @@ public class BheBinaryEngineAdapter implements BinaryEngineAdapter {
         return switch (ext) {
             case "spm" -> mapper.readValue(json, Spm.class);
             case "grp" -> mapper.readValue(json, Grp.class);
+            case MAP_EXT -> mapper.readValue(json, MapData.class);
             default -> throw new OperationException(500, "unsupported BHE generation extension: " + ext);
         };
     }
