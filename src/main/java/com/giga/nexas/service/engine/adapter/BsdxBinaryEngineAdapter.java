@@ -9,6 +9,7 @@ import com.giga.nexas.dto.bsdx.Bsdx;
 import com.giga.nexas.dto.bsdx.bin.Bin;
 import com.giga.nexas.dto.bsdx.dat.Dat;
 import com.giga.nexas.dto.bsdx.grp.Grp;
+import com.giga.nexas.dto.bsdx.map.MapData;
 import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.spm.Spm;
 import com.giga.nexas.dto.bsdx.waz.Waz;
@@ -75,6 +76,7 @@ public class BsdxBinaryEngineAdapter implements BinaryEngineAdapter {
             case GRP_EXT -> mapper.readValue(json, Grp.class);
             case BIN_EXT -> mapper.readValue(json, Bin.class);
             case DAT_EXT -> mapper.readValue(json, Dat.class);
+            case MAP_EXT -> mapper.readValue(json, MapData.class);
             default -> throw new OperationException(500, "unsupported extension for BSDX: " + ext);
         };
     }
