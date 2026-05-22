@@ -69,7 +69,7 @@ class OutputBheCommonProjectileResourcesStepSemanticTest {
         crossRedirectStep.redirect(request, rawSourceBundle, baseline, convertedBundle, appendPlan);
 
         TsukuyomiImportedAssetSet assetSet = new TsukuyomiImportedAssetSet();
-        outputStep.output(request, baseline, appendPlan, OUTPUT_DIR, assetSet);
+        outputStep.output(request, baseline, appendPlan, java.util.Map.of(), OUTPUT_DIR, assetSet);
 
         assertEquals(6, assetSet.getGeneratedWazFiles().size());
         assertEquals(12, assetSet.getCopiedSpmFiles().size());

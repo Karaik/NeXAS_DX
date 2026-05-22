@@ -56,7 +56,8 @@ class ImportStaticAssetsStepBheOutputTest {
                 null,
                 null,
                 new TsukuyomiGrpAppendPlan(),
-                new BheCommonProjectileAppendPlan()
+                new BheCommonProjectileAppendPlan(),
+                java.util.Map.of()
         );
 
         Path outputSpm = result.getOutputRootDir().resolve("tsukuyomi.spm");

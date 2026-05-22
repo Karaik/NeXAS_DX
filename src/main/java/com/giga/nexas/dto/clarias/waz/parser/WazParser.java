@@ -70,41 +70,24 @@ public class WazParser implements ClariasParser<Waz> {
     private void parseSkillPhaseInfo(Waz.Skill.SkillPhase skillPhase, BinaryReader reader) {
         List<SkillUnit> skillUnitCollection = skillPhase.getSkillUnitCollection();
 
-        for (int i = 0; i < 112; i++) { //diff
-            if ((SkillInfoFactory.SKILL_INFO_TYPE_ENTRIES_CLARIAS[i].getFlags() & 2) != 0) { //diff
-                continue; //diff
-            } //diff
+        for (int i = 0; i < 112; i++) {
             SkillUnit skillUnit = new SkillUnit(i, SkillInfoFactory.SKILL_INFO_TYPE_ENTRIES_CLARIAS[i].getDescription());
 
             List<SkillInfoObject> skillInfoObjectList = skillUnit.getSkillInfoObjectList();
             int count1 = reader.readInt();
             for (int j = 0; j < count1; j++) {
-                try {
-                    SkillInfoObject eventObject = SkillInfoFactory.createEventObjectClarias(i);
-                    eventObject.setSlotNum(i);
-                    eventObject.readInfo(reader);
-                    skillInfoObjectList.add(eventObject);
-                } catch (Exception e) {
-                    log.info("error === i={}", i);
-                    throw e;
-                }
+                SkillInfoObject eventObject = SkillInfoFactory.createEventObjectClarias(i);
+                eventObject.setSlotNum(i);
+                eventObject.readInfo(reader);
+                skillInfoObjectList.add(eventObject);
             }
 
             List<SkillInfoUnknown> wazInfoUnknownList = skillUnit.getSkillInfoUnknownList();
             int count2 = reader.readInt();
             for (int j = 0; j < count2; j++) {
-                try {
-                    SkillInfoUnknown wazInfoUnknown = createSecondaryObject(i, j, count2); //diff
-                    wazInfoUnknown.readInfo(reader);
-                    wazInfoUnknownList.add(wazInfoUnknown);
-                } catch (Exception e) {
-                    log.info("error === i={}", i);
-                    throw e;
-                }
-            }
-
-            if (i == 71 && count2 > 0) { //diff
-                skillUnit.setSecondaryTailBytes(reader.readBytes(1));
+                SkillInfoUnknown wazInfoUnknown = new SkillInfoUnknown(0xFF);
+                wazInfoUnknown.readInfo(reader);
+                wazInfoUnknownList.add(wazInfoUnknown);
             }
 
             if (!skillInfoObjectList.isEmpty() || !wazInfoUnknownList.isEmpty()) {
@@ -112,13 +95,8 @@ public class WazParser implements ClariasParser<Waz> {
             }
         }
 
-        skillPhase.setPhaseTail(reader.readNullTerminatedString()); //diff
+        // 逆向所得：sub_8AD0F0 末尾的 sub_9CCB00 为 phase 尾随的 null-terminated 字符串
+        skillPhase.setPhaseTail(reader.readNullTerminatedString());
     }
 
-    private SkillInfoUnknown createSecondaryObject(int slot, int index, int count) { //diff
-        if (slot == 69 && index == 0 && count == 2) {
-            return new SkillInfoUnknown(0xFF, 2, true);
-        }
-        return new SkillInfoUnknown(0xFF);
-    }
 }

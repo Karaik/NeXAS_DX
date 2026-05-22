@@ -77,7 +77,10 @@ public class CEventMultiLockDraw extends SkillInfoObject {
         for (int i = 0; i < 3; i++) {
             CEventMultiLockDrawUnit target = null;
             for (CEventMultiLockDrawUnit unit : this.unitList) {
-                if (unit.getUnitSlotNum() == i) { target = unit; break; }
+                if (unit.getUnitSlotNum() == i) {
+                    target = unit;
+                    break;
+                }
             }
             writer.writeInt(target.getBuffer());
             if (target.getBuffer() != 0) {

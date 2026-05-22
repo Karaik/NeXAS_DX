@@ -107,24 +107,20 @@ public class CEventEscape extends SkillInfoObject {
         writer.writeInt(this.int7);
         writer.writeInt(this.int8);
 
-        CEventEscapeUnit slot2 = null;
-        CEventEscapeUnit slot8 = null;
-        for (CEventEscapeUnit unit : this.unitList) {
-            if (unit.getUnitSlotNum() == 2) {
-                slot2 = unit;
-            } else if (unit.getUnitSlotNum() == 8) {
-                slot8 = unit;
+        for (int i = 0; i < 10; i++) {
+            if (i == 2 || i == 8) {
+                CEventEscapeUnit target = null;
+                for (CEventEscapeUnit unit : this.unitList) {
+                    if (unit.getUnitSlotNum() == i) {
+                        target = unit;
+                        break;
+                    }
+                }
+                writer.writeInt(target.getBuffer());
+                if (target.getBuffer() != 0) {
+                    target.getData().writeInfo(writer);
+                }
             }
-        }
-
-        writer.writeInt(slot2.getBuffer());
-        if (slot2.getBuffer() != 0) {
-            slot2.getData().writeInfo(writer);
-        }
-
-        writer.writeInt(slot8.getBuffer());
-        if (slot8.getBuffer() != 0) {
-            slot8.getData().writeInfo(writer);
         }
     }
 }

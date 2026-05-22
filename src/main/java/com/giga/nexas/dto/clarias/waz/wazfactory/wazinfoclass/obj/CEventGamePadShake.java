@@ -65,23 +65,31 @@ public class CEventGamePadShake extends SkillInfoObject {
         this.int2 = reader.readInt();
 
         this.unitList.clear();
-        for (int i = 0; i < 3; i++) {
-            int buffer = reader.readInt();
+        int buffer0 = reader.readInt();
+        CEventGamePadShakeUnit unit0 = new CEventGamePadShakeUnit();
+        unit0.setUnitSlotNum(0);
+        unit0.setBuffer(buffer0);
+        unit0.setDescription(CEVENT_GAME_PAD_SHAKE_ENTRIES[0].getDescription());
+        this.unitList.add(unit0);
 
-            CEventGamePadShakeUnit unit = new CEventGamePadShakeUnit();
-            unit.setUnitSlotNum(i);
-            unit.setBuffer(buffer);
-            unit.setDescription(CEVENT_GAME_PAD_SHAKE_ENTRIES[i].getDescription());
-
-            int innerTypeId = CEVENT_GAME_PAD_SHAKE_ENTRIES[i].getType();
-            if (buffer != 0) {
-                SkillInfoObject obj = createCEventObjectByTypeClarias(innerTypeId);
-                obj.readInfo(reader);
-                unit.setData(obj);
-            }
-
-            this.unitList.add(unit);
+        int buffer1 = reader.readInt();
+        CEventGamePadShakeUnit unit1 = new CEventGamePadShakeUnit();
+        unit1.setUnitSlotNum(1);
+        unit1.setBuffer(buffer1);
+        unit1.setDescription(CEVENT_GAME_PAD_SHAKE_ENTRIES[1].getDescription());
+        if (buffer1 != 0) {
+            SkillInfoObject obj = createCEventObjectByTypeClarias(CEVENT_GAME_PAD_SHAKE_ENTRIES[1].getType());
+            obj.readInfo(reader);
+            unit1.setData(obj);
         }
+        this.unitList.add(unit1);
+
+        int buffer2 = reader.readInt();
+        CEventGamePadShakeUnit unit2 = new CEventGamePadShakeUnit();
+        unit2.setUnitSlotNum(2);
+        unit2.setBuffer(buffer2);
+        unit2.setDescription(CEVENT_GAME_PAD_SHAKE_ENTRIES[2].getDescription());
+        this.unitList.add(unit2);
     }
 
     @Override
@@ -90,19 +98,16 @@ public class CEventGamePadShake extends SkillInfoObject {
         writer.writeInt(this.int1);
         writer.writeInt(this.int2);
 
-        for (int i = 0; i < 3; i++) {
-            CEventGamePadShakeUnit target = null;
-            for (CEventGamePadShakeUnit unit : this.unitList) {
-                if (unit.getUnitSlotNum() == i) {
-                    target = unit;
-                    break;
-                }
-            }
+        CEventGamePadShakeUnit unit0 = this.unitList.get(0);
+        writer.writeInt(unit0.getBuffer());
 
-            writer.writeInt(target.getBuffer());
-            if (target.getBuffer() != 0) {
-                target.getData().writeInfo(writer);
-            }
+        CEventGamePadShakeUnit unit1 = this.unitList.get(1);
+        writer.writeInt(unit1.getBuffer());
+        if (unit1.getBuffer() != 0) {
+            unit1.getData().writeInfo(writer);
         }
+
+        CEventGamePadShakeUnit unit2 = this.unitList.get(2);
+        writer.writeInt(unit2.getBuffer());
     }
 }

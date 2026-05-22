@@ -52,7 +52,7 @@ class OutputBheCommonProjectileResourcesStepTest {
         plan.getSourceWazIndexToTargetSkillCount().put(0, 1);
         plan.getSourceSePairToTargetFileName().put(BheCommonProjectileAppendPlan.sePairKey(1, 123), "bhe_RE_tama10");
 
-        step.output(request, baseline, plan, outputRoot, assetSet);
+        step.output(request, baseline, plan, java.util.Map.of(), outputRoot, assetSet);
 
         assertTrue(Files.exists(outputRoot.resolve("bhe_Effect.waz")));
         assertTrue(Files.exists(outputRoot.resolve("bhe_Tama.spm")));
@@ -88,7 +88,7 @@ class OutputBheCommonProjectileResourcesStepTest {
         plan.getSourceWazIndexToTargetSkillCount().put(0, 1);
         plan.getSourceSePairToTargetFileName().put(BheCommonProjectileAppendPlan.sePairKey(1, 124), "bhe_MissingAudio");
 
-        step.output(request, baseline, plan, outputRoot, assetSet);
+        step.output(request, baseline, plan, java.util.Map.of(), outputRoot, assetSet);
 
         assertTrue(assetSet.getMissingAssets().stream().anyMatch(item -> item.contains("bhe_Missing.png")));
         assertTrue(assetSet.getMissingAssets().stream().anyMatch(item -> item.contains("bhe_MissingAudio")));

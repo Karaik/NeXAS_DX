@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.giga.nexas.dto.clarias.waz.wazfactory.SkillInfoFactory.createCEventObjectByTypeClarias;
 
 @Data
 @NoArgsConstructor
@@ -26,7 +25,7 @@ public class CEventPosChange extends SkillInfoObject {
     public static final CEventPosChangeType[] CEVENT_POS_CHANGE_ENTRIES = {
             new CEventPosChangeType(0xFFFFFFFF, "開始位置X"),
             new CEventPosChangeType(0xFFFFFFFF, "開始位置Y"),
-            new CEventPosChangeType(0x9, "開始位置"),
+            new CEventPosChangeType(0xFFFFFFFF, "開始位置"),
     };
 
     private Integer int1;
@@ -64,13 +63,6 @@ public class CEventPosChange extends SkillInfoObject {
             unit.setBuffer(buffer);
             unit.setDescription(CEVENT_POS_CHANGE_ENTRIES[i].getDescription());
 
-            int innerTypeId = CEVENT_POS_CHANGE_ENTRIES[i].getType();
-            if (buffer != 0) {
-                SkillInfoObject obj = createCEventObjectByTypeClarias(innerTypeId);
-                obj.readInfo(reader);
-                unit.setData(obj);
-            }
-
             this.unitList.add(unit);
         }
     }
@@ -78,6 +70,7 @@ public class CEventPosChange extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
+
         writer.writeInt(this.int1);
         writer.writeInt(this.int2);
         writer.writeInt(this.int3);
@@ -92,9 +85,6 @@ public class CEventPosChange extends SkillInfoObject {
             }
 
             writer.writeInt(target.getBuffer());
-            if (target.getBuffer() != 0) {
-                target.getData().writeInfo(writer);
-            }
         }
     }
 }

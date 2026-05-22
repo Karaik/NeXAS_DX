@@ -73,10 +73,7 @@ public class WazGenerator implements ClariasGenerator<Waz> {
     private void writeSkillPhaseInfo(Waz.Skill.SkillPhase skillPhase, BinaryWriter writer) throws IOException {
         List<SkillUnit> skillUnitCollection = skillPhase.getSkillUnitCollection();
 
-        for (int i = 0; i < 112; i++) { //diff
-            if ((SkillInfoFactory.SKILL_INFO_TYPE_ENTRIES_CLARIAS[i].getFlags() & 2) != 0) { //diff
-                continue; //diff
-            } //diff
+        for (int i = 0; i < 112; i++) {
             SkillUnit matchedUnit = null;
             for (SkillUnit unit : skillUnitCollection) {
                 if (unit.getUnitQuantity() == i) {
@@ -85,29 +82,26 @@ public class WazGenerator implements ClariasGenerator<Waz> {
                 }
             }
 
-            List<SkillInfoObject> skillInfoObjectList = matchedUnit.getSkillInfoObjectList();
+            List<SkillInfoObject> skillInfoObjectList = matchedUnit == null
+                    ? new ArrayList<>()
+                    : matchedUnit.getSkillInfoObjectList();
 
             writer.writeInt(skillInfoObjectList.size());
             for (SkillInfoObject obj : skillInfoObjectList) {
                 obj.writeInfo(writer);
             }
 
-            List<SkillInfoUnknown> skillInfoUnknownList = matchedUnit.getSkillInfoUnknownList();
+            List<SkillInfoUnknown> skillInfoUnknownList = matchedUnit == null
+                    ? new ArrayList<>()
+                    : matchedUnit.getSkillInfoUnknownList();
 
             writer.writeInt(skillInfoUnknownList.size());
             for (SkillInfoUnknown unknown : skillInfoUnknownList) {
                 unknown.writeInfo(writer);
             }
-
-            if (i == 71 && !skillInfoUnknownList.isEmpty()) { //diff
-                byte[] secondaryTailBytes = matchedUnit.getSecondaryTailBytes();
-                if (secondaryTailBytes.length == 0) {
-                    throw new IllegalStateException("missing secondaryTailBytes for clarias slot 71"); //diff
-                }
-                writer.writeBytes(secondaryTailBytes);
-            }
         }
 
-        writer.writeNullTerminatedString(skillPhase.getPhaseTail()); //diff
+        // 逆向所得：phase 末尾的 null-terminated 字符串
+        writer.writeNullTerminatedString(skillPhase.getPhaseTail());
     }
 }

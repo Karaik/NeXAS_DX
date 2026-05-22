@@ -10,9 +10,8 @@ public class SkillInfoTypeEntry {
     private Integer type;
     private Integer address;
     private String description;
-
-    public Integer getFlags() {
-        return 0;
-    }
+    private Integer flag;
+    private Integer groupId;
+    private Integer flags;
 
 }

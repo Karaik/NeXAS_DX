@@ -86,13 +86,12 @@ public class CEventParamRevise extends SkillInfoObject {
     @Override
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
-        // Read flat fields from field table
         this.flatInt0 = reader.readInt();
         this.flatInt1 = reader.readInt();
         this.flatInt2 = reader.readInt();
         this.flatInt3 = reader.readInt();
         this.flatInt4 = reader.readInt();
-        // Read wrapper entries
+
         this.unitList.clear();
         for (int i = 0; i < 7; i++) {
             int buffer = reader.readInt();
@@ -101,7 +100,7 @@ public class CEventParamRevise extends SkillInfoObject {
             unit.setBuffer(buffer);
             unit.setDescription(CEVENT_PARAM_REVISE_ENTRIES[i].getDescription());
             int innerTypeId = CEVENT_PARAM_REVISE_ENTRIES[i].getType();
-            if (buffer != 0) {
+            if (buffer != 0 && innerTypeId != 0xFFFFFFFF) {
                 SkillInfoObject obj = createCEventObjectByTypeClarias(innerTypeId);
                 obj.readInfo(reader);
                 unit.setData(obj);
@@ -113,20 +112,22 @@ public class CEventParamRevise extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
-        // Write flat fields
         writer.writeInt(this.flatInt0);
         writer.writeInt(this.flatInt1);
         writer.writeInt(this.flatInt2);
         writer.writeInt(this.flatInt3);
         writer.writeInt(this.flatInt4);
-        // Write wrapper entries
+
         for (int i = 0; i < 7; i++) {
             CEventParamReviseUnit target = null;
             for (CEventParamReviseUnit unit : this.unitList) {
-                if (unit.getUnitSlotNum() == i) { target = unit; break; }
+                if (unit.getUnitSlotNum() == i) {
+                    target = unit;
+                    break;
+                }
             }
             writer.writeInt(target.getBuffer());
-            if (target.getBuffer() != 0) {
+            if (target.getBuffer() != 0 && target.getData() != null) {
                 target.getData().writeInfo(writer);
             }
         }

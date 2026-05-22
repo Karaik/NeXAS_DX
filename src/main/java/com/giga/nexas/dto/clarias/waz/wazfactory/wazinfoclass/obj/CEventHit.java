@@ -148,23 +148,20 @@ public class CEventHit extends SkillInfoObject {
     @Override
     public void readInfo(BinaryReader reader) {
         super.readInfo(reader);
-        // Read flat fields from field table (entries 2-37)
         this.hitGroup = reader.readShort();
         this.hitGroup2 = reader.readShort();
         this.hitCounterInit = reader.readInt();
+        this.attackPower = reader.readInt();
+        this.attackPowerMin = reader.readInt();
+        this.attackPowerChargeRate = reader.readInt();
         this.flags = reader.readInt();
         this.flags2 = reader.readInt();
         this.attackType = reader.readInt();
         this.hitCount = reader.readByte();
         this.hitInterval = reader.readInt();
-        this.attackPower = reader.readInt();
-        this.attackPowerMin = reader.readInt();
-        this.attackPowerChargeRate = reader.readInt();
         this.armorAttackPower = reader.readInt();
         this.downAttackPercent = reader.readInt();
         this.flatInt13 = reader.readInt();
-        this.flatInt14 = reader.readInt();
-        this.flatInt15 = reader.readInt();
         this.flatInt16 = reader.readInt();
         this.flatInt17 = reader.readInt();
         this.flatInt18 = reader.readInt();
@@ -172,6 +169,9 @@ public class CEventHit extends SkillInfoObject {
         this.makMarkType = reader.readInt();
         this.makMarkDamage = reader.readInt();
         this.selfStopTime = reader.readInt();
+        this.flatInt14 = reader.readInt();
+        this.flatInt15 = reader.readInt();
+        this.nokezoriPriority = reader.readInt();
         this.vanishTime = reader.readByte();
         this.hitEffect = reader.readInt();
         this.hitEffectOpponent = reader.readInt();
@@ -179,7 +179,6 @@ public class CEventHit extends SkillInfoObject {
         this.nokezoriAir = reader.readInt();
         this.nokezoriAirToGround = reader.readInt();
         this.nokezoriDown = reader.readInt();
-        this.nokezoriPriority = reader.readInt();
         this.hitStop = reader.readInt();
         this.hitStopSelf = reader.readInt();
         this.slowRate = reader.readInt();
@@ -206,23 +205,20 @@ public class CEventHit extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
-        // Write flat fields
         writer.writeShort(this.hitGroup);
         writer.writeShort(this.hitGroup2);
         writer.writeInt(this.hitCounterInit);
+        writer.writeInt(this.attackPower);
+        writer.writeInt(this.attackPowerMin);
+        writer.writeInt(this.attackPowerChargeRate);
         writer.writeInt(this.flags);
         writer.writeInt(this.flags2);
         writer.writeInt(this.attackType);
         writer.writeByte(this.hitCount);
         writer.writeInt(this.hitInterval);
-        writer.writeInt(this.attackPower);
-        writer.writeInt(this.attackPowerMin);
-        writer.writeInt(this.attackPowerChargeRate);
         writer.writeInt(this.armorAttackPower);
         writer.writeInt(this.downAttackPercent);
         writer.writeInt(this.flatInt13);
-        writer.writeInt(this.flatInt14);
-        writer.writeInt(this.flatInt15);
         writer.writeInt(this.flatInt16);
         writer.writeInt(this.flatInt17);
         writer.writeInt(this.flatInt18);
@@ -230,6 +226,9 @@ public class CEventHit extends SkillInfoObject {
         writer.writeInt(this.makMarkType);
         writer.writeInt(this.makMarkDamage);
         writer.writeInt(this.selfStopTime);
+        writer.writeInt(this.flatInt14);
+        writer.writeInt(this.flatInt15);
+        writer.writeInt(this.nokezoriPriority);
         writer.writeByte(this.vanishTime);
         writer.writeInt(this.hitEffect);
         writer.writeInt(this.hitEffectOpponent);
@@ -237,13 +236,11 @@ public class CEventHit extends SkillInfoObject {
         writer.writeInt(this.nokezoriAir);
         writer.writeInt(this.nokezoriAirToGround);
         writer.writeInt(this.nokezoriDown);
-        writer.writeInt(this.nokezoriPriority);
         writer.writeInt(this.hitStop);
         writer.writeInt(this.hitStopSelf);
         writer.writeInt(this.slowRate);
         writer.writeInt(this.screenZoomTime);
         writer.writeInt(this.screenZoom);
-        // Write wrapper entries
         for (int i = 0; i < 47; i++) {
             CEventHitUnit target = null;
             for (CEventHitUnit unit : this.unitList) {
