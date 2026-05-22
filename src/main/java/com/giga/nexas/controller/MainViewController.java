@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.TilePane;
 import lombok.Getter;
@@ -29,6 +30,10 @@ public class MainViewController {
     @FXML private Button reloadButton;
     @FXML private Button actionButton;
     @FXML private Button processAllButton;
+    @FXML private HBox mainModeBar;
+    @FXML private ToggleButton workspaceModeButton;
+    @FXML private ToggleButton hellEditorModeButton;
+    @FXML private ToggleButton bsdxResourceModeButton;
     @FXML private Button scriptEditorModeButton;
     @FXML private CheckBox alwaysOnTop;
     @FXML private CheckBox lockOutPutPath;
@@ -98,6 +103,8 @@ public class MainViewController {
 
     private final WorkspaceState workspaceState = new WorkspaceState();
     private HellScriptEditorModeController hellScriptEditorModeController;
+    private BsdxResourceEditorModeController bsdxResourceEditorModeController;
+    private MainModeManager mainModeManager;
 
     @FXML
     public void initialize() {
@@ -112,6 +119,7 @@ public class MainViewController {
 
         ModeTreeController treeController = new ModeTreeController(this, state, gridController);
         treeController.setup();
+        gridController.setTreeController(treeController);
 
         TreeContextMenuController treeContextMenuController = new TreeContextMenuController(this, state);
         treeContextMenuController.setup();
@@ -136,5 +144,12 @@ public class MainViewController {
 
         hellScriptEditorModeController = new HellScriptEditorModeController(this, state);
         hellScriptEditorModeController.setup();
+
+        bsdxResourceEditorModeController = new BsdxResourceEditorModeController(this, state);
+
+        mainModeManager = new MainModeManager(this, state, treeController);
+        mainModeManager.register(hellScriptEditorModeController);
+        mainModeManager.register(bsdxResourceEditorModeController);
+        mainModeManager.bind();
     }
 }

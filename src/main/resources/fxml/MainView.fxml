@@ -29,7 +29,12 @@
                 </VBox>
 
                 <Pane HBox.hgrow="ALWAYS"/>
-                <Button fx:id="scriptEditorModeButton" text="Script Editor" minWidth="110.0"/>
+                <HBox fx:id="mainModeBar" spacing="0.0" alignment="CENTER_LEFT">
+                    <ToggleButton fx:id="workspaceModeButton" text="Workspace" minWidth="105.0"/>
+                    <ToggleButton fx:id="hellEditorModeButton" text="Hell Script" minWidth="105.0"/>
+                    <ToggleButton fx:id="bsdxResourceModeButton" text="BSDX Resources" minWidth="125.0"/>
+                </HBox>
+                <Button fx:id="scriptEditorModeButton" text="Script Editor" minWidth="110.0" visible="false" managed="false"/>
                 <CheckBox fx:id="alwaysOnTop" text="Always on Top"/>
             </HBox>
 

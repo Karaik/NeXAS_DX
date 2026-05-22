@@ -1,7 +1,6 @@
 package com.giga.nexas.controller;
 
 import com.giga.nexas.controller.model.BsdxOverlayResourceSession;
-import com.giga.nexas.controller.model.EngineType;
 import com.giga.nexas.controller.model.HellEditorReferenceData;
 import com.giga.nexas.controller.model.HellStageDescriptor;
 import com.giga.nexas.controller.model.HellStageMetadataDraft;
@@ -33,6 +32,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import javafx.scene.Node;
 import lombok.RequiredArgsConstructor;
 
 import java.awt.image.BufferedImage;
@@ -52,7 +52,7 @@ import java.util.List;
  * 4. 关卡元数据保存、追加关卡和脚本回编入口
  */
 @RequiredArgsConstructor
-public class HellScriptEditorModeController {
+public class HellScriptEditorModeController implements ModeController {
 
     /**
      * 地图预览图在主界面里的固定显示高度。
@@ -119,16 +119,6 @@ public class HellScriptEditorModeController {
     private boolean suppressStageSelectionListener;
 
     /**
-     * 临时屏蔽输入目录回滚监听。
-     */
-    private boolean suppressInputDirectoryRollback;
-
-    /**
-     * 临时屏蔽引擎切换回滚监听。
-     */
-    private boolean suppressEngineRollback;
-
-    /**
      * 测试可覆盖的离开当前脚本确认器。
      */
     private LeaveScriptConfirmationHandler leaveScriptConfirmationHandler = this::showLeaveScriptConfirmation;
@@ -188,10 +178,7 @@ public class HellScriptEditorModeController {
         configureMapPreviewView();
         clearEmbeddedScriptEditor("Select a stage to edit pseudo code here.");
         showStageDetails(null);
-        updateModeView();
-        updateModeButton();
 
-        view.getScriptEditorModeButton().setOnAction(event -> toggleMode());
         view.getOpenSelectedHellScriptButton().setOnAction(event -> reloadCurrentSelectedStageScript());
         view.getSaveHellMetadataButton().setOnAction(event -> saveSelectedStageMetadata());
         view.getAppendHellStageButton().setOnAction(event -> appendSelectedStage());
@@ -201,70 +188,31 @@ public class HellScriptEditorModeController {
         });
         view.getHellMekaLookupFilterField().textProperty().addListener((obs, oldValue, newValue) -> refreshMekaLookupFilter());
 
-        state.getMainViewMode().addListener((obs, oldMode, newMode) -> {
-            updateModeView();
-            updateModeButton();
-            if (newMode == MainViewMode.HELL_SCRIPT_EDITOR) {
-                reloadEditorData();
-            } else {
-                restoreWorkspaceStatusBar();
-            }
-        });
-
-        state.getInputDirectory().addListener((obs, oldPath, newPath) -> {
-            if (suppressInputDirectoryRollback) {
-                return;
-            }
-            if (state.getMainViewMode().get() == MainViewMode.HELL_SCRIPT_EDITOR) {
-                if (!confirmCanLeaveCurrentScript("reload the BSDX resource directory")) {
-                    restoreInputDirectory(oldPath);
-                    return;
-                }
-                reloadEditorData();
-            } else {
-                updateModeButton();
-            }
-        });
-
-        state.getEngineType().addListener((obs, oldEngine, newEngine) -> {
-            if (suppressEngineRollback) {
-                return;
-            }
-            if (state.getMainViewMode().get() == MainViewMode.HELL_SCRIPT_EDITOR && newEngine != EngineType.BSDX) {
-                if (!confirmCanLeaveCurrentScript("leave Hell Script Editor because the engine changes")) {
-                    restoreEngine(oldEngine);
-                    return;
-                }
-                state.getMainViewMode().set(MainViewMode.WORKSPACE);
-            }
-            updateModeButton();
-        });
     }
 
-    /**
-     * 在工作区模式与 Hell 编辑模式之间切换。
-     */
-    private void toggleMode() {
-        if (state.getMainViewMode().get() == MainViewMode.HELL_SCRIPT_EDITOR) {
-            if (!confirmCanLeaveCurrentScript("return to the workspace")) {
-                return;
-            }
-            state.getMainViewMode().set(MainViewMode.WORKSPACE);
-            return;
-        }
+    @Override
+    public MainViewMode mode() {
+        return MainViewMode.HELL_SCRIPT_EDITOR;
+    }
 
-        if (state.getEngineType().get() != EngineType.BSDX) {
-            showInfo("Hell Script Editor", "Hell Script Editor only works in BSDX mode.");
-            return;
-        }
+    @Override
+    public Node content() {
+        return view.getHellScriptEditorPane();
+    }
 
-        Path inputDirectory = state.getInputDirectory().get();
-        if (inputDirectory == null || !Files.isDirectory(inputDirectory)) {
-            showInfo("Hell Script Editor", "Select a BSDX resource directory first.");
-            return;
-        }
+    @Override
+    public void activate() {
+        reloadEditorData();
+    }
 
-        state.getMainViewMode().set(MainViewMode.HELL_SCRIPT_EDITOR);
+    @Override
+    public void deactivate() {
+        // MainModeManager restores workspace status through ModeTreeController.
+    }
+
+    @Override
+    public boolean canLeave(String reason) {
+        return confirmCanLeaveCurrentScript(reason);
     }
 
     /**
@@ -858,30 +806,6 @@ public class HellScriptEditorModeController {
     }
 
     /**
-     * 回滚输入目录变更。
-     */
-    private void restoreInputDirectory(Path oldPath) {
-        suppressInputDirectoryRollback = true;
-        try {
-            state.getInputDirectory().set(oldPath);
-        } finally {
-            suppressInputDirectoryRollback = false;
-        }
-    }
-
-    /**
-     * 回滚引擎切换。
-     */
-    private void restoreEngine(EngineType oldEngine) {
-        suppressEngineRollback = true;
-        try {
-            state.getEngineType().set(oldEngine);
-        } finally {
-            suppressEngineRollback = false;
-        }
-    }
-
-    /**
      * 打包当前 `mod` 目录为 `Update4.pac`。
      *
      * <p>打包前先确认当前脚本没有未回编的脏状态。
@@ -969,29 +893,6 @@ public class HellScriptEditorModeController {
             }
         }
         return fxImage;
-    }
-
-    /**
-     * 切换可见面板。
-     */
-    private void updateModeView() {
-        boolean hellMode = state.getMainViewMode().get() == MainViewMode.HELL_SCRIPT_EDITOR;
-        view.getWorkspacePane().setVisible(!hellMode);
-        view.getWorkspacePane().setManaged(!hellMode);
-        view.getHellScriptEditorPane().setVisible(hellMode);
-        view.getHellScriptEditorPane().setManaged(hellMode);
-    }
-
-    /**
-     * 更新主界面上的模式切换按钮状态。
-     */
-    private void updateModeButton() {
-        boolean bsdx = state.getEngineType().get() == EngineType.BSDX;
-        boolean hasDirectory = state.getInputDirectory().get() != null;
-        boolean hellMode = state.getMainViewMode().get() == MainViewMode.HELL_SCRIPT_EDITOR;
-
-        view.getScriptEditorModeButton().setDisable(!bsdx || !hasDirectory);
-        view.getScriptEditorModeButton().setText(hellMode ? "Back to Workspace" : "Script Editor");
     }
 
     /**
@@ -1145,16 +1046,6 @@ public class HellScriptEditorModeController {
     private int currentStageCount() {
         TreeItem<HellStageDescriptor> root = view.getHellStageTree().getRoot();
         return root == null ? 0 : root.getChildren().size();
-    }
-
-    /**
-     * 从 Hell 编辑模式返回工作区时，恢复原本状态栏。
-     */
-    private void restoreWorkspaceStatusBar() {
-        Object controller = view.getTree().getProperties().get("modeTreeController");
-        if (controller instanceof ModeTreeController modeTreeController) {
-            modeTreeController.refreshViewState();
-        }
     }
 
     /**

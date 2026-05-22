@@ -29,7 +29,6 @@ public class ModeTreeController {
     public void setup() {
         TreeView<WorkspaceTreeNode> tree = view.getTree();
         tree.setShowRoot(true);
-        tree.getProperties().put("modeTreeController", this);
         tree.getSelectionModel().selectedItemProperty().addListener((obs, oldItem, newItem) -> {
             if (newItem != null) {
                 WorkspaceTreeNode node = newItem.getValue();

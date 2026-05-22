@@ -7,5 +7,6 @@ package com.giga.nexas.controller.model;
  */
 public enum MainViewMode {
     WORKSPACE,
-    HELL_SCRIPT_EDITOR
+    HELL_SCRIPT_EDITOR,
+    BSDX_RESOURCE_EDITOR
 }
