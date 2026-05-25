@@ -6,6 +6,9 @@ import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.spm.Spm;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.service.BsdxBinService;
+import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.ImportBheMapsIntoCurrentResourceTreeRequest;
+import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.ImportBheMapsIntoCurrentResourceTreeResult;
+import com.giga.nexas.transfer.bhe2bsdx.mapappend.pipeline.ImportBheMapsIntoCurrentResourceTreeStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.followup.convert.BuildBaselineFromJinkiResultStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.followup.convert.FollowupConvertOverviewStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.followup.customize.FollowupMekaContext;
@@ -40,6 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -210,6 +214,12 @@ public class FollowupGraftPipeline {
         );
         result.setImportedAssetSet(importedAssetSet);
 
+        ImportBheMapsIntoCurrentResourceTreeResult mapAppendResult = importMapsIntoCurrentResourceTree(request, importedAssetSet);
+        result.setMapAppendResult(mapAppendResult);
+        if (mapAppendResult != null && !mapAppendResult.isCanContinueStaticPipeline()) {
+            return result;
+        }
+
         if (request.isPatchMenuData()) {
             MenuOverrideContext menuContext = menuOverridePipeline.execute(
                     request,
@@ -228,6 +238,32 @@ public class FollowupGraftPipeline {
         TsukuyomiPacPackPlan pacPackPlan = packUpdatePacStep.packUpdatePac(request, importedAssetSet);
         result.setPacPackPlan(pacPackPlan);
         return result;
+    }
+
+    private ImportBheMapsIntoCurrentResourceTreeResult importMapsIntoCurrentResourceTree(
+            FollowupGraftRequest request,
+            TsukuyomiImportedAssetSet importedAssetSet
+    ) {
+        if (request == null || !request.isMapAppendEnabled()) {
+            return null;
+        }
+        if (importedAssetSet == null || importedAssetSet.getOutputRootDir() == null) {
+            throw new IllegalArgumentException("mapappend requires importedAssetSet.outputRootDir");
+        }
+        Objects.requireNonNull(request.getBheMapGroupPath(), "bheMapGroupPath must be provided when mapappend is enabled");
+        Objects.requireNonNull(request.getBheMapDir(), "bheMapDir must be provided when mapappend is enabled");
+        Objects.requireNonNull(request.getBheStaticResourceRoot(), "bheStaticResourceRoot must be provided when mapappend is enabled");
+
+        Path outputRoot = importedAssetSet.getOutputRootDir();
+        ImportBheMapsIntoCurrentResourceTreeRequest mapRequest = new ImportBheMapsIntoCurrentResourceTreeRequest();
+        mapRequest.setBheMapGroupPath(request.getBheMapGroupPath());
+        mapRequest.setBheMapDir(request.getBheMapDir());
+        mapRequest.setBheStaticResourceRoot(request.getBheStaticResourceRoot());
+        mapRequest.setCurrentTargetMapGroupPath(outputRoot.resolve("MapGroup.grp"));
+        mapRequest.setOutputRoot(outputRoot);
+        mapRequest.setCharset(CHARSET);
+        mapRequest.setPreviewMaterializationEnabled(false);
+        return new ImportBheMapsIntoCurrentResourceTreeStep().importMaps(mapRequest);
     }
 
     /**

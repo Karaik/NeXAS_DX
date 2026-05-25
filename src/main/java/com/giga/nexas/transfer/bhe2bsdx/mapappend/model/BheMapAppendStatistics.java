@@ -3,7 +3,7 @@ package com.giga.nexas.transfer.bhe2bsdx.mapappend.model;
 import lombok.Data;
 
 /**
- * BHE map append Step1 的验收统计。
+ * BHE map import plan construction 的验收统计。
  *
  * <p>统计只来自 plan 与 audit，不再额外扫描文件系统，避免测试结果和实际计划脱节。</p>
  */

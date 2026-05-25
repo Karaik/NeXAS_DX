@@ -8,8 +8,8 @@ import java.util.List;
 /**
  * BHE MapGroup 单条记录的原始结构快照。
  *
- * <p>Step1 不改写 MapGroup，但必须把后续追加可能用到的 item/pair/int 数组保留下来，
- * 避免后续阶段为了补信息重新解析 MapGroup.grp。</p>
+ * <p>import plan construction 不改写 MapGroup，但必须把 MapGroup conversion 可能用到的 item/pair/int 数组保留下来，
+ * 避免写入流程为了补信息重新解析 MapGroup.grp。</p>
  */
 @Data
 public class BheMapGroupEntrySnapshot {

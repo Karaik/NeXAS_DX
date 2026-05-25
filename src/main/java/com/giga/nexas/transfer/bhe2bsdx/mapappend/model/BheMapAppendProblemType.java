@@ -1,9 +1,9 @@
 package com.giga.nexas.transfer.bhe2bsdx.mapappend.model;
 
 /**
- * Step1 能识别的问题类型。
+ * BHE map import plan construction 能识别的问题类型。
  *
- * <p>枚举化后，测试和后续阶段可以按类型过滤问题，不需要解析中文审计文本。</p>
+ * <p>枚举化后，测试和资源树写入流程可以按类型过滤问题，不需要解析中文审计文本。</p>
  */
 public enum BheMapAppendProblemType {
     MISSING_MAP_FILE,

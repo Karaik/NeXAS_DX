@@ -10,7 +10,7 @@ import java.util.List;
  * BHE 地图追加审计结果。
  *
  * <p>审计对象只记录明确问题和实际产物，不做业务决策。
- * preview 缺失和内部资源缺失都不是 Step1 阻塞问题；源 .map 缺失、解析失败、目标撞名才算阻塞。</p>
+ * preview 缺失和内部资源缺失都不是 import plan construction 阻塞问题；源 .map 缺失、解析失败、目标撞名才算阻塞。</p>
  */
 @Data
 public class BheMapAppendAudit {

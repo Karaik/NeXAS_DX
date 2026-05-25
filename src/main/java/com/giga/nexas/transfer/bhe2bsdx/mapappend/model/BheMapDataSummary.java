@@ -5,7 +5,7 @@ import lombok.Data;
 /**
  * BHE .map 成功解析后的轻量摘要。
  *
- * <p>摘要只记录 Step1 已经解析出来的稳定元信息，帮助后续阶段快速判断地图规模和脚本/资源段结构。</p>
+ * <p>摘要只记录 import plan 已经解析出来的稳定元信息，帮助 MapData conversion 快速判断地图规模和脚本/资源段结构。</p>
  */
 @Data
 public class BheMapDataSummary {

@@ -7,10 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 单张 BHE 地图进入 BSDX 追加流程前的完整 Step1 计划。
+ * 单张 BHE 地图进入 BSDX 资源树导入流程前的完整 import plan。
  *
  * <p>这里同时保留源 MapGroup 信息、源 .map 解析状态、目标命名和 .map 内部资源引用。
- * 后续阶段只能消费这些字段，不能重新扫描 MapGroup 或另起一套命名规则。</p>
+ * 下游转换和写入流程只能消费这些字段，不能重新扫描 MapGroup 或另起一套命名规则。</p>
  */
 @Data
 public class BheMapEntryPlan {

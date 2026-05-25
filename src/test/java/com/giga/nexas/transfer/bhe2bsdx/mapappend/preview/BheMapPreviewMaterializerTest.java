@@ -1,4 +1,4 @@
-package com.giga.nexas.transfer.bhe2bsdx.mapappend.step1;
+package com.giga.nexas.transfer.bhe2bsdx.mapappend.preview;
 
 import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.BheMapAppendAudit;
 import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.BheMapAppendPlan;
@@ -7,7 +7,6 @@ import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.BheMapAppendProblemType;
 import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.BheMapEntryPlan;
 import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.BheMapPreviewPlan;
 import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.BheMapPreviewStatus;
-import com.giga.nexas.transfer.bhe2bsdx.mapappend.preview.MaterializeMapPreviewAssetsStep;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -20,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class MaterializeMapPreviewAssetsStepTest {
+class BheMapPreviewMaterializerTest {
 
     @TempDir
     Path tempDir;
@@ -45,7 +44,7 @@ class MaterializeMapPreviewAssetsStepTest {
         plan.getEntries().add(entryPlan);
 
         BheMapAppendAudit audit = new BheMapAppendAudit();
-        new MaterializeMapPreviewAssetsStep().materialize(plan, bheRoot, List.of(), outputRoot, audit);
+        new BheMapPreviewMaterializer().materialize(plan, bheRoot, List.of(), outputRoot, audit);
 
         // 预览图物料化只能消费 plan 中的文件名，不能自己扫描 MapGroup 或拼目标名。
         assertArrayEquals(previewBytes, Files.readAllBytes(outputRoot.resolve("target_by_plan.bmp")));
@@ -74,7 +73,7 @@ class MaterializeMapPreviewAssetsStepTest {
         plan.getEntries().add(entryPlan);
 
         BheMapAppendAudit audit = new BheMapAppendAudit();
-        new MaterializeMapPreviewAssetsStep().materialize(plan, bheRoot, List.of(), outputRoot, audit);
+        new BheMapPreviewMaterializer().materialize(plan, bheRoot, List.of(), outputRoot, audit);
 
         assertEquals(BheMapPreviewStatus.MISSING_NON_BLOCKING, entryPlan.getPreviewPlan().getStatus());
         assertEquals(1, audit.getMissingPreviewFiles().size());

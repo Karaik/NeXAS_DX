@@ -1,9 +1,8 @@
-package com.giga.nexas.transfer.bhe2bsdx.mapappend.step1;
+package com.giga.nexas.transfer.bhe2bsdx.mapappend.pipeline;
 
 import com.giga.nexas.dto.ResponseDTO;
 import com.giga.nexas.dto.bhe.map.MapData;
 import com.giga.nexas.service.BheBinService;
-import com.giga.nexas.transfer.bhe2bsdx.mapappend.BheMapAppendPipeline;
 import com.giga.nexas.transfer.bhe2bsdx.mapappend.catalog.BheMapCatalogLoader;
 import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.BheMapAppendAudit;
 import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.BheMapAppendPlan;
@@ -42,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class BheMapAppendStep1PipelineTest {
+class BheMapImportPlanPipelineTest {
 
     @TempDir
     Path tempDir;
@@ -83,7 +82,7 @@ class BheMapAppendStep1PipelineTest {
                 audit
         );
 
-        // 本轮 targetGroupResourceName 重复会让后续追加无法唯一定位目标条目，必须进入阻塞审计。
+        // targetGroupResourceName 重复会让 MapGroup 写入无法唯一定位目标条目，必须进入阻塞审计。
         assertEquals(2, plan.size());
         assertEquals(1, audit.blockingProblemCount());
         assertEquals(1, audit.getTargetNameCollisions().size());
@@ -107,7 +106,7 @@ class BheMapAppendStep1PipelineTest {
     }
 
     @Test
-    void realStep1BuildsConsumablePlanAndMaterializesPreviewOnlyFromPlan() throws Exception {
+    void realImportPlanPipelineBuildsConsumablePlanAndMaterializesPreviewOnlyFromPlan() throws Exception {
         BheMapAppendRequest request = new BheMapAppendRequest();
         BheMapCatalog sourceCatalog = new BheMapCatalogLoader().load(
                 request.resolveBheMapGroupPath(),
@@ -124,10 +123,10 @@ class BheMapAppendStep1PipelineTest {
         request.setOutputRoot(tempDir.resolve("out"));
         request.setBsdxPreviewFallbackRoots(List.of(fallbackRoot));
 
-        BheMapAppendResult result = new BheMapAppendPipeline().executeStep1(request);
+        BheMapAppendResult result = new BheMapImportPipeline().buildImportPlan(request);
         BheMapAppendStatistics statistics = result.getStatistics();
 
-        // 这里直接读取 BHE MapGroup，证明 Step1 入口不是从 preview 文件夹反推地图清单。
+        // 这里直接读取 BHE MapGroup，证明 import plan 入口不是从 preview 文件夹反推地图清单。
         assertEquals(sourceCatalog.getTotalGroupCount(), statistics.getBheMapGroupTotalCount());
         assertEquals(sourceCatalog.getEntries().size(), statistics.getBheMapGroupMigratableCount());
 

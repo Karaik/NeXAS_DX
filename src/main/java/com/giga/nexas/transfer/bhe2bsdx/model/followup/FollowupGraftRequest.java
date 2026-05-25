@@ -4,6 +4,8 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftResult;
 import lombok.Data;
 
+import java.nio.file.Path;
+
 /**
  * 后续 9 个单机体共用的请求基类。
  *
@@ -14,4 +16,8 @@ import lombok.Data;
 public class FollowupGraftRequest extends TsukuyomiGraftRequest {
 
     private TsukuyomiGraftResult previousCharacterResult;
+    private boolean mapAppendEnabled;
+    private Path bheMapGroupPath;
+    private Path bheMapDir;
+    private Path bheStaticResourceRoot;
 }

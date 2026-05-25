@@ -11,7 +11,7 @@ import java.nio.file.Path;
 /**
  * 读取 BSDX MapGroup.grp 的基线资源名集合。
  *
- * <p>Step1 只需要知道目标 groupResourceName 是否撞名，不提前修改 BSDX MapGroup DTO。</p>
+ * <p>import plan construction 只需要知道目标 groupResourceName 是否撞名，不提前修改 BSDX MapGroup DTO。</p>
  */
 public class BsdxMapBaselineLoader {
 

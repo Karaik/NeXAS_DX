@@ -8,8 +8,8 @@ import java.util.List;
 /**
  * 一张 BHE .map 内部声明的资源引用清单。
  *
- * <p>Step1 只负责把引用收集清楚并判断源资源是否存在；
- * 已存在的引用归入 deferredResourceFiles，表示后续转换/复制阶段再消费。</p>
+ * <p>import plan construction 负责把引用收集清楚并判断源资源是否存在；
+ * 已存在的引用归入 deferredResourceFiles，表示资源转换/复制流程再消费。</p>
  */
 @Data
 public class BheMapResourceReferences {

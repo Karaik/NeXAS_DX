@@ -42,6 +42,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @Slf4j
 public class TestBheByJinkiRunner {
 
@@ -272,6 +276,10 @@ public class TestBheByJinkiRunner {
         souRequest.setPreviousCharacterResult(motokiResult);
         souRequest.setBheGameResourceRoot(null);
         souRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
+        souRequest.setMapAppendEnabled(true);
+        souRequest.setBheMapGroupPath(Paths.get("src/main/resources/game/bhe/grp/mapgroup.grp"));
+        souRequest.setBheMapDir(Paths.get("src/main/resources/game/bhe/map"));
+        souRequest.setBheStaticResourceRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
         souRequest.setPatchMenuData(true);
         souRequest.setPackUpdatePac(true);
         souRequest.setMenuOverrideSpec(souMenuOverrideSpec());

@@ -5,9 +5,9 @@ import lombok.Data;
 import java.nio.file.Path;
 
 /**
- * 单张地图预览图的 Step1 计划与物料化结果。
+ * 单张地图预览图的 import plan 与物料化结果。
  *
- * <p>命名在 plan 构建阶段确定；物料化阶段只能填充 sourcePath、outputPath、status 和 problem，
+ * <p>命名在 import plan construction 确定；物料化过程只能填充 sourcePath、outputPath、status 和 problem，
  * 不能重新推导源/目标文件名。</p>
  */
 @Data

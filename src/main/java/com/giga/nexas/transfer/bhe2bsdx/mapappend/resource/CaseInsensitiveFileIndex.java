@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 /**
  * 按文件名做大小写不敏感索引。
  *
- * <p>BHE 资源引用里大小写并不稳定，Step1 需要用同一套规则定位 .map、preview 和内部引用资源。
+ * <p>BHE 资源引用里大小写并不稳定，import plan construction 需要用同一套规则定位 .map、preview 和内部引用资源。
  * 索引只负责“文件名 -> 实际路径”，不参与业务命名，也不推导任何 MapGroup 信息。</p>
  */
 public class CaseInsensitiveFileIndex {

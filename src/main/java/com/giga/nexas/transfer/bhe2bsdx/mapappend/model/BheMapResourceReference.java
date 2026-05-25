@@ -7,7 +7,7 @@ import java.nio.file.Path;
 /**
  * BHE .map 内部的一条资源引用。
  *
- * <p>Step1 在这里固定“引用原文、来源类型、源文件定位结果和问题级别”，
+ * <p>import plan construction 在这里固定“引用原文、来源类型、源文件定位结果和问题级别”，
  * 后续步骤只消费这些字段，不再重新解析 .map 或重新判定缺失资源。</p>
  */
 @Data

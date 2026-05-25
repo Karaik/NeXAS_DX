@@ -18,12 +18,12 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 /**
- * 按 Step1 plan 物料化地图预览图。
+ * 按 BHE map import plan 物料化地图预览图。
  *
- * <p>本 step 只消费 BheMapEntryPlan 中已经确定的源/目标预览图名；
+ * <p>本组件只消费 BheMapEntryPlan 中已经确定的源/目标预览图名；
  * 不允许重新扫描 MapGroup，也不允许自己拼接 groupResourceName。</p>
  */
-public class MaterializeMapPreviewAssetsStep {
+public class BheMapPreviewMaterializer {
 
     public void materialize(
             BheMapAppendPlan plan,

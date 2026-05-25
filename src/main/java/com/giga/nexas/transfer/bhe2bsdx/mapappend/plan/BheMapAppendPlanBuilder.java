@@ -25,9 +25,9 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * BHE map append Step1 计划构建器。
+ * BHE map import plan 构建器。
  *
- * <p>本类是 Step1 的主体：消费 BHE MapGroup 目录，定位并解析 BHE .map，
+ * <p>本类消费 BHE MapGroup 目录，定位并解析 BHE .map，
  * 再把目标命名和 .map 内部资源引用写入同一份 BheMapAppendPlan。</p>
  */
 public class BheMapAppendPlanBuilder {
@@ -340,7 +340,7 @@ public class BheMapAppendPlanBuilder {
 
         // 同一轮目标名重复时，后续追加无法唯一定位 MapGroup 目标条目，必须作为阻塞问题记录。
         if (!seenTargetGroupResourceNames.add(normalizedTarget)) {
-            String message = "BHE 地图目标资源名在本轮计划内重复: "
+            String message = "BHE 地图目标资源名在 import plan 内重复: "
                     + entryPlan.getSourceGroupResourceName()
                     + " -> "
                     + targetGroupResourceName;

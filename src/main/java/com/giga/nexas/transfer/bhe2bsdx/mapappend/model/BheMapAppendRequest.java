@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * BHE 地图追加请求。
  *
- * <p>Step1 需要同时读取 BHE MapGroup.grp、BHE .map 目录和 BHE 静态资源目录。
+ * <p>import plan construction 需要同时读取 BHE MapGroup.grp、BHE .map 目录和 BHE 静态资源目录。
  * outputRoot 只用于按 plan 物料化 preview，不参与 plan 构建。</p>
  */
 @Data
@@ -20,11 +20,13 @@ public class BheMapAppendRequest {
 
     private Path bheMapGroupPath = Paths.get("src/main/resources/game/bhe/grp/mapgroup.grp");
     private Path bsdxMapGroupPath = Paths.get("src/main/resources/game/bsdx/grp/MapGroup.grp");
+    private Path currentTargetMapGroupPath;
     private Path bheMapDir = Paths.get("src/main/resources/game/bhe/map");
     private Path bheStaticResourceRoot;
     private List<Path> bsdxPreviewFallbackRoots = new ArrayList<>();
     private Path outputRoot;
     private String charset = "windows-31j";
+    private boolean previewMaterializationEnabled;
 
     public Path resolveBheMapGroupPath() {
         return resolveAgainstProjectRoot(bheMapGroupPath);
@@ -32,6 +34,13 @@ public class BheMapAppendRequest {
 
     public Path resolveBsdxMapGroupPath() {
         return resolveAgainstProjectRoot(bsdxMapGroupPath);
+    }
+
+    public Path resolveCurrentTargetMapGroupPath() {
+        if (currentTargetMapGroupPath == null) {
+            throw new IllegalArgumentException("current target MapGroup.grp path must be provided");
+        }
+        return resolveAgainstProjectRoot(currentTargetMapGroupPath);
     }
 
     public Path resolveBheMapDir() {
