@@ -11,8 +11,7 @@ import java.util.List;
  *
  * <p>这个类属于地图预览层。
  * 它承载某个 `mapId` 在当前覆盖会话里解析出的真实预览图信息，
- * 当前语义是：
- * `mapId -> MapGroup.grp.groupResourceName -> T_map*.bmp -> 实际命中路径`。
+ * 当前语义是 `mapId -> MapGroup.grp.groupResourceName -> T_map*.bmp -> 实际命中路径`。
  *
  * <p>输入来自 `MapGroup.grp` 和当前 `root + mod` 覆盖会话。
  * 输出是主界面地图预览区直接使用的资源名、路径和状态文本。
@@ -44,8 +43,7 @@ public class MapPreviewDescriptor {
     /**
      * 当前预览链涉及到的图片文件名列表。
      *
-     * <p>这一步当前只保留一张真实候选图，
-     * 方便 UI 或后续提示层直接显示命中的资源名。
+     * <p>保留真实候选图，方便 UI 或后续提示层直接显示命中的资源名。
      */
     private final List<String> previewImageNames;
 

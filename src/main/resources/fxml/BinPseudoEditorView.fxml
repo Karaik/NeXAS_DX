@@ -25,8 +25,17 @@
         </VBox>
     </top>
     <center>
-        <TextArea fx:id="pseudoArea" wrapText="false"
-                  style="-fx-font-family: 'Consolas'; -fx-font-size: 12px; -fx-control-inner-background: white; -fx-text-fill: #111111;"/>
+        <VBox spacing="6.0">
+            <HBox spacing="6.0" alignment="CENTER_LEFT" style="-fx-padding: 0 12 0 12;">
+                <Label text="Search" style="-fx-text-fill: #222222;"/>
+                <TextField fx:id="searchField" promptText="Search current view" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="searchPreviousButton" text="Previous"/>
+                <Button fx:id="searchNextButton" text="Next"/>
+                <Label fx:id="searchStatusLabel" minWidth="80.0" style="-fx-text-fill: #555555;"/>
+            </HBox>
+            <TextArea fx:id="pseudoArea" wrapText="false" VBox.vgrow="ALWAYS"
+                      style="-fx-font-family: 'Consolas'; -fx-font-size: 12px; -fx-control-inner-background: white; -fx-text-fill: #111111;"/>
+        </VBox>
     </center>
     <bottom>
         <Label fx:id="statusLabel" wrapText="true" maxWidth="Infinity" style="-fx-text-fill: #333333;">

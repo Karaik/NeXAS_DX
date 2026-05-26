@@ -262,7 +262,7 @@ public class FollowupGraftPipeline {
         mapRequest.setCurrentTargetMapGroupPath(outputRoot.resolve("MapGroup.grp"));
         mapRequest.setOutputRoot(outputRoot);
         mapRequest.setCharset(CHARSET);
-        mapRequest.setPreviewMaterializationEnabled(false);
+        mapRequest.setPreviewMaterializationEnabled(true);
         return new ImportBheMapsIntoCurrentResourceTreeStep().importMaps(mapRequest);
     }
 

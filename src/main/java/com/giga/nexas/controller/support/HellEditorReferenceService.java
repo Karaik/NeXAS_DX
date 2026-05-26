@@ -81,11 +81,10 @@ public class HellEditorReferenceService {
     /**
      * 解析某个地图 id 对应的真实预览图。
      *
-     * <p>这一段复用 exe 当前的命名规则：
+     * <p>这一段只复用 BSDX 原生缩略图命名规则：
      * `mapId -> MapGroup.grp.groupResourceName -> T_ + resourceName + .bmp`。
      *
-     * <p>输出结果保留真实资源文件名与命中路径，不再走旧的 `SPM -> PNG` 推导。
-     * 这保证编辑器显示的就是引擎正在按名称查找的那张图。
+     * <p>追加 BHE 地图只有在 pipeline 产出 `T_bhe_*.bmp` 后才会显示预览。
      */
     public MapPreviewDescriptor resolveMapPreview(
             BsdxOverlayResourceSession session,
@@ -96,26 +95,56 @@ public class HellEditorReferenceService {
             return null;
         }
 
-        String previewImageName = buildPreviewBitmapFileName(mapEntry.getGroupResourceName());
-        if (previewImageName == null) {
+        String resourceName = normalizeResourceName(mapEntry.getGroupResourceName());
+        if (resourceName == null) {
             return MapPreviewDescriptor.builder()
                     .mapEntry(mapEntry)
                     .statusText("Preview image name is unavailable for this map.")
                     .build();
         }
 
+        String previewImageName = buildPreviewBitmapFileName(resourceName);
         Path previewImagePath = session.resolveReadPath(previewImageName).orElse(null);
-        String statusText = previewImagePath != null
-                ? "Preview image resolved: " + previewImageName
-                : "Preview image not found: " + previewImageName;
+        if (previewImagePath != null) {
+            return MapPreviewDescriptor.builder()
+                    .mapEntry(mapEntry)
+                    .previewImageName(previewImageName)
+                    .previewImagePath(previewImagePath)
+                    .previewImageNames(List.of(previewImageName))
+                    .statusText("Preview image resolved: " + previewImageName)
+                    .build();
+        }
 
         return MapPreviewDescriptor.builder()
                 .mapEntry(mapEntry)
                 .previewImageName(previewImageName)
-                .previewImagePath(previewImagePath)
+                .previewImagePath(null)
                 .previewImageNames(List.of(previewImageName))
-                .statusText(statusText)
+                .statusText("Preview image not found: " + previewImageName)
                 .build();
+    }
+
+    /**
+     * 轻量判断某个地图是否具备可解析预览的入口资源。
+     *
+     * <p>这里只查真实 `T_*.bmp`，不读取 `.map`。
+     */
+    public boolean canResolveMapPreview(BsdxOverlayResourceSession session, MapLookupEntry mapEntry) {
+        return hasPreviewBitmap(session, mapEntry);
+    }
+
+    /**
+     * 判断地图是否有真实 `T_*.bmp` 缩略预览。
+     */
+    public boolean hasPreviewBitmap(BsdxOverlayResourceSession session, MapLookupEntry mapEntry) {
+        if (session == null || mapEntry == null) {
+            return false;
+        }
+        String resourceName = normalizeResourceName(mapEntry.getGroupResourceName());
+        if (resourceName == null) {
+            return false;
+        }
+        return session.exists(buildPreviewBitmapFileName(resourceName));
     }
 
     /**
@@ -197,10 +226,17 @@ public class HellEditorReferenceService {
      * 按 BSDX 地图预览的固定规则拼出 `T_map*.bmp` 文件名。
      */
     private String buildPreviewBitmapFileName(String resourceName) {
+        return MAP_PREVIEW_PREFIX + resourceName + MAP_PREVIEW_EXTENSION;
+    }
+
+    /**
+     * 规避 MapGroup 资源名为空时继续拼接无效文件名。
+     */
+    private String normalizeResourceName(String resourceName) {
         if (resourceName == null || resourceName.isBlank()) {
             return null;
         }
-        return MAP_PREVIEW_PREFIX + resourceName.trim() + MAP_PREVIEW_EXTENSION;
+        return resourceName.trim();
     }
 
     /**

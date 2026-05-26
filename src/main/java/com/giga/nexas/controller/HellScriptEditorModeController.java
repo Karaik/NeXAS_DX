@@ -11,6 +11,7 @@ import com.giga.nexas.controller.model.MekaLookupEntry;
 import com.giga.nexas.controller.model.WorkspaceState;
 import com.giga.nexas.controller.support.HellConfigLayout;
 import com.giga.nexas.controller.support.HellEditorReferenceService;
+import com.giga.nexas.controller.support.HellMapPreviewChooser;
 import com.giga.nexas.controller.support.HellModPackService;
 import com.giga.nexas.controller.support.HellScriptDataLoader;
 import com.giga.nexas.controller.support.HellScriptEditorService;
@@ -32,6 +33,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseButton;
 import javafx.scene.Node;
 import lombok.RequiredArgsConstructor;
 
@@ -69,6 +71,7 @@ public class HellScriptEditorModeController implements ModeController {
     private final HellScriptDataLoader loader = new HellScriptDataLoader();
     private final HellScriptEditorService editorService = new HellScriptEditorService();
     private final HellEditorReferenceService referenceService = new HellEditorReferenceService();
+    private final HellMapPreviewChooser mapPreviewChooser = new HellMapPreviewChooser(referenceService);
     private HellModPackService modPackService = new HellModPackService();
 
     /**
@@ -844,6 +847,57 @@ public class HellScriptEditorModeController implements ModeController {
         view.getHellMapPreviewImageView().setFitHeight(MAP_PREVIEW_FIXED_HEIGHT);
         view.getHellMapPreviewImageView().setFitWidth(0);
         view.getHellMapPreviewImageView().setSmooth(true);
+        view.getHellMapPreviewImageView().setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() >= 2) {
+                openMapPreviewChooser();
+                event.consume();
+            }
+        });
+        view.getHellMapPreviewStatusLabel().setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() >= 2) {
+                openMapPreviewChooser();
+                event.consume();
+            }
+        });
+    }
+
+    /**
+     * 打开全地图预览选择器，并把选中的地图写回当前关卡表单。
+     */
+    private void openMapPreviewChooser() {
+        if (view.getHellStageMapField().isDisabled()) {
+            showInfo("Map Preview", "Select a stage first.");
+            return;
+        }
+        BsdxOverlayResourceSession session = state.getBsdxOverlaySession().get();
+        if (session == null) {
+            showInfo("Map Preview", "No active BSDX resource session.");
+            return;
+        }
+        if (referenceData == null || referenceData.getMapEntries() == null || referenceData.getMapEntries().isEmpty()) {
+            showInfo("Map Preview", "No map reference data loaded.");
+            return;
+        }
+
+        mapPreviewChooser.choose(view.getHellMapPreviewImageView(), referenceData, session, state.getCharset().get())
+                .ifPresent(this::applySelectedMap);
+    }
+
+    /**
+     * 应用预览窗口选择的地图。
+     *
+     * <p>这里只更新右侧表单和预览，不直接保存文件；真正写回仍然由 Save Metadata 完成。</p>
+     */
+    private void applySelectedMap(MapLookupEntry mapEntry) {
+        if (mapEntry == null) {
+            return;
+        }
+        view.getHellStageMapField().setText(Integer.toString(mapEntry.getMapId()));
+        refreshMapSection(mapEntry.getMapId());
+        view.getHellEditorStatusLabel().setText(
+                "Selected map " + mapEntry.getMapId() + " (" + nullToEmpty(mapEntry.getGroupResourceName())
+                        + "). Click Save Metadata to persist."
+        );
     }
 
     /**

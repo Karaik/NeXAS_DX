@@ -20,6 +20,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.skin.TextAreaSkin;
 import javafx.scene.layout.BorderPane;
@@ -54,6 +55,10 @@ public class BinPseudoEditorController {
     @FXML private RadioButton pseudoModeButton;
     @FXML private Button reloadButton;
     @FXML private Button compileButton;
+    @FXML private TextField searchField;
+    @FXML private Button searchPreviousButton;
+    @FXML private Button searchNextButton;
+    @FXML private Label searchStatusLabel;
 
     private final BsdxBinService bsdxBinService = new BsdxBinService();
     private final BsdxBinRenderer renderer = new BsdxBinRenderer();
@@ -72,10 +77,12 @@ public class BinPseudoEditorController {
     private Stage stage;
     private boolean suppressDirtyTracking;
     private boolean suppressModeEvents;
+    private boolean suppressSearchEvents;
     private boolean dirty;
     private EditorMode currentMode = EditorMode.PSEUDO;
     private String currentLosslessPseudoText = "";
     private String statusBaseText = "";
+    private final Map<EditorMode, SearchState> searchStates = new HashMap<>();
 
     /**
      * 主界面内嵌脚本编辑器的加载结果。
@@ -198,6 +205,10 @@ public class BinPseudoEditorController {
         pseudoModeButton.setOnAction(event -> switchMode(EditorMode.PSEUDO));
         reloadButton.setOnAction(event -> reloadFromDisk());
         compileButton.setOnAction(event -> compileBack());
+        searchPreviousButton.setOnAction(event -> findPrevious());
+        searchNextButton.setOnAction(event -> findNext());
+        searchField.setOnAction(event -> findNext());
+        searchField.textProperty().addListener((obs, oldText, newText) -> updateSearchText(newText));
         pseudoArea.selectedTextProperty().addListener((obs, oldText, newText) -> scheduleOperandTooltipUpdate());
         pseudoArea.caretPositionProperty().addListener((obs, oldValue, newValue) -> scheduleOperandTooltipUpdate());
         pseudoArea.textProperty().addListener((obs, oldText, newText) -> {
@@ -205,7 +216,9 @@ public class BinPseudoEditorController {
                 setDirty(true);
             }
             hideOperandPopup();
+            refreshSearchStatus();
         });
+        refreshSearchControls();
     }
 
     private void bindStage(Stage stage) {
@@ -407,6 +420,7 @@ public class BinPseudoEditorController {
         currentMode = targetMode;
         refreshEditorText();
         setDirty(false);
+        restoreSearchControls();
         updateEditorHintStatus(targetMode == EditorMode.ASM
                 ? "ASM mode: strict reversible editing enabled."
                 : "Pseudo mode: lossless pseudo enabled; unchanged lines replay exact IR.");
@@ -430,6 +444,170 @@ public class BinPseudoEditorController {
         suppressDirtyTracking = false;
         hideOperandPopup();
         restoreModeSelection();
+        restoreSearchControls();
+    }
+
+    private void updateSearchText(String text) {
+        if (suppressSearchEvents) {
+            return;
+        }
+        SearchState state = currentSearchState();
+        state.query = text == null ? "" : text;
+        state.lastMatchStart = -1;
+        state.lastMatchEnd = -1;
+        refreshSearchStatus();
+    }
+
+    private void restoreSearchControls() {
+        suppressSearchEvents = true;
+        searchField.setText(currentSearchState().query);
+        suppressSearchEvents = false;
+        refreshSearchStatus();
+    }
+
+    private void refreshSearchControls() {
+        restoreSearchControls();
+    }
+
+    private SearchState currentSearchState() {
+        return searchStates.computeIfAbsent(currentMode, ignored -> new SearchState());
+    }
+
+    private void findNext() {
+        findInCurrentView(true);
+    }
+
+    private void findPrevious() {
+        findInCurrentView(false);
+    }
+
+    private void findInCurrentView(boolean forward) {
+        SearchState state = currentSearchState();
+        String query = normalizeSearchQuery(searchField.getText());
+        state.query = query;
+        if (query.isEmpty()) {
+            state.lastMatchStart = -1;
+            state.lastMatchEnd = -1;
+            refreshSearchStatus();
+            return;
+        }
+
+        String text = pseudoArea.getText();
+        if (text == null || text.isEmpty()) {
+            state.lastMatchStart = -1;
+            state.lastMatchEnd = -1;
+            refreshSearchStatus();
+            return;
+        }
+
+        int matchStart = forward ? findNextIndex(text, query, state) : findPreviousIndex(text, query, state);
+        if (matchStart < 0) {
+            state.lastMatchStart = -1;
+            state.lastMatchEnd = -1;
+            refreshSearchStatus();
+            return;
+        }
+
+        state.lastMatchStart = matchStart;
+        state.lastMatchEnd = matchStart + query.length();
+        pseudoArea.requestFocus();
+        pseudoArea.selectRange(state.lastMatchStart, state.lastMatchEnd);
+        refreshSearchStatus();
+    }
+
+    private int findNextIndex(String text, String query, SearchState state) {
+        int start = state.lastMatchEnd >= 0 ? state.lastMatchEnd : pseudoArea.getCaretPosition();
+        if (start < 0 || start > text.length()) {
+            start = 0;
+        }
+        int found = indexOfIgnoreCase(text, query, start);
+        return found >= 0 ? found : indexOfIgnoreCase(text, query, 0);
+    }
+
+    private int findPreviousIndex(String text, String query, SearchState state) {
+        int start = state.lastMatchStart >= 0 ? state.lastMatchStart - 1 : pseudoArea.getCaretPosition() - 1;
+        if (start >= text.length()) {
+            start = text.length() - 1;
+        }
+        int found = lastIndexOfIgnoreCase(text, query, start);
+        return found >= 0 ? found : lastIndexOfIgnoreCase(text, query, text.length() - 1);
+    }
+
+    private int indexOfIgnoreCase(String text, String query, int fromIndex) {
+        int max = text.length() - query.length();
+        for (int i = Math.max(0, fromIndex); i <= max; i++) {
+            if (text.regionMatches(true, i, query, 0, query.length())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int lastIndexOfIgnoreCase(String text, String query, int fromIndex) {
+        int max = text.length() - query.length();
+        for (int i = Math.min(fromIndex, max); i >= 0; i--) {
+            if (text.regionMatches(true, i, query, 0, query.length())) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void refreshSearchStatus() {
+        if (searchStatusLabel == null) {
+            return;
+        }
+        SearchState state = currentSearchState();
+        String query = normalizeSearchQuery(state.query);
+        if (query.isEmpty()) {
+            searchStatusLabel.setText("");
+            return;
+        }
+        int count = countMatchesIgnoreCase(pseudoArea.getText(), query);
+        if (count <= 0) {
+            searchStatusLabel.setText("0 matches");
+            return;
+        }
+        int current = state.lastMatchStart >= 0 ? countMatchesBefore(pseudoArea.getText(), query, state.lastMatchStart) + 1 : 0;
+        searchStatusLabel.setText(current <= 0 ? count + " matches" : current + " / " + count);
+    }
+
+    private int countMatchesIgnoreCase(String text, String query) {
+        if (text == null || text.isEmpty() || query.isEmpty()) {
+            return 0;
+        }
+        int count = 0;
+        int index = 0;
+        while (index <= text.length() - query.length()) {
+            int found = indexOfIgnoreCase(text, query, index);
+            if (found < 0) {
+                break;
+            }
+            count++;
+            index = found + Math.max(1, query.length());
+        }
+        return count;
+    }
+
+    private int countMatchesBefore(String text, String query, int beforeIndex) {
+        if (text == null || query.isEmpty() || beforeIndex <= 0) {
+            return 0;
+        }
+        int count = 0;
+        int index = 0;
+        while (index < beforeIndex) {
+            int found = indexOfIgnoreCase(text, query, index);
+            if (found < 0 || found >= beforeIndex) {
+                break;
+            }
+            count++;
+            index = found + Math.max(1, query.length());
+        }
+        return count;
+    }
+
+    private String normalizeSearchQuery(String query) {
+        return query == null ? "" : query;
     }
 
     private void restoreModeSelection() {
@@ -842,6 +1020,12 @@ public class BinPseudoEditorController {
             }
         }
         return documented.size();
+    }
+
+    private static class SearchState {
+        private String query = "";
+        private int lastMatchStart = -1;
+        private int lastMatchEnd = -1;
     }
 
     private enum EditorMode {
