@@ -136,6 +136,7 @@ public class HellScriptEditorModeController implements ModeController {
                 view.getHellMekaLookupHintLabel(),
                 enemyTypeFields,
                 enemyTypeNameLabels,
+                enemyCountFields,
                 () -> referenceData
         );
         mekaLookupController.setup();
@@ -201,6 +202,7 @@ public class HellScriptEditorModeController implements ModeController {
         view.getSaveHellMetadataButton().setOnAction(event -> saveSelectedStageMetadata());
         view.getAppendHellStageButton().setOnAction(event -> appendSelectedStage());
         view.getPackageHellModButton().setOnAction(event -> packageModDirectory());
+        view.getChooseHellMapButton().setOnAction(event -> mapPreviewController.requestOpenChooser());
         view.getHellMekaLookupFilterField().textProperty().addListener((obs, oldValue, newValue) -> mekaLookupController.refreshMekaLookupFilter());
 
     }
@@ -265,7 +267,7 @@ public class HellScriptEditorModeController implements ModeController {
             stageTreeController.populateStageTree(stages, preferredIndex);
             view.getHellSessionRootLabel().setText("Root: " + session.getRootDirectory());
             view.getHellSessionModLabel().setText("Mod: " + session.getModDirectory());
-            view.getHellEditorStatusLabel().setText("Loaded " + stages.size() + " Hell stage entries.");
+            setEditorStatus("Loaded " + stages.size() + " Hell stage entries.", STATUS_STYLE_READY);
             updateEditorStatusBar(stages.size(), null);
         } catch (Exception ex) {
             clearEditorState("Failed to load Hell resources: " + ex.getMessage());
@@ -322,7 +324,7 @@ public class HellScriptEditorModeController implements ModeController {
             BsdxOverlayResourceSession refreshed = editorService.saveMetadata(session, state.getCharset().get(), draft);
             state.getBsdxOverlaySession().set(refreshed);
             reloadEditorData(stage.getIndex());
-            view.getHellEditorStatusLabel().setText("Saved metadata to mod/HellConfig.dat for stage " + stage.getIndex() + ".");
+            setEditorStatus("Saved metadata to mod/HellConfig.dat for stage " + stage.getIndex() + ".", STATUS_STYLE_READY);
         } catch (Exception ex) {
             showInfo("Hell Script Editor", "Failed to save stage metadata: " + ex.getMessage());
         }
@@ -353,8 +355,9 @@ public class HellScriptEditorModeController implements ModeController {
             );
             state.getBsdxOverlaySession().set(result.session());
             reloadEditorData(result.stageIndex());
-            view.getHellEditorStatusLabel().setText(
-                    "Appended a new stage from blueprint " + stage.getIndex() + " into " + result.scriptFileName() + "."
+            setEditorStatus(
+                    "Appended a new stage from blueprint " + stage.getIndex() + " into " + result.scriptFileName() + ".",
+                    STATUS_STYLE_READY
             );
         } catch (Exception ex) {
             showInfo("Hell Script Editor", "Failed to append stage: " + ex.getMessage());
@@ -398,13 +401,28 @@ public class HellScriptEditorModeController implements ModeController {
             return;
         }
 
+        Path modDir = session.getModDirectory();
+        Path outputPac = modDir.resolve(UPDATE4_PAC_FILE_NAME);
+        String confirmMessage = "Mod directory: " + modDir + "\n"
+                + "Output: " + outputPac + "\n\n"
+                + (Files.exists(outputPac) ? "The output file already exists and will be overwritten." : "A new file will be created.");
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, confirmMessage, ButtonType.OK, ButtonType.CANCEL);
+        confirm.setTitle("Package Update4.pac");
+        confirm.setHeaderText("Pack current mod directory into Update4.pac?");
+        if (view.getRoot().getScene() != null) {
+            confirm.initOwner(view.getRoot().getScene().getWindow());
+        }
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+
         try {
-            Path outputPac = modPackService.packModDirectory(
-                    session.getModDirectory(),
+            Path result = modPackService.packModDirectory(
+                    modDir,
                     UPDATE4_PAC_FILE_NAME,
                     DEFAULT_PAC_COMPRESS_MODE
             );
-            view.getHellEditorStatusLabel().setText("Packed mod directory into " + outputPac + ".");
+            setEditorStatus("Packed mod directory into " + result + ".", STATUS_STYLE_READY);
         } catch (Exception ex) {
             showInfo("Hell Script Editor", "Failed to pack mod directory: " + ex.getMessage());
         }
@@ -418,7 +436,7 @@ public class HellScriptEditorModeController implements ModeController {
         mekaLookupController.clearMekaEntries();
         view.getHellSessionRootLabel().setText("Root: -");
         view.getHellSessionModLabel().setText("Mod: -");
-        view.getHellEditorStatusLabel().setText(status);
+        setEditorStatus(status, STATUS_STYLE_ERROR);
         stageTreeController.clear();
         embeddedScriptController.clear("Select a stage to edit pseudo code here.");
         stageDetailController.showStageDetails(null);
@@ -432,6 +450,17 @@ public class HellScriptEditorModeController implements ModeController {
         String summary = HellStageStatusFormatter.formatEditorSummary(stageCount, selectedStage);
         view.getTreeSummaryLabel().setText(summary);
         view.getStatusLabel().setText(summary);
+    }
+
+    private static final String STATUS_STYLE_READY = "-fx-text-fill: #2e7d32;";
+    private static final String STATUS_STYLE_WORKING = "-fx-text-fill: #e65100;";
+    private static final String STATUS_STYLE_ERROR = "-fx-text-fill: #c62828;";
+    private static final String STATUS_STYLE_DEFAULT = "";
+
+    private void setEditorStatus(String text, String style) {
+        Label label = view.getHellEditorStatusLabel();
+        label.setText(text);
+        label.setStyle(style);
     }
 
     /**

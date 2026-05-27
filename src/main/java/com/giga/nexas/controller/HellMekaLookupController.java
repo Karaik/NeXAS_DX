@@ -28,21 +28,24 @@ import java.util.function.Supplier;
  */
 public class HellMekaLookupController {
 
+    private static final String DEFAULT_HINT_TEXT = "Click an enemy type field first, then double-click a meka row to fill it.";
+    private static final String ACTIVE_SLOT_FIELD_STYLE = "-fx-background-color: #fff7d6; -fx-border-color: #f0a500; -fx-border-width: 1.4;";
+    private static final String ACTIVE_SLOT_NAME_STYLE = "-fx-background-color: #fff7d6;";
+
     private final TableView<MekaLookupEntry> mekaLookupTable;
     private final TextField mekaLookupFilterField;
     private final Label mekaLookupHintLabel;
     private final List<TextField> enemyTypeFields;
     private final List<Label> enemyTypeNameLabels;
+    private final List<TextField> enemyCountFields;
     private final Supplier<HellEditorReferenceData> referenceDataSupplier;
 
     private final ObservableList<MekaLookupEntry> mekaLookupItems = FXCollections.observableArrayList();
     private final FilteredList<MekaLookupEntry> filteredMekaEntries = new FilteredList<>(mekaLookupItems, entry -> true);
     private final SortedList<MekaLookupEntry> sortedMekaEntries = new SortedList<>(filteredMekaEntries);
 
-    /**
-     * 当前正在编辑的敌机类型输入框。
-     */
     private TextField activeEnemyTypeField;
+    private int activeSlotIndex = -1;
 
     public HellMekaLookupController(
             TableView<MekaLookupEntry> mekaLookupTable,
@@ -50,6 +53,7 @@ public class HellMekaLookupController {
             Label mekaLookupHintLabel,
             List<TextField> enemyTypeFields,
             List<Label> enemyTypeNameLabels,
+            List<TextField> enemyCountFields,
             Supplier<HellEditorReferenceData> referenceDataSupplier
     ) {
         this.mekaLookupTable = mekaLookupTable;
@@ -57,6 +61,7 @@ public class HellMekaLookupController {
         this.mekaLookupHintLabel = mekaLookupHintLabel;
         this.enemyTypeFields = enemyTypeFields;
         this.enemyTypeNameLabels = enemyTypeNameLabels;
+        this.enemyCountFields = enemyCountFields;
         this.referenceDataSupplier = referenceDataSupplier;
     }
 
@@ -149,12 +154,54 @@ public class HellMekaLookupController {
             field.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
                 if (isFocused) {
                     activeEnemyTypeField = field;
-                    mekaLookupHintLabel.setText("Focused enemy slot " + slotIndex + ". Double-click a meka row to fill this slot.");
+                    activateSlotHighlight(slotIndex);
+                    mekaLookupHintLabel.setText(buildFocusedHint(slotIndex));
                     syncLookupSelectionToEnemyTypeField(field);
                 }
             });
         }
-        mekaLookupHintLabel.setText("Focus an enemy type field, then double-click a meka row to fill it.");
+        mekaLookupHintLabel.setText(DEFAULT_HINT_TEXT);
+    }
+
+    /**
+     * 给指定 slot 增加高亮，其它 slot 去掉高亮。
+     */
+    private void activateSlotHighlight(int slotIndex) {
+        activeSlotIndex = slotIndex;
+        for (int i = 0; i < enemyTypeFields.size(); i++) {
+            boolean active = i == slotIndex;
+            applySlotHighlight(i, active);
+        }
+    }
+
+    private void applySlotHighlight(int slotIndex, boolean active) {
+        if (slotIndex < 0 || slotIndex >= enemyTypeFields.size()) {
+            return;
+        }
+        TextField typeField = enemyTypeFields.get(slotIndex);
+        typeField.setStyle(active ? ACTIVE_SLOT_FIELD_STYLE : "");
+        if (slotIndex < enemyTypeNameLabels.size()) {
+            enemyTypeNameLabels.get(slotIndex).setStyle(active ? ACTIVE_SLOT_NAME_STYLE : "");
+        }
+        if (enemyCountFields != null && slotIndex < enemyCountFields.size()) {
+            enemyCountFields.get(slotIndex).setStyle(active ? ACTIVE_SLOT_FIELD_STYLE : "");
+        }
+    }
+
+    /**
+     * 清除全部 enemy slot 高亮和提示。
+     */
+    public void clearActiveEnemySlotHighlight() {
+        for (int i = 0; i < enemyTypeFields.size(); i++) {
+            applySlotHighlight(i, false);
+        }
+        activeSlotIndex = -1;
+        activeEnemyTypeField = null;
+        mekaLookupHintLabel.setText(DEFAULT_HINT_TEXT);
+    }
+
+    private String buildFocusedHint(int slotIndex) {
+        return "Filling enemy slot " + slotIndex + ". Double-click a meka row to fill this slot.";
     }
 
     private void fillFocusedEnemyTypeFromLookup() {

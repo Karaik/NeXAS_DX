@@ -1,6 +1,7 @@
 package com.giga.nexas.bsdx;
 
 import com.giga.nexas.controller.MainViewController;
+import com.giga.nexas.controller.HellEmbeddedScriptController;
 import com.giga.nexas.controller.HellScriptEditorModeController;
 import com.giga.nexas.controller.model.HellStageDescriptor;
 import com.giga.nexas.controller.model.MainViewMode;
@@ -360,7 +361,7 @@ class MainViewHellEditorInteractionTest {
                 HellStageDescriptor selectedStage = controller.getHellStageTree().getSelectionModel().getSelectedItem().getValue();
                 Assertions.assertEquals(
                         selectedStage.getScriptFileName(),
-                        controller.getHellScriptEditorModeController().getEmbeddedEditorHandle().controller().getDocumentLogicalName()
+                        controller.getHellScriptEditorModeController().getEmbeddedScriptController().getEmbeddedEditorHandle().controller().getDocumentLogicalName()
                 );
                 Assertions.assertEquals(1, controller.getHellScriptEditorHost().getChildren().size());
             });
@@ -394,12 +395,12 @@ class MainViewHellEditorInteractionTest {
             HellScriptEditorModeController hellModeController = controller.getHellScriptEditorModeController();
             onFxAndWait(() -> {
                 javafx.scene.control.TextArea pseudoArea = readPrivateField(
-                        hellModeController.getEmbeddedEditorHandle().controller(),
+                        hellModeController.getEmbeddedScriptController().getEmbeddedEditorHandle().controller(),
                         "pseudoArea",
                         javafx.scene.control.TextArea.class
                 );
                 pseudoArea.appendText("\r\nmarker 999");
-                hellModeController.setLeaveScriptConfirmationHandlerForTest((script, action) -> HellScriptEditorModeController.LeaveScriptDecision.CANCEL);
+                hellModeController.getEmbeddedScriptController().setLeaveScriptConfirmationHandlerForTest((script, action) -> HellEmbeddedScriptController.LeaveScriptDecision.CANCEL);
                 controller.getHellStageTree().getSelectionModel().select(hell101Item);
             });
 
@@ -408,12 +409,12 @@ class MainViewHellEditorInteractionTest {
                 Assertions.assertEquals(hell100Item.getValue().getIndex(), selectedStage.getIndex());
                 Assertions.assertEquals(
                         selectedStage.getScriptFileName(),
-                        hellModeController.getEmbeddedEditorHandle().controller().getDocumentLogicalName()
+                        hellModeController.getEmbeddedScriptController().getEmbeddedEditorHandle().controller().getDocumentLogicalName()
                 );
             });
 
             onFxAndWait(() -> {
-                hellModeController.setLeaveScriptConfirmationHandlerForTest((script, action) -> HellScriptEditorModeController.LeaveScriptDecision.DISCARD);
+                hellModeController.getEmbeddedScriptController().setLeaveScriptConfirmationHandlerForTest((script, action) -> HellEmbeddedScriptController.LeaveScriptDecision.DISCARD);
                 controller.getHellStageTree().getSelectionModel().select(hell101Item);
             });
 
@@ -422,7 +423,7 @@ class MainViewHellEditorInteractionTest {
                 Assertions.assertEquals(hell101Item.getValue().getIndex(), selectedStage.getIndex());
                 Assertions.assertEquals(
                         selectedStage.getScriptFileName(),
-                        hellModeController.getEmbeddedEditorHandle().controller().getDocumentLogicalName()
+                        hellModeController.getEmbeddedScriptController().getEmbeddedEditorHandle().controller().getDocumentLogicalName()
                 );
             });
 
@@ -453,12 +454,12 @@ class MainViewHellEditorInteractionTest {
             HellScriptEditorModeController hellModeController = controller.getHellScriptEditorModeController();
             onFxAndWait(() -> {
                 javafx.scene.control.TextArea pseudoArea = readPrivateField(
-                        hellModeController.getEmbeddedEditorHandle().controller(),
+                        hellModeController.getEmbeddedScriptController().getEmbeddedEditorHandle().controller(),
                         "pseudoArea",
                         javafx.scene.control.TextArea.class
                 );
                 pseudoArea.appendText("\r\nmarker 998");
-                hellModeController.setLeaveScriptConfirmationHandlerForTest((script, action) -> HellScriptEditorModeController.LeaveScriptDecision.CANCEL);
+                hellModeController.getEmbeddedScriptController().setLeaveScriptConfirmationHandlerForTest((script, action) -> HellEmbeddedScriptController.LeaveScriptDecision.CANCEL);
             });
 
             onFxAndWait(() -> controller.getScriptEditorModeButton().fire());
@@ -471,7 +472,7 @@ class MainViewHellEditorInteractionTest {
             onFxAndWait(() -> Assertions.assertEquals(com.giga.nexas.controller.model.EngineType.BSDX, controller.getWorkspaceState().getEngineType().get()));
 
             onFxAndWait(() -> {
-                hellModeController.setLeaveScriptConfirmationHandlerForTest((script, action) -> HellScriptEditorModeController.LeaveScriptDecision.DISCARD);
+                hellModeController.getEmbeddedScriptController().setLeaveScriptConfirmationHandlerForTest((script, action) -> HellEmbeddedScriptController.LeaveScriptDecision.DISCARD);
                 controller.getScriptEditorModeButton().fire();
             });
             onFxAndWait(() -> Assertions.assertEquals(MainViewMode.WORKSPACE, controller.getWorkspaceState().getMainViewMode().get()));
@@ -510,19 +511,19 @@ class MainViewHellEditorInteractionTest {
 
             onFxAndWait(() -> {
                 javafx.scene.control.TextArea pseudoArea = readPrivateField(
-                        hellModeController.getEmbeddedEditorHandle().controller(),
+                        hellModeController.getEmbeddedScriptController().getEmbeddedEditorHandle().controller(),
                         "pseudoArea",
                         javafx.scene.control.TextArea.class
                 );
                 pseudoArea.appendText("\r\nmarker 997");
-                hellModeController.setLeaveScriptConfirmationHandlerForTest((script, action) -> HellScriptEditorModeController.LeaveScriptDecision.CANCEL);
+                hellModeController.getEmbeddedScriptController().setLeaveScriptConfirmationHandlerForTest((script, action) -> HellEmbeddedScriptController.LeaveScriptDecision.CANCEL);
                 controller.getPackageHellModButton().fire();
             });
 
             Assertions.assertFalse(Files.exists(root.resolve("mod").resolve("pac").resolve("Update4.pac")));
 
             onFxAndWait(() -> {
-                hellModeController.setLeaveScriptConfirmationHandlerForTest((script, action) -> HellScriptEditorModeController.LeaveScriptDecision.DISCARD);
+                hellModeController.getEmbeddedScriptController().setLeaveScriptConfirmationHandlerForTest((script, action) -> HellEmbeddedScriptController.LeaveScriptDecision.DISCARD);
                 controller.getPackageHellModButton().fire();
             });
 

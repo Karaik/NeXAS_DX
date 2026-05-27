@@ -75,10 +75,26 @@
                                 </GridPane>
 
                                 <HBox spacing="10.0" alignment="CENTER_RIGHT">
-                                    <CheckBox fx:id="lockOutPutPath" text="Lock output path"/>
-                                    <Button fx:id="reloadButton" text="Reload" minWidth="80.0"/>
-                                    <Button fx:id="actionButton" text="Run selected" minWidth="110.0"/>
-                                    <Button fx:id="processAllButton" text="Run all" minWidth="90.0"/>
+                                    <CheckBox fx:id="lockOutPutPath" text="Lock output path">
+                                        <tooltip>
+                                            <Tooltip text="Prevent output path from automatically following input path."/>
+                                        </tooltip>
+                                    </CheckBox>
+                                    <Button fx:id="reloadButton" text="Reload" minWidth="80.0">
+                                        <tooltip>
+                                            <Tooltip text="Reload the current input directory."/>
+                                        </tooltip>
+                                    </Button>
+                                    <Button fx:id="actionButton" text="Run selected" minWidth="110.0">
+                                        <tooltip>
+                                            <Tooltip text="Run the selected file or selected group."/>
+                                        </tooltip>
+                                    </Button>
+                                    <Button fx:id="processAllButton" text="Run all" minWidth="90.0">
+                                        <tooltip>
+                                            <Tooltip text="Run all files in the current input directory."/>
+                                        </tooltip>
+                                    </Button>
                                 </HBox>
                             </VBox>
                         </StackPane>
@@ -127,7 +143,11 @@
                         <Label fx:id="hellEditorStatusLabel" text="Hell Script Editor is idle." wrapText="true"/>
                         <HBox spacing="10.0" alignment="CENTER_RIGHT">
                             <Pane HBox.hgrow="ALWAYS"/>
-                            <Button fx:id="packageHellModButton" text="Package Update4.pac"/>
+                            <Button fx:id="packageHellModButton" text="Package Update4.pac">
+                                <tooltip>
+                                    <Tooltip text="Pack current mod directory into Update4.pac."/>
+                                </tooltip>
+                            </Button>
                         </HBox>
                     </VBox>
                 </top>
@@ -190,7 +210,15 @@
                                     </GridPane>
                                     <Label text="Description"/>
                                     <TextArea fx:id="hellStageDescriptionArea" wrapText="true" prefRowCount="6"/>
-                                    <Label text="Map preview"/>
+                                    <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                        <Label text="Map preview"/>
+                                        <Pane HBox.hgrow="ALWAYS"/>
+                                        <Button fx:id="chooseHellMapButton" text="Choose Map...">
+                                            <tooltip>
+                                                <Tooltip text="Double-click preview or click Choose Map to pick a map."/>
+                                            </tooltip>
+                                        </Button>
+                                    </HBox>
                                     <StackPane minHeight="320.0" prefHeight="320.0" style="-fx-background-color: #f5f6f8; -fx-border-color: #b7bcc7; -fx-border-radius: 4; -fx-background-radius: 4;">
                                         <ImageView fx:id="hellMapPreviewImageView" fitHeight="280.0" preserveRatio="true" managed="false" visible="false"/>
                                         <Label fx:id="hellMapPreviewStatusLabel" text="Select a stage to inspect the current map." wrapText="true" style="-fx-text-fill: #444444;"/>
@@ -242,12 +270,16 @@
                                         <TextField fx:id="hellEnemyCount7Field" GridPane.rowIndex="8" GridPane.columnIndex="3"/>
                                     </GridPane>
                                     <HBox spacing="10.0" alignment="CENTER_RIGHT">
-                                        <Button fx:id="saveHellMetadataButton" text="Save Metadata"/>
+                                        <Button fx:id="saveHellMetadataButton" text="Save Metadata">
+                                            <tooltip>
+                                                <Tooltip text="Save stage metadata to mod/HellConfig.dat."/>
+                                            </tooltip>
+                                        </Button>
                                     </HBox>
                                     <Separator/>
                                     <Label text="Meka lookup" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
                                     <TextField fx:id="hellMekaLookupFilterField" promptText="Filter by meka id, name, code or file"/>
-                                    <Label fx:id="hellMekaLookupHintLabel" text="Focus an enemy type field, then double-click a meka row to fill it." wrapText="true"/>
+                                    <Label fx:id="hellMekaLookupHintLabel" text="Click an enemy type field first, then double-click a meka row to fill it." wrapText="true"/>
                                     <TableView fx:id="hellMekaLookupTable" prefHeight="340.0"/>
                                 </VBox>
                             </content>
@@ -259,7 +291,11 @@
                             <HBox spacing="10.0" alignment="CENTER_LEFT">
                                 <Label text="Embedded script editor" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
                                 <Pane HBox.hgrow="ALWAYS"/>
-                                <Button fx:id="openSelectedHellScriptButton" text="Reload Current Script"/>
+                                <Button fx:id="openSelectedHellScriptButton" text="Reload (discard changes)">
+                                    <tooltip>
+                                        <Tooltip text="Reload the current script from disk and discard unsaved pseudo code changes."/>
+                                    </tooltip>
+                                </Button>
                             </HBox>
                             <StackPane fx:id="hellScriptEditorHost" VBox.vgrow="ALWAYS" style="-fx-background-color: #f6f7fb; -fx-border-color: #b7bcc7; -fx-border-radius: 4; -fx-background-radius: 4;">
                                 <Label fx:id="hellScriptEditorPlaceholderLabel" text="Select a stage to edit pseudo code here." wrapText="true" style="-fx-text-fill: #444444;"/>

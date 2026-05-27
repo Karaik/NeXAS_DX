@@ -4,6 +4,7 @@ import com.giga.nexas.controller.model.MainViewMode;
 import com.giga.nexas.controller.model.WorkspaceState;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.StackPane;
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +28,7 @@ public class BsdxResourceEditorModeController implements ModeController {
     @Override
     public Node content() {
         if (placeholder == null) {
-            placeholder = new StackPane(new Label("BSDX resource editor is not enabled. Define the editing workflow first."));
+            placeholder = new StackPane(new Label("BSDX Resource Editor is not implemented yet."));
             placeholder.setVisible(false);
             placeholder.setManaged(false);
             view.getModeContentPane().getChildren().add(placeholder);
@@ -38,7 +39,8 @@ public class BsdxResourceEditorModeController implements ModeController {
     @Override
     public void activate() {
         state.getBsdxOverlaySession().set(null);
-        view.getStatusLabel().setText("BSDX Resource Editor | Disabled pending workflow design.");
+        view.getStatusLabel().setText("BSDX Resource Editor | Not implemented yet.");
+        Tooltip.install(view.getBsdxResourceModeButton(), new Tooltip("This mode is not implemented yet."));
     }
 
     @Override

@@ -182,7 +182,8 @@ public class HellStageDetailController {
         fillSlotFields(enemyTypeFields, List.of());
         fillSlotFields(enemyCountFields, List.of());
         mekaLookupController.clearEnemyTypeNames();
-        mapPreviewController.clearMapPreview("Select a stage to inspect the current map.");
+        mekaLookupController.clearActiveEnemySlotHighlight();
+        mapPreviewController.resetMapDisplay("Select a stage to inspect the current map.");
         clearAppendStageArea();
         openScriptButton.setDisable(true);
         saveMetadataButton.setDisable(true);

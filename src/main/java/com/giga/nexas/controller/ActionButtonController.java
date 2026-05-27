@@ -4,6 +4,8 @@ import com.giga.nexas.controller.model.*;
 import com.giga.nexas.service.engine.BinaryEngineAdapter;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TreeItem;
 import lombok.RequiredArgsConstructor;
 
@@ -81,6 +83,20 @@ public class ActionButtonController {
         List<WorkspaceCategory> categories = new ArrayList<>(state.getCategories());
         if (categories.isEmpty()) {
             logLater("Nothing to process. Load a directory first.");
+            return;
+        }
+        int fileCount = categories.stream()
+                .mapToInt(c -> c.getBinaryFiles().size() + c.getJsonFiles().size())
+                .sum();
+        String confirmMessage = fileCount + " files across " + categories.size() + " categories will be processed.\n"
+                + "This may take some time for large directories.";
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, confirmMessage, ButtonType.OK, ButtonType.CANCEL);
+        confirm.setTitle("Run All");
+        confirm.setHeaderText("Run all files in the current input directory?");
+        if (view.getRoot().getScene() != null) {
+            confirm.initOwner(view.getRoot().getScene().getWindow());
+        }
+        if (confirm.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
             return;
         }
         runCategoryBatch(categories, true, true);

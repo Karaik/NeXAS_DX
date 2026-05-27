@@ -6,10 +6,12 @@ import com.giga.nexas.controller.model.MapLookupEntry;
 import com.giga.nexas.controller.model.MapPreviewDescriptor;
 import com.giga.nexas.controller.support.HellEditorReferenceService;
 import com.giga.nexas.controller.support.HellMapPreviewChooser;
+import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelWriter;
@@ -83,6 +85,11 @@ public class HellMapPreviewController {
         mapPreviewImageView.setFitHeight(MAP_PREVIEW_FIXED_HEIGHT);
         mapPreviewImageView.setFitWidth(0);
         mapPreviewImageView.setSmooth(true);
+        mapPreviewImageView.setCursor(Cursor.HAND);
+        mapPreviewStatusLabel.setCursor(Cursor.HAND);
+        Tooltip previewTooltip = new Tooltip("Double-click preview or click Choose Map to pick a map.");
+        Tooltip.install(mapPreviewImageView, previewTooltip);
+        Tooltip.install(mapPreviewStatusLabel, previewTooltip);
         mapPreviewImageView.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() >= 2) {
                 openMapPreviewChooser();
@@ -95,6 +102,22 @@ public class HellMapPreviewController {
                 event.consume();
             }
         });
+    }
+
+    /**
+     * 把当前地图相关的标签和预览全部重置为占位状态。
+     */
+    public void resetMapDisplay(String statusText) {
+        mapNameLabel.setText("-");
+        mapResourceLabel.setText("-");
+        clearMapPreview(statusText);
+    }
+
+    /**
+     * 触发打开地图预览选择器（与双击预览区域等价）。
+     */
+    public void requestOpenChooser() {
+        openMapPreviewChooser();
     }
 
     /**
@@ -183,6 +206,7 @@ public class HellMapPreviewController {
                 "Selected map " + mapEntry.getMapId() + " (" + nullToEmpty(mapEntry.getGroupResourceName())
                         + "). Click Save Metadata to persist."
         );
+        editorStatusLabel.setStyle("-fx-text-fill: #e65100;");
     }
 
     /**

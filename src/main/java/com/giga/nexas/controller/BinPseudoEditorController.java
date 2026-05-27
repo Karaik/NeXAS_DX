@@ -907,6 +907,12 @@ public class BinPseudoEditorController {
 
         StackPane container = new StackPane(operandPopupLabel);
         container.setStyle("-fx-background-color: transparent;");
+        container.setOnMouseClicked(event -> {
+            if (event.getButton() == javafx.scene.input.MouseButton.PRIMARY && event.getClickCount() == 1) {
+                hideOperandPopup();
+                event.consume();
+            }
+        });
         operandPopup.getContent().setAll(container);
     }
 

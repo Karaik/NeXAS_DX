@@ -62,6 +62,7 @@ public class MainViewController {
     @FXML private TextField hellStageMapField;
     @FXML private Label hellMapNameLabel;
     @FXML private Label hellMapResourceLabel;
+    @FXML private Button chooseHellMapButton;
     @FXML private ImageView hellMapPreviewImageView;
     @FXML private Label hellMapPreviewStatusLabel;
     @FXML private TextField hellStageHellLevelField;
