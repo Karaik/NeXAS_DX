@@ -48,6 +48,7 @@ public class TestWaz {
     void testGenerateWazJsonFiles() throws IOException {
         List<Waz> allWazList = new ArrayList<>();
         List<String> baseNames = new ArrayList<>();
+        List<Exception> parseFailures = new ArrayList<>();
 
         assumeWazAssets();
         Files.createDirectories(JSON_OUTPUT_DIR);
@@ -56,17 +57,23 @@ public class TestWaz {
             for (Path path : stream) {
                 String fileName = path.getFileName().toString();
                 String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
-                baseNames.add(baseName);
 
                 try {
                     ResponseDTO<?> dto = clariasBinService.parse(path.toString(), "windows-31j");
                     Waz waz = (Waz) dto.getData();
                     allWazList.add(waz);
+                    baseNames.add(baseName);
                 } catch (Exception e) {
                     log.warn("Failed to parse: {}", fileName, e);
-                    throw e;
+                    parseFailures.add(new IOException("Failed to parse " + fileName, e));
                 }
             }
+        }
+
+        if (!parseFailures.isEmpty()) {
+            IOException failure = new IOException("Failed to parse " + parseFailures.size() + " Clarias WAZ files");
+            parseFailures.forEach(failure::addSuppressed);
+            throw failure;
         }
 
         for (int i = 0; i < allWazList.size(); i++) {

@@ -64,12 +64,13 @@ public class CEventParamRevise extends SkillInfoObject {
     public Integer fieldTableAddress = 0x00C37688;
     public Integer wrapperTableAddress = 0x00B63710;
 
-    // Flat fields from field table (5 active entries), read before wrapper loop
+    // Legacy records stop after four fixed ints. Extended records append the runtime cache
+    // sentinel and expose the seventh (Kingdom) wrapper slot.
     private Integer flatInt0;   // 4 bytes
     private Integer flatInt1;   // 4 bytes
     private Integer flatInt2;   // 4 bytes
     private Integer flatInt3;   // 4 bytes
-    private Integer flatInt4;   // 4 bytes
+    private Integer runtimeCacheValue;
 
     @Data
     public static class CEventParamReviseUnit {
@@ -90,11 +91,14 @@ public class CEventParamRevise extends SkillInfoObject {
         this.flatInt1 = reader.readInt();
         this.flatInt2 = reader.readInt();
         this.flatInt3 = reader.readInt();
-        this.flatInt4 = reader.readInt();
 
         this.unitList.clear();
-        for (int i = 0; i < 7; i++) {
-            int buffer = reader.readInt();
+        int firstValue = reader.readInt();
+        boolean extendedLayout = firstValue == -999;
+        this.runtimeCacheValue = extendedLayout ? firstValue : null;
+        int wrapperCount = extendedLayout ? 7 : 6;
+        for (int i = 0; i < wrapperCount; i++) {
+            int buffer = i == 0 && !extendedLayout ? firstValue : reader.readInt();
             CEventParamReviseUnit unit = new CEventParamReviseUnit();
             unit.setUnitSlotNum(i);
             unit.setBuffer(buffer);
@@ -116,9 +120,12 @@ public class CEventParamRevise extends SkillInfoObject {
         writer.writeInt(this.flatInt1);
         writer.writeInt(this.flatInt2);
         writer.writeInt(this.flatInt3);
-        writer.writeInt(this.flatInt4);
+        if (this.runtimeCacheValue != null) {
+            writer.writeInt(this.runtimeCacheValue);
+        }
 
-        for (int i = 0; i < 7; i++) {
+        int wrapperCount = this.runtimeCacheValue == null ? 6 : 7;
+        for (int i = 0; i < wrapperCount; i++) {
             CEventParamReviseUnit target = null;
             for (CEventParamReviseUnit unit : this.unitList) {
                 if (unit.getUnitSlotNum() == i) {
