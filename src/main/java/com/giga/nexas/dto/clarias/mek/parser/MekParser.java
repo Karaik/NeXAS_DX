@@ -5,18 +5,16 @@ import com.giga.nexas.dto.clarias.mek.Mek;
 import com.giga.nexas.dto.clarias.mek.checker.MekChecker;
 import com.giga.nexas.dto.clarias.mek.mekcpu.CCpuEvent;
 import com.giga.nexas.dto.clarias.mek.mekcpu.CCpuEventAttack;
+import com.giga.nexas.dto.clarias.mek.mekcpu.CCpuEventChange;
 import com.giga.nexas.dto.clarias.mek.mekcpu.CCpuEventMove;
-import com.giga.nexas.dto.clarias.mek.mekcpu.CCpuEventUnknown;
 import com.giga.nexas.exception.OperationException;
 import com.giga.nexas.io.BinaryReader;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-@Slf4j
 public class MekParser implements ClariasParser<Mek> {
 
     private static final int WEAPON_LEADING_INT_COUNT = 5;
@@ -31,31 +29,26 @@ public class MekParser implements ClariasParser<Mek> {
     @Override
     public Mek parse(byte[] bytes, String filename, String charset) {
         Mek mek = new Mek();
-        try {
-            parseMekHead(mek, bytes);
-            if (MekChecker.checkMek(mek, bytes)) {
-                throw new OperationException(500, "invalid file header!");
-            }
-            mek.setFileName(filename);
-
-            Mek.MekHead head = mek.getMekHead();
-            byte[] block1 = Arrays.copyOfRange(bytes, head.getSequence1(), head.getSequence2());
-            byte[] block2 = Arrays.copyOfRange(bytes, head.getSequence2(), head.getSequence3());
-            byte[] block3 = Arrays.copyOfRange(bytes, head.getSequence3(), head.getSequence4());
-            byte[] block4 = Arrays.copyOfRange(bytes, head.getSequence4(), head.getSequence5());
-            byte[] block5 = Arrays.copyOfRange(bytes, head.getSequence5(), head.getSequence6());
-            byte[] block6 = Arrays.copyOfRange(bytes, head.getSequence6(), bytes.length);
-
-            parseBlock1(mek, block1, charset);
-            parsePairBlock(mek, block2);
-            parseWeaponInfo(mek, block3, charset);
-            parseAiBlock(mek, block4, charset);
-            parseVoiceBlock(mek, block5, charset);
-            parseTailBlock(mek, block6);
-        } catch (Exception e) {
-            log.info("error === {}", e.getMessage());
-            throw e;
+        parseMekHead(mek, bytes);
+        if (MekChecker.checkMek(mek, bytes)) {
+            throw new OperationException(500, "invalid file header!");
         }
+        mek.setFileName(filename);
+
+        Mek.MekHead head = mek.getMekHead();
+        byte[] block1 = Arrays.copyOfRange(bytes, head.getSequence1(), head.getSequence2());
+        byte[] block2 = Arrays.copyOfRange(bytes, head.getSequence2(), head.getSequence3());
+        byte[] block3 = Arrays.copyOfRange(bytes, head.getSequence3(), head.getSequence4());
+        byte[] block4 = Arrays.copyOfRange(bytes, head.getSequence4(), head.getSequence5());
+        byte[] block5 = Arrays.copyOfRange(bytes, head.getSequence5(), head.getSequence6());
+        byte[] block6 = Arrays.copyOfRange(bytes, head.getSequence6(), bytes.length);
+
+        parseBlock1(mek, block1, charset);
+        parsePairBlock(mek, block2);
+        parseWeaponInfo(mek, block3, charset);
+        parseAiBlock(mek, block4, charset);
+        parseVoiceBlock(mek, block5, charset);
+        parseTailBlock(mek, block6);
         return mek;
     }
 
@@ -172,7 +165,7 @@ public class MekParser implements ClariasParser<Mek> {
             int cpuEventCount = reader.readInt();
             for (int j = 0; j < cpuEventCount; j++) {
                 short type = reader.readShort();
-                CCpuEvent event = parseAiEvent(bytes, charset, reader, aiCount, i, cpuEventCount, j, type);
+                CCpuEvent event = parseAiEvent(reader, type);
                 event.setType(type);
                 aiInfo.getCpuEventList().add(event);
             }
@@ -332,8 +325,7 @@ public class MekParser implements ClariasParser<Mek> {
         return groups;
     }
 
-    private static CCpuEvent parseAiEvent(byte[] bytes, String charset, BinaryReader reader, int aiCount, int aiIndex,
-                                          int cpuEventCount, int cpuEventIndex, short type) {
+    private static CCpuEvent parseAiEvent(BinaryReader reader, short type) {
         if (type == 1) {
             CCpuEventMove event = new CCpuEventMove();
             event.readInfo(reader);
@@ -344,165 +336,11 @@ public class MekParser implements ClariasParser<Mek> {
             event.readInfo(reader);
             return event;
         }
-
-        if (cpuEventIndex != cpuEventCount - 1) {
-            throw new OperationException(500, "unsupported non-terminal AI type: " + type + " at " + reader.getPosition());
+        if (type == 8) {
+            CCpuEventChange event = new CCpuEventChange();
+            event.readInfo(reader);
+            return event;
         }
-
-        int eventPayloadStart = reader.getPosition();
-        int eventEnd;
-        if (aiIndex == aiCount - 1) {
-            eventEnd = bytes.length;
-        } else {
-            eventEnd = findNextAiHeaderPosition(bytes, charset, eventPayloadStart, aiCount - aiIndex - 1);
-            if (eventEnd < 0) {
-                throw new OperationException(500, "failed to find next AI header after type " + type + " at " + eventPayloadStart);
-            }
-        }
-
-        byte[] payloadBytes = Arrays.copyOfRange(bytes, eventPayloadStart, eventEnd);
-        BinaryReader eventReader = new BinaryReader(payloadBytes, charset);
-        CCpuEventUnknown event = new CCpuEventUnknown();
-        event.readInfo(eventReader);
-        reader.seek(eventEnd);
-        return event;
-    }
-
-    private static int findNextAiHeaderPosition(byte[] bytes, String charset, int searchStart, int remainingAiCount) {
-        for (int pos = searchStart; pos < bytes.length - 8; pos++) {
-            int string1End = findNullTerminator(bytes, pos);
-            if (string1End < 0 || string1End == pos) {
-                continue;
-            }
-
-            int string2Start = string1End + 1;
-            int string2End = findNullTerminator(bytes, string2Start);
-            if (string2End < 0 || string2End == string2Start) {
-                continue;
-            }
-
-            int countOffset = string2End + 1;
-            if (countOffset + 4 > bytes.length) {
-                continue;
-            }
-            int cpuEventCount = readIntLE(bytes, countOffset);
-            if (cpuEventCount < 0 || cpuEventCount > 64) {
-                continue;
-            }
-
-            int firstEventOffset = countOffset + 4;
-            if (cpuEventCount > 0) {
-                if (firstEventOffset + 2 > bytes.length) {
-                    continue;
-                }
-                short firstType = readShortLE(bytes, firstEventOffset);
-                if (!isKnownAiEventType(firstType)) {
-                    continue;
-                }
-            }
-
-            try {
-                String stringField1 = new String(bytes, pos, string1End - pos, charset);
-                String stringField2 = new String(bytes, string2Start, string2End - string2Start, charset);
-                if (!isPlausibleAiHeaderString(stringField1) || !isPlausibleAiHeaderString(stringField2)) {
-                    continue;
-                }
-                if (canParseRemainingAiInfos(bytes, charset, pos, remainingAiCount)) {
-                    return pos;
-                }
-            } catch (Exception ignored) {
-            }
-        }
-        return -1;
-    }
-
-    private static boolean canParseRemainingAiInfos(byte[] bytes, String charset, int startPos, int remainingAiCount) {
-        try {
-            BinaryReader reader = new BinaryReader(bytes, charset);
-            reader.seek(startPos);
-
-            for (int aiIndex = 0; aiIndex < remainingAiCount; aiIndex++) {
-                reader.readNullTerminatedString();
-                reader.readNullTerminatedString();
-                int cpuEventCount = reader.readInt();
-
-                for (int cpuEventIndex = 0; cpuEventIndex < cpuEventCount; cpuEventIndex++) {
-                    short type = reader.readShort();
-
-                    if (type == 1) {
-                        new CCpuEventMove().readInfo(reader);
-                        continue;
-                    }
-                    if (type == 2) {
-                        new CCpuEventAttack().readInfo(reader);
-                        continue;
-                    }
-
-                    if (cpuEventIndex != cpuEventCount - 1) {
-                        return false;
-                    }
-
-                    if (aiIndex == remainingAiCount - 1) {
-                        reader.seek(bytes.length);
-                    } else {
-                        int nextAiHeaderPosition = findNextAiHeaderPosition(
-                                bytes, charset, reader.getPosition(), remainingAiCount - aiIndex - 1);
-                        if (nextAiHeaderPosition < 0) {
-                            return false;
-                        }
-                        reader.seek(nextAiHeaderPosition);
-                    }
-                }
-            }
-            return hasOnlyZeroBytes(bytes, reader.getPosition(), bytes.length);
-        } catch (Exception ignored) {
-            return false;
-        }
-    }
-
-    private static int findNullTerminator(byte[] bytes, int start) {
-        for (int i = start; i < bytes.length; i++) {
-            if (bytes[i] == 0) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private static int readIntLE(byte[] bytes, int offset) {
-        return (bytes[offset] & 0xFF)
-                | ((bytes[offset + 1] & 0xFF) << 8)
-                | ((bytes[offset + 2] & 0xFF) << 16)
-                | ((bytes[offset + 3] & 0xFF) << 24);
-    }
-
-    private static short readShortLE(byte[] bytes, int offset) {
-        return (short) ((bytes[offset] & 0xFF) | ((bytes[offset + 1] & 0xFF) << 8));
-    }
-
-    private static boolean isKnownAiEventType(short type) {
-        return type == 1 || type == 2 || type == 3 || type == 7 || type == 8 || type == 21;
-    }
-
-    private static boolean hasOnlyZeroBytes(byte[] bytes, int start, int end) {
-        for (int i = start; i < end; i++) {
-            if (bytes[i] != 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean isPlausibleAiHeaderString(String value) {
-        if (value.isEmpty() || value.length() > 64) {
-            return false;
-        }
-        for (int i = 0; i < value.length(); i++) {
-            char ch = value.charAt(i);
-            if (Character.isISOControl(ch)) {
-                return false;
-            }
-        }
-        return true;
+        throw new OperationException(500, "unsupported AI event type: " + type + " at " + reader.getPosition());
     }
 }

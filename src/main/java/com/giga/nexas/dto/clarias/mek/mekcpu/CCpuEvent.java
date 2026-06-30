@@ -14,14 +14,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true, defaultImpl = CCpuEventUnknown.class)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "type", visible = true)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = CCpuEventMove.class, name = "1"),
         @JsonSubTypes.Type(value = CCpuEventAttack.class, name = "2"),
-        @JsonSubTypes.Type(value = CCpuEventUnknown.class, name = "3"),
-        @JsonSubTypes.Type(value = CCpuEventUnknown.class, name = "7"),
-        @JsonSubTypes.Type(value = CCpuEventUnknown.class, name = "8"),
-        @JsonSubTypes.Type(value = CCpuEventUnknown.class, name = "21")
+        @JsonSubTypes.Type(value = CCpuEventChange.class, name = "8")
 })
 @Data
 public class CCpuEvent {
@@ -89,21 +86,19 @@ public class CCpuEvent {
     private Integer intField23;
     private Integer intField24;
     private Integer intField25;
-    private Integer intField26 = -999;
-    private Short shortField2;
+    private Integer intField26;
     private Integer intField27;
     private Integer intField28;
-    private Short shortField3;
     private Integer intField29;
+    private Short shortField2;
     private Integer intField30;
+    private Integer intField31;
+    private Short shortField3;
+    private Integer intField32;
+    private Integer intField33;
     private Short shortField4;
     private Short shortField5;
     private Byte byteField1;
-    private Integer intField31;
-    private Integer intField32;
-    private Integer intField33;
-    private Integer intField34;
-    private Integer intField35;
     private List<ClariasInfoCollection> clariasInfoCollectionList = new ArrayList<>();
 
     public void readInfo(BinaryReader reader) {
@@ -138,20 +133,19 @@ public class CCpuEvent {
         this.intField23 = reader.readInt();
         this.intField24 = reader.readInt();
         this.intField25 = reader.readInt();
-        this.shortField2 = reader.readShort();
+        this.intField26 = reader.readInt();
         this.intField27 = reader.readInt();
         this.intField28 = reader.readInt();
-        this.shortField3 = reader.readShort();
         this.intField29 = reader.readInt();
+        this.shortField2 = reader.readShort();
         this.intField30 = reader.readInt();
+        this.intField31 = reader.readInt();
+        this.shortField3 = reader.readShort();
+        this.intField32 = reader.readInt();
+        this.intField33 = reader.readInt();
         this.shortField4 = reader.readShort();
         this.shortField5 = reader.readShort();
         this.byteField1 = reader.readByte();
-        this.intField31 = reader.readInt();
-        this.intField32 = reader.readInt();
-        this.intField33 = reader.readInt();
-        this.intField34 = reader.readInt();
-        this.intField35 = reader.readInt();
     }
 
     public void writeInfo(BinaryWriter writer) throws IOException {
@@ -185,19 +179,18 @@ public class CCpuEvent {
         writer.writeInt(this.intField23);
         writer.writeInt(this.intField24);
         writer.writeInt(this.intField25);
-        writer.writeShort(this.shortField2);
+        writer.writeInt(this.intField26);
         writer.writeInt(this.intField27);
         writer.writeInt(this.intField28);
-        writer.writeShort(this.shortField3);
         writer.writeInt(this.intField29);
+        writer.writeShort(this.shortField2);
         writer.writeInt(this.intField30);
+        writer.writeInt(this.intField31);
+        writer.writeShort(this.shortField3);
+        writer.writeInt(this.intField32);
+        writer.writeInt(this.intField33);
         writer.writeShort(this.shortField4);
         writer.writeShort(this.shortField5);
         writer.writeByte(this.byteField1);
-        writer.writeInt(this.intField31);
-        writer.writeInt(this.intField32);
-        writer.writeInt(this.intField33);
-        writer.writeInt(this.intField34);
-        writer.writeInt(this.intField35);
     }
 }
