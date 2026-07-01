@@ -2,10 +2,12 @@ package com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj;
 
 import com.giga.nexas.dto.bhe.waz.wazfactory.SkillInfoFactory;
 import com.giga.nexas.io.BinaryReader;
+import com.giga.nexas.io.BinaryWriter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -171,6 +173,64 @@ public class CEventHit extends SkillInfoObject {
                     unit.setData(obj);
                     this.unitList.add(unit);
                 }
+            }
+        }
+    }
+
+    @Override
+    public void writeInfo(BinaryWriter writer) throws IOException {
+        super.writeInfo(writer);
+
+        writer.writeShort(this.short1);
+        writer.writeShort(this.short2);
+
+        writer.writeInt(this.int1);
+        writer.writeInt(this.int2);
+        writer.writeInt(this.int3);
+        writer.writeInt(this.int4);
+        writer.writeInt(this.int5);
+        writer.writeInt(this.int6);
+        writer.writeInt(this.int7);
+        writer.writeInt(this.int8);
+        writer.writeInt(this.int9);
+        writer.writeInt(this.int10);
+        writer.writeInt(this.int11);
+        writer.writeInt(this.int12);
+        writer.writeInt(this.int13);
+        writer.writeInt(this.int14);
+        writer.writeInt(this.int15);
+        writer.writeInt(this.int16);
+        writer.writeInt(this.int17);
+        writer.writeInt(this.int18);
+        writer.writeInt(this.int19);
+        writer.writeInt(this.int20);
+        writer.writeInt(this.int21);
+        writer.writeInt(this.int22);
+        writer.writeInt(this.int23);
+        writer.writeInt(this.int24);
+        writer.writeInt(this.int25);
+        writer.writeInt(this.int26);
+        writer.writeInt(this.int27);
+        writer.writeInt(this.int28);
+        writer.writeInt(this.int29);
+        writer.writeInt(this.int30);
+        writer.writeInt(this.int31);
+
+        for (int i = 0; i < 41; i++) {
+            CEventHitUnit target = null;
+            for (CEventHitUnit unit : this.unitList) {
+                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                    target = unit;
+                    break;
+                }
+            }
+            if (target != null) {
+                writer.writeInt(target.getBuffer());
+                if (target.getBuffer() != 0 && target.getData() != null) {
+                    target.getData().writeInfo(writer);
+                }
+            } else {
+                writer.writeInt(0);
             }
         }
     }

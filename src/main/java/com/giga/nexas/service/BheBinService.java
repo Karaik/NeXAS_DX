@@ -12,6 +12,7 @@ import com.giga.nexas.dto.bhe.map.parser.MapDataParser;
 import com.giga.nexas.dto.bhe.mek.parser.MekParser;
 import com.giga.nexas.dto.bhe.spm.generator.SpmGenerator;
 import com.giga.nexas.dto.bhe.spm.parser.SpmParser;
+import com.giga.nexas.dto.bhe.waz.generator.WazGenerator;
 import com.giga.nexas.dto.bhe.waz.parser.WazParser;
 import com.giga.nexas.exception.OperationException;
 
@@ -40,7 +41,7 @@ public class BheBinService {
         // 注册generator
         registerGenerator(new SpmGenerator());
 //        registerGenerator(new MekGenerator());
-//        registerGenerator(new WazGenerator());
+        registerGenerator(new WazGenerator());
         registerGenerator(new GrpGenerator());
         registerGenerator(new MapDataGenerator());
     }
