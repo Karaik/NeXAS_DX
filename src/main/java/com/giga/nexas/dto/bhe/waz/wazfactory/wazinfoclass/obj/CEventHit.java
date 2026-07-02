@@ -219,14 +219,14 @@ public class CEventHit extends SkillInfoObject {
         for (int i = 0; i < 41; i++) {
             CEventHitUnit target = null;
             for (CEventHitUnit unit : this.unitList) {
-                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                if (unit.getUnitSlotNum() == i) {
                     target = unit;
                     break;
                 }
             }
             if (target != null) {
                 writer.writeInt(target.getBuffer());
-                if (target.getBuffer() != 0 && target.getData() != null) {
+                if (target.getBuffer() != 0) {
                     target.getData().writeInfo(writer);
                 }
             } else {

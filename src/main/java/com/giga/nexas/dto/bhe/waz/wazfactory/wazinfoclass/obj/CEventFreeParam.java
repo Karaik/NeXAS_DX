@@ -72,21 +72,10 @@ public class CEventFreeParam extends SkillInfoObject {
     @Override
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
-        for (int i = 0; i < 4; i++) {
-            CEventFreeParamUnit target = null;
-            for (CEventFreeParamUnit unit : this.unitList) {
-                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
-                    target = unit;
-                    break;
-                }
-            }
-            if (target != null) {
-                writer.writeInt(target.getBuffer());
-                if (target.getBuffer() != 0 && target.getData() != null) {
-                    target.getData().writeInfo(writer);
-                }
-            } else {
-                writer.writeInt(0);
+        for (CEventFreeParamUnit unit : this.unitList) {
+            writer.writeInt(unit.getBuffer());
+            if (unit.getBuffer() != 0) {
+                unit.getData().writeInfo(writer);
             }
         }
     }

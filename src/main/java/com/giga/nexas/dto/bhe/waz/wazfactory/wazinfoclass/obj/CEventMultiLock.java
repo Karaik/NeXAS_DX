@@ -85,21 +85,10 @@ public class CEventMultiLock extends SkillInfoObject {
         writer.writeInt(this.int1);
         writer.writeInt(this.int2);
         writer.writeInt(this.int3);
-        for (int i = 0; i < 4; i++) {
-            CEventMultiLockUnit target = null;
-            for (CEventMultiLockUnit unit : this.unitList) {
-                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
-                    target = unit;
-                    break;
-                }
-            }
-            if (target != null) {
-                writer.writeInt(target.getBuffer());
-                if (target.getBuffer() != 0 && target.getData() != null) {
-                    target.getData().writeInfo(writer);
-                }
-            } else {
-                writer.writeInt(0);
+        for (CEventMultiLockUnit unit : this.unitList) {
+            writer.writeInt(unit.getBuffer());
+            if (unit.getBuffer() != 0) {
+                unit.getData().writeInfo(writer);
             }
         }
     }

@@ -74,7 +74,7 @@ public class WazGenerator implements BheGenerator<Waz> {
         for (int i = 0; i < 83; i++) {
             SkillUnit matchedUnit = null;
             for (SkillUnit unit : skillUnitCollection) {
-                if (unit.getUnitQuantity() != null && unit.getUnitQuantity() == i) {
+                if (unit.getUnitQuantity() == i) {
                     matchedUnit = unit;
                     break;
                 }

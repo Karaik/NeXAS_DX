@@ -93,21 +93,10 @@ public class CEventMultiLockStartEnd extends SkillInfoObject {
         writer.writeInt(this.int3);
         writer.writeInt(this.int4);
         writer.writeShort(this.short1);
-        for (int i = 0; i < 6; i++) {
-            CEventMultiLockStartEndUnit target = null;
-            for (CEventMultiLockStartEndUnit unit : this.unitList) {
-                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
-                    target = unit;
-                    break;
-                }
-            }
-            if (target != null) {
-                writer.writeInt(target.getBuffer());
-                if (target.getBuffer() != 0 && target.getData() != null) {
-                    target.getData().writeInfo(writer);
-                }
-            } else {
-                writer.writeInt(0);
+        for (CEventMultiLockStartEndUnit unit : this.unitList) {
+            writer.writeInt(unit.getBuffer());
+            if (unit.getBuffer() != 0) {
+                unit.getData().writeInfo(writer);
             }
         }
     }
