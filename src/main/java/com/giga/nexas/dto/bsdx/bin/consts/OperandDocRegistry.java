@@ -64,7 +64,12 @@ public final class OperandDocRegistry {
                 continue;
             }
 
-            Operand operand = operandByCode.get(code);
+            int lookupCode = code;
+            if (code >= 1104) {
+                lookupCode = code - 694;
+            }
+
+            Operand operand = operandByCode.get(lookupCode);
             if (operand == null) {
                 continue;
             }
