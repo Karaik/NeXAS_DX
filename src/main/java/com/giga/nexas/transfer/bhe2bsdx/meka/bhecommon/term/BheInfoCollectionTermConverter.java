@@ -20,8 +20,8 @@ import java.util.Set;
  */
 public class BheInfoCollectionTermConverter {
 
-    private static final String OBJECTPOS_FALLBACK = "ROCK";
-    private static final String OBJECTPOS2_FALLBACK = "NONE";
+    private static final int BHE_OBJECTPOS_GROUP = 2;
+    private static final int BHE_OBJECTPOS2_GROUP = 3;
 
     private final TermRegistry targetRegistry = new TermRegistry(BsdxInfoCollectionAnalyzer.getCachedTermGrp());
 
@@ -141,21 +141,19 @@ public class BheInfoCollectionTermConverter {
             return targetRegistry.require("OBJECT4", "PARAMCOUNT");
         }
         if ("OBJECT".equals(group)) {
-            if ("HIT_WAZA".equals(item)) {
-                // BSDX 没有“命中技”的对象入口，只保留更粗的“最近命中对象”语义。
-                return targetRegistry.require("OBJECT", "HIT");
-            }
-            if (item != null && item.startsWith("MULTILOCK_")) {
-                // BSDX 没有多锁定对象入口；按 20260331 对象位置 fallback 口径落到 ROCK。
-                return targetRegistry.require("OBJECT", OBJECTPOS_FALLBACK);
-            }
+            return switch (item) {
+                case "HIT_WAZA" -> targetRegistry.require("OBJECT", "HIT");
+                // ROCK 读取已保存目标；ENEMY 会在求值时重新搜索最近敌人。
+                case "MULTILOCK_LOCK", "MULTILOCK_LOCK_B",
+                        "MULTILOCK_LOCK_N", "MULTILOCK_LENGTH" ->
+                        targetRegistry.require("OBJECT", "ROCK");
+                default -> null;
+            };
         }
         if ("OBJECTPOS".equals(group)) {
-            // 20260331：OBJECTPOS 同名项不存在时落到 ROCK。
             return targetRegistry.require("OBJECTPOS", mapObjectPosDescription(item));
         }
         if ("OBJECTPOS2".equals(group)) {
-            // 20260331：OBJECTPOS2 同名项不存在时落到 NONE。
             return targetRegistry.require("OBJECTPOS2", mapObjectPos2Description(item));
         }
         if ("OBJECT3".equals(group)) {
@@ -217,13 +215,15 @@ public class BheInfoCollectionTermConverter {
             return new ArrayList<>();
         }
         List<Integer> target = new ArrayList<>(source.size());
-        /*
-         * 20260331 的基础口径：aux 第一位按 OBJECTPOS 映射，第二位按 OBJECTPOS2 映射。
-         * BHE 独有对象位置会显式落到 ROCK/NONE，保证 BSDX analyzer 可解析。
-         */
-        target.add(targetRegistry.require("OBJECTPOS", mapObjectPosByIndex(source.get(0))).itemIndex());
+        target.add(targetRegistry.require(
+                "OBJECTPOS",
+                mapObjectPosDescription(sourceAuxDescription(BHE_OBJECTPOS_GROUP, source.get(0)))
+        ).itemIndex());
         if (source.size() > 1) {
-            target.add(targetRegistry.require("OBJECTPOS2", mapObjectPos2ByIndex(source.get(1))).itemIndex());
+            target.add(targetRegistry.require(
+                    "OBJECTPOS2",
+                    mapObjectPos2Description(sourceAuxDescription(BHE_OBJECTPOS2_GROUP, source.get(1)))
+            ).itemIndex());
         }
         for (int i = 2; i < source.size(); i++) {
             target.add(source.get(i));
@@ -231,40 +231,33 @@ public class BheInfoCollectionTermConverter {
         return target;
     }
 
-    private String mapObjectPosByIndex(Integer sourceIndex) {
-        String description = null;
-        if (sourceIndex != null) {
-            var items = BheInfoCollectionAnalyzer.getCachedTermGrp().getTermList().get(2).getTermItemList();
-            if (sourceIndex >= 0 && sourceIndex < items.size()) {
-                description = items.get(sourceIndex).getTermItemDescription();
-            }
-        }
-        return mapObjectPosDescription(description);
-    }
-
-    private String mapObjectPos2ByIndex(Integer sourceIndex) {
-        String description = null;
-        if (sourceIndex != null) {
-            var items = BheInfoCollectionAnalyzer.getCachedTermGrp().getTermList().get(3).getTermItemList();
-            if (sourceIndex >= 0 && sourceIndex < items.size()) {
-                description = items.get(sourceIndex).getTermItemDescription();
-            }
-        }
-        return mapObjectPos2Description(description);
+    private String sourceAuxDescription(int groupIndex, Integer itemIndex) {
+        return BheInfoCollectionAnalyzer.getCachedTermGrp()
+                .getTermList().get(groupIndex)
+                .getTermItemList().get(itemIndex)
+                .getTermItemDescription();
     }
 
     private String mapObjectPosDescription(String description) {
-        if (description != null && targetRegistry.find("OBJECTPOS", description) != null) {
+        if (targetRegistry.find("OBJECTPOS", description) != null) {
             return description;
         }
-        return OBJECTPOS_FALLBACK;
+        return switch (description) {
+            case "HIT_WAZA" -> "HIT";
+            case "MULTILOCK_LOCK", "MULTILOCK_LOCK_B",
+                    "MULTILOCK_LOCK_N", "MULTILOCK_LENGTH" -> "ROCK";
+            default -> throw new IllegalStateException("未审计的 BHE OBJECTPOS aux: " + description);
+        };
     }
 
     private String mapObjectPos2Description(String description) {
-        if (description != null && targetRegistry.find("OBJECTPOS2", description) != null) {
+        if (targetRegistry.find("OBJECTPOS2", description) != null) {
             return description;
         }
-        return OBJECTPOS2_FALLBACK;
+        return switch (description) {
+            case "CENTER", "TOP" -> "NONE";
+            default -> throw new IllegalStateException("未审计的 BHE OBJECTPOS2 aux: " + description);
+        };
     }
 
     private ConversionPlan unconditional() {

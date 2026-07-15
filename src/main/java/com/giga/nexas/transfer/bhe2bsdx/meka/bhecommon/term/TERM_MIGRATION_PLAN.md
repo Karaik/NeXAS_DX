@@ -96,6 +96,10 @@ BHE-only 语义分类：
 | `PARAM_OPERATOR_CHAIN` | `944` | 折叠到 BSDX 可表达的直接参数路径 | 丢失 BHE 运算子修正量，例如 `DIV/ADD/MUL` 的运行时计算 | 中 |
 | `PARAMCOUNT_SPLIT` | `346` | `PARAMCOUNT1/2/3/4 -> PARAMCOUNT` | 丢失 BHE 对参数计数槽位的细分 | 中 |
 | `MULTILOCK / ATTR / FLAG / BATTLESCRIPT / EQUIPMODE / HITRECT_FIRE` | `76` | 降级到 `PARENT/UNCONDITIONAL` | 条件判断被移除，事件更容易执行 | 高 |
+| `OBJECT/OBJECTPOS HIT_WAZA` | 原始 `180`，格式转换后存活 `161` | `HIT_WAZA -> HIT` | 丢失“按技能记忆”的限定，保留最近命中对象 | 中 |
+| `OBJECT/OBJECTPOS MULTILOCK_*` | 原始 `57`，格式转换后存活 `38` | `MULTILOCK_* -> ROCK` | 丢失锁定列表，只保留转换时已保存的目标快照 | 中 |
+| `OBJECTPOS2 CENTER/TOP` | `938 / 15` | `CENTER/TOP -> NONE` | BSDX aux 无通用半身高/全身高表达，高度追加量丢失 | 中 |
+| WAZ BHE-only 目标槽 | 顶层槽 35=`138` units / `136` term collections；`CEventEffect[28]`=`45` | 按被丢弃 unit 写入结构化 drop audit | 目标选择事件本身不可恢复 | 高 |
 | 攻击动作细分 | `26` | 降级到 `ACTION_ATTACK` | 丢失攻击类别、按钮类型、CPU 特殊编号等细分 | 中 |
 | dash 结束状态 | `6` | `ACTION_SDASH_END -> ACTION_SDASH`，`ACTION_BDASH_END -> ACTION_BDASH` | 丢失“结束帧/结束态”细分 | 低 |
 | 异常/受击动作细分 | `3` | `ACTION_ELEC/OIL -> ACTION_NOKEALL` | 丢失异常类型差异 | 中 |
@@ -198,11 +202,16 @@ BSDX 的 `PARAM_POS` 多数直接终止，缺少 `OPERATOR_TWO / OPERATOR` group
 - `MULTILOCK_LOCK_N`
 - `MULTILOCK_LENGTH`
 
-迁移策略：按 `20260331` 的对象位置 fallback 执行。
+迁移策略：
 
 - 对象选择器能映射同名项时按同名项重编译。
-- `HIT_WAZA` 落到 `HIT`。
-- `MULTILOCK_*` 落到 `ROCK`。
+- `HIT_WAZA`（OBJECT / OBJECTPOS）落到 `HIT`：两侧都读取最近命中对象，BSDX 仅缺少 BHE 的按技能记忆限定。
+- `MULTILOCK_*`（OBJECT / OBJECTPOS 主链与 aux 第一位）落到 **`ROCK`**。
+  - BHE MultiLock 返回锁定列表中的具体对象；BSDX `ROCK` 读取已保存目标，适合作为逐发目标快照。
+  - `ENEMY` 会在求值时动态搜索最近敌人，会把多个锁定点坍缩成同一个近敌；`PARENTROCK` 会持续读取父对象当前目标，也不是逐发快照。
+  - BSDX 无 MultiLock 事件槽：顶层 66–69 会丢弃；BHE `CEventEffect[28]` 标的槽也会因 BSDX 内层结构少一项而丢弃。两者都必须写入 drop audit，位置替代不能恢复锁定圈玩法。
+- `OBJECTPOS2/CENTER` 与 `OBJECTPOS2/TOP` 落到 `NONE`，并显式接受半身高/全身高追加量损失。
+- 除上述规则外，未知描述、`null` 或越界 aux 索引直接失败，不允许使用通用替代。
 
 ### BHE-only action / attr / flag
 

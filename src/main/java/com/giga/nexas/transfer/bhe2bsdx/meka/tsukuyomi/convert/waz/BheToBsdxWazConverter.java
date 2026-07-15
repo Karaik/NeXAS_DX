@@ -1,6 +1,8 @@
 package com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.convert.waz;
 
 import com.giga.nexas.dto.bsdx.waz.Waz;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.wazconvert.BheWazConvertResult;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.wazconvert.BheWazSlotDropAudit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +27,10 @@ public class BheToBsdxWazConverter {
         target.setExtensionName(source.getExtensionName());
         target.setSkillList(convertSkills(source.getSkillList()));
         return target;
+    }
+
+    public BheWazConvertResult convertWithAudit(com.giga.nexas.dto.bhe.waz.Waz source) {
+        return new BheWazConvertResult(convert(source), BheWazSlotDropAudit.scan(source));
     }
 
     private List<Waz.Skill> convertSkills(List<com.giga.nexas.dto.bhe.waz.Waz.Skill> sourceList) {

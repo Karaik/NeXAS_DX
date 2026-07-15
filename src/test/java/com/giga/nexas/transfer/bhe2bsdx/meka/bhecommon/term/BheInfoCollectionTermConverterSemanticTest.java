@@ -18,6 +18,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class BheInfoCollectionTermConverterSemanticTest {
 
@@ -64,19 +65,38 @@ class BheInfoCollectionTermConverterSemanticTest {
     }
 
     @Test
-    void objectPosFallbackUsesRockAndNone() {
+    void knownObjectPositionAuxMappingsUseHitAndNone() {
         BheInfoCollection source = new BheInfoCollection();
         source.setInt1(20);
         source.getTypeList().add(1);
-        source.getIntList3().add(10); // BHE OBJECTPOS/HIT_WAZA，BSDX 没有同名项。
-        source.getIntList3().add(20); // BHE OBJECTPOS2/TOP，BSDX 没有同名项。
+        source.getIntList3().add(requireBheItemIndex("OBJECTPOS", "HIT_WAZA"));
+        source.getIntList3().add(requireBheItemIndex("OBJECTPOS2", "TOP"));
         source.setInt2(0);
 
-        BsdxInfoCollection converted = converter.convert(source, "objectPosFallbackUsesRockAndNone");
+        BsdxInfoCollection converted = converter.convert(source, "knownObjectPositionAuxMappingsUseHitAndNone");
         assertEquals(20, converted.getInt1());
         assertEquals(List.of(1), converted.getTypeList());
-        assertEquals(List.of(1, 0), converted.getIntList3());
+        assertEquals(List.of(
+                requireBsdxItemIndex("OBJECTPOS", "HIT"),
+                requireBsdxItemIndex("OBJECTPOS2", "NONE")
+        ), converted.getIntList3());
         assertEquals("POS/OBJECT", BsdxInfoCollectionAnalyzer.analyze(converted).getSyntaxPathByDescription());
+    }
+
+    @Test
+    void invalidObjectPositionAuxIndicesFailClosed() {
+        BheInfoCollection nullIndex = positionCollection();
+        nullIndex.getIntList3().add(null);
+        assertThrows(NullPointerException.class, () -> converter.convert(nullIndex, "null aux"));
+
+        BheInfoCollection outOfRange = positionCollection();
+        outOfRange.getIntList3().add(Integer.MAX_VALUE);
+        assertThrows(IndexOutOfBoundsException.class, () -> converter.convert(outOfRange, "out-of-range aux"));
+
+        BheInfoCollection nullHeight = positionCollection();
+        nullHeight.getIntList3().add(requireBheItemIndex("OBJECTPOS", "MINE"));
+        nullHeight.getIntList3().add(null);
+        assertThrows(NullPointerException.class, () -> converter.convert(nullHeight, "null height aux"));
     }
 
     @Test
@@ -107,6 +127,44 @@ class BheInfoCollectionTermConverterSemanticTest {
         BsdxInfoCollection converted = converter.convert(source, "unsupportedConditionFallsBackToUnconditional");
         assertEquals("PARENT/UNCONDITIONAL", BsdxInfoCollectionAnalyzer.analyze(converted).getSyntaxPathByDescription());
         assertEquals(List.of(), converted.getParamList());
+    }
+
+    private BheInfoCollection positionCollection() {
+        BheInfoCollection source = new BheInfoCollection();
+        source.setInt1(20);
+        source.getTypeList().add(1);
+        source.setInt2(0);
+        return source;
+    }
+
+    private int requireBheItemIndex(String groupCodeName, String itemDescription) {
+        var termGrp = com.giga.nexas.dto.bhe.BheInfoCollectionAnalyzer.getCachedTermGrp();
+        for (var group : termGrp.getTermList()) {
+            if (!groupCodeName.equals(group.getTermGroupCodeName())) {
+                continue;
+            }
+            for (int i = 0; i < group.getTermItemList().size(); i++) {
+                if (itemDescription.equals(group.getTermItemList().get(i).getTermItemDescription())) {
+                    return i;
+                }
+            }
+        }
+        throw new AssertionError("BHE term 缺少 " + groupCodeName + "/" + itemDescription);
+    }
+
+    private int requireBsdxItemIndex(String groupCodeName, String itemDescription) {
+        var termGrp = BsdxInfoCollectionAnalyzer.getCachedTermGrp();
+        for (var group : termGrp.getTermList()) {
+            if (!groupCodeName.equals(group.getTermGroupCodeName())) {
+                continue;
+            }
+            for (int i = 0; i < group.getTermItemList().size(); i++) {
+                if (itemDescription.equals(group.getTermItemList().get(i).getTermItemDescription())) {
+                    return i;
+                }
+            }
+        }
+        throw new AssertionError("BSDX term 缺少 " + groupCodeName + "/" + itemDescription);
     }
 
     private void writeConvertedRows(List<ConvertedRow> rows) throws IOException {

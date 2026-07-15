@@ -43,6 +43,14 @@ WAZ/MEK term 迁移矩阵由测试生成：
 
 `src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/bhecommon/term/BheInfoCollectionObjectGraphRewriter.java`
 
+WAZ 格式转换 BHE-only 槽位丢弃审计：
+
+`src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/bhecommon/wazconvert/`
+
+- 顶层标的槽 35、MultiLock 槽 66–69 和 `CEventEffect[28]` 内层标的槽会被 BSDX 结构丢弃；`BheWazSlotDropAudit` 集中扫描一次并记录源路径。
+- term aux 只允许显式替代：`HIT_WAZA -> HIT`、`MULTILOCK_* -> ROCK`、`CENTER/TOP -> NONE`；其他缺项、`null` 或越界索引直接失败。
+- `MULTILOCK_* -> ROCK` 使用 BSDX 已保存目标快照；`ENEMY` 会重新搜索最近敌人，`PARENTROCK` 会持续读取父对象当前目标，都不等价于 BHE 锁定列表中的逐发目标。
+
 详细迁移方案见：
 
 `src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/bhecommon/term/TERM_MIGRATION_PLAN.md`
