@@ -192,6 +192,13 @@ public class PatchExeCapacitiesStep {
     private static final byte[] BATTLE_VOICE_TABLE_GATE_BYPASS_TARGET = new byte[]{
             (byte) 0x90, (byte) 0x90, (byte) 0xEB, (byte) 0x06
     };
+    private static final int CRT_INVALID_PARAMETER_BYPASS_OFFSET = 0x2789F8;
+    private static final byte[] CRT_INVALID_PARAMETER_BYPASS_EXPECTED = new byte[]{
+            (byte) 0x8B, (byte) 0xFF
+    };
+    private static final byte[] CRT_INVALID_PARAMETER_BYPASS_TARGET = new byte[]{
+            (byte) 0xC3, (byte) 0x90
+    };
 
     // ── 公开方法 ─────────────────────────────────────────────────────────
 
@@ -329,6 +336,12 @@ public class PatchExeCapacitiesStep {
                     BATTLE_VOICE_TABLE_GATE_BYPASS_EXPECTED,
                     BATTLE_VOICE_TABLE_GATE_BYPASS_TARGET,
                     "battle voice gate bypass: sub_60CEC0 ignores sub_60CC20 zero-return for table-driven combat voice requests",
+                    plan);
+            applyBytesPatch(exeBytes,
+                    CRT_INVALID_PARAMETER_BYPASS_OFFSET,
+                    CRT_INVALID_PARAMETER_BYPASS_EXPECTED,
+                    CRT_INVALID_PARAMETER_BYPASS_TARGET,
+                    "CRT invalid parameter Watson bypass: _invalid_parameter_noinfo returns safely instead of aborting",
                     plan);
 
             if (plan.getRequiredSelectMekaMenuRows() > 0) {

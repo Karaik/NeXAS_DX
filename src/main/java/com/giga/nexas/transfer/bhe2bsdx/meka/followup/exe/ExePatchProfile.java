@@ -78,6 +78,12 @@ public class ExePatchProfile {
                 new byte[]{(byte) 0x90, (byte) 0x90, (byte) 0xEB, (byte) 0x06},
                 "battle voice gate bypass: sub_60CEC0 ignores sub_60CC20 zero-return for table-driven combat voice requests"
         );
+        profile.addBytes(
+                0x2789F8,
+                new byte[]{(byte) 0x8B, (byte) 0xFF},
+                new byte[]{(byte) 0xC3, (byte) 0x90},
+                "CRT invalid parameter Watson bypass: _invalid_parameter_noinfo returns safely instead of aborting"
+        );
         return profile;
     }
 

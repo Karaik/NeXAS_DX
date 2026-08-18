@@ -1053,6 +1053,11 @@ public class TestJinki2BsdxRunner {
                     java.util.Arrays.copyOfRange(exe, 0x20C2CD, 0x20C2D1),
                     "0x20C2CD should bypass sub_60CC20 failure return in sub_60CEC0 for table-driven combat voice requests"
             );
+            Assertions.assertArrayEquals(
+                    new byte[]{(byte) 0xC3, (byte) 0x90},
+                    java.util.Arrays.copyOfRange(exe, 0x2789F8, 0x2789FA),
+                    "0x2789F8 should bypass CRT invalid parameter abort in _invalid_parameter_noinfo"
+            );
         } catch (Exception e) {
             throw new AssertionError("failed to read patched exe for runtime meka table assertions", e);
         }
