@@ -23,6 +23,7 @@ public class ExePatchProfile {
         // expectedBytes 必须来自“未 patch 或当前 baseline 的原字节”，targetBytes 是目标字节；
         // 如果后续链式成果物已经写成 targetBytes，PatchBytesVerifier 会把它视为 already patched。
         // 不要把 offset/bytes 写散到 ApplyExePatchStep，否则后续 BSDX+JINKI+BHE 叠加时无法审计。
+        // ── 1. 机体槽位扩容位点（103 -> 104）───────────────────────────
         profile.addImm8(0x1E3F40, 0x67, 0x68, "meka cap init: push 103 -> push 104 (sub_5E4B20 ensureStructArrayCapacity)");
         profile.addImm8(0x1E3DA2, 0x67, 0x68, "meka cap scene cleanup: cmp ebp,103 -> cmp ebp,104 (sub_5E46A0 do-while)");
         profile.addImm8(0x276427, 0x67, 0x68, "meka cap save read loop#1: cmp esi,103 -> cmp esi,104 (sub_676E00 type read)");
@@ -36,6 +37,8 @@ public class ExePatchProfile {
         profile.addImm8(0x275158, 0x67, 0x68, "meka cap save write alt: push 103 -> push 104");
         profile.addImm8(0x30390A, 0x67, 0x68, "meka cap standalone prealloc: push 103 -> push 104");
         profile.addImm32(0x05498B, 0x00001688, 0x000016C0, "meka cap weapon-equip fill hard cap: 56*103 -> 56*104 (sub_454E60 cmp eax,0x1688)");
+
+        // ── 2. 战斗语音门禁旁路（支持移植机体战斗与 FC 发声）─────────────
         profile.addBytes(
                 0x20C1FD,
                 new byte[]{(byte) 0x84, (byte) 0xC0, (byte) 0x75, (byte) 0x06},
@@ -48,12 +51,15 @@ public class ExePatchProfile {
                 new byte[]{(byte) 0x90, (byte) 0x90, (byte) 0xEB, (byte) 0x06},
                 "battle voice gate bypass: sub_60CEC0 ignores sub_60CC20 zero-return for table-driven combat voice requests"
         );
+
+        // ── 3. CRT 非法参数 Watson 弹窗旁路─────────────────────────────
         profile.addBytes(
                 0x2789F8,
                 new byte[]{(byte) 0x8B, (byte) 0xFF},
                 new byte[]{(byte) 0xC3, (byte) 0x90},
                 "CRT invalid parameter Watson bypass: _invalid_parameter_noinfo returns safely instead of aborting"
         );
+
         return profile;
     }
 

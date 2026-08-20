@@ -164,7 +164,7 @@ public class MekParser implements BsdxParser<Mek> {
             // 起始符
             int flag = reader.readInt();
             if (flag != 1) {
-                return;
+                continue;
             }
 
             Mek.MekWeaponInfo mekWeaponInfo = new Mek.MekWeaponInfo();

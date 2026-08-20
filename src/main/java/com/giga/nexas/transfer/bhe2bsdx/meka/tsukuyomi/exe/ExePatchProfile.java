@@ -60,6 +60,7 @@ public class ExePatchProfile {
         ExePatchProfile profile = new ExePatchProfile();
         // 这些 meka 容量位点来自 JINKI 已验证的 EXE patch profile。BHE 在 JINKI 成果物上继续追加一台机体，
         // 所以输入侧应当是上一层容量，目标侧应当等于本轮 MekaGroup.grp 的实际条目数。
+        // ── 1. 机体槽位扩容位点（103 -> 104）───────────────────────────
         profile.addImm8(0x1E3F40, sourceMekaCapacity, targetMekaCapacity, capacityLabel("meka cap init: sub_5E4B20 ensureStructArrayCapacity", sourceMekaCapacity, targetMekaCapacity));
         profile.addImm8(0x1E3DA2, sourceMekaCapacity, targetMekaCapacity, capacityLabel("meka cap scene cleanup: sub_5E46A0 do-while", sourceMekaCapacity, targetMekaCapacity));
         profile.addImm8(0x276427, sourceMekaCapacity, targetMekaCapacity, capacityLabel("meka cap save read loop#1: sub_676E00 type read", sourceMekaCapacity, targetMekaCapacity));
@@ -73,6 +74,8 @@ public class ExePatchProfile {
         profile.addImm8(0x275158, sourceMekaCapacity, targetMekaCapacity, capacityLabel("meka cap save write alt path", sourceMekaCapacity, targetMekaCapacity));
         profile.addImm8(0x30390A, sourceMekaCapacity, targetMekaCapacity, capacityLabel("meka cap standalone prealloc path", sourceMekaCapacity, targetMekaCapacity));
         profile.addImm32(0x05498B, sourceWeaponEquipRows * 56, targetWeaponEquipRows * 56, capacityLabel("weapon-equip fill hard cap: sub_454E60 cmp eax", sourceWeaponEquipRows, targetWeaponEquipRows));
+
+        // ── 2. 战斗语音门禁旁路（支持移植机体战斗与 FC 发声）─────────────
         profile.addBytes(
                 0x20C1FD,
                 new byte[]{(byte) 0x84, (byte) 0xC0, (byte) 0x75, (byte) 0x06},
@@ -85,12 +88,15 @@ public class ExePatchProfile {
                 new byte[]{(byte) 0x90, (byte) 0x90, (byte) 0xEB, (byte) 0x06},
                 "battle voice gate bypass: sub_60CEC0 ignores sub_60CC20 zero-return for table-driven combat voice requests"
         );
+
+        // ── 3. CRT 非法参数 Watson 弹窗旁路─────────────────────────────
         profile.addBytes(
                 0x2789F8,
                 new byte[]{(byte) 0x8B, (byte) 0xFF},
                 new byte[]{(byte) 0xC3, (byte) 0x90},
                 "CRT invalid parameter Watson bypass: _invalid_parameter_noinfo returns safely instead of aborting"
         );
+
         return profile;
     }
 

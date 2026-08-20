@@ -119,33 +119,34 @@ public class MekConverter {
         }
         for (Map.Entry<Integer, com.giga.nexas.dto.bhe.mek.Mek.MekWeaponInfo> entry : srcMap.entrySet()) {
             com.giga.nexas.dto.bhe.mek.Mek.MekWeaponInfo src = entry.getValue();
-            Mek.MekWeaponInfo dst = new Mek.MekWeaponInfo();
-            if (src != null) {
-                // BHE 中多出的字段（如 bheInt/feiFlag）在 BSDX 不存在，直接抛弃
-                dst.setOffset(src.getOffset());
-                dst.setWeaponName(src.getWeaponName());
-                dst.setWeaponSequence(src.getWeaponSequence());
-                dst.setWeaponDescription(src.getWeaponDescription());
-                dst.setSwitchToMekNo(src.getSwitchToMekNo());
-                dst.setWazSequence(src.getWazSequence());
-                dst.setForceCrashAmount(src.getForceCrashAmount());
-                dst.setHeatMaxConsumption(src.getHeatMaxConsumption());
-                dst.setHeatMinConsumption(src.getHeatMinConsumption());
-                dst.setUpgradeExp(src.getUpgradeExp());
-                dst.setStartPointWhenDemonstrate(src.getStartPointWhenDemonstrate());
-                dst.setWeaponCategory(src.getWeaponCategory());
-                dst.setWeaponType(src.getWeaponType());
-                dst.setMeleeSkillFlag(src.getMeleeSkillFlag());
-                dst.setColdWeaponSkillFlag(src.getColdWeaponSkillFlag());
-                dst.setMissileSkillFlag(src.getMissileSkillFlag());
-                dst.setBulletCategorySkillFlag(src.getBulletCategorySkillFlag());
-                dst.setOpticalWeaponSkillFlag(src.getOpticalWeaponSkillFlag());
-                dst.setDroneSkillFlag(src.getDroneSkillFlag());
-                dst.setExplosiveSkillFlag(src.getExplosiveSkillFlag());
-                dst.setDefensiveWeaponSkillFlag(src.getDefensiveWeaponSkillFlag());
-                dst.setWeaponIdentifier(src.getWeaponIdentifier());
-                dst.setWeaponUnknownProperty19(src.getWeaponUnknownProperty19());
+            if (src == null) {
+                continue;
             }
+            Mek.MekWeaponInfo dst = new Mek.MekWeaponInfo();
+            // BHE 中多出的字段（如 bheInt/feiFlag）在 BSDX 不存在，直接抛弃
+            dst.setOffset(src.getOffset());
+            dst.setWeaponName(src.getWeaponName());
+            dst.setWeaponSequence(src.getWeaponSequence());
+            dst.setWeaponDescription(src.getWeaponDescription());
+            dst.setSwitchToMekNo(src.getSwitchToMekNo());
+            dst.setWazSequence(src.getWazSequence());
+            dst.setForceCrashAmount(src.getForceCrashAmount());
+            dst.setHeatMaxConsumption(src.getHeatMaxConsumption());
+            dst.setHeatMinConsumption(src.getHeatMinConsumption());
+            dst.setUpgradeExp(src.getUpgradeExp());
+            dst.setStartPointWhenDemonstrate(src.getStartPointWhenDemonstrate());
+            dst.setWeaponCategory(src.getWeaponCategory());
+            dst.setWeaponType(src.getWeaponType());
+            dst.setMeleeSkillFlag(src.getMeleeSkillFlag());
+            dst.setColdWeaponSkillFlag(src.getColdWeaponSkillFlag());
+            dst.setMissileSkillFlag(src.getMissileSkillFlag());
+            dst.setBulletCategorySkillFlag(src.getBulletCategorySkillFlag());
+            dst.setOpticalWeaponSkillFlag(src.getOpticalWeaponSkillFlag());
+            dst.setDroneSkillFlag(src.getDroneSkillFlag());
+            dst.setExplosiveSkillFlag(src.getExplosiveSkillFlag());
+            dst.setDefensiveWeaponSkillFlag(src.getDefensiveWeaponSkillFlag());
+            dst.setWeaponIdentifier(src.getWeaponIdentifier());
+            dst.setWeaponUnknownProperty19(src.getWeaponUnknownProperty19());
             out.put(entry.getKey(), dst);
         }
         return out;
