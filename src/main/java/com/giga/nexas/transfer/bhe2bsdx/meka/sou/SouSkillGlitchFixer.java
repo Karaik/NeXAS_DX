@@ -28,12 +28,89 @@ public final class SouSkillGlitchFixer {
 
         // 1. 修复重绑后的目标 MEK (reboundMek)
         if (context.getReboundMek() != null) {
+            filterAndCleanWeapons(context.getReboundMek());
             upgradeMekToMaxLevel(context.getReboundMek());
         }
 
         // 2. 修复 selectedPackage 中的源机体 MEK（保持内存视图一致）
         if (context.getSelectedPackage() != null && context.getSelectedPackage().getTsukuyomiMek() != null) {
+            filterAndCleanWeapons(context.getSelectedPackage().getTsukuyomiMek());
             upgradeMekToMaxLevel(context.getSelectedPackage().getTsukuyomiMek());
+        }
+    }
+
+    /**
+     * 过滤 sou.mek 中的ダミー（占位武器）与剧情脚本专用技能（SCRIPT:...），并对武装 Map 重新编号
+     */
+    private void filterAndCleanWeapons(Mek mek) {
+        Map<Integer, Mek.MekWeaponInfo> weaponMap = mek.getMekWeaponInfoMap();
+        if (weaponMap == null || weaponMap.isEmpty()) {
+            return;
+        }
+
+        Map<Integer, Mek.MekWeaponInfo> filteredMap = new java.util.LinkedHashMap<>();
+        Map<Integer, Integer> oldToNewIndexMap = new java.util.HashMap<>();
+        int targetIndex = 0;
+
+        for (Map.Entry<Integer, Mek.MekWeaponInfo> entry : weaponMap.entrySet()) {
+            Mek.MekWeaponInfo weapon = entry.getValue();
+            if (weapon == null) {
+                continue;
+            }
+            if (isDummyOrScriptWeapon(weapon.getWeaponName(), weapon.getWeaponSequence())) {
+                log.info("Filtering Sou dummy/script weapon: slot={}, name={}, seq={}",
+                        entry.getKey(), weapon.getWeaponName(), weapon.getWeaponSequence());
+                continue;
+            }
+            oldToNewIndexMap.put(entry.getKey(), targetIndex);
+            filteredMap.put(targetIndex++, weapon);
+        }
+
+        mek.setMekWeaponInfoMap(filteredMap);
+        remapAiWeaponIndices(mek, oldToNewIndexMap);
+    }
+
+    public static boolean isDummyOrScriptWeapon(String weaponName, String weaponSequence) {
+        if (weaponName != null) {
+            String nameUpper = weaponName.toUpperCase();
+            if (weaponName.contains("ダミー") || nameUpper.contains("DUMMY")) {
+                return true;
+            }
+            if (weaponName.startsWith("SCRIPT:") || weaponName.startsWith("SCRIPT：") || nameUpper.startsWith("SCRIPT") || weaponName.startsWith("(S)")) {
+                return true;
+            }
+        }
+        if (weaponSequence != null) {
+            String seqUpper = weaponSequence.toUpperCase();
+            if (seqUpper.contains("DUMMY")) {
+                return true;
+            }
+            if (seqUpper.startsWith("SCR_") || seqUpper.startsWith("SCRIPT_")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void remapAiWeaponIndices(Mek mek, Map<Integer, Integer> oldToNewIndexMap) {
+        if (mek.getMekAiInfoList() == null) {
+            return;
+        }
+        for (Mek.MekAiInfo aiInfo : mek.getMekAiInfoList()) {
+            if (aiInfo == null || aiInfo.getCpuEventList() == null) {
+                continue;
+            }
+            for (com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEvent event : aiInfo.getCpuEventList()) {
+                if (event instanceof com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEventAttack attack) {
+                    Integer oldNo = attack.getMekWeaponInfoMapNo();
+                    if (oldNo != null) {
+                        Integer newNo = oldToNewIndexMap.get(oldNo);
+                        if (newNo != null) {
+                            attack.setMekWeaponInfoMapNo(newNo);
+                        }
+                    }
+                }
+            }
         }
     }
 
