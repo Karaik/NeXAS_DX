@@ -1,0 +1,478 @@
+{
+  "akaoNegativeEvidence": {
+    "scopedFiles": [
+      "HellConfig.dat",
+      "SelectMekaMenuMeka.spm"
+    ],
+    "update3MekCount": 0,
+    "update3WazCount": 0,
+    "update4MekCount": 3,
+    "update4WazCount": 12
+  },
+  "comparison": "BHE 归一化默认转换与 Mod 基准数据",
+  "coverage": {
+    "requiredSkills": {
+      "misaki": [
+        "0013",
+        "S_HAMMER06",
+        "WARP_P1_11"
+      ],
+      "sou": [
+        "KAWARA03",
+        "N_HOUDAN03",
+        "R_HEAD03",
+        "STRAIGHT03",
+        "UPPER03"
+      ],
+      "tsukuyomi": [
+        "0014",
+        "G_FIELD"
+      ]
+    },
+    "roles": {
+      "misaki": {
+        "categoryDiffRows": {
+          "crash": 0,
+          "damage": 13,
+          "effect": 178,
+          "phase": 7,
+          "screen": 0
+        },
+        "diffRowCount": 198,
+        "droppedBheNodeGroups": 0,
+        "skillCount": 20,
+        "skillsWithDiff": 9,
+        "unresolvedModReferences": 0,
+        "unresolvedSourceReferences": 0
+      },
+      "sou": {
+        "categoryDiffRows": {
+          "crash": 18,
+          "damage": 264,
+          "effect": 164,
+          "phase": 54,
+          "screen": 0
+        },
+        "diffRowCount": 500,
+        "droppedBheNodeGroups": 25,
+        "skillCount": 150,
+        "skillsWithDiff": 97,
+        "unresolvedModReferences": 0,
+        "unresolvedSourceReferences": 0
+      },
+      "tsukuyomi": {
+        "categoryDiffRows": {
+          "crash": 0,
+          "damage": 2,
+          "effect": 2,
+          "phase": 2,
+          "screen": 0
+        },
+        "diffRowCount": 6,
+        "droppedBheNodeGroups": 0,
+        "skillCount": 8,
+        "skillsWithDiff": 4,
+        "unresolvedModReferences": 0,
+        "unresolvedSourceReferences": 0
+      }
+    },
+    "totalSelectedSkills": 178
+  },
+  "inputs": {
+    "decodedModJson": [
+      {
+        "path": "target/mod_diff_analyzer/dump/aki.mek.json",
+        "sha256": "b899f54e2a76725624e91ef7b1826660ea2ee6929ce84416d94fd9c93a851ee9",
+        "size": 693051
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/aki.waz.json",
+        "sha256": "425a40308ae9907a5ab0443208a621cafde7d5a2c7524d3ddbe1e30778f4b768",
+        "size": 14824543
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/batvoice.grp.json",
+        "sha256": "657ad9458cc1dd8eea0b64b0846351f4c2de0253aae2f50fd5bfc45ead7927fe",
+        "size": 292854
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Bomb.waz.json",
+        "sha256": "333ebab5ab4f8b8ab884a00155620ddeb146ef8ab23bece2dc57c0a239024890",
+        "size": 6747798
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Effect.waz.json",
+        "sha256": "d0bac0dc43b990f8ea1587653891867ff8a288469e13ff540daa4276e0a65132",
+        "size": 1818741
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Laser.waz.json",
+        "sha256": "d740a98e4ccc661b3bfe9efcc226b35a74ec982f2fb76203a394565d92ae395e",
+        "size": 4627360
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/MapGroup.grp.json",
+        "sha256": "7ad2bded97747adbbf4bc2797f8ff19e348144af2b4547b4ca0d4ec5fa1cb0ec",
+        "size": 2598042
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/mapobj.waz.json",
+        "sha256": "6230dedbb94d054c8b67bb83ff3baaccc6e9d4f9a9cd84f20dbc06ceba3a710c",
+        "size": 1899776
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/misaki.waz.json",
+        "sha256": "de76b8f7b6a01fd18ec3c670f0f42a7f44db0fc67454e0618d02a380b510f84a",
+        "size": 1174623
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/mohawk.mek.json",
+        "sha256": "2ff114b66cdd15d96bf0c4af97a2144da6a6b9c61010b42a8d70364293474b73",
+        "size": 244374
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/segroup.grp.json",
+        "sha256": "3e9c7a1087f09b48ab63ee20195de7a93811ef7f39fb077b33023ee268f4378c",
+        "size": 817863
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/spritegroup.grp.json",
+        "sha256": "9d3137a7e4c61e83eb92a7c4c25026acdf9aa1158ce3d8b38d440e73fe2f034f",
+        "size": 17321
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Tama01.waz.json",
+        "sha256": "3db4e39db093cdaf2de087ef0c8a37e55d1e9f18d4c8b1c450d4647fcce69522",
+        "size": 4112889
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Tama02.waz.json",
+        "sha256": "f9dcf879084229d87dea69131a1888fe2156b2ad953abed590933d15c1c33abd",
+        "size": 6415036
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Tama03.waz.json",
+        "sha256": "358401efde34d3be9ca27bb9edac1111a92cd4bc4a60dc9100053f755d2ca3db",
+        "size": 4047646
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Tama04.waz.json",
+        "sha256": "60d29e6d9ef591edfa7f9d57da1d1b9ed847caeb8d1447a41c5721838451d23a",
+        "size": 8500433
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Tama05.waz.json",
+        "sha256": "d164b0921bfb47a73b6998ed90102528e234b7cf6a0ef342dc4404baf23f33e3",
+        "size": 12486577
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/wazagroup.grp.json",
+        "sha256": "fd94fa1a815b6c1866e266cfa0767999ac5897729d072f1a695c046a7c285d72",
+        "size": 17419
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/zako102a.mek.json",
+        "sha256": "d81641c9a9b8bf5bc8e993b328887422da261d5b1e77caf9966d12a994897c18",
+        "size": 95278
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/zako681a.waz.json",
+        "sha256": "64c5a7817913552cc13042bb0c97dce3958698adc06ef3e0e2c674904db64e0d",
+        "size": 425450
+      }
+    ],
+    "modRawPayload": [
+      {
+        "path": "src/main/resources/modsample/Update4/aki.mek",
+        "sha256": "e484310ee9ddaa5ff10447739923b15bf1858bd54af4ee84b598a862ac76f41f",
+        "size": 206229
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/aki.waz",
+        "sha256": "010bc6e0d8b9ea8c9519c7378d836513a0c11cb21744b65c9377ef352680a8ad",
+        "size": 1852148
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/batvoice.grp",
+        "sha256": "ced591026cdc3a4fd168e20dc48c35e3e67ab6e107244c4b5b8210456a6dd963",
+        "size": 78123
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/Bomb.waz",
+        "sha256": "9116848d70c14fdbe65f531c3aa495971aaf21ff9233067534fcf65887ed840b",
+        "size": 842520
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/Effect.waz",
+        "sha256": "851b52d16115293038095de0f6ccac93897f69523c0a7c55b7508337dc3c7a0a",
+        "size": 369940
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/HellConfig.dat",
+        "sha256": "df15b575ba8ca062c3e71cd7294a9d3db208b66af35e727f0b78e70d4b0390dc",
+        "size": 22561
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/Laser.waz",
+        "sha256": "06d3369b047ae000de4ecf0085429fa9293253abc2698a6a657d3979c9ab2e18",
+        "size": 715098
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/MapGroup.grp",
+        "sha256": "0d826f07618967023e1b4f0dd2c05fc8d08fc23e514f38e111eb4a05e1fb8ca6",
+        "size": 342040
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/mapobj.waz",
+        "sha256": "284e8535bd1ca8615b23342c6dafdffc6c1b2fac8ffe18fd28bc378f25c5e4f6",
+        "size": 299001
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/misaki.waz",
+        "sha256": "b7c2bdca01bfc2f25aab723381386fb692cde60b219068963e336ad70a94a4e8",
+        "size": 150449
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/mohawk.mek",
+        "sha256": "7e3ce1390796d91e025a0ff3855a0c6156f68dd19f9c42742ac64f1ac02b0428",
+        "size": 50329
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/segroup.grp",
+        "sha256": "53c11143be24ff7439d3171fe26e99b97308b93bef13667569dab50a4cadaffb",
+        "size": 84370
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/SelectMekaMenuMeka.spm",
+        "sha256": "58b3230a554a7ce5fe69de1a96296db0693e8a0f4ad9b7bf854f40d00e1e6e5d",
+        "size": 31891
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/spritegroup.grp",
+        "sha256": "5dda8fd9b889238b6e1ba50ae33ef6ba94150c77b70a5b433d1e09b1a58b764a",
+        "size": 4361
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/Tama01.waz",
+        "sha256": "7f130bbeca2322733e6420aa02ddc5c4af8f132b3dc368c1e6db69a6e29e38e7",
+        "size": 586682
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/Tama02.waz",
+        "sha256": "044bcce8cf1e4bffdb5245256814f97a273ee1407e0b9b3674fa7695edec7c10",
+        "size": 906962
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/Tama03.waz",
+        "sha256": "afdc75f63239aa271608826ee5d3f46c947f441f0ff2633ffe7b7ee3f84cf9d4",
+        "size": 580158
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/Tama04.waz",
+        "sha256": "81008de24389546c8c2057e27a737e5ecce1831fd0d816604191612d925401a7",
+        "size": 1138624
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/Tama05.waz",
+        "sha256": "a1800bfff1108f34ca4c85728effa7a1f88b4b954e1ada9efc65778de71bdb67",
+        "size": 1800067
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/wazagroup.grp",
+        "sha256": "377f5dba7d9ab2295a790afd149659e3354165fc8fce02073c6bed0b780a4da6",
+        "size": 3981
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/zako102a.mek",
+        "sha256": "3b5e6567eeebbf138a9ebc8a649f1dbef829da1ec0e55e3373acc94f4adfcbc5",
+        "size": 21927
+      },
+      {
+        "path": "src/main/resources/modsample/Update4/zako681a.waz",
+        "sha256": "b237fe3483a7361bb70fe6dc99a0215f497a44a268d9939a6eecaea0c6e92f1a",
+        "size": 59333
+      }
+    ],
+    "sourceJson": [
+      {
+        "path": "src/main/resources/grpBheJson/spritegroup.grp.json",
+        "sha256": "d4883b628a9941c55a197d66dbd43eaa8ee77daecc4b3818dbab6da4d6f9e3cf",
+        "size": 11454
+      },
+      {
+        "path": "src/main/resources/grpBheJson/term.grp.json",
+        "sha256": "705f5b266456341c6d7eb70a93fb0e6c03951def1c146b3e56af773e00fc0881",
+        "size": 43546
+      },
+      {
+        "path": "src/main/resources/grpBheJson/wazagroup.grp.json",
+        "sha256": "44b205659022a68dd8ef9404b7e3af6856ba8285b7e959b907ae26570cb5a86a",
+        "size": 12442
+      },
+      {
+        "path": "src/main/resources/grpBsdxJson/Term.grp.json",
+        "sha256": "ba562ca7bbc16fc5ae72011acb4c4f96767b9ea0282652bc932c970d16f2f0f8",
+        "size": 35293
+      },
+      {
+        "path": "src/main/resources/mekBheJson/misaki.mek.json",
+        "sha256": "6720609d9fdc832fa73df605dae0c6b4375acbe3a5e20c945d34bc34045c1a8c",
+        "size": 193210
+      },
+      {
+        "path": "src/main/resources/mekBheJson/sou.mek.json",
+        "sha256": "8292ab969754283a932b712b800c52ffc5f2c0004529310407f03de898d3992e",
+        "size": 1728408
+      },
+      {
+        "path": "src/main/resources/mekBheJson/zako681a.mek.json",
+        "sha256": "c827183daa2c094302e40a2e698c215a5ab8747a49a7a3592c23defa6afd55c0",
+        "size": 79984
+      },
+      {
+        "path": "src/main/resources/wazBheJson/bomb.waz.json",
+        "sha256": "60048d7a3e6654ea2a2ecafe7a31fa3971446c95779ead4d2f5a307a7ae0ed08",
+        "size": 2638759
+      },
+      {
+        "path": "src/main/resources/wazBheJson/effect.waz.json",
+        "sha256": "954d9199b3c87bce84cbc2a0da88b2649c33ad6774ffe691193042c7af4090da",
+        "size": 1058197
+      },
+      {
+        "path": "src/main/resources/wazBheJson/laser.waz.json",
+        "sha256": "0aec0664dbf763abf24e885ad7dda623c4225c042484f095a3a16111a7ecde1e",
+        "size": 1630187
+      },
+      {
+        "path": "src/main/resources/wazBheJson/misaki.waz.json",
+        "sha256": "30211e2024a0b74b3ae9f3aec01c85c0764cd6433c9980afcb7764000b1082b5",
+        "size": 521295
+      },
+      {
+        "path": "src/main/resources/wazBheJson/sou.waz.json",
+        "sha256": "739aa4c32ace25166ce9bd6eb1d765752d903152ca031fa8f7e3b7635de5e402",
+        "size": 14933372
+      },
+      {
+        "path": "src/main/resources/wazBheJson/tama01.waz.json",
+        "sha256": "e8c9d2b19cc8db8aaaed5a11bf00d1c174176d219ff74288f6cc5e920ddefd60",
+        "size": 1594721
+      },
+      {
+        "path": "src/main/resources/wazBheJson/tama02.waz.json",
+        "sha256": "54cec3568662f1963fe7b846153b5215872c6b92ea1e42f1d88aa87b4e5bd630",
+        "size": 2961534
+      },
+      {
+        "path": "src/main/resources/wazBheJson/tama03.waz.json",
+        "sha256": "3a4f41f6968dc82666d6425be7337299c7118ea6267482f30687ff00b558a1d4",
+        "size": 2424194
+      },
+      {
+        "path": "src/main/resources/wazBheJson/tama04.waz.json",
+        "sha256": "dd09fc8ed0b061b1b2efeea1be7ab17c15266ce3eb128878259d25094daadf9d",
+        "size": 4009452
+      },
+      {
+        "path": "src/main/resources/wazBheJson/tama05.waz.json",
+        "sha256": "1f970a012981393e187c5f877d955e2529bb6d20ce15e1e762f2b15d72d8d559",
+        "size": 5646377
+      },
+      {
+        "path": "src/main/resources/wazBheJson/zako681a.waz.json",
+        "sha256": "d67c533519e1ff7234d3172b85807fce428483fe6781304fe89c4ce53bb6d3c6",
+        "size": 196961
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Bomb.waz.json",
+        "sha256": "333ebab5ab4f8b8ab884a00155620ddeb146ef8ab23bece2dc57c0a239024890",
+        "size": 6747798
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Effect.waz.json",
+        "sha256": "d0bac0dc43b990f8ea1587653891867ff8a288469e13ff540daa4276e0a65132",
+        "size": 1818741
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Laser.waz.json",
+        "sha256": "d740a98e4ccc661b3bfe9efcc226b35a74ec982f2fb76203a394565d92ae395e",
+        "size": 4627360
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/spritegroup.grp.json",
+        "sha256": "9d3137a7e4c61e83eb92a7c4c25026acdf9aa1158ce3d8b38d440e73fe2f034f",
+        "size": 17321
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Tama01.waz.json",
+        "sha256": "3db4e39db093cdaf2de087ef0c8a37e55d1e9f18d4c8b1c450d4647fcce69522",
+        "size": 4112889
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Tama02.waz.json",
+        "sha256": "f9dcf879084229d87dea69131a1888fe2156b2ad953abed590933d15c1c33abd",
+        "size": 6415036
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Tama03.waz.json",
+        "sha256": "358401efde34d3be9ca27bb9edac1111a92cd4bc4a60dc9100053f755d2ca3db",
+        "size": 4047646
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Tama04.waz.json",
+        "sha256": "60d29e6d9ef591edfa7f9d57da1d1b9ed847caeb8d1447a41c5721838451d23a",
+        "size": 8500433
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/Tama05.waz.json",
+        "sha256": "d164b0921bfb47a73b6998ed90102528e234b7cf6a0ef342dc4404baf23f33e3",
+        "size": 12486577
+      },
+      {
+        "path": "target/mod_diff_analyzer/dump/wazagroup.grp.json",
+        "sha256": "fd94fa1a815b6c1866e266cfa0767999ac5897729d072f1a695c046a7c285d72",
+        "size": 17419
+      }
+    ],
+    "toolFiles": [
+      {
+        "path": "tools/mod_diff_analyzer/analyze.py",
+        "sha256": "845383d43d37c178e850230d8dcfa685b281758d7fbf7561f94769f5c1323240",
+        "size": 72392
+      },
+      {
+        "path": "tools/mod_diff_analyzer/ModSampleJsonDumper.java",
+        "sha256": "c56347e4042afe72a96eac3861b3d49b9a49c9fe0c84de40e02fdf5d957c1289",
+        "size": 3161
+      },
+      {
+        "path": "tools/mod_diff_analyzer/run.ps1",
+        "sha256": "60674c2605e1f0cb2388b7d74173b594a6b2f2e2ee2bdc4e742fb9cd8d3463db",
+        "size": 2164
+      },
+      {
+        "path": "tools/mod_diff_analyzer/README.md",
+        "sha256": "63b00bf6118029c11946a5757eec87bfa17f20cf1e7e69f0fd83165eccf98227",
+        "size": 1291
+      }
+    ]
+  },
+  "output": {
+    "path": "docs/project-deep-dive/mod-sample-skill-behavior-diff.md",
+    "sha256": "21d2664e85ceaf6307283daa21ce7786d354e62ea8031f2693be7445534bfeb7",
+    "size": 508128
+  },
+  "primaryKey": [
+    "skillNameJapanese",
+    "skillNameEnglish"
+  ],
+  "roleOrder": [
+    "akao",
+    "sou",
+    "tsukuyomi",
+    "misaki"
+  ],
+  "schemaVersion": 1,
+  "toolVersion": "1.2.0"
+}
