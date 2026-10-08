@@ -25,11 +25,24 @@ public class BheInfoCollectionTermConverter {
 
     private final TermRegistry targetRegistry = new TermRegistry(BsdxInfoCollectionAnalyzer.getCachedTermGrp());
 
+    /** 有界样例与完整分类计数避免在全资源转换中持有全部对象图路径。 */
+    public record AuxAudit(String context, String dictionary, List<Integer> source,
+                           List<Integer> target, boolean heightLoss, boolean anchorNotRead) { }
+    private final List<AuxAudit> auxAudit = new ArrayList<>();
+    private final java.util.Map<String, Long> auxAuditCounts = new java.util.LinkedHashMap<>();
+
+    public List<AuxAudit> getAuxAudit() { return List.copyOf(auxAudit); }
+    public java.util.Map<String, Long> getAuxAuditCounts() { return java.util.Map.copyOf(auxAuditCounts); }
+
     public BsdxInfoCollection convert(BheInfoCollection source) {
         return convert(source, "InfoCollection");
     }
 
     public BsdxInfoCollection convert(BheInfoCollection source, String context) {
+        return convert(source, context, AuxConsumerPurpose.EXPRESSION);
+    }
+
+    public BsdxInfoCollection convert(BheInfoCollection source, String context, AuxConsumerPurpose purpose) {
         if (source == null) {
             return emptyCollection();
         }
@@ -44,17 +57,22 @@ public class BheInfoCollectionTermConverter {
         target.setInt1(plan.int1());
         target.getTypeList().addAll(plan.typeList());
         target.getParamList().addAll(plan.paramList());
-        target.getIntList3().addAll(convertAuxList(source.getIntList3()));
-        target.getIntList4().addAll(convertAuxList(source.getIntList4()));
+        AuxConsumerPurpose consumer = resolveAuxConsumer(source, semantic, purpose, context);
+        target.getIntList3().addAll(convertAuxList(source.getIntList3(), consumer, context + ".aux3"));
+        target.getIntList4().addAll(convertAuxList(source.getIntList4(), consumer, context + ".aux4"));
         target.setInt2(source.getInt2() == null ? 0 : source.getInt2());
         return target;
     }
 
     public void rewriteCopiedBsdxCollection(BsdxInfoCollection target, String context) {
+        rewriteCopiedBsdxCollection(target, context, AuxConsumerPurpose.EXPRESSION);
+    }
+
+    public void rewriteCopiedBsdxCollection(BsdxInfoCollection target, String context, AuxConsumerPurpose purpose) {
         if (target == null) {
             return;
         }
-        BsdxInfoCollection converted = convert(toBheCollection(target), context);
+        BsdxInfoCollection converted = convert(toBheCollection(target), context, purpose);
         target.setInt1(converted.getInt1());
         target.getTypeList().clear();
         target.getTypeList().addAll(converted.getTypeList());
@@ -210,43 +228,86 @@ public class BheInfoCollectionTermConverter {
                 || "OPERATOR".equals(step.getTermGroupCodeName());
     }
 
-    private List<Integer> convertAuxList(List<Integer> source) {
+    private AuxConsumerPurpose resolveAuxConsumer(BheInfoCollection source, BheInfoCollectionSemantic semantic,
+                                                  AuxConsumerPurpose purpose, String context) {
+        Integer first = source.getTypeList() == null || source.getTypeList().isEmpty() ? null : source.getTypeList().get(0);
+        int branch = first == null ? -1 : first;
+        if (purpose == AuxConsumerPurpose.EXPRESSION) {
+            String root = semantic.getStartGroupCodeName();
+            purpose = switch (root == null ? "" : root) {
+                case "POS" -> AuxConsumerPurpose.POSITION;
+                case "ANGLE" -> AuxConsumerPurpose.ANGLE;
+                case "PARAM" -> AuxConsumerPurpose.PARAMETER;
+                case "PARENT" -> AuxConsumerPurpose.OBJECT_REFERENCE;
+                default -> AuxConsumerPurpose.UNKNOWN;
+            };
+        }
+        return switch (purpose) {
+            case ANGLE -> switch (branch) {
+                case 1, 2 -> AuxConsumerPurpose.POSITION;
+                case 3 -> AuxConsumerPurpose.OBJECT_REFERENCE;
+                default -> AuxConsumerPurpose.UNUSED;
+            };
+            case POSITION -> branch == 1 || branch == 3 ? purpose : AuxConsumerPurpose.UNUSED;
+            case PARAMETER -> branch == 0 ? AuxConsumerPurpose.UNUSED : AuxConsumerPurpose.OBJECT_REFERENCE;
+            default -> purpose;
+        };
+    }
+
+    private List<Integer> convertAuxList(List<Integer> source, AuxConsumerPurpose consumer, String context) {
         if (source == null || source.isEmpty()) {
             return new ArrayList<>();
         }
-        List<Integer> target = new ArrayList<>(source.size());
-        target.add(targetRegistry.require(
-                "OBJECTPOS",
-                mapObjectPosDescription(sourceAuxDescription(BHE_OBJECTPOS_GROUP, source.get(0)))
-        ).itemIndex());
-        if (source.size() > 1) {
-            target.add(targetRegistry.require(
-                    "OBJECTPOS2",
-                    mapObjectPos2Description(sourceAuxDescription(BHE_OBJECTPOS2_GROUP, source.get(1)))
-            ).itemIndex());
+        if (consumer == AuxConsumerPurpose.UNKNOWN) {
+            throw new IllegalStateException("未知aux消费者: " + context + " " + source);
         }
-        for (int i = 2; i < source.size(); i++) {
-            target.add(source.get(i));
+        if (consumer == AuxConsumerPurpose.UNUSED) {
+            recordAux(context, "NOT_READ", source, source, false, true);
+            return copyList(source);
         }
+        String dictionary = consumer == AuxConsumerPurpose.OBJECT_REFERENCE ? "OBJECT" : "OBJECTPOS";
+        int sourceGroup = consumer == AuxConsumerPurpose.OBJECT_REFERENCE ? 1 : BHE_OBJECTPOS_GROUP;
+        String sourceDescription = sourceAuxDescription(sourceGroup, source.get(0), context);
+        String description = sourceDescription;
+        if (targetRegistry.find(dictionary, description) == null) {
+            description = switch (description) {
+                case "HIT_WAZA" -> "HIT";
+                case "MULTILOCK_LOCK", "MULTILOCK_LOCK_B", "MULTILOCK_LOCK_N", "MULTILOCK_LENGTH" -> "ROCK";
+                default -> throw new IllegalStateException("未审计aux语义: " + context + " " + dictionary + "/" + description);
+            };
+        }
+        List<Integer> target = copyList(source);
+        target.set(0, targetRegistry.require(dictionary, description).itemIndex());
+        boolean heightLoss = false;
+        if (consumer == AuxConsumerPurpose.POSITION && source.size() > 1) {
+            String anchor = sourceAuxDescription(BHE_OBJECTPOS2_GROUP, source.get(1), context);
+            heightLoss = "CENTER".equals(anchor) || "TOP".equals(anchor);
+            target.set(1, targetRegistry.require("OBJECTPOS2", mapObjectPos2Description(anchor)).itemIndex());
+        }
+        recordAux(context, dictionary, source, target, heightLoss, consumer == AuxConsumerPurpose.OBJECT_REFERENCE);
         return target;
     }
 
-    private String sourceAuxDescription(int groupIndex, Integer itemIndex) {
-        return BheInfoCollectionAnalyzer.getCachedTermGrp()
-                .getTermList().get(groupIndex)
-                .getTermItemList().get(itemIndex)
-                .getTermItemDescription();
+    private void recordAux(String context, String dictionary, List<Integer> source, List<Integer> target,
+                           boolean loss, boolean anchorNotRead) {
+        auxAuditCounts.merge(dictionary + (loss ? ":HEIGHT_LOSS" : ""), 1L, Long::sum);
+        if (auxAudit.size() < 128) auxAudit.add(new AuxAudit(context, dictionary, copyList(source), copyList(target), loss, anchorNotRead));
+    }
+
+    private String sourceAuxDescription(int groupIndex, Integer itemIndex, String context) {
+        var groups = BheInfoCollectionAnalyzer.getCachedTermGrp().getTermList();
+        if (itemIndex == null || itemIndex < 0 || itemIndex >= groups.get(groupIndex).getTermItemList().size()) {
+            throw new IllegalStateException("aux索引越界: " + context + " group=" + groupIndex + " item=" + itemIndex);
+        }
+        return groups.get(groupIndex).getTermItemList().get(itemIndex).getTermItemDescription();
     }
 
     private String mapObjectPosDescription(String description) {
-        if (targetRegistry.find("OBJECTPOS", description) != null) {
-            return description;
-        }
+        if (targetRegistry.find("OBJECTPOS", description) != null) return description;
         return switch (description) {
             case "HIT_WAZA" -> "HIT";
-            case "MULTILOCK_LOCK", "MULTILOCK_LOCK_B",
-                    "MULTILOCK_LOCK_N", "MULTILOCK_LENGTH" -> "ROCK";
-            default -> throw new IllegalStateException("未审计的 BHE OBJECTPOS aux: " + description);
+            case "MULTILOCK_LOCK", "MULTILOCK_LOCK_B", "MULTILOCK_LOCK_N", "MULTILOCK_LENGTH" -> "ROCK";
+            default -> throw new IllegalStateException("未审计的 BHE OBJECTPOS: " + description);
         };
     }
 

@@ -20,10 +20,10 @@ public class BheInfoCollectionObjectGraphRewriter {
     private final BheInfoCollectionTermConverter converter = new BheInfoCollectionTermConverter();
 
     public void rewrite(Object root, String context) {
-        visit(root, context, new IdentityHashMap<>());
+        visit(root, context, new IdentityHashMap<>(), AuxConsumerPurpose.EXPRESSION);
     }
 
-    private void visit(Object node, String path, IdentityHashMap<Object, Boolean> visited) {
+    private void visit(Object node, String path, IdentityHashMap<Object, Boolean> visited, AuxConsumerPurpose purpose) {
         if (node == null || isLeafValue(node)) {
             return;
         }
@@ -32,20 +32,20 @@ public class BheInfoCollectionObjectGraphRewriter {
         }
 
         if (node instanceof BsdxInfoCollection collection) {
-            converter.rewriteCopiedBsdxCollection(collection, path);
+            converter.rewriteCopiedBsdxCollection(collection, path, purpose);
             return;
         }
 
         if (node instanceof List<?> list) {
             for (int i = 0; i < list.size(); i++) {
-                visit(list.get(i), path + "[" + i + "]", visited);
+                visit(list.get(i), path + "[" + i + "]", visited, purpose);
             }
             return;
         }
 
         if (node instanceof Map<?, ?> map) {
             for (Map.Entry<?, ?> entry : map.entrySet()) {
-                visit(entry.getValue(), path + "." + entry.getKey(), visited);
+                visit(entry.getValue(), path + "." + entry.getKey(), visited, purpose);
             }
             return;
         }
@@ -60,12 +60,40 @@ public class BheInfoCollectionObjectGraphRewriter {
             }
             field.setAccessible(true);
             try {
-                visit(field.get(node), path + "." + field.getName(), visited);
+                visit(field.get(node), path + "." + field.getName(), visited, consumerOf(node, field, purpose));
             } catch (IllegalAccessException e) {
                 throw new IllegalStateException("term 重编译读取字段失败: " + path + "." + field.getName(), e);
             }
         }
     }
+
+    private AuxConsumerPurpose consumerOf(Object host, Field field, AuxConsumerPurpose inherited) {
+        if (host instanceof com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEvent) {
+            return AuxConsumerPurpose.OBJECT_REFERENCE;
+        }
+        if (host instanceof com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventTerm term) {
+            Integer type = term.getTypeId();
+            if (type == null) return AuxConsumerPurpose.UNKNOWN;
+            return switch (type) {
+                case 32, -1 -> AuxConsumerPurpose.UNUSED;
+                case 5 -> AuxConsumerPurpose.POSITION;
+                case 6 -> AuxConsumerPurpose.OBJECT_REFERENCE;
+                case 9, 10 -> AuxConsumerPurpose.ANGLE;
+                case 11 -> AuxConsumerPurpose.PARAMETER;
+                default -> AuxConsumerPurpose.UNKNOWN;
+            };
+        }
+        if (host instanceof com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventMove) {
+            return AuxConsumerPurpose.POSITION;
+        }
+        if (host instanceof com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventChange) {
+            return field.getName().equals("bsdxInfoCollectionList2")
+                    ? AuxConsumerPurpose.UNUSED : AuxConsumerPurpose.OBJECT_REFERENCE;
+        }
+        return inherited;
+    }
+
+    public List<BheInfoCollectionTermConverter.AuxAudit> getAuxAudit() { return converter.getAuxAudit(); }
 
     private List<Field> getAllFields(Class<?> type) {
         List<Field> fields = new ArrayList<>();

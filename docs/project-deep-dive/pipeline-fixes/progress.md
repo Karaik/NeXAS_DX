@@ -9,8 +9,8 @@
 | 项 | 状态 | 提交 | 验证/笔记 |
 | --- | --- | --- | --- |
 | 1 Sou Material | 完成 | 03e6de7c1 | 01-sou-material.md；10项行为/真实回环测试通过 |
-| 2 内部动画 | 完成 | 本项独立提交 | 02-material-animation.md；双入口及真实资源3项通过 |
-| 3 aux消费者 | 待执行 | 尚未提交 | 03-aux-consumers.md |
+| 2 内部动画 | 完成 | 53c8fe62f | 02-material-animation.md；双入口及真实资源3项通过 |
+| 3 aux消费者 | 完成 | 本项独立提交 | 03-aux-consumers.md；10aux+3MEK+2WAZ+1异常契约通过 |
 | 4 叠加资源交付 | 待执行 | 尚未提交 | 04-layered-assets.md |
 | 5 Misaki动态定位 | 待执行 | 尚未提交 | 05-misaki-emission.md |
 
@@ -23,3 +23,5 @@
 服务状态：三个子任务曾429/503中断。Root接手第一项；第二项和第五项已重新分派，代码互不重叠，Maven测试串行。
 
 第一项只读复核：等级切片、单条幂等、三个资源数组深复制及AI预检查均与计划一致；最新Sou真实UPPER动画族断言与二进制重解析通过。第二项red三项均expected40/actual0，green三项全部通过。
+
+实施裁定：以新闭合原生消费者为准，ANGLE首项1/2按位置字典，3按OBJECT；MEK AI不随POS根转位置。此前ANGLE全局9→8结论撤回。代价是旧调查标签/断言需校准，但避免把本来正确的HIT位置改坏。

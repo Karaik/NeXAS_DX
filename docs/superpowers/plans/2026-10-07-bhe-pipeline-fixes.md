@@ -48,7 +48,7 @@ Files: tsukuyomi/graft/RebindMekStep.java；followup/graft/RebindMekStep.java；
 
 Files: BheInfoCollectionTermConverter.java；BheInfoCollectionObjectGraphRewriter及其调用方；共用ConsumerPurpose类型；MEK/WAZ aux测试；03-aux-consumers.md。
 
-- [ ] 先写真实字典测试：ANGLE对象9(HIT_WAZA)→目标OBJECT8(HIT)；POS对象9→按OBJECTPOS(HIT)保持其位置语义；二级锚点保留正确字典。
+- [ ] 先写真实字典测试：ANGLE首项3的对象9(HIT_WAZA)→目标OBJECT8(HIT)；ANGLE首项1/2及POS位置分支对象9→按OBJECTPOS(HIT)保持位置语义。MEK AI/条件即使根POS也按OBJECT，未读取的第二项保留。
 - [ ] 覆盖顶层/嵌套WAZ、条件和MEK AI实际调用链；未知上下文与越界索引给明确诊断。
 - [ ] 观察原转换使用同一位置字典导致预期失败。
 - [ ] 传入明确消费者用途，不靠随意字符串猜字典；按事件槽/collection使用位置选择OBJECT或OBJECTPOS及第二级表。

@@ -19,6 +19,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BheInfoCollectionTermConverterSemanticTest {
 
@@ -87,16 +88,16 @@ class BheInfoCollectionTermConverterSemanticTest {
     void invalidObjectPositionAuxIndicesFailClosed() {
         BheInfoCollection nullIndex = positionCollection();
         nullIndex.getIntList3().add(null);
-        assertThrows(NullPointerException.class, () -> converter.convert(nullIndex, "null aux"));
+        assertTrue(assertThrows(IllegalStateException.class, () -> converter.convert(nullIndex, "null aux")).getMessage().contains("null aux"));
 
         BheInfoCollection outOfRange = positionCollection();
         outOfRange.getIntList3().add(Integer.MAX_VALUE);
-        assertThrows(IndexOutOfBoundsException.class, () -> converter.convert(outOfRange, "out-of-range aux"));
+        assertTrue(assertThrows(IllegalStateException.class, () -> converter.convert(outOfRange, "out-of-range aux")).getMessage().contains("out-of-range aux"));
 
         BheInfoCollection nullHeight = positionCollection();
         nullHeight.getIntList3().add(requireBheItemIndex("OBJECTPOS", "MINE"));
         nullHeight.getIntList3().add(null);
-        assertThrows(NullPointerException.class, () -> converter.convert(nullHeight, "null height aux"));
+        assertTrue(assertThrows(IllegalStateException.class, () -> converter.convert(nullHeight, "null height aux")).getMessage().contains("null height aux"));
     }
 
     @Test
