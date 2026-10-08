@@ -13,14 +13,14 @@
 ## Global Constraints
 
 - 所有新建或修改文件使用UTF-8无BOM、CRLF。
-- 独立worktree为C:/Users/30250/.codex/worktrees/bhe-pipeline-fixes/NeXAS_DX，起点c6c4e039916b3b4cba4b86474f936d586db670bd。
+- 工作目录为D:/Code/NeXAS_DX，所有修改直接在develop分支完成，不创建或保留codex分支或独立开发工作树。起点c6c4e039916b3b4cba4b86474f936d586db670bd；初始实施与验证曾在隔离工作树完成，现已迁回develop。
 - 用户原工作区的CLARIAS修改、原版资产与既有生成目录不改动。
-- 新资源输出和round-trip均使用JUnit临时目录或本worktree独立输出；禁止运行会清理共享JSON输入的默认测试套件。
+- 新资源输出和round-trip均使用JUnit临时目录或明确指定的独立输出目录；禁止运行会清理JSON输入的默认测试套件。
 - 各项先写行为回归并观察预期失败，再修生产逻辑，验证后提交；每项笔记进入对应提交。
 - 不实施第6～10项的角色演出/运动/Hit标志/内容裁剪/公共稀疏追加方案。
 - 不把MEK总行数机械限制为153；检查实际进入武装参数bank的编号0..152。超出限制的未消费资源池条目本身不判错误。
 - 五项提交顺序固定为1、2、3、4、5。额外修正并入所属项提交，避免无关提交。
-- 用户2026-10-08反馈更正：普通SPM图名/静态动画引用可能指向不存在的图片，不作为硬失败依赖。图片缺失只审计、保留引用、继续封包；第4项旧“图片缺失必阻断”假设撤回，见04-missing-image-compatibility.md。按用户要求将纠正归入第4项，五项全部重新提交；旧历史仅保留在备份分支。
+- 用户2026-10-08反馈更正：普通SPM图名/静态动画引用可能指向不存在的图片，不作为硬失败依赖。图片缺失只审计、保留引用、继续封包；第4项旧“图片缺失必阻断”假设撤回，见04-missing-image-compatibility.md。按用户要求将纠正归入第4项，五项全部重新提交并统一迁回develop；旧历史保存于target/bhe-pipeline-validation-20261008/history-before-cleanup.bundle，不保留备份分支。
 
 ## Task 1: Sou武装、等级与Material同步
 

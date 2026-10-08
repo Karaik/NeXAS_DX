@@ -18,7 +18,7 @@
 
 定向回归当前共71项全部通过，无失败/错误/跳过，覆盖原五项及本轮纠正；没有用忽略错误来通过测试。未做实机验证，不能据静态缺图审计宣称所有演出图像完整。
 
-定向命令：`mvn -q "-Dtest=LayeredAssetDeliveryTest,ImportStaticAssetsStepBheOutputTest,RebindMekStepBheResourceRebindTest,AuxConsumerRebindTest,MisakiCustomizerTest,SouCustomizerTest,RebindWazStepCommonReferenceTest,BheInfoCollectionTermConverterSemanticTest#invalidObjectPositionAuxIndicesFailClosed" test`。日志位于本工作树`target/missing-image-final-tests.log`，Surefire报告合计71项、0失败、0错误、0跳过。
+定向命令：`mvn -q "-Dtest=LayeredAssetDeliveryTest,ImportStaticAssetsStepBheOutputTest,RebindMekStepBheResourceRebindTest,AuxConsumerRebindTest,MisakiCustomizerTest,SouCustomizerTest,RebindWazStepCommonReferenceTest,BheInfoCollectionTermConverterSemanticTest#invalidObjectPositionAuxIndicesFailClosed" test`。日志已保存到主目录`target/bhe-pipeline-validation-20261008/missing-image-final-tests.log`，Surefire报告合计71项、0失败、0错误、0跳过。
 
 中间完整runner：`mvn -q "-Dtest=TestBheByJinkiRunner#testRunBheByJinki" "-DargLine=-Xmx6g" test`，日志`target/bhe-full-runner-image-correction-final.log`。JINKI/AKAO、Tsukuyomi、Yuri、Freja四阶段已返回；在Nagi验收时因`Nagi.mek -> VoiceInfo.table[13][0][0] -> BatVoice[34][101]`越界/禁用停止，退出码1。原smoke_007缺图已不再阻断。
 
@@ -26,4 +26,4 @@
 
 最终runner重跑日志`target/bhe-full-runner-image-correction-verified.log`：JINKI/AKAO及Tsukuyomi～Motoki九个BHE角色阶段全部返回，Sou已到最终Pack验收，因地图资源`bhe_mapB6_ES02_ob01.spm`重解析失败停止，退出码1。BSDX SpmParser在offset5561试图读取下一int，但余下0 bytes。输出与外部BHE供体`mapb6_es02_ob01.spm`的SHA256相同（`8EDC72AF2B580A6A56FF3BD2552153423B4AE46C140BD111539CA1C22BC7BD6C`），地图物化流程原样复制源bytes。因此这里只确认当前BSDX解析器无法读该地图SPM，不能据此断言本次转换把文件写坏或原资源无效。地图SPM格式兼容需另行诊断；本次未改地图转换/解析器，也未跳过该检查或报告整链/实机通过。
 
-限定只读复审未发现本次纠正的阻碍提交问题。按用户要求将本次纠正归入第4项，五项全部重新提交；原六提交历史备份于`codex/bhe-pipeline-fixes-before-rewrite-20261008`。最终代码与备份中已通过71项定向回归的版本保持一致；编码规范和主工作区保护继续适用。当前提交记录见progress.md及Git日志。
+限定只读复审未发现本次纠正的阻碍提交问题。按用户要求将本次纠正归入第4项，五项全部重新提交，随后统一迁回develop；不保留codex分支。原六提交末端为fc5d39412，历史已保存为主目录`target/bhe-pipeline-validation-20261008/history-before-cleanup.bundle`。最终代码与已通过71项定向回归的版本保持一致；全部历史日志及Surefire报告已迁至该验证目录。当前提交记录见progress.md及Git日志。

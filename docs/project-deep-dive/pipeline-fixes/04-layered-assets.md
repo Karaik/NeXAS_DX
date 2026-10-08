@@ -24,6 +24,6 @@ Material读取规则按有效MekaGroup身份：非KOU每个存在武装一条，
 
 最终扩大复核加入RebindWazStepCommonReferenceTest两项和既有invalidObjectPositionAuxIndicesFailClosed一项，共63项全部通过，命令与结果见progress.md。这是纠正前的测试结果，未发现缺图门禁的错误假设；本轮已用保留缺图引用的正例及真实封包回归修正该缺口。
 
-实际多角色runner尝试：`mvn -q "-Dtest=TestBheByJinkiRunner#testRunBheByJinki" "-DargLine=-Xmx6g" test`。JINKI阶段完成；Tsukuyomi公共资源输出因`bhe_smoke_007_0001.png`的供体`smoke_007_0001.png`缺失而失败。已查询BHE、BSDX和JINKI媒体加载目录，均无该文件；其他游戏目录同名文件未作为供体。此轮未交付声称完整可运行的PAC，未实机验证。完整runner日志保存在本worktree `target/bhe-full-runner.log`，所有输出仅落在本worktree的out目录，用户原工作区原版资源不变。
+实际多角色runner尝试：`mvn -q "-Dtest=TestBheByJinkiRunner#testRunBheByJinki" "-DargLine=-Xmx6g" test`。JINKI阶段完成；Tsukuyomi公共资源输出因`bhe_smoke_007_0001.png`的供体`smoke_007_0001.png`缺失而失败。已查询BHE、BSDX和JINKI媒体加载目录，均无该文件；其他游戏目录同名文件未作为供体。此轮未交付声称完整可运行的PAC，未实机验证。完整runner日志已保存到主目录`target/bhe-pipeline-validation-20261008/bhe-full-runner.log`。当时输出仅落在隔离工作树的out目录，用户原版资源不变。
 
 范围限制：未对动态Term跳转的全部运行条件求值，静态资源验证不等于实机行为验证；未实施公共技能稀疏追加或角色6～10项配方。初版“供体缺失必需失败”的图片规则已撤回；不借其他游戏同名素材，也不以EXE旁路冒充交付成功。
