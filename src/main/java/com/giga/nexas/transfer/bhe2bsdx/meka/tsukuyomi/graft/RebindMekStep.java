@@ -92,7 +92,7 @@ public class RebindMekStep {
         targetMek.setMekVoiceInfo(rebuildMekVoiceInfo(context));
 
         // Step 6-10: 重建 Material 分片。
-        // Material 分片显式重建条目和数组，只改外层资源索引。
+        // Material 分片显式重建条目和数组，同时重绑外层资源和宿主内部动画索引。
         targetMek.setMekMaterialBlock(rebuildMekMaterialBlock(context, resolver));
 
         // Step 6-11: MEK AI 中也携带 InfoCollection，必须和 WAZ 共用同一套 term 语义重编译规则。
@@ -610,7 +610,12 @@ public class RebindMekStep {
                 continue;
             }
             int targetGroupIndex = resolver.resolveSpriteGroupIndex(sourceGroupIndex);
-            putItems(target, targetGroupIndex, sourceItems);
+            // 公共 SPM 的动画追加到宿主尾部，MEK 预载清单必须与 WAZ 指向相同的动画。
+            int[] targetItems = new int[sourceItems.length];
+            for (int i = 0; i < sourceItems.length; i++) {
+                targetItems[i] = resolver.resolveSpriteActionGroupIndex(sourceGroupIndex, sourceItems[i]);
+            }
+            putItems(target, targetGroupIndex, targetItems);
         }
         return target;
     }

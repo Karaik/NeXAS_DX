@@ -42,6 +42,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RebindMekStepBheResourceRebindTest {
@@ -60,6 +61,91 @@ class RebindMekStepBheResourceRebindTest {
             new ConvertBheCommonProjectileResourcesStep();
     private final SelfRedirectBheCommonProjectileResourcesStep selfRedirectCommonStep =
             new SelfRedirectBheCommonProjectileResourcesStep();
+
+    @Test
+    void tsukuyomiEntryPointRebindsMaterialAnimationsWithoutMutatingSource() {
+        AnimationFixture fixture = animationFixture();
+        Mek rebound = rebindMekStep.rebindTsukuyomiMek(
+                new TsukuyomiGraftRequest(), fixture.sourcePackage(), fixture.privatePlan(), fixture.commonPlan()
+        );
+
+        assertAnimationRebind(fixture, rebound);
+    }
+
+    @Test
+    void followupEntryPointRebindsMaterialAnimationsWithoutMutatingSource() {
+        AnimationFixture fixture = animationFixture();
+        Mek rebound = new com.giga.nexas.transfer.bhe2bsdx.meka.followup.graft.RebindMekStep()
+                .rebindFollowupMek(
+                        new TsukuyomiGraftRequest(), fixture.sourcePackage(), fixture.privatePlan(), fixture.commonPlan()
+                );
+
+        assertAnimationRebind(fixture, rebound);
+    }
+
+    private AnimationFixture animationFixture() {
+        Mek source = new Mek();
+        source.setFileName("material-animation");
+        source.setExtensionName("mek");
+        source.getMekBasicInfo().setWazFileSequence(11);
+        source.getMekBasicInfo().setSpmFileSequence(13);
+        Mek.MekMaterialBlock.PluginEntry entry = new Mek.MekMaterialBlock.PluginEntry();
+        entry.setSpriteGroups(new ArrayList<>());
+        for (int i = 0; i <= 13; i++) {
+            entry.getSpriteGroups().add(new int[0]);
+        }
+        entry.getSpriteGroups().set(2, null);
+        entry.getSpriteGroups().set(3, new int[]{0, 10, 41});
+        entry.getSpriteGroups().set(6, new int[]{0, 10, 41, -1});
+        entry.getSpriteGroups().set(7, new int[]{0, 20, -2});
+        entry.getSpriteGroups().set(13, new int[]{0, 10, 41, -1, -2});
+        Mek.MekMaterialBlock.PluginEntry emptyEntry = new Mek.MekMaterialBlock.PluginEntry();
+        source.getMekMaterialBlock().setEntries(new ArrayList<>(Arrays.asList(entry, null, emptyEntry)));
+        source.getMekMaterialBlock().setRegularEntries(new ArrayList<>(List.of(entry)));
+        source.getMekMaterialBlock().setTrailingEntries(new ArrayList<>(List.of(entry)));
+
+        TsukuyomiPackageBundle sourcePackage = new TsukuyomiPackageBundle();
+        sourcePackage.setTsukuyomiMek(source);
+        TsukuyomiGrpAppendPlan privatePlan = new TsukuyomiGrpAppendPlan();
+        privatePlan.setWazaGroupIndex(TARGET_WAZ_GROUP);
+        privatePlan.setSpriteGroupIndex(22);
+        privatePlan.getSourceSpriteGroupIndexToTargetIndex().put(13, 22);
+        BheCommonProjectileAppendPlan commonPlan = new BheCommonProjectileAppendPlan();
+        commonPlan.getSourceSpriteIndexToTargetIndex().put(3, 20);
+        commonPlan.getSourceSpriteIndexToTargetActionGroupBase().put(3, 40);
+        commonPlan.getSourceSpriteIndexToTargetIndex().put(6, 21);
+        commonPlan.getSourceSpriteIndexToTargetActionGroupBase().put(6, 60);
+        commonPlan.getSourceSpriteIndexToTargetIndex().put(7, 21);
+        commonPlan.getSourceSpriteIndexToTargetActionGroupBase().put(7, 40);
+        return new AnimationFixture(sourcePackage, privatePlan, commonPlan);
+    }
+
+    private void assertAnimationRebind(AnimationFixture fixture, Mek rebound) {
+        Mek source = fixture.sourcePackage().getTsukuyomiMek();
+        for (Mek.MekMaterialBlock.PluginEntry target : List.of(
+                rebound.getMekMaterialBlock().getEntries().get(0),
+                rebound.getMekMaterialBlock().getRegularEntries().get(0),
+                rebound.getMekMaterialBlock().getTrailingEntries().get(0)
+        )) {
+            assertArrayEquals(new int[]{40, 50, 81}, groupAt(target.getSpriteGroups(), 20),
+                    "公共 Smoke 动画必须加宿主原有的 40 个动画基址");
+            assertArrayEquals(new int[]{60, 70, 101, -1, 40, -2}, groupAt(target.getSpriteGroups(), 21),
+                    "多个源 group 合并时必须先映射动画，保留负哨兵并合并重复目标动画");
+            assertArrayEquals(new int[]{0, 10, 41, -1, -2}, groupAt(target.getSpriteGroups(), 22),
+                    "私有动画内部索引保持不变");
+            assertTrue(isEmpty(groupAt(target.getSpriteGroups(), 2)), "null 源 group 不生成动画引用");
+            assertNotSame(source.getMekMaterialBlock().getEntries().get(0), target);
+            assertNotSame(source.getMekMaterialBlock().getEntries().get(0).getSpriteGroups().get(13),
+                    target.getSpriteGroups().get(22));
+        }
+        assertEquals(null, rebound.getMekMaterialBlock().getEntries().get(1));
+        assertTrue(rebound.getMekMaterialBlock().getEntries().get(2).getSpriteGroups().isEmpty());
+        Mek.MekMaterialBlock.PluginEntry sourceEntry = source.getMekMaterialBlock().getEntries().get(0);
+        assertArrayEquals(new int[]{0, 10, 41}, sourceEntry.getSpriteGroups().get(3));
+        assertArrayEquals(new int[]{0, 10, 41, -1}, sourceEntry.getSpriteGroups().get(6));
+        assertArrayEquals(new int[]{0, 20, -2}, sourceEntry.getSpriteGroups().get(7));
+        assertArrayEquals(new int[]{0, 10, 41, -1, -2}, sourceEntry.getSpriteGroups().get(13));
+    }
 
     @Test
     void rebindActualTsukuyomiMekMaterialThroughCommonAndPrivateResourcePlans() throws Exception {
@@ -152,6 +238,8 @@ class RebindMekStepBheResourceRebindTest {
         Set<Integer> sourceSpriteGroups = collectNonEmptySpriteGroupIndexes(sourceMek);
         assertEquals(Set.of(0, 1, 3, 4, 5, 7, 9, 13), sourceSpriteGroups,
                 "实际 Tsukuyomi MEK material 的 sprite 引用集合发生变化，必须先重新审计");
+        assertEquals(40, commonPlan.getSourceSpriteIndexToTargetActionGroupBase().get(3),
+                "实际 BSDX Smoke 宿主已有 40 个动画");
 
         for (Mek.MekMaterialBlock.PluginEntry targetEntry : allMaterialEntries(rebound)) {
             Mek.MekMaterialBlock.PluginEntry sourceEntry = findSourceEntry(sourceMek, targetEntry.offset);
@@ -163,10 +251,17 @@ class RebindMekStepBheResourceRebindTest {
                     assertTrue(isEmpty(groupAt(targetEntry.getSpriteGroups(), sourceGroupIndex)),
                             "源 SpriteGroup[" + sourceGroupIndex + "] 不能残留在目标 MEK material 原槽位");
                 }
+                int actionBase = sourceGroupIndex == 13
+                        ? 0
+                        : commonPlan.getSourceSpriteIndexToTargetActionGroupBase().get(sourceGroupIndex);
+                int[] expectedActions = Arrays.stream(groupAt(sourceEntry.getSpriteGroups(), sourceGroupIndex))
+                        .map(action -> action < 0 ? action : actionBase + action)
+                        .toArray();
                 assertArrayEquals(
-                        groupAt(sourceEntry.getSpriteGroups(), sourceGroupIndex),
+                        expectedActions,
                         groupAt(targetEntry.getSpriteGroups(), targetGroupIndex),
                         "SpriteGroup[" + sourceGroupIndex + "] 应搬到目标 group " + targetGroupIndex
+                                + " 且内部动画指向同一份追加后的动画身份"
                 );
             }
         }
@@ -448,5 +543,12 @@ class RebindMekStepBheResourceRebindTest {
     }
 
     private record Pair(int groupIndex, int itemIndex) {
+    }
+
+    private record AnimationFixture(
+            TsukuyomiPackageBundle sourcePackage,
+            TsukuyomiGrpAppendPlan privatePlan,
+            BheCommonProjectileAppendPlan commonPlan
+    ) {
     }
 }

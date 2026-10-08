@@ -526,7 +526,12 @@ public class RebindMekStep {
                 continue;
             }
             int targetGroupIndex = resolver.resolveSpriteGroupIndex(sourceGroupIndex);
-            putItems(target, targetGroupIndex, sourceItems);
+            // 公共 SPM 的动画追加到宿主尾部，MEK 预载清单必须与 WAZ 指向相同的动画。
+            int[] targetItems = new int[sourceItems.length];
+            for (int i = 0; i < sourceItems.length; i++) {
+                targetItems[i] = resolver.resolveSpriteActionGroupIndex(sourceGroupIndex, sourceItems[i]);
+            }
+            putItems(target, targetGroupIndex, targetItems);
         }
         return target;
     }
