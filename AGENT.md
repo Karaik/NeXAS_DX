@@ -94,3 +94,9 @@ set MAVEN_OPTS=-Xmx4g
 ---
 
 如需了解具体测试目录、生成文件及额外注意事项，请务必阅读 [`src/test/java/AGENT.md`](src/test/java/AGENT.md)。新增或修改流程后，同步更新两个 AGENT 文件，保证下一位同学能「一眼上手」。
+
+### BHE多角色流水线修复（2026-10-08）
+
+- 实施计划与逐项笔记位于`docs/project-deep-dive/pipeline-fixes/`及`docs/superpowers/plans/2026-10-07-bhe-pipeline-fixes.md`。
+- Sou武装过滤和Lv3选择必须同步其Material切片与AI索引；三等级源尾表不能原样用于非KOU目标。容量判断依据实际武装消费者，不能只以MEK文件条目数断言153边界。
+- 验证只运行明确指定的测试；真实二进制回环使用临时输出，原版资源及共享JSON输入保持只读。

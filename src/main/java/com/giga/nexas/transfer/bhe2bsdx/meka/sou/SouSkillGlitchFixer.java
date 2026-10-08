@@ -28,14 +28,28 @@ public final class SouSkillGlitchFixer {
 
         // 1. 修复重绑后的目标 MEK (reboundMek)
         if (context.getReboundMek() != null) {
-            filterAndCleanWeapons(context.getReboundMek());
-            upgradeMekToMaxLevel(context.getReboundMek());
+            synchronizeWeapons(context.getReboundMek());
         }
 
         // 2. 修复 selectedPackage 中的源机体 MEK（保持内存视图一致）
         if (context.getSelectedPackage() != null && context.getSelectedPackage().getTsukuyomiMek() != null) {
-            filterAndCleanWeapons(context.getSelectedPackage().getTsukuyomiMek());
-            upgradeMekToMaxLevel(context.getSelectedPackage().getTsukuyomiMek());
+            if (context.getSelectedPackage().getTsukuyomiMek() != context.getReboundMek()) {
+                synchronizeWeapons(context.getSelectedPackage().getTsukuyomiMek());
+            }
+        }
+    }
+
+    private void synchronizeWeapons(Mek mek) {
+        java.util.List<Mek.MekMaterialBlock.PluginEntry> materials =
+                SouWeaponMaterialSelection.select(mek, SouSkillGlitchFixer::isDummyOrScriptWeapon);
+        filterAndCleanWeapons(mek);
+        upgradeMekToMaxLevel(mek);
+        if (materials != null) {
+            Mek.MekMaterialBlock block = mek.getMekMaterialBlock();
+            block.setTrailingEntries(materials);
+            java.util.List<Mek.MekMaterialBlock.PluginEntry> entries = new java.util.ArrayList<>(block.getRegularEntries());
+            entries.addAll(materials);
+            block.setEntries(entries);
         }
     }
 
@@ -66,8 +80,24 @@ public final class SouSkillGlitchFixer {
             filteredMap.put(targetIndex++, weapon);
         }
 
+        validateAiWeaponIndices(mek, oldToNewIndexMap);
         mek.setMekWeaponInfoMap(filteredMap);
         remapAiWeaponIndices(mek, oldToNewIndexMap);
+    }
+
+    private void validateAiWeaponIndices(Mek mek, Map<Integer, Integer> oldToNewIndexMap) {
+        if (mek.getMekAiInfoList() == null) return;
+        for (Mek.MekAiInfo ai : mek.getMekAiInfoList()) {
+            if (ai == null || ai.getCpuEventList() == null) continue;
+            for (var event : ai.getCpuEventList()) {
+                if (event instanceof com.giga.nexas.dto.bsdx.mek.mekcpu.CCpuEventAttack attack) {
+                    Integer index = attack.getMekWeaponInfoMapNo();
+                    if (index != null && index >= 0 && !oldToNewIndexMap.containsKey(index)) {
+                        throw new IllegalStateException("Sou AI 引用了缺失或已删除的武装: " + index);
+                    }
+                }
+            }
+        }
     }
 
     public static boolean isDummyOrScriptWeapon(String weaponName, String weaponSequence) {

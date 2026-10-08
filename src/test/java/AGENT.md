@@ -84,3 +84,8 @@
 ---
 
 维护规则：新增测试或更改输出目录时，请同步更新本文件，让每位 AGENT 能准确了解应该怎么跑、会产出什么、有哪些坑。
+
+## BHE流水线定向回归（2026-10-08）
+
+- `mvn -q "-Dtest=SouCustomizerTest" test`验证等级Material切片、过滤/AI索引、幂等、真实Sou二进制回环及其余九角色单条布局。生成文件仅写`@TempDir`。
+- 本轮测试必须显式指定类，不运行会写出/清理JSON输入的默认资源套件。逐项根因和验证记录见`docs/project-deep-dive/pipeline-fixes/`。
