@@ -20,6 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ImportStaticAssetsStepBheOutputTest {
 
@@ -32,7 +33,7 @@ class ImportStaticAssetsStepBheOutputTest {
     private final BsdxBinService bsdxBinService = new BsdxBinService();
 
     @Test
-    void writeSelectedSpmFromConvertedBundleInsteadOfCopyingBheBinary() throws Exception {
+    void writeSelectedConvertedSpmBeforeRejectingIncompleteDelivery() throws Exception {
         Path externalRoot = tempDir.resolve("external");
         Files.createDirectories(externalRoot);
         Files.writeString(externalRoot.resolve("tsukuyomi_001.png"), "image");
@@ -47,7 +48,7 @@ class ImportStaticAssetsStepBheOutputTest {
         TsukuyomiImportPlan importPlan = new TsukuyomiImportPlan();
         importPlan.getRequiredSpmFiles().add("tsukuyomi.spm");
 
-        TsukuyomiImportedAssetSet result = step.importAssets(
+        IllegalStateException failure = assertThrows(IllegalStateException.class, () -> step.importAssets(
                 request,
                 selectedBundle,
                 new TsukuyomiBsdxBaselineBundle(),
@@ -58,12 +59,12 @@ class ImportStaticAssetsStepBheOutputTest {
                 new TsukuyomiGrpAppendPlan(),
                 new BheCommonProjectileAppendPlan(),
                 java.util.Map.of()
-        );
-
-        Path outputSpm = result.getOutputRootDir().resolve("tsukuyomi.spm");
+        ));
+        assertTrue(failure.getMessage().contains("必需资源缺失"));
+        Path outputRoot;
+        try (var paths = Files.list(request.getExeOutputDir())) { outputRoot = paths.filter(Files::isDirectory).findFirst().orElseThrow(); }
+        Path outputSpm = outputRoot.resolve("tsukuyomi.spm");
         assertTrue(Files.exists(outputSpm));
-        assertTrue(result.getCopiedSpmFiles().contains(outputSpm));
-        assertFalse(result.getMissingAssets().stream().anyMatch(item -> item.contains("spm")));
 
         Spm parsed = (Spm) bsdxBinService.parse(outputSpm.toString(), CHARSET).getData();
         assertEquals("SPM VER-2.00", parsed.getSpmVersion());

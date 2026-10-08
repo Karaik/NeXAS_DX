@@ -6,6 +6,7 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSprite;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.service.BsdxBinService;
+import com.giga.nexas.transfer.bhe2bsdx.meka.shared.LayeredAssetResolver;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
@@ -137,22 +138,11 @@ public class OutputBheCommonProjectileResourcesStep {
         if (imageNames.isEmpty()) {
             return;
         }
-        Path externalRoot = request.getExternalStaticAssetRoot();
-        if (externalRoot == null || !Files.exists(externalRoot)) {
-            importedAssetSet.getMissingAssets().add("外部静态资源目录不存在，无法复制公共 SPM 图片: " + externalRoot);
-            return;
-        }
-
+        LayeredAssetResolver resolver = new LayeredAssetResolver(request, outputRoot, importedAssetSet);
         for (String targetImageName : imageNames) {
             String sourceImageName = stripBhePrefix(targetImageName);
-            Path source = resolveExternalFileCaseInsensitive(externalRoot, sourceImageName);
-            if (source == null) {
-                importedAssetSet.getMissingAssets().add("缺少公共 SPM 图片: " + targetImageName + " <- " + sourceImageName);
-                continue;
-            }
-            Path output = outputRoot.resolve(targetImageName);
-            Files.copy(source, output, StandardCopyOption.REPLACE_EXISTING);
-            importedAssetSet.getCopiedImageFiles().add(output);
+            resolver.materialize(targetImageName, sourceImageName, false,
+                    !targetImageName.equals(sourceImageName), "公共 WAZ -> SPM image " + targetImageName);
         }
     }
 
@@ -352,13 +342,7 @@ public class OutputBheCommonProjectileResourcesStep {
         if (appendPlan.getSourceSePairToTargetFileName().isEmpty()) {
             return;
         }
-        Path externalRoot = request.getExternalStaticAssetRoot();
-        if (externalRoot == null || !Files.exists(externalRoot)) {
-            importedAssetSet.getMissingAssets().add("外部静态资源目录不存在，无法复制公共 SE 音频: " + externalRoot);
-            return;
-        }
-
-        Map<String, Path> audioIndex = buildPreferredExternalAudioIndex(externalRoot);
+        LayeredAssetResolver resolver = new LayeredAssetResolver(request, outputRoot, importedAssetSet);
         Set<String> copied = new LinkedHashSet<>();
         for (String targetBaseName : appendPlan.getSourceSePairToTargetFileName().values()) {
             if (targetBaseName == null || targetBaseName.isBlank()) {
@@ -368,14 +352,7 @@ public class OutputBheCommonProjectileResourcesStep {
                 continue;
             }
             String sourceBaseName = stripBhePrefix(targetBaseName);
-            Path source = audioIndex.get(normalizeBaseName(sourceBaseName));
-            if (source == null) {
-                importedAssetSet.getMissingAssets().add("缺少公共 SE 音频: " + targetBaseName + " <- " + sourceBaseName);
-                continue;
-            }
-            Path output = outputRoot.resolve(targetBaseName + extension(source.getFileName().toString()));
-            Files.copy(source, output, StandardCopyOption.REPLACE_EXISTING);
-            importedAssetSet.getCopiedAudioFiles().add(output);
+            resolver.materialize(targetBaseName, sourceBaseName, true, true, "公共 SE -> " + targetBaseName);
         }
     }
 

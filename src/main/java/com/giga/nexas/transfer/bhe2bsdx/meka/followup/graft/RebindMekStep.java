@@ -417,7 +417,7 @@ public class RebindMekStep {
                             continue;
                         }
                         Mek.MekVoiceInfo.Entry copiedEntry = new Mek.MekVoiceInfo.Entry();
-                        copiedEntry.setVoiceType(entry.getVoiceType());
+                        copiedEntry.setVoiceType(remapBatVoiceGroupIndex(entry.getVoiceType(), context));
                         copiedEntry.setGroupId(entry.getGroupId());
                         copiedEntry.setWeight(entry.getWeight());
                         copiedCell.add(copiedEntry);

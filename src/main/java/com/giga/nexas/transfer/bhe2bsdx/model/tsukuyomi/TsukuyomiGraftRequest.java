@@ -51,6 +51,8 @@ public class TsukuyomiGraftRequest {
     private Path bsdxWazDir = Paths.get("src/main/resources/game/bsdx/waz");
 
     private Path externalStaticAssetRoot = Paths.get("D:/BDY/NeXAS_Resources/bhe_resources");
+    /** 原版只读图片/音频来源；不能从这里加载 GRP 或替代原版分类索引目录。 */
+    private Path bsdxStaticAssetRoot = Paths.get("D:/BDY/NeXAS_Resources/bsdx_resources");
     private Path targetExePath = Paths.get("src/main/resources/ida-reverse/BaldrSky.exe");
     private Path exeOutputDir = Paths.get("src/main/resources/out");
     private String pacCompressMode = "4";

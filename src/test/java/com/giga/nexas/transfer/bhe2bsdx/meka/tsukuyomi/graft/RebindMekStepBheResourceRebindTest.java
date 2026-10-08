@@ -63,6 +63,52 @@ class RebindMekStepBheResourceRebindTest {
             new SelfRedirectBheCommonProjectileResourcesStep();
 
     @Test
+    void explicitVoiceOverrideUsesBatVoiceMapInBothProductionPaths() {
+        for (boolean followup : List.of(false, true)) {
+            var fixture = animationFixture();
+            var info = fixture.sourcePackage().getTsukuyomiMek().getMekVoiceInfo();
+            info.setVersion(8);
+            var explicit = new Mek.MekVoiceInfo.Entry(); explicit.setVoiceType(8); explicit.setGroupId(2); explicit.setWeight(100);
+            var defaults = new Mek.MekVoiceInfo.Entry(); defaults.setVoiceType(-1); defaults.setGroupId(3); defaults.setWeight(100);
+            info.setTable(List.of(List.of(List.of(explicit, defaults))));
+            fixture.privatePlan().getSourceBatVoiceGroupIndexToTargetIndex().put(8, 42);
+            Mek rebound = followup
+                    ? new com.giga.nexas.transfer.bhe2bsdx.meka.followup.graft.RebindMekStep().rebindFollowupMek(new TsukuyomiGraftRequest(), fixture.sourcePackage(), fixture.privatePlan(), fixture.commonPlan())
+                    : rebindMekStep.rebindTsukuyomiMek(new TsukuyomiGraftRequest(), fixture.sourcePackage(), fixture.privatePlan(), fixture.commonPlan());
+            assertEquals(42, rebound.getMekVoiceInfo().getVersion());
+            var entries = rebound.getMekVoiceInfo().getTable().get(0).get(0);
+            assertEquals(42, entries.get(0).getVoiceType()); assertEquals(2, entries.get(0).getGroupId());
+            assertEquals(-1, entries.get(1).getVoiceType()); assertEquals(3, entries.get(1).getGroupId());
+            assertEquals(8, explicit.getVoiceType());
+        }
+    }
+
+    @Test
+    void actualNaotoVoiceOverrideDoesNotPointAtVanillaGilberto() throws Exception {
+        var raw = (com.giga.nexas.dto.bhe.mek.Mek) new com.giga.nexas.service.BheBinService().parse(
+                "src/main/resources/game/bhe/mek/naoto/naoto.mek", "windows-31j").getData();
+        Mek source = mekConverter.convert(raw);
+        var common = buildActualCommonProjectilePlan();
+        var plan = buildPrivatePlanFromActualMekMaterial(source, common);
+        for (var material : source.getMekMaterialBlock().getEntries()) {
+            for (int group = 0; group < material.getSpriteGroups().size(); group++) {
+                if (!common.getSourceSpriteIndexToTargetIndex().containsKey(group)) {
+                    plan.getSourceSpriteGroupIndexToTargetIndex().putIfAbsent(group, 2000 + group);
+                }
+            }
+        }
+        plan.getSourceBatVoiceGroupIndexToTargetIndex().put(8, TARGET_BAT_VOICE_GROUP);
+        var pkg = new TsukuyomiPackageBundle(); pkg.setTsukuyomiMek(source);
+        var rebound = new com.giga.nexas.transfer.bhe2bsdx.meka.followup.graft.RebindMekStep()
+                .rebindFollowupMek(new TsukuyomiGraftRequest(), pkg, plan, common);
+        int count = 0;
+        for (var row : rebound.getMekVoiceInfo().getTable()) for (var cell : row) for (var entry : cell) {
+            assertEquals(TARGET_BAT_VOICE_GROUP, entry.getVoiceType()); count++;
+        }
+        assertEquals(23, count);
+    }
+
+    @Test
     void tsukuyomiEntryPointRebindsMaterialAnimationsWithoutMutatingSource() {
         AnimationFixture fixture = animationFixture();
         Mek rebound = rebindMekStep.rebindTsukuyomiMek(

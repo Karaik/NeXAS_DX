@@ -14,6 +14,10 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSprite;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.ImportStaticAssetRuntimeCache;
+import com.giga.nexas.transfer.bhe2bsdx.meka.shared.LayeredAssetResolver;
+import com.giga.nexas.transfer.bhe2bsdx.meka.shared.AssetDeliveryValidator;
+import com.giga.nexas.transfer.bhe2bsdx.meka.shared.AssetDeliveryValidationContext;
+import com.giga.nexas.transfer.bhe2bsdx.meka.shared.BaselineAssetComparison;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.output.OutputBheCommonProjectileResourcesStep;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
@@ -136,6 +140,8 @@ public class ImportStaticAssetsStep {
                     outputRoot,
                     importedAssetSet
             );
+            importedAssetSet.setValidationContext(new AssetDeliveryValidationContext(request, bsdxBaseline, targetMekFileName));
+            AssetDeliveryValidator.validate(request, importedAssetSet);
             return importedAssetSet;
         } catch (IOException e) {
             throw new IllegalStateException("step8 静态资源落盘失败", e);
@@ -393,6 +399,7 @@ public class ImportStaticAssetsStep {
             return;
         }
 
+        BaselineAssetComparison comparison = new BaselineAssetComparison(bsdxBinService);
         for (Map.Entry<String, Waz> entry : bsdxBaseline.getWazByFileName().entrySet()) {
             String fileName = entry.getKey();
             Waz waz = entry.getValue();
@@ -407,6 +414,7 @@ public class ImportStaticAssetsStep {
                 continue;
             }
 
+            if (request != null && comparison.unchanged(request.getBsdxWazDir(), fileName, waz)) continue;
             bsdxBinService.generate(output.toString(), waz, CHARSET);
             importedAssetSet.getGeneratedWazFiles().add(output);
         }
@@ -422,6 +430,7 @@ public class ImportStaticAssetsStep {
             return;
         }
 
+        BaselineAssetComparison comparison = new BaselineAssetComparison(bsdxBinService);
         for (Map.Entry<String, Spm> entry : bsdxBaseline.getSpmByFileName().entrySet()) {
             String fileName = entry.getKey();
             Spm spm = entry.getValue();
@@ -433,6 +442,7 @@ public class ImportStaticAssetsStep {
                 continue;
             }
 
+            if (request != null && comparison.unchanged(request.getBsdxSpmDir(), fileName, spm)) continue;
             spm.setExtensionName("spm");
             bsdxBinService.generate(output.toString(), spm, CHARSET);
             importedAssetSet.getCopiedSpmFiles().add(output);
@@ -516,31 +526,16 @@ public class ImportStaticAssetsStep {
             Path outputRoot,
             TsukuyomiImportedAssetSet importedAssetSet
     ) throws IOException {
-        if (request.getExternalStaticAssetRoot() == null || !Files.exists(request.getExternalStaticAssetRoot())) {
-            importedAssetSet.getMissingAssets().add("外部静态资源目录不存在: " + request.getExternalStaticAssetRoot());
-            return;
-        }
-
-        Set<String> imageNames = collectRequiredImageNames(tsukuyomiPackage, importPlan);
+        Set<String> newImages = collectRequiredImageNames(tsukuyomiPackage, importPlan);
+        Set<String> imageNames = new LinkedHashSet<>(newImages);
         imageNames.addAll(collectGraftedSkillImageNames(tsukuyomiPackage, bsdxBaseline, importPlan, grpAppendPlan, outputRoot));
         if (imageNames.isEmpty()) {
             return;
         }
 
-        for (String imageName : imageNames) {
-            if (Files.exists(outputRoot.resolve(imageName))) {
-                continue;
-            }
-            Path source = resolveExternalFileCaseInsensitive(request.getExternalStaticAssetRoot(), imageName);
-            if (source == null) {
-                importedAssetSet.getMissingAssets().add("缺少图像资源: " + imageName);
-                continue;
-            }
-
-            Path output = outputRoot.resolve(source.getFileName().toString());
-            Files.copy(source, output, StandardCopyOption.REPLACE_EXISTING);
-            importedAssetSet.getCopiedImageFiles().add(output);
-        }
+        LayeredAssetResolver resolver = new LayeredAssetResolver(request, outputRoot, importedAssetSet);
+        for (String imageName : imageNames) resolver.materialize(imageName, imageName, false,
+                newImages.contains(imageName), request.getWazFileName() + " -> SPM image");
     }
 
     private Set<String> collectRequiredImageNames(TsukuyomiPackageBundle tsukuyomiPackage, TsukuyomiImportPlan importPlan) {
@@ -847,11 +842,6 @@ public class ImportStaticAssetsStep {
             Path outputRoot,
             TsukuyomiImportedAssetSet importedAssetSet
     ) throws IOException {
-        if (request.getExternalStaticAssetRoot() == null || !Files.exists(request.getExternalStaticAssetRoot())) {
-            importedAssetSet.getMissingAssets().add("外部静态资源目录不存在: " + request.getExternalStaticAssetRoot());
-            return;
-        }
-
         Set<String> requiredBaseNames = new LinkedHashSet<>();
         requiredBaseNames.addAll(collectRequiredSeBaseNames(tsukuyomiPackage, importPlan));
         requiredBaseNames.addAll(collectRequiredVoiceBaseNames(tsukuyomiPackage, reboundTsukuyomiMek, reboundTsukuyomiWaz, request.getMekaCodeName()));
@@ -868,18 +858,9 @@ public class ImportStaticAssetsStep {
             return;
         }
 
-        Map<String, Path> externalIndex = buildPreferredExternalAudioIndex(request.getExternalStaticAssetRoot());
-        for (String baseName : requiredBaseNames) {
-            Path source = externalIndex.get(normalizeBaseName(baseName));
-            if (source == null) {
-                importedAssetSet.getMissingAssets().add("缺少音频资源: " + baseName);
-                continue;
-            }
-
-            Path output = outputRoot.resolve(source.getFileName().toString());
-            Files.copy(source, output, StandardCopyOption.REPLACE_EXISTING);
-            importedAssetSet.getCopiedAudioFiles().add(output);
-        }
+        LayeredAssetResolver resolver = new LayeredAssetResolver(request, outputRoot, importedAssetSet);
+        for (String baseName : requiredBaseNames) resolver.materialize(baseName, baseName, true, true,
+                request.getWazFileName() + " -> migrated SE/Voice");
     }
 
     private Set<String> collectRequiredSeBaseNames(TsukuyomiPackageBundle tsukuyomiPackage, TsukuyomiImportPlan importPlan) {

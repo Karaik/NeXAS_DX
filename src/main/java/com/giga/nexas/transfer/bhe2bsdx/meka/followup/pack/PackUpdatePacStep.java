@@ -5,6 +5,8 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportedAssetSe
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPacPackPlan;
 import com.giga.nexas.transfer.util.BaldrSkyCrashDumpScriptWriter;
 import com.giga.nexas.util.PacUtil;
+import com.giga.nexas.transfer.bhe2bsdx.meka.shared.AssetDeliveryValidator;
+import com.giga.nexas.transfer.bhe2bsdx.meka.shared.PacDeliveryVerifier;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,6 +24,7 @@ public class PackUpdatePacStep {
             return plan;
         }
 
+        AssetDeliveryValidator.validate(request, importedAssetSet);
         if (!request.isPackUpdatePac()) {
             Path sourceFolder = importedAssetSet.getOutputRootDir().toAbsolutePath().normalize();
             plan.setSourceFolder(sourceFolder);
@@ -35,6 +38,8 @@ public class PackUpdatePacStep {
         plan.setCompressMode(request.getPacCompressMode());
 
         try {
+            Path stalePacNew = sourceFolder.resolveSibling(sourceFolder.getFileName().toString() + ".pacNew");
+            if (Files.exists(stalePacNew)) throw new IllegalStateException("拒绝复用旧 pacNew: " + stalePacNew);
             String packLog = PacUtil.pack(sourceFolder.toString(), request.getPacCompressMode());
             plan.setPackLog(packLog);
 
@@ -44,6 +49,7 @@ public class PackUpdatePacStep {
             }
 
             Path outputPac = sourceFolder.resolveSibling("Update3.pac");
+            PacDeliveryVerifier.verify(sourceFolder, pacNew);
             Files.move(pacNew, outputPac, StandardCopyOption.REPLACE_EXISTING);
             BaldrSkyCrashDumpScriptWriter.writeScripts(outputPac.getParent());
             plan.setOutputPacPath(outputPac);
