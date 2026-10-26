@@ -23,6 +23,8 @@ public final class FrejaCustomizer implements FollowupMekaCustomizer {
         var waz = requireWaz(context, "Freja");
         var spear = skill(waz, "スピア", "0002", 5);
         var weapon = weapon(mek, waz, spear, "スピア", "0003");
+        var heatCombo = skill(waz, "武幻剛乱舞", "0001", 8);
+        var heatComboWeapon = weapon(mek, waz, heatCombo, "武幻剛乱舞", "0007");
         List<Runnable> edits = new ArrayList<>();
         edits.add(speed(event(spear, 3, 18, CEventValRandom.class, 1, 8, 1, 8),
                 List.of(0, 32, 0, 0, 16, 0), List.of(0, 36, 0, 0, 20, 0)));
@@ -32,6 +34,8 @@ public final class FrejaCustomizer implements FollowupMekaCustomizer {
         edits.add(attack(event(spear, 5, 41, CEventHit.class, 16, 24, 16, 24), 16, 24, 150, 16, 24, 180));
         edits.add(weaponCost(weapon, 0, 20, 24,
                 "踏み込みと単発威力を強化したスピア。長い間合いから接近し、斬り上げやバックキックへつなげたい。"));
+        edits.add(() -> heatComboWeapon.setWeaponDescription(
+                "ヒートチャージの余力を使う連撃。使用可能な残量に応じて、連撃の継続や締めへの移行が変わる。"));
 
         // 位置・攻撃・武装の全署名を確認してから、一括で反映する。
         edits.forEach(Runnable::run);
