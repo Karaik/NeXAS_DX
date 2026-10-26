@@ -1,0 +1,1000 @@
+"""Offline safety contracts; never starts a game or attaches to a process."""
+
+import hashlib
+import inspect
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+import threading
+import types
+import unittest
+from unittest.mock import patch
+
+try:
+    import bhe_runtime_session as harness
+except ModuleNotFoundError:
+    harness = None
+
+
+class RuntimeSessionTests(unittest.TestCase):
+    def setUp(self):
+        if harness is None:
+            self.fail("The isolated runtime session implementation is missing")
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.base = self.root / "base"
+        self.base.mkdir()
+        (self.base / "Config.pac").write_bytes(b"base config")
+        (self.base / "Update2.pac").write_bytes(b"base update")
+        (self.base / "BaldrSky.exe").write_bytes(b"old base executable")
+        self.exe = self.root / "new.exe"
+        with self.exe.open("wb") as stream:
+            stream.write(b"MZ")
+            stream.seek(0x2789F8)
+            stream.write(b"\x8b\xff")
+        self.pac = self.root / "Update3.pac"
+        self.pac.write_bytes(b"new resources")
+        self.save = self.root / "original docs" / "GIGA" / "BALDRSKY_DIVEX" / "Save"
+        self.save.mkdir(parents=True)
+        (self.save / "Config.dat").write_bytes(b"user configuration")
+        (self.save / "Script.dat").write_bytes(b"user progress")
+        self.runtime = self.root / "target" / "bhe-playable-runtime"
+        self.app_manifest = self.root / "supplied.manifest"
+        self.app_manifest.write_bytes(b"<assembly/>")  # Offline copy fixture, never used to launch.
+        self.seed = self.root / "independent-save-seed"
+        self.seed.mkdir()
+        (self.seed / "Script.dat").write_bytes(b"preserved progress with repaired title")
+        self.driver = self.root / "ProgramData/NVIDIA Corporation/Drs"
+        (self.driver / "nested").mkdir(parents=True)
+        (self.driver / "nvdrssel.bin").write_bytes(b"\x01")
+        (self.driver / "nvAppTimestamps").write_bytes(b"old")
+        (self.driver / "nested/db.bin").write_bytes(b"database")
+        driver_patch = patch.object(harness, "NVIDIA_DRS_SOURCE", self.driver)
+        driver_patch.start()
+        self.addCleanup(driver_patch.stop)
+
+    def prepare(self, case="case-one", **overrides):
+        args = dict(base_dir=self.base, exe_path=self.exe, pac_paths=[self.pac],
+                    save_dir=self.save, case_name=case, runtime_root=self.runtime)
+        args.update(overrides)
+        return harness.prepare_case(**args)
+
+    def require_vanilla_mode(self):
+        if "vanilla" not in inspect.signature(harness.prepare_case).parameters:
+            self.fail("Explicit vanilla preparation mode is missing")
+
+    def require_diagnostic_input_modes(self):
+        if not {"fresh_save", "save_seed_dir", "app_manifest_path"}.issubset(inspect.signature(harness.prepare_case).parameters):
+            self.fail("Explicit save-seed and application-manifest controls are missing")
+
+    def test_fresh_save_keeps_original_receipt_and_alias_origin_but_private_seed_empty(self):
+        self.require_diagnostic_input_modes()
+        case = self.prepare("fresh-save", fresh_save=True)
+        manifest = harness.verify_prepared(case, self.runtime)
+        self.assertTrue(manifest["fresh_save"])
+        self.assertEqual(manifest["seed_mode"], "fresh")
+        self.assertIsNone(manifest["seed_source"])
+        self.assertEqual(manifest["save_seed_files"], {})
+        self.assertEqual(sorted(manifest["original_save_files"]), ["Config.dat", "Script.dat"])
+        self.assertEqual(manifest["original_save"], str(self.save))
+        self.assertEqual(manifest["original_documents"], str(self.save.parents[2]))
+        private = case / "docs/GIGA/BALDRSKY_DIVEX/Save"
+        self.assertEqual(list(private.iterdir()), [])
+        self.assertEqual((self.save / "Script.dat").read_bytes(), b"user progress")
+        (private / "unexpected.dat").write_bytes(b"changed before launch")
+        with self.assertRaises(ValueError):
+            harness.verify_prepared(case, self.runtime)
+
+    def test_independent_seed_copy_and_source_or_private_drift_are_checked(self):
+        self.require_diagnostic_input_modes()
+        for changed in ("source", "copy"):
+            with self.subTest(changed=changed):
+                (self.seed / "Script.dat").write_bytes(b"preserved progress with repaired title")
+                case = self.prepare("seed-" + changed, save_seed_dir=self.seed)
+                manifest = harness.verify_prepared(case, self.runtime)
+                self.assertFalse(manifest["fresh_save"])
+                self.assertEqual(manifest["seed_mode"], "provided")
+                self.assertEqual(manifest["seed_source"], str(self.seed))
+                self.assertEqual(list(manifest["save_seed_files"]), ["Script.dat"])
+                self.assertEqual(manifest["original_save"], str(self.save))
+                private = case / "docs/GIGA/BALDRSKY_DIVEX/Save/Script.dat"
+                self.assertEqual(private.read_bytes(), b"preserved progress with repaired title")
+                target = self.seed / "Script.dat" if changed == "source" else private
+                target.write_bytes(b"changed after prepare")
+                with self.assertRaises(ValueError):
+                    harness.verify_prepared(case, self.runtime)
+                self.assertEqual((self.save / "Script.dat").read_bytes(), b"user progress")
+
+    def test_explicit_app_manifest_copy_hash_and_drift_work_in_both_modes(self):
+        self.require_diagnostic_input_modes()
+        for vanilla in (False, True):
+            for changed in ("source", "copy"):
+                with self.subTest(vanilla=vanilla, changed=changed):
+                    self.app_manifest.write_bytes(b"<assembly/>")
+                    before_exe = self.exe.read_bytes()
+                    case = self.prepare(f"manifest-{int(vanilla)}-{changed}", vanilla=vanilla,
+                                        pac_paths=[] if vanilla else [self.pac], app_manifest_path=self.app_manifest)
+                    manifest = harness.verify_prepared(case, self.runtime)
+                    copied = case / "game/BaldrSky.exe.manifest"
+                    self.assertEqual(copied.read_bytes(), b"<assembly/>")
+                    self.assertEqual(manifest["app_manifest_source"], str(self.app_manifest))
+                    self.assertEqual(manifest["game_files"]["BaldrSky.exe.manifest"],
+                                     manifest["source_files"][str(self.app_manifest)])
+                    self.assertEqual(self.exe.read_bytes(), before_exe)
+                    (self.app_manifest if changed == "source" else copied).write_bytes(b"changed manifest")
+                    with self.assertRaises(ValueError):
+                        harness.verify_prepared(case, self.runtime)
+
+    def test_independent_seed_alias_and_both_extra_inputs_are_protected(self):
+        self.require_diagnostic_input_modes()
+        case = self.prepare("extra-protection", save_seed_dir=self.seed, app_manifest_path=self.app_manifest)
+        manifest = harness.verify_prepared(case, self.runtime)
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable")
+        config = {"allowed": [str(case)], "repository": [str(harness.PROJECT_ROOT)],
+                  "protected": harness.protected_input_paths(manifest),
+                  "saveAliasSources": [manifest["original_save"]],
+                  "saveAliasTarget": "\\??\\" + str(case / "docs/GIGA/BALDRSKY_DIVEX/Save")}
+        script = harness.isolation_policy(config)
+        script += "\nconst paths=" + json.dumps([str(self.save / "Script.dat"), str(self.seed / "Script.dat"),
+                                                str(self.app_manifest)]) + ";"
+        script += "\nconsole.log(JSON.stringify({writes:paths.map(permitted),realAlias:permitted(aliasSavePath(paths[0])),seedAlias:aliasSavePath(paths[1])}));"
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        self.assertEqual(json.loads(result.stdout), {"writes": [False, False, False], "realAlias": True, "seedAlias": None})
+
+    def test_diagnostic_inputs_reject_conflict_overlap_and_links(self):
+        self.require_diagnostic_input_modes()
+        with self.assertRaises(ValueError):
+            self.prepare("conflict", fresh_save=True, save_seed_dir=self.seed)
+        overlap = self.runtime / "earlier-seed"
+        overlap.mkdir(parents=True)
+        (overlap / "keep.dat").write_bytes(b"keep")
+        with self.assertRaises(ValueError):
+            self.prepare("overlap", save_seed_dir=self.runtime)
+        self.assertEqual((overlap / "keep.dat").read_bytes(), b"keep")
+        sibling_case = self.prepare("sibling-seed", save_seed_dir=overlap)
+        self.assertEqual((sibling_case / "docs/GIGA/BALDRSKY_DIVEX/Save/keep.dat").read_bytes(), b"keep")
+        link = self.root / "manifest-link"
+        try:
+            link.symlink_to(self.app_manifest)
+        except OSError:
+            self.skipTest("Symlinks unavailable")
+        with self.assertRaises(ValueError):
+            self.prepare("linked-manifest", app_manifest_path=link)
+        seed_link = self.root / "seed-link"
+        seed_link.symlink_to(self.seed, target_is_directory=True)
+        with self.assertRaises(ValueError):
+            self.prepare("linked-seed", save_seed_dir=seed_link)
+
+    def test_vanilla_copies_base_without_extra_pac_and_keeps_all_preservation(self):
+        self.require_vanilla_mode()
+        original_exe = self.base / "BaldrSky.exe"
+        shutil.copy2(self.exe, original_exe)
+        before = original_exe.read_bytes()
+        case = self.prepare("vanilla", exe_path=original_exe, pac_paths=[], vanilla=True)
+        manifest = harness.verify_prepared(case, self.runtime)
+        self.assertTrue(manifest["vanilla"])
+        self.assertEqual(manifest["pac_sources"], [])
+        self.assertEqual(manifest["game_files"], manifest["base_files"])
+        self.assertFalse((case / "game/Update3.pac").exists())
+        self.assertEqual(original_exe.read_bytes(), before)
+        self.assertEqual((case / "docs/GIGA/BALDRSKY_DIVEX/Save/Script.dat").read_bytes(), b"user progress")
+        self.assertEqual((case / "driver-cache/Drs/nvAppTimestamps").read_bytes(), b"old")
+
+    def test_default_still_requires_pac_and_vanilla_rejects_selected_pac(self):
+        with self.assertRaises(ValueError):
+            self.prepare("missing-pac", pac_paths=[])
+        self.require_vanilla_mode()
+        with self.assertRaises(ValueError):
+            self.prepare("conflicting-mode", vanilla=True)
+        self.assertFalse(self.runtime.exists())
+
+    def test_vanilla_rejects_unselected_update_overlay_in_base(self):
+        self.require_vanilla_mode()
+        (self.base / "Update7.pac").write_bytes(b"stale overlay")
+        with self.assertRaises(ValueError):
+            self.prepare("vanilla-overlay", pac_paths=[], vanilla=True)
+        self.assertFalse(self.runtime.exists())
+
+    def test_cli_requires_exactly_one_of_vanilla_or_pac(self):
+        self.require_vanilla_mode()
+        self.require_diagnostic_input_modes()
+        args = ["prepare", "--case", "vanilla-cli", "--base", str(self.base), "--exe", str(self.exe),
+                "--save-dir", str(self.save)]
+        for mode in ([], ["--vanilla", "--pac", str(self.pac)]):
+            with self.subTest(mode=mode), self.assertRaises(SystemExit) as error:
+                harness.main(args + mode)
+            self.assertEqual(error.exception.code, 2)
+        prepare = harness.prepare_case
+        with patch.object(harness, "prepare_case", side_effect=lambda **kwargs: prepare(**kwargs, runtime_root=self.runtime)):
+            self.assertEqual(harness.main(args + ["--vanilla", "--fresh-save", "--app-manifest", str(self.app_manifest)]), 0)
+        manifest = harness.verify_prepared(self.runtime / "vanilla-cli", self.runtime)
+        self.assertTrue(manifest["vanilla"])
+        self.assertEqual(manifest["pac_sources"], [])
+        self.assertEqual(manifest["seed_mode"], "fresh")
+        self.assertEqual(manifest["app_manifest_source"], str(self.app_manifest))
+
+    def test_cli_seed_override_is_mutually_exclusive_with_fresh_save(self):
+        self.require_diagnostic_input_modes()
+        args = ["prepare", "--case", "seed-cli", "--base", str(self.base), "--exe", str(self.exe),
+                "--save-dir", str(self.save), "--pac", str(self.pac), "--save-seed-dir", str(self.seed)]
+        with self.assertRaises(SystemExit) as error:
+            harness.main(args + ["--fresh-save"])
+        self.assertEqual(error.exception.code, 2)
+        prepare = harness.prepare_case
+        with patch.object(harness, "prepare_case", side_effect=lambda **kwargs: prepare(**kwargs, runtime_root=self.runtime)):
+            self.assertEqual(harness.main(args), 0)
+        self.assertEqual(harness.verify_prepared(self.runtime / "seed-cli", self.runtime)["seed_source"], str(self.seed))
+
+    def test_prepare_copies_exact_bytes_and_preserves_all_inputs(self):
+        original = {str(path): path.read_bytes() for directory in (self.base, self.save)
+                    for path in directory.rglob("*") if path.is_file()}
+        original[str(self.exe)] = self.exe.read_bytes()
+        original[str(self.pac)] = self.pac.read_bytes()
+        case = self.prepare()
+        self.assertEqual(case, self.runtime / "case-one")
+        self.assertEqual((case / "game" / "BaldrSky.exe").read_bytes(), original[str(self.exe)])
+        self.assertEqual((case / "game" / "Update3.pac").read_bytes(), b"new resources")
+        self.assertEqual((case / "docs/GIGA/BALDRSKY_DIVEX/Save/Script.dat").read_bytes(), b"user progress")
+        for path, content in original.items():
+            self.assertEqual(Path(path).read_bytes(), content)
+        manifest = harness.verify_prepared(case, self.runtime)
+        expected_hash = hashlib.sha256(b"new resources").hexdigest()
+        self.assertEqual(manifest["game_files"]["Update3.pac"]["sha256"], expected_hash)
+
+    def test_existing_case_is_never_overwritten_or_cleaned(self):
+        case = self.runtime / "existing"
+        case.mkdir(parents=True)
+        sentinel = case / "keep.txt"
+        sentinel.write_bytes(b"keep my work")
+        with self.assertRaises((ValueError, FileExistsError)):
+            self.prepare("existing")
+        self.assertEqual(list(case.iterdir()), [sentinel])
+        self.assertEqual(sentinel.read_bytes(), b"keep my work")
+
+    def test_case_names_cannot_escape_or_alias_windows_paths(self):
+        for name in ("../outside", "..\\outside", "C:\\outside", "nested/case", "CON", "NUL.txt", "case.", ""):
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                self.prepare(name)
+        self.assertFalse(self.runtime.exists())
+
+    def test_runtime_root_inside_input_tree_is_rejected_before_copy(self):
+        with self.assertRaises(ValueError):
+            self.prepare(runtime_root=self.base / "target")
+        self.assertFalse((self.base / "target").exists())
+
+    def test_global_crt_return_patch_is_rejected_before_any_output(self):
+        with self.exe.open("r+b") as stream:
+            stream.seek(0x2789F8)
+            stream.write(b"\xc3\x90")
+        with self.assertRaises(ValueError):
+            self.prepare()
+        self.assertFalse(self.runtime.exists())
+
+    def test_preflight_detects_modified_game_bytes(self):
+        case = self.prepare()
+        (case / "game" / "Update3.pac").write_bytes(b"different resources")
+        with self.assertRaises(ValueError):
+            harness.verify_prepared(case, self.runtime)
+        self.assertFalse((case / "launch.lock").exists())
+
+    def test_preflight_detects_changed_original_save(self):
+        case = self.prepare()
+        (self.save / "Script.dat").write_bytes(b"new user progress")
+        with self.assertRaises(ValueError):
+            harness.verify_prepared(case, self.runtime)
+        self.assertEqual((self.save / "Script.dat").read_bytes(), b"new user progress")
+
+    def test_prepare_copies_complete_driver_tree_without_linking_or_modifying_source(self):
+        case = self.prepare("driver-seed")
+        copied = case / "driver-cache/Drs"
+        self.assertTrue(copied.is_dir(), "The driver state directory was not copied")
+        self.assertEqual((copied / "nvdrssel.bin").read_bytes(), b"\x01")
+        self.assertEqual((copied / "nvAppTimestamps").read_bytes(), b"old")
+        self.assertEqual((copied / "nested/db.bin").read_bytes(), b"database")
+        manifest = harness.verify_prepared(case, self.runtime)
+        self.assertEqual(manifest["driver_state"]["file_count"], 3)
+        self.assertEqual(manifest["driver_state"]["total_bytes"], 12)
+        self.assertEqual(sorted(manifest["driver_state"]["files"]), ["nested/db.bin", "nvAppTimestamps", "nvdrssel.bin"])
+        (copied / "nested/db.bin").write_bytes(b"private change")
+        self.assertEqual((self.driver / "nested/db.bin").read_bytes(), b"database")
+        self.assertEqual((self.driver / "nvAppTimestamps").read_bytes(), b"old")
+
+    def test_preflight_rejects_changed_original_or_copied_driver_tree(self):
+        for changed in ("source", "copy"):
+            with self.subTest(changed=changed):
+                (self.driver / "nvAppTimestamps").write_bytes(b"old")
+                case = self.prepare("driver-drift-" + changed)
+                target = (self.driver if changed == "source" else case / "driver-cache/Drs") / "nvAppTimestamps"
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(b"external update")
+                with self.assertRaises(ValueError):
+                    harness.verify_prepared(case, self.runtime)
+
+    def test_driver_drift_during_copy_is_rejected_with_evidence_retained(self):
+        real_copytree = shutil.copytree
+
+        def copy_and_change(source, destination, *args, **kwargs):
+            result = real_copytree(source, destination, *args, **kwargs)
+            if Path(source) == self.driver:
+                (self.driver / "external-update.bin").write_bytes(b"external")
+            return result
+
+        with patch.object(harness.shutil, "copytree", side_effect=copy_and_change):
+            with self.assertRaises(ValueError):
+                self.prepare("driver-copy-drift")
+        case = self.runtime / "driver-copy-drift"
+        self.assertTrue((case / "driver-cache/Drs/nvdrssel.bin").exists())
+        state = json.loads((case / "state.json").read_text())
+        self.assertEqual(state["status"], "prepare_failed")
+        self.assertEqual(state["driver_state_copy_check"]["source_check"]["added"], ["external-update.bin"])
+        self.assertFalse(state["driver_state_copy_check"]["source_check"]["unchanged"])
+
+    def test_runtime_driver_source_drift_is_reported_without_fault_attribution(self):
+        case = self.prepare("driver-runtime-drift")
+        child = FakeOwnedProcess()
+        child.poll = lambda: 0 if child.dead.is_set() else None
+
+        def resume():
+            (self.driver / "nvAppTimestamps").write_bytes(b"external update during run")
+            child.dead.set()
+
+        child.resume = resume
+
+        class ReadySession:
+            def __init__(self):
+                self.callbacks = {}
+
+            def on(self, name, callback):
+                self.callbacks[name] = callback
+
+            def create_script(self, source, name):
+                return self
+
+            def load(self):
+                for payload in ({"type": "hook_ready"}, {"type": "save_path_redirected", "succeeded": True}):
+                    self.callbacks["message"]({"type": "send", "payload": payload}, None)
+
+            def detach(self):
+                pass
+
+        with patch.object(harness, "OwnedProcess", return_value=child), \
+                patch.object(harness, "isolation_script", return_value="offline"), \
+                patch.dict(sys.modules, {"frida": types.SimpleNamespace(attach=lambda pid: ReadySession())}):
+            result = harness.launch_case(case, runtime_root=self.runtime)
+        state = json.loads((case / "state.json").read_text())
+        self.assertEqual(result, 0)
+        self.assertEqual(state["status"], "exited")
+        self.assertIsNone(state["failure"])
+        self.assertEqual(state["original_driver_state_check"]["changed"], ["nvAppTimestamps"])
+        self.assertEqual(state["original_driver_state_check"]["attribution"], "not_determined_external_writers_possible")
+        self.assertEqual((case / "driver-cache/Drs/nvAppTimestamps").read_bytes(), b"old")
+        self.assertTrue(state["original_save_check"]["unchanged"])
+
+    def test_preflight_rejects_case_outside_expected_root(self):
+        case = self.prepare()
+        with self.assertRaises(ValueError):
+            harness.verify_prepared(case, self.root / "another-runtime")
+
+    def test_unselected_base_overlay_cannot_silently_override_new_package(self):
+        (self.base / "Update7.pac").write_bytes(b"stale override")
+        with self.assertRaises(ValueError):
+            self.prepare()
+        self.assertFalse(self.runtime.exists())
+
+    def test_preflight_detects_added_and_removed_save_files(self):
+        case = self.prepare()
+        (self.save / "Config.dat").unlink()
+        (self.save / "unexpected.dat").write_bytes(b"new")
+        result = harness.compare_manifest(self.save, json.loads((case / "manifest.json").read_text())["original_save_files"])
+        self.assertEqual(result["removed"], ["Config.dat"])
+        self.assertEqual(result["added"], ["unexpected.dat"])
+        self.assertFalse(result["unchanged"])
+
+    def test_symlink_input_is_rejected_instead_of_following_external_data(self):
+        link = self.base / "external.pac"
+        try:
+            link.symlink_to(self.pac)
+        except OSError:
+            self.skipTest("Symlinks are unavailable for this account")
+        with self.assertRaises(ValueError):
+            self.prepare()
+
+    def test_case_write_exception_does_not_allow_repo_neighbors_or_path_escape(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable for offline JavaScript execution")
+        if not hasattr(harness, "isolation_policy"):
+            self.fail("Executable isolated path policy is missing")
+        script = harness.isolation_policy({
+            "allowed": [r"D:\repo\target\case", r"\Device\HarddiskVolume4\repo\target\case"],
+            "repository": [r"D:\repo", r"\Device\HarddiskVolume4\repo"],
+            "protected": [r"C:\Users\30250\Documents\GIGA\BALDRSKY_DIVEX\Save"]})
+        script += "\nconst paths = " + json.dumps([
+            r"D:\repo\target\case\docs\Save.dat", r"D:\repo\target\case-other\Save.dat",
+            r"D:\repo\target\case\..\..\original\Save.dat",
+            r"C:\Users\30250\Documents\GIGA\BALDRSKY_DIVEX\Save\Config.dat",
+            r"\??\D:\repo\target\case\docs\Save.dat", r"\Device\HarddiskVolume4\repo\target\case\game\Config.dat",
+            r"D:\repo\target\case\sub\..\docs\Config.dat", r"\\?\D:\repo\target\case\docs\Save.dat",
+            r"D:\repo\src\code.java", r"\Device\HarddiskVolume4\repo\README.md",
+            r"D:\repo\target\case:outside-stream",
+        ]) + ";\nconsole.log(JSON.stringify(paths.map(permitted)));"
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        self.assertEqual(json.loads(result.stdout), [True, False, False, False, True, True, True, True, False, False, False])
+
+    def test_normal_external_os_writes_are_allowed_but_original_inputs_stay_protected(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable for offline JavaScript execution")
+        config = {"allowed": [r"D:\case"],
+                  "repository": [r"D:\repo"],
+                  "protected": [r"C:\Users\30250\Documents\GIGA\BALDRSKY_DIVEX\Save", r"E:\base",
+                                r"C:\ProgramData\NVIDIA Corporation\Drs", r"E:\inputs\Game.exe", r"E:\inputs\Update3.pac",
+                                r"\Device\HarddiskVolume8\inputs\Game.exe"]}
+        script = harness.isolation_policy(config)
+        script += "\nconsole.log(JSON.stringify(" + json.dumps([
+            r"C:\Users\30250\AppData\Local\Microsoft\Windows\Caches\observed.db",
+            r"C:\Users\30250\AppData\Local\Microsoft\Windows\Caches-other\unexpected.db",
+            r"C:\Users\30250\AppData\Local\Microsoft\Windows\Caches\..\unexpected.db",
+            r"C:\Users\30250\AppData\Local\Temp\unexpected.db",
+            r"C:\ProgramData\NVIDIA Corporation\ShadowPlay\CaptureCore.log",
+            r"\Device\HarddiskVolume1\ProgramData\NVIDIA Corporation\ShadowPlay\CaptureCore.log",
+            r"C:\Users\30250\Documents\GIGA\BALDRSKY_DIVEX\Save\Config.dat",
+            r"E:\base\Update3.pac",
+            r"C:\ProgramData\NVIDIA Corporation\Drs\nvdrsdb0.bin",
+            r"E:\inputs\Game.exe", r"E:\inputs\Update3.pac",
+            r"\Device\HarddiskVolume8\inputs\Game.exe",
+            r"E:\inputs\Game.exe:stream",
+        ]) + ".map(permitted)));"
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        self.assertEqual(json.loads(result.stdout), [True] * 6 + [False] * 7)
+
+    def test_unresolved_write_targets_still_fail_closed_in_preservation_mode(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable")
+        script = harness.isolation_policy({"allowed": [r"D:\case"], "repository": [r"D:\repo"]})
+        script += "\nconst paths=" + json.dumps([
+            "", None, "relative.log", r"C:relative.log", r"\Device\UnknownDevice\data",
+            "C:\\logs\\bad" + chr(0) + "name", r"D:\case\..\..\relative.log",
+        ]) + ";\nconsole.log(JSON.stringify(paths.map(p=>{try{return permitted(p);}catch(e){return 'threw';}})));"
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        self.assertEqual(json.loads(result.stdout), [False] * 7)
+
+    def test_existing_directory_metadata_open_does_not_allow_creation_or_data_writes(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable for offline JavaScript execution")
+        script = harness.isolation_policy({"allowed": []})
+        script += r'''
+if (typeof metadataOpenOnly === 'undefined') { console.log('missing'); process.exit(0); }
+console.log(JSON.stringify([
+  metadataOpenOnly(0x02000000, 1, 1, true),
+  metadataOpenOnly(0x00100180, 1, 1, true),
+  metadataOpenOnly(0x02000000, 1, 1, false),
+  metadataOpenOnly(0x02000000, 1, 3, true),
+  metadataOpenOnly(0x02000000, 0x1001, 1, true),
+  metadataOpenOnly(0x40000000, 1, 1, true),
+  metadataOpenOnly(2, 1, 1, true),
+  metadataOpenOnly(0x10000, 1, 1, true)
+]));
+'''
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        self.assertNotEqual(result.stdout.strip(), "missing", "Metadata-only open classification is missing")
+        self.assertEqual(json.loads(result.stdout), [True, True, False, False, False, False, False, False])
+
+    def test_documents_pidl_is_consumed_only_after_successful_outer_game_redirection(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable for offline JavaScript execution")
+        script = harness.isolation_policy({"allowed": [], "documents": r"C:\Users\30250\Documents",
+                                           "redirect": r"D:\case\docs"})
+        script += r'''
+if (typeof redirectDocuments === 'undefined') { console.log('missing'); process.exit(0); }
+const pidls = new Set(['0x1234']);
+const writes = [];
+const read = () => 'C:\\Users\\30250\\Documents';
+const outcome = [];
+outcome.push(redirectDocuments(pidls, '0x1234', false, true, read, x => writes.push(x)));
+outcome.push(pidls.has('0x1234'));
+outcome.push(redirectDocuments(pidls, '0x1234', true, false, read, x => writes.push(x)));
+outcome.push(pidls.has('0x1234'));
+try { redirectDocuments(pidls, '0x1234', true, true, read, () => { throw Error('write failed'); }); }
+catch(e) { outcome.push(pidls.has('0x1234')); }
+outcome.push(redirectDocuments(pidls, '0x1234', true, true, read, x => writes.push(x)));
+outcome.push(pidls.has('0x1234'));
+console.log(JSON.stringify({outcome, writes}));
+'''
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        self.assertNotEqual(result.stdout.strip(), "missing", "Safe PIDL redirection is missing")
+        self.assertEqual(json.loads(result.stdout), {"outcome": [False, True, False, True, True, True, False],
+                                                     "writes": [r"D:\case\docs"]})
+
+    def test_directory_create_collision_and_exact_save_alias_policy(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable")
+        config = {"allowed": [r"D:\case"], "saveAliasSources": [r"C:\Documents\GIGA\BALDRSKY_DIVEX\Save",
+                  r"\Device\HarddiskVolume1\Documents\GIGA\BALDRSKY_DIVEX\Save"],
+                  "saveAliasTarget": r"\??\D:\case\docs\GIGA\BALDRSKY_DIVEX\Save"}
+        script = harness.isolation_policy(config) + r'''
+if (typeof aliasSavePath === 'undefined' || typeof directoryCreateCollision === 'undefined') {
+  console.log('missing'); process.exit(0);
+}
+console.log(JSON.stringify({
+  collision: [[0x204021,2,true],[0x204021,2,false],[0x204021,3,true],[0x204020,2,true],[0x204061,2,true]]
+    .map(x => directoryCreateCollision(...x)),
+  paths: [
+    '\\??\\C:\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save\\ConfigOK.dat',
+    '\\Device\\HarddiskVolume1\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save',
+    'C:\\Documents\\GIGA\\BALDRSKY_DIVEX\\SaveOther\\Config.dat',
+    'C:\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save\\..\\Other.dat',
+    'C:\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save\\Sub\\..\\NewSave.dat'
+  ].map(aliasSavePath)
+}));
+'''
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        self.assertNotEqual(result.stdout.strip(), "missing", "Save fallback policy is missing")
+        self.assertEqual(json.loads(result.stdout), {
+            "collision": [True, False, False, False, False],
+            "paths": [r"\??\D:\case\docs\GIGA\BALDRSKY_DIVEX\Save\ConfigOK.dat",
+                      r"\??\D:\case\docs\GIGA\BALDRSKY_DIVEX\Save", None, None,
+                      r"\??\D:\case\docs\GIGA\BALDRSKY_DIVEX\Save\NewSave.dat"]})
+
+    def test_observed_hid_namespace_allows_open_only_and_never_disk_paths(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable")
+        script = harness.isolation_policy({"allowed": []}) + r'''
+if (typeof hidDeviceOpen === 'undefined') { console.log('missing'); process.exit(0); }
+const hid = '\\??\\hid#vid_0b05&pid_19b6&col06#7&22cddfa1&0&0005#{4d1e55b2-f16f-11cf-88cb-001111000030}';
+const asus = '\\??\\hid#asuf1204&col04#4&1356c909&0&0003#{4d1e55b2-f16f-11cf-88cb-001111000030}';
+console.log(JSON.stringify([
+  hidDeviceOpen(hid, 1, 0x60),
+  hidDeviceOpen(asus, 1, 0x60),
+  hidDeviceOpen(hid.toUpperCase() + '\\KBD', 1, 0x60),
+  hidDeviceOpen(hid, 2, 0x60),
+  hidDeviceOpen(hid, 3, 0x60),
+  hidDeviceOpen(hid, 4, 0x60),
+  hidDeviceOpen(hid, 5, 0x60),
+  hidDeviceOpen(hid, 1, 0x1060),
+  hidDeviceOpen(hid, 1, 0x61),
+  hidDeviceOpen('\\Device\\HarddiskVolume1\\Save\\Config.dat', 1, 0x60),
+  hidDeviceOpen('\\Device\\HidUSB0', 1, 0x60),
+  hidDeviceOpen('\\??\\C:\\original\\' + hid.slice(4), 1, 0x60),
+  hidDeviceOpen(hid + '\\kbd\\Config.dat', 1, 0x60),
+  hidDeviceOpen(hid.replace('4d1e55b2', '00000000'), 1, 0x60),
+  hidDeviceOpen(hid + '\\..\\Save\\Config.dat', 1, 0x60)
+]));
+'''
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        self.assertNotEqual(result.stdout.strip(), "missing", "HID open-only classification is missing")
+        self.assertEqual(json.loads(result.stdout), [True, True, True] + [False] * 12)
+
+    def test_mmcss_thread_device_allows_only_exact_read_only_observed_opens(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable")
+        script = harness.isolation_policy({"allowed": []}) + r'''
+if (typeof mmcssDeviceOpen === 'undefined') { console.log('missing'); process.exit(0); }
+const device = '\\Device\\MMCSS\\MmThread';
+console.log(JSON.stringify({
+  allowed: [
+    mmcssDeviceOpen(device, 0x120089, 0, 0),
+    mmcssDeviceOpen(device, 0x120089, 1, 0),
+    mmcssDeviceOpen(device.toLowerCase(), 0x120089, 0, 0),
+    mmcssDeviceOpen(device, 0x80, 1, 0x40)
+  ],
+  paths: [null, '', device + 'Other', device + '\\child', device + '\\', device + '\n',
+    '\\Device\\MMCSS', '\\Device\\Other\\MmThread',
+    '\\Device\\HarddiskVolume1\\MMCSS\\MmThread',
+    '\\??\\C:\\Device\\MMCSS\\MmThread', device + '\\..\\Save\\Config.dat']
+    .map(path => mmcssDeviceOpen(path, 0x120089, 0, 0)),
+  access: [0x2, 0x4, 0x10, 0x20, 0x40, 0x100, 0x10000, 0x40000, 0x80000,
+    0x1000000, 0x2000000, 0x10000000, 0x20000000, 0x40000000, 0x80000000]
+    .map(right => mmcssDeviceOpen(device, 0x120089 | right, 0, 0)),
+  dispositions: [-1, 2, 3, 4, 5, 6].map(value => mmcssDeviceOpen(device, 0x120089, value, 0)),
+  options: [0x1000, 1, 0x1001].map(value => mmcssDeviceOpen(device, 0x120089, 0, value))
+}));
+'''
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        self.assertNotEqual(result.stdout.strip(), "missing", "MMCSS read-only device classification is missing")
+        self.assertEqual(json.loads(result.stdout), {
+            "allowed": [True] * 4, "paths": [False] * 11, "access": [False] * 15,
+            "dispositions": [False] * 6, "options": [False] * 3})
+
+    def test_driver_tree_alias_has_directory_boundary_not_programdata_or_other_nvidia_paths(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable")
+        config = {"allowed": [r"D:\case"],
+                  "driverStateSources": [r"C:\ProgramData\NVIDIA Corporation\Drs",
+                    r"\Device\HarddiskVolume1\ProgramData\NVIDIA Corporation\Drs"],
+                  "driverStateTarget": r"\??\D:\case\driver-cache\Drs"}
+        script = harness.isolation_policy(config) + r'''
+if (typeof aliasDriverState === 'undefined') { console.log('missing'); process.exit(0); }
+console.log(JSON.stringify([
+  '\\??\\C:\\ProgramData\\NVIDIA Corporation\\Drs\\nvdrssel.bin',
+  '\\Device\\HarddiskVolume1\\ProgramData\\NVIDIA Corporation\\Drs\\nvAppTimestamps',
+  'C:\\PROGRAMDATA\\NVIDIA CORPORATION\\DRS\\NewFile.bin',
+  'C:\\ProgramData\\NVIDIA Corporation\\Drs\\nested\\db.bin',
+  'C:\\ProgramData\\NVIDIA Corporation\\Drs\\nvdrsdb0.bin',
+  'C:\\ProgramData\\NVIDIA Corporation\\Drs',
+  'C:\\ProgramData\\NVIDIA Corporation\\DrsOther\\data.bin',
+  'C:\\ProgramData\\NVIDIA Corporation\\Drs\\..\\Other\\data.bin',
+  'C:\\ProgramData\\other.bin'
+].map(aliasDriverState)));
+'''
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        self.assertNotEqual(result.stdout.strip(), "missing", "Driver directory alias is missing")
+        root = "\\??\\D:\\case\\driver-cache\\Drs"
+        self.assertEqual(json.loads(result.stdout), [root + suffix for suffix in (
+            "\\nvdrssel.bin", "\\nvAppTimestamps", "\\NewFile.bin", "\\nested\\db.bin", "\\nvdrsdb0.bin", "")] + [None] * 3)
+
+    def test_exception_observer_records_module_context_without_symbol_or_stack_resolution(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable")
+        if not hasattr(harness, "exception_observer"):
+            self.fail("Read-only exception evidence helper is missing")
+        script = r'''
+function ptr(value) { return {value, toString: () => '0x' + value.toString(16), sub: other => ptr(value-other.value)}; }
+const context = {pc: ptr(0x1010)};
+const Process = {findModuleByAddress: address => ({name:'module.dll', path:'C:\\Windows\\module.dll', base:ptr(0x1000)})};
+let symbolCalls=0, backtraceCalls=0;
+const DebugSymbol = {fromAddress: address => {symbolCalls++; throw Error('symbol resolution may perform file I/O');}};
+const Backtracer = {ACCURATE: 1};
+const Thread = {backtrace: (givenContext, mode) => {
+  backtraceCalls++; throw Error('unwinding may load symbols');
+}};
+const captured=[];
+function announce(type,payload) { captured.push({type,...payload}); }
+'''
+        script += harness.exception_observer() + r'''
+const details={type:'system',address:ptr(0x1010),memory:{operation:'read',address:ptr(0x5000)},context};
+const before=JSON.stringify(details);
+const handled=observeException(details);
+console.log(JSON.stringify({handled,event:captured[0],symbolCalls,backtraceCalls,unchanged:before===JSON.stringify(details)}));
+'''
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        data = json.loads(result.stdout)
+        self.assertFalse(data["handled"])
+        self.assertEqual(data["event"]["classification"], "unclassified_observed_exception")
+        self.assertEqual(data["event"]["location"]["module"]["name"], "module.dll")
+        self.assertEqual(data["event"]["location"]["module"]["offset"], "0x10")
+        self.assertEqual(data["symbolCalls"], 0)
+        self.assertEqual(data["backtraceCalls"], 0)
+        self.assertTrue(data["unchanged"])
+        self.assertEqual(data["event"]["context"]["pc"]["value"], 0x1010)
+        self.assertEqual(data["event"]["memory"]["operation"], "read")
+        self.assertEqual(data["event"]["backtrace"], {"status": "unavailable", "reason": "no_symbol_resolution"})
+
+    def test_exception_diagnostic_and_logging_failures_still_return_false(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable")
+        if not hasattr(harness, "exception_observer"):
+            self.fail("Read-only exception evidence helper is missing")
+        script = r'''
+const Process={findModuleByAddress:()=>{throw Error('module lookup unavailable');}};
+let symbolCalls=0,backtraceCalls=0;
+const DebugSymbol={fromAddress:()=>{symbolCalls++;throw Error('symbol lookup forbidden');}};
+const Thread={backtrace:()=>{backtraceCalls++;throw Error('unwind forbidden');}};
+const Backtracer={ACCURATE:1};
+const captured=[];
+let failLog=false;
+function announce(type,payload){if(failLog)throw Error('logger unavailable');captured.push({type,...payload});}
+'''
+        script += harness.exception_observer() + r'''
+const details={type:'system',address:{toString:()=> '0x1234'},context:{},memory:null};
+const first=observeException(details);
+failLog=true;
+const second=observeException(details);
+console.log(JSON.stringify({first,second,errors:captured[0].diagnostic_errors,classification:captured[0].classification,symbolCalls,backtraceCalls}));
+'''
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        data = json.loads(result.stdout)
+        self.assertFalse(data["first"])
+        self.assertFalse(data["second"])
+        self.assertEqual(len(data["errors"]), 1)
+        self.assertEqual(data["symbolCalls"], 0)
+        self.assertEqual(data["backtraceCalls"], 0)
+        self.assertEqual(data["classification"], "unclassified_observed_exception")
+
+    def test_save_alias_clones_native_structures_and_preserves_original_buffers(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable")
+        if not hasattr(harness, "isolation_structures"):
+            self.fail("Native Save alias structure implementation is missing")
+        # Only native memory allocation is substituted. The production cloning
+        # functions execute unchanged over actual byte buffers for x86 and x64.
+        script = r'''
+let pointerSize = 4;
+const heap = Buffer.alloc(65536);
+let next = 256;
+class Pointer {
+  constructor(address) { this.address = Number(address); }
+  add(offset) { return new Pointer(this.address + offset); }
+  isNull() { return this.address === 0; }
+  readU16() { return heap.readUInt16LE(this.address); }
+  readU32() { return heap.readUInt32LE(this.address); }
+  writeU16(v) { heap.writeUInt16LE(v, this.address); return this; }
+  writeU32(v) { heap.writeUInt32LE(v >>> 0, this.address); return this; }
+  readPointer() { return new Pointer(pointerSize === 4 ? this.readU32() : Number(heap.readBigUInt64LE(this.address))); }
+  writePointer(v) {
+    if (pointerSize === 4) this.writeU32(v.address);
+    else heap.writeBigUInt64LE(BigInt(v.address), this.address);
+    return this;
+  }
+  readByteArray(n) { return Uint8Array.from(heap.subarray(this.address, this.address + n)); }
+  writeByteArray(value) { Buffer.from(value).copy(heap, this.address); return this; }
+  readUtf16String(n) { return heap.toString('utf16le', this.address, this.address + n * 2); }
+}
+function ptr(value) { return new Pointer(value); }
+const Memory = {
+  alloc(size) { const out = ptr(next); next += (size + 15) & ~15; return out; },
+  allocUtf16String(value) { const b = Buffer.from(value + '\0', 'utf16le'); const out = this.alloc(b.length); out.writeByteArray(b); return out; },
+  copy(to, from, n) { heap.copy(heap, to.address, from.address, from.address + n); }
+};
+'''
+        script += harness.isolation_structures() + r'''
+const assert = require('node:assert/strict');
+for (const ps of [4,8]) {
+  pointerSize = ps;
+  const size = ps === 4 ? 24 : 48;
+  const rootOffset = ps === 4 ? 4 : 8;
+  const nameOffset = ps === 4 ? 8 : 16;
+  const attr = Memory.alloc(size);
+  for (let i = 0; i < size; i++) heap[attr.address + i] = i;
+  attr.writeU32(size);
+  attr.add(rootOffset).writePointer(ptr(0x1234));
+  const before = Buffer.from(attr.readByteArray(size));
+  const target = '\\??\\D:\\case\\docs\\Save\\New.dat';
+  const copy = cloneObjectAttributes(attr, target, ps);
+  assert.deepEqual(Buffer.from(attr.readByteArray(size)), before);
+  assert.equal(copy.pointer.add(rootOffset).readPointer().address, 0);
+  const us = copy.pointer.add(nameOffset).readPointer();
+  assert.equal(us.readU16(), target.length * 2);
+  assert.equal(us.add(2).readU16(), target.length * 2 + 2);
+  const text = us.add(ps === 4 ? 4 : 8).readPointer();
+  assert.equal(text.readUtf16String(target.length), target);
+  const copied = Buffer.from(copy.pointer.readByteArray(size));
+  copied.set(before.subarray(rootOffset, rootOffset + ps), rootOffset);
+  copied.set(before.subarray(nameOffset, nameOffset + ps), nameOffset);
+  assert.deepEqual(copied, before);
+  const nameStart = ps * 2 + 4;
+  const rename = Memory.alloc(nameStart + 12);
+  rename.writeU32(0x1357);
+  rename.add(ps).writePointer(ptr(0x1234));
+  rename.add(ps * 2).writeU32(12);
+  const renameBefore = Buffer.from(rename.readByteArray(nameStart + 12));
+  const changed = cloneRenameInformation(rename, nameStart + 12, target, ps);
+  assert.deepEqual(Buffer.from(rename.readByteArray(nameStart + 12)), renameBefore);
+  assert.equal(changed.pointer.readU32(), 0x1357);
+  assert.equal(changed.pointer.add(ps).readPointer().address, 0);
+  assert.equal(changed.pointer.add(ps * 2).readU32(), target.length * 2);
+  assert.equal(changed.pointer.add(nameStart).readUtf16String(target.length), target);
+  assert.equal(changed.length, nameStart + target.length * 2);
+  const io = Memory.alloc(ps * 2);
+  const handle = Memory.alloc(ps);
+  handle.writePointer(ptr(0x9876));
+  assert.equal(completeDirectoryCollision(handle, io, ps), -1073741771);
+  assert.equal(handle.readPointer().address, 0);
+  assert.equal(io.readU32(), 0xc0000035);
+  assert.equal(io.add(ps).readPointer().address, 4);
+}
+console.log('native structures preserved');
+'''
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.strip(), "native structures preserved")
+
+    def test_late_installer_keeps_guard_until_failed_termination_eventually_exits(self):
+        case = self.prepare("late-installer")
+        child = FakeOwnedProcess()
+        late_load = threading.Event()
+        loaded = threading.Event()
+        session = FakeSession(child, late_load, loaded)
+        results = []
+
+        def run():
+            results.append(harness.launch_case(case, runtime_root=self.runtime, ready_timeout=0.05))
+
+        with patch.object(harness, "OwnedProcess", return_value=child), \
+                patch.object(harness, "isolation_script", return_value="offline"), \
+                patch.dict(sys.modules, {"frida": types.SimpleNamespace(attach=lambda pid: session)}):
+            runner = threading.Thread(target=run)
+            runner.start()
+            try:
+                self.assertTrue(child.termination_attempted.wait(3), "Cleanup never attempted termination")
+                late_load.set()
+                self.assertTrue(loaded.wait(3), "Late load never completed")
+                runner.join(0.3)
+                self.assertEqual(session.detached_while_alive, 0, "Installer removed the live guard")
+                self.assertTrue(runner.is_alive(), "Launcher returned while its process was still alive")
+                self.assertEqual(child.closed, [])
+                state = json.loads((case / "state.json").read_text())
+                self.assertEqual(state["status"], "failed")
+                self.assertTrue(state["cleanup_pending"])
+            finally:
+                child.dead.set()
+                late_load.set()
+                runner.join(5)
+            self.assertFalse(runner.is_alive())
+        self.assertEqual(results, [1])
+        self.assertEqual(session.detached_while_alive, 0)
+        self.assertEqual(session.detached_after_exit, 1)
+        self.assertEqual(child.closed, ["thread_handle", "process_handle"])
+
+    def test_termination_does_not_depend_on_log_write_succeeding(self):
+        case = self.prepare("log-failure")
+        child = FakeOwnedProcess(terminate_succeeds=True)
+        original_open = Path.open
+
+        def open_with_failure(path, *args, **kwargs):
+            stream = original_open(path, *args, **kwargs)
+            if path.name == "events.jsonl":
+                return FailingCleanupLog(stream)
+            return stream
+
+        def attach_failure(pid):
+            raise RuntimeError("offline install failure")
+
+        with patch.object(harness, "OwnedProcess", return_value=child), \
+                patch.dict(sys.modules, {"frida": types.SimpleNamespace(attach=attach_failure)}), \
+                patch.object(Path, "open", open_with_failure):
+            result = harness.launch_case(case, runtime_root=self.runtime, ready_timeout=0.05)
+        self.assertTrue(child.termination_attempted.is_set(), "Log failure skipped child termination")
+        self.assertTrue(child.dead.is_set())
+        self.assertEqual(child.closed, ["thread_handle", "process_handle"])
+        self.assertEqual(result, 1)
+
+    def test_identity_failure_retains_handles_when_termination_fails_or_times_out(self):
+        for terminate_result in (False, True):
+            with self.subTest(terminate_result=terminate_result):
+                kernel = FakeKernel(terminate_result)
+                process = harness.OwnedProcess.__new__(harness.OwnedProcess)
+                with patch.object(harness.ctypes, "WinDLL", return_value=kernel), \
+                        patch.object(harness.OwnedProcess, "current_identity", side_effect=OSError("identity unavailable")):
+                    with self.assertRaises(Exception) as raised:
+                        process.__init__(self.exe, self.base)
+                self.assertEqual(kernel.closed, [], "Unconfirmed process handles were closed")
+                self.assertIs(getattr(raised.exception, "process", None), process,
+                              "The caller lost ownership of the newly created suspended process")
+                with self.assertRaises((OSError, RuntimeError)):
+                    process.terminate()
+                self.assertEqual(kernel.closed, [])
+                self.assertEqual(process.process_handle, 0x111)
+                self.assertEqual(process.thread_handle, 0x222)
+
+    def test_identity_failure_is_closed_by_launch_owner_after_confirmed_exit(self):
+        case = self.prepare("identity-cleanup")
+        kernel = FakeKernel(True, exit_after_termination=True)
+        with patch.object(harness.ctypes, "WinDLL", return_value=kernel), \
+                patch.object(harness.OwnedProcess, "current_identity", side_effect=OSError("identity unavailable")), \
+                patch.dict(sys.modules, {"frida": types.SimpleNamespace()}):
+            result = harness.launch_case(case, runtime_root=self.runtime)
+        state = json.loads((case / "state.json").read_text())
+        self.assertEqual(result, 1)
+        self.assertFalse(state["process"]["identity_verified"])
+        self.assertEqual(state["exit_code"], 1)
+        self.assertEqual(kernel.closed, [0x222, 0x111])
+        self.assertEqual(state["closed_handles"], ["thread_handle", "process_handle"])
+        self.assertTrue(state["original_save_check"]["unchanged"])
+
+
+class FakeOwnedProcess:
+    """External process boundary only: lifecycle decisions remain in launch_case."""
+
+    def __init__(self, terminate_succeeds=False):
+        self.pid = 901
+        self.identity = {"pid": 901, "creation_filetime": 123, "image": "offline.exe"}
+        self.process_handle = 0x111
+        self.thread_handle = 0x222
+        self.closed = []
+        self.dead = threading.Event()
+        self.termination_attempted = threading.Event()
+        self.terminate_succeeds = terminate_succeeds
+
+    def require_identity(self):
+        pass
+
+    def poll(self):
+        return 1 if self.dead.is_set() else None
+
+    def terminate(self):
+        self.termination_attempted.set()
+        if self.terminate_succeeds:
+            self.dead.set()
+        else:
+            raise RuntimeError("simulated termination failure")
+
+    def close(self):
+        if not self.dead.is_set():
+            raise AssertionError("Closing live process handles")
+        self.closed.extend(["thread_handle", "process_handle"])
+        self.thread_handle = self.process_handle = None
+
+
+class FakeSession:
+    def __init__(self, child, late_load, loaded):
+        self.child, self.late_load, self.loaded = child, late_load, loaded
+        self.detached_while_alive = self.detached_after_exit = 0
+
+    def on(self, name, callback):
+        pass
+
+    def create_script(self, source, name):
+        return self
+
+    def load(self):
+        if not self.late_load.wait(3):
+            raise RuntimeError("offline late-load deadline")
+        self.loaded.set()
+
+    def detach(self):
+        if self.child.dead.is_set():
+            self.detached_after_exit += 1
+        else:
+            self.detached_while_alive += 1
+
+
+class FailingCleanupLog:
+    def __init__(self, stream):
+        self.stream = stream
+
+    def write(self, value):
+        if '"event": "terminating_owned_process"' in value:
+            raise OSError("simulated log disk failure")
+        return self.stream.write(value)
+
+    def close(self):
+        self.stream.close()
+
+
+class FakeNativeFunction:
+    def __init__(self, callback):
+        self.callback = callback
+
+    def __call__(self, *args):
+        return self.callback(*args)
+
+
+class FakeKernel:
+    def __init__(self, terminate_result, exit_after_termination=False):
+        self.closed = []
+        self.terminated = False
+        self.terminate_result = terminate_result
+        self.exit_after_termination = exit_after_termination
+        self.CreateProcessW = FakeNativeFunction(self.create)
+        self.TerminateProcess = FakeNativeFunction(self.terminate)
+        self.CloseHandle = FakeNativeFunction(lambda handle: self.closed.append(handle) or True)
+        self.WaitForSingleObject = FakeNativeFunction(
+            lambda *args: 0 if self.terminated and self.exit_after_termination else 258)
+        self.GetExitCodeProcess = FakeNativeFunction(self.exit_code)
+        for name in ("GetProcessTimes", "QueryFullProcessImageNameW", "GetProcessId", "ResumeThread"):
+            setattr(self, name, FakeNativeFunction(lambda *args: 0))
+
+    def create(self, *args):
+        info = args[-1]._obj
+        info.hProcess, info.hThread = 0x111, 0x222
+        info.dwProcessId, info.dwThreadId = 901, 902
+        return True
+
+    def terminate(self, *args):
+        self.terminated = self.terminate_result
+        return self.terminate_result
+
+    def exit_code(self, handle, code):
+        code._obj.value = 1
+        return True
+
+
+if __name__ == "__main__":
+    unittest.main()

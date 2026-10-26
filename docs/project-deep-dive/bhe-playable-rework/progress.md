@@ -80,3 +80,25 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 - 当前完整九角色构建run_20261027_002200_048已Exit0，含七个可装备变体及新预设；Sou未运行。PAC SHA256=2c93f7caf599fc160e41b28e4c4fa313a2a7c212dd68c669ba91adc365d349a7，EXE SHA256=09ff572b7d42c2aedbe092e5ad40583377d1cd258d65065bfc7b77d92df31f68。runtimeValidated仍false。
 - rework-07私有selector成功12次，随后同Drs的nvAppTimestamps被守卫拒绝并主动终止。运行工具已改为完整Drs状态树（6文件/5476097字节）副本与目录边界alias，原Drs继续拒写；29离线测试通过。新rework-08使用本轮新PAC准备中。
 - 中文说明书已创建开发稿，真实菜单路径及逐角色实机矩阵仍待补，未将开发稿当最终说明书验收。
+
+## 2026-10-27 启动故障定位恢复点
+
+- 静态阶段已提交c89e6c252（中文/no push），包括七变体、装备、构建及开发稿。六项原有Clarias/AGENT WIP仍精确53行新增；74个本轮改动Java/FXML文件格式违规0。
+- Freja后续只补武幻剛乱舞日文说明和默认FC入口，未改其Charge/计数/Change。Freja6+Loadouts5复测Exit0。此四文件与研究报告尚未提交，当前0022包仍旧默认FC；最终须重建。
+- runtime已由全盘白名单改为输入/存档保全模式：case允许、仓库其它路径和原输入拒写，已解析仓库外普通OS日志/缓存允许并审计；不吞异常。新增显式--vanilla，与--pac互斥必选。当前34个离线测试通过，工具/测试/运行文档尚未提交。
+- rework-09首次无guard的实际退出：C0000417，Save9/Drs41成功。rework-10-debug复现；CDB只设sxe无法捕获，因为它是CRT显式TerminateProcess状态，不是同码异常。旧CDB因默认srv*栈查询停滞，已核PID/命令行后清理自有debugger，launcher29700已Exit1，原Save未变。
+- 纯原版vanilla-01（无额外PAC，原版EXE）也在同环境出现同码终止。CDB用离线-y .，断ntdll!NtTerminateProcess，捕获handle=-1/status=C0000417；无guard。当前不能归因角色移植。
+- 真实直接消费者为CRT__mbsbtype_l(67A865)/__mbsbtype(67A900)，由7041E0文本排版调用。当前string bytes=A1BABFCBC0EFCBB9A1BB20BDE1CAF800，CP936解为『克里斯』 结束；CP932为乱码。首NUL在15，逻辑length16，文本index14导致_mb sbtype查询16越界。mbcinfo=046A2C88，其+4与全局87686C均为03A4即932。应定位文本真实供体并处理编码一致性，不能恢复全局CRT RET或据码页差异直接宣布根因全部解决。
+- 运行专家rework_runtime_scout只读查CRT/消费者；research_completeness只读解包/查base的Update2.pac、Config/Update及原版资源，报告vanilla-encoding-forensics.md。Maven、CDB和UI仍由root独占。
+- LIVE恢复点：vanilla-01 launcher session6813、CDB session55843，目前断在NtTerminateProcess前；PID见该case/state.json（CDB十六进程707B8）。.dump /ma invalid-mbs.dmp已发。不要重启/按名字杀进程；采集完发g让原生终止，再确认launcher原Save比对。其它已知case皆终态。尚无任何角色正式游戏效果验收完成，目标active。
+
+## 2026-10-27 运行对照与恢复点更正
+
+- 上述vanilla-01/CDB现场已结束，不再是LIVE。原版同码退出的直接输入已定位到真实Save002.dat标题的CP936/CP932不一致；独立兼容seed仅改26个存档标题，原78文件未覆盖。完整证据见vanilla-encoding-forensics.md，私有seed不进入公共mod包。
+- HEAD=6d0c7938f；Freja默认FC入口和说明已提交。最新构建run_20261027_014635_068/build.json，EXE SHA256=09ff572b7d42c2aedbe092e5ad40583377d1cd258d65065bfc7b77d92df31f68，PAC SHA256=79be51b21e5beb082a0d9a059b2f2cce4546ba18833c29142dcd341ca7adf2a6。未用此包完成实机验收，runtimeValidated仍false。
+- vanilla-compat-02和rework-compat-01均已由其原始launcher通过STOP正常结束，failure=null；前者原版加兼容seed，后者使用较旧0022包，不能冒充最新包结果。原版和mod的捕获画面均黑，尚未确定真实显示黑屏还是捕获限制。
+- 当前LIVE为纯原版空存档vanilla-fresh-01，launcher43143，PID477696，creation FILETIME134375099066375135，映像为其case/game/BaldrSky.exe。首次自动更新选择否，主窗口8719668；Save/Drs守卫无违规，未沿用旧Config。每次输入前仍须刷新返回的窗口对象。
+- 空存档原版也捕获为黑；主菜单System.bin运行、无movie，draw/update两秒各+119。有界三次Present内记录437次DrawPrimitiveUP，菜单绘制及Present HRESULT均0。此结果排除完全只有clear，但不证明最终像素、键盘操作或角色效果正常。
+- CDB draw-count采样已自动清断点并detach，exit0；日志target/bhe-playable-runtime/vanilla-fresh-01/draw-count.cdb.log。当前没有为此采样保留的debugger。
+- 运行工具41项离线测试本轮重新通过；独立审查未发现Important阻塞。异常始终false交还原链；只读精确MMCSS设备例外、完整私有Drs、独立seed/fresh模式和原输入保全见runtime-harness.md。
+- Photoshop仅打开了本任务创建的未保存诊断截图，未打开用户PSD。另存对话框已Escape收起，没有保存至默认clarias目录。尚无角色实机验收完成，目标继续active，不push。
