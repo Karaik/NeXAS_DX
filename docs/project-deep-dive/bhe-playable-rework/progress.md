@@ -118,3 +118,19 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 - 当前唯一任务内LIVE为rework-latest-native-01，launcher47708，PID507068/tid507196/creation134375123357986812，映像为其case/game/BaldrSky.exe；使用014635的最新EXE/PAC、独立CP932标题兼容seed、正常Drs访问。首次自动更新选否；80秒快照仍running、guard0、Save成功alias14，但捕获仍黑，不能算正式验收。
 - 无CDB会话遗留。Snipaste贴图暂时隐藏，图片未删。Photoshop诊断文档已保存并关闭，应用仍可能后台存活；不得强杀用户其它Adobe进程。
 - 最近完整离线回归由root重新运行：46项、0失败/错误、exit0。用户原有六项功能WIP仍53行，游戏资源/存档/临时产物不暂存。
+
+### DPI对照继续点
+
+- 以上rework-latest-native-01已STOP且failure=null、原Save清单不变；不得复用旧launch.lock。
+- 当前LIVE为rework-dpi-01，launcher53154，PID506552/tid500264/creation134375128993369855。同最新EXE/PAC、同兼容seed/native Drs，仅增加target/bhe-audit-20261026/dpi-aware-only-20261027.manifest。
+- 原EXE无内嵌manifest/DPI API；mt验证新manifest通过。只读GetProcessDpiAwareness返回HRESULT0/value1，声明实际生效，但仍黑，故不作为修复或发行变更。Win32 Alt+Space系统菜单可用，普通游戏菜单输入仍缺可确认响应。
+- 当前仍等待用户肉眼确认画面以区分真正显示问题和捕获问题；该阻塞在前一目标回合及本自动继续回合均存在。前回合有工具/产物复审与提交进展，本回合有已验证DPI对照进展，不能将过程存活或这些反证升级为玩法验收。
+
+### 原生装备分组核实与修复
+
+- 从原版教程与EXE消费者闭环确认DAT普通列=3*state+button，state0近距離、1サーチダッシュ、2遠距離、3ダッシュ；同按钮会向后回退。旧九角色预设把多数射击放在普通Dash槽，已只交换6..8与9..11，其他槽/身份/153限制保留。
+- root实际RED14tests/10failures/0errors，GREEN14/14；完整16类113项全过。独立native审查者复核九角色数组、空槽与+40身份夹具，未发现Important，可提交。
+- 新整链构建session32213已exit0，run_20261027_035924_938/build.json，最新assetRoot为motoki/motoki_assets_20261027_040105_624。EXE SHA09ff572b7d42c2aedbe092e5ad40583377d1cd258d65065bfc7b77d92df31f68，PAC SHAa525ad5a1d285123845932dd3d2f2cbb14c9e6a8311d90b9f4ffe16ccc615e24，root重新计算匹配。runtimeValidated仍false。
+- 中文说明书已补默认键位、FC1 A+B/initializer B+C、训练菜单说明、改造招式默认入口及形态出入，未猜主菜单分页或预览操作；旧存档需自行核对分组。
+- 当前live仍是使用旧014635包的DPI诊断case，不能把它的进程状态归为035924新包的游戏通过。尚无角色正式玩法验收完成，目标active，不push。
+- 035924最终产物独立检查通过，root读脚本后实际重跑：九角色行104..112远距／普通Dash身份正确，其余槽保持，九角色MEK/WAZ逐字节未变，19WAZ/141技能引用无越界，报告passed=true/errors=[]。审查脚本与报告位于target/bhe-audit-20261026/loadout-final-20261027，不暂存游戏资源或私有存档。

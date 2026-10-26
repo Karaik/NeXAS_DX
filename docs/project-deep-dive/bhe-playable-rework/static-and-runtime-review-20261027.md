@@ -1,6 +1,6 @@
 # 九角色产物复审与实机边界（2026-10-27）
 
-本记录对应代码`c27bc14fb..89b592a90`及构建`run_20261027_014635_068`，排除Sou。静态复审没有发现Important级可行动问题；这不等于游戏验收通过。
+初轮记录对应代码`c27bc14fb..89b592a90`及构建`run_20261027_014635_068`，排除Sou。初轮资源技术复审没有发现Important级可行动问题；后续操作审查另发现并修复默认装备分组问题，见文末。两者均不等于游戏验收通过。
 
 ## 最终资源独立复审
 
@@ -48,3 +48,32 @@
 诊断用Photoshop文档已保存到`target/bhe-playable-runtime/vanilla-compat-02/window-capture-comparison.psd`并关闭，没有写入默认clarias目录或打开用户已有PSD。
 
 当前没有角色完成正式玩法验收。中文说明书仍为开发稿，最终发行和目标完成均以实机证据为门槛。
+
+## DPI单变量对照
+
+2026-10-27继续检查了DPI虚拟化这一具体假设。原EXE无RT_MANIFEST资源、DPI awareness API或相关声明。新的rework-dpi-01保持014635的EXE/PAC、同一兼容存档seed和native Drs模式，仅添加dpiAware=true的外置manifest；未增加activeCodePage、UAC、supportedOS或PerMonitorV2设置。manifest通过Windows SDK mt验证，源文件只在本地target中保留。
+
+只读GetProcessDpiAwareness查询返回HRESULT=0、awareness=1，证明新进程已成为system-DPI-aware。捕获尺寸从1203×941变为536×426，但捕获仍黑，所以该声明没有解决现象，不加入发行包。窗口的Alt+Space系统菜单能够正常显示和响应，游戏内菜单输入仍未确认。源存档没有覆盖；前一最新包baseline已由原launcher正常STOP且原Save清单不变。
+
+## 说明书操作依据
+
+- 原版`game/bsdx/bin/Tutorial020：使用するボタン.bin`的stringTable[3..9]提供默认键位及可在コンフィグ改键的说明：方向键/数字小键盘移动，A=Z、B=X、C=C，D=Shift/V/数字5，Esc暂停；手柄BUTTON1至4与START。
+- Tutorial100的stringTable[2..15]确认近距离、远距离、普通冲刺、搜索冲刺四类，并说明普通冲刺优先于近距离；暂不据教材文本顺序猜DAT行顺序。
+- `5E13E0`将DAT普通列i转换为runtimeSlot=4*(i%3)+floor(i/3)，`5E03F0`执行反向；`61E310`把0x100/0x200/0x400分别送入按钮0/1/2。因此普通DAT列为3*state+button，而不是四个攻击按钮。
+- `5EF960`扫描上述三键，A+B返回0，A未按而B+C返回1；`61BFF0`将其加12选择装备槽，并要求计量值至少10000。说明书据当前EXE分别写第一FC槽A+B、第二FC槽／本包initializer为B+C，没有将教程160的generic A+B说法照搬到两个独立槽。
+- root复核`datBsdxJson/Button.dat.json`第151至154行第6列，四条均为带「します」的说明文字；其余列是坐标／数字，不能把省略「します」的短语冒称实际按钮图片文字。`7A5320`的case152进入state32，`4B8AB0`创建CEquipMenu，证明该说明项的装备入口。
+- 选机配置覆写表行25至33（zero-based），不能未经实机确认称为屏幕第26至34格或某一页。完整菜单路径与预览触发仍需实机确认。
+
+## 默认装备分组修正
+
+进一步沿原生消费者确认了普通槽四种state的顺序：0近距離、1サーチダッシュ、2遠距離、3ダッシュ。`61FA70`创建的motion0/2/3/4分别对应Stand/Dash/SearchDash/BoostDash；`61E310`在D held且非BoostDash4时选择state1，有方向或移动状态时选择state3，否则由`61C3B0`的近距谓词选0或2。`5EFC90`确认inputBuffer+520是方向状态。`61BF20`在同一按钮内从当前state往3继续检查可用武装，不跨按钮，也不跨入FC槽。
+
+因此DAT列0..2是近A/B/C，3..5搜索冲刺，6..8远距，9..11普通冲刺。旧默认预设把九角色的多数射击放在9..11，而6..8放了战术／斩击／形态退出；已对九角色只交换这两组三槽，保留0..5、FC、initializer、最终身份取号及153限制。没有改变MEK/WAZ或重排武装编号。
+
+新增九个角色独立回归，使用真实MEK及整体武装号+40的夹具，按literal日文名称验证远距／普通冲刺输出；另更新Tsukuyomi完整14槽期望。主代理实际执行RED：14tests/10failures/0errors/0skips；修复后GREEN14/14。随后16类完整定向回归共113项，失败／错误／跳过均0。日志为target/bhe-audit-20261026/loadout-mode-red-20261027.log、loadout-mode-green-20261027.log及nine-character-modes-green-20261027.log，Surefire XML保存Unicode原文；CLI日志显示的乱码不作为代码损坏证据。
+
+说明书已补原版默认按键、两个FC组合键、训练菜单说明文字、四类分组与空槽回退，以及改造武装和形态进入／退出的默认位置。它仍是开发稿，未把这些静态入口写成已经通过实机操作。
+
+新构建`run_20261027_035924_938`已成功，EXE SHA256仍为`09ff572b7d42c2aedbe092e5ad40583377d1cd258d65065bfc7b77d92df31f68`，PAC为`a525ad5a1d285123845932dd3d2f2cbb14c9e6a8311d90b9f4ffe16ccc615e24`。独立审查实际最终WeaponEquip.dat的九角色行104至112，全部符合上述分组；0..5、12、13的ID与名称不变。九角色MEK/WAZ与旧014635构建逐字节相同，数量、Material、AI、WazaGroup及19个WAZ的141处技能引用均通过检查。
+
+主代理检查并重新运行了只读审查脚本`target/bhe-audit-20261026/loadout-final-20261027/verify-final-loadouts.ps1`，fresh报告`final-loadout-audit.json`为passed=true/errors=[]，并额外断言九份MEK/WAZ未变。该脚本只读取产物并写本次target报告。新包仍未获得实机验收，runtimeValidated=false；当前活动窗口属于使用旧包的DPI对照，不能充当新包证据。
