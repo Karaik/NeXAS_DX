@@ -102,3 +102,19 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 - CDB draw-count采样已自动清断点并detach，exit0；日志target/bhe-playable-runtime/vanilla-fresh-01/draw-count.cdb.log。当前没有为此采样保留的debugger。
 - 运行工具41项离线测试本轮重新通过；独立审查未发现Important阻塞。异常始终false交还原链；只读精确MMCSS设备例外、完整私有Drs、独立seed/fresh模式和原输入保全见runtime-harness.md。
 - Photoshop仅打开了本任务创建的未保存诊断截图，未打开用户PSD。另存对话框已Escape收起，没有保存至默认clarias目录。尚无角色实机验收完成，目标继续active，不push。
+
+## 2026-10-27 静态复审收束与native驱动对照
+
+- 九角色源码及最新014635产物独立复审未发现Important问题，19个最终WAZ的141处技能引用无越界；装备、AI、Material、WazaGroup与Freja FC载荷核对见static-and-runtime-review-20261027.md。
+- vanilla-fresh-01已通过原launcher STOP结束，failure=null、原Save清单不变。当前LIVE改为vanilla-fresh-native-01（原版、空存档、正常全局Drs访问），launcher32682，PID473332/tid502084/creation134375112019869606，Drs redirect0，无guard。移开Snipaste贴图后游戏捕获仍黑，Down/Return后菜单未留下可确认变化。
+- F3与Snipaste全局贴图键发生冲突，曾使Paster遮挡游戏及对话框；按官方Shift+F3暂时隐藏全部贴图，未删除图片或修改全局快捷键。之前双窗与F3无游戏截图不能归因渲染。
+- 原Save与nativeDrs退出审计拆为独立异常边界，读取失败仍判失败并继续采证；正常Save差异仍判original_save_changed。工具完整46项离线回归通过，不代表游戏验收。
+- Photoshop诊断图现已保存为vanilla-compat-02/window-capture-comparison.psd并关闭文档，旧未保存状态失效。没有写入clarias目录。
+- 当前仍无角色正式游戏效果验收；最新包runtimeValidated=false，目标active，不push。
+
+### 本轮最终恢复点（取代前述LIVE）
+
+- vanilla-fresh-native-01已STOP结束，failure=null、original_save_check.unchanged=true，共享Drs差异仍按归因未知记录。
+- 当前唯一任务内LIVE为rework-latest-native-01，launcher47708，PID507068/tid507196/creation134375123357986812，映像为其case/game/BaldrSky.exe；使用014635的最新EXE/PAC、独立CP932标题兼容seed、正常Drs访问。首次自动更新选否；80秒快照仍running、guard0、Save成功alias14，但捕获仍黑，不能算正式验收。
+- 无CDB会话遗留。Snipaste贴图暂时隐藏，图片未删。Photoshop诊断文档已保存并关闭，应用仍可能后台存活；不得强杀用户其它Adobe进程。
+- 最近完整离线回归由root重新运行：46项、0失败/错误、exit0。用户原有六项功能WIP仍53行，游戏资源/存档/临时产物不暂存。

@@ -21,6 +21,10 @@ C:\Python313\python.exe -B tools\bhe_runtime_session.py prepare --case vanilla-0
 
 针对 `rework-07` 已观察到的 NVIDIA selector/timestamp 状态关联，prepare 把 `%ProgramData%/NVIDIA Corporation/Drs` 整树复制至本轮 `driver-cache/Drs`，记录 `driver_state` 的逐文件 SHA256/size、文件数和总字节。复制前、复制后原树及副本三份 manifest 与差异保存在 state 的 `driver_state_copy_check`；复制过程中源漂移或副本不一致即拒绝并保留现场。launch 再核两侧完整文件 manifest。旧 case 仅有单文件 seed，须 prepare 新 case，不补写旧现场或删锁复用。
 
+显式诊断开关 `prepare --native-driver-state` 用于只改变驱动状态访问位置的对照：不复制 Drs、不设置 Drs alias，也不把全局 Drs 加入输入拒写规则，正常驱动 OS I/O 按普通仓库外路径执行。默认仍为私有 Drs；新 manifest 以 `driver_state.mode=private|native` 记录，旧 manifest 缺少 mode 时按 private 处理。native 的 `relative_path=null`，其 `files` 仍保留准备时的原树完整清单；准备前后审计保存在 `driver_state_prepare_audit`，普通源漂移不阻断 native 模式的后续运行。
+
+native launch 在创建游戏进程前重新记录完整 `original_driver_state_before`，退出后记录完整 `original_driver_state_after` 及 `original_driver_state_check`。差异或退出审计读取错误仅报告，归因为 `not_determined_external_writers_possible`，不把共享状态变化判为游戏故障；没有 `driver_state_copy_after`。此开关与 vanilla/PAC、fresh/provided/original Save、显式应用 manifest 独立组合，Save/base/源 EXE/PAC/seed/应用 manifest 和仓库的保护保持原规则。它不改全局 NVIDIA profile，不删除缓存，不修改系统图形设置。
+
 launch 永久保留 `launch.lock`，同一 case 只能启动一次。需重试时创建新 case，不能删锁复用。默认等待游戏退出；`--timeout 300` 为 300 秒上限。Ctrl+C 或在本轮目录创建 `STOP` 文件会停止本工具拥有的游戏进程。停止仅通过原始进程句柄，并再次核对 PID、创建 FILETIME 和映像路径；不按进程名称查杀，不结束其它窗口进程。
 
 ## 隔离与失败规则
@@ -33,9 +37,9 @@ launch 永久保留 `launch.lock`，同一 case 只能启动一次。需重试�
 
 对 `FILE_CREATE`、目录标志、目标已是目录这三个条件同时成立的请求，返回 `STATUS_OBJECT_NAME_COLLISION`，填 IO_STATUS_BLOCK 为 FILE_EXISTS 并清空输出句柄，不调用原生 create，不记 guard_violation。真实新建、覆盖、数据写及 FILE_OPEN_IF 不因该规则放宽。每次 alias 记录 `save_path_redirected` 及实际 NTSTATUS；目录碰撞不是成功 I/O。
 
-NVIDIA Drs 使用与 Save 相同的目录边界 alias：仅原 Drs 根及其子路径的 DOS/NT 完整路径生效，RootDirectory 相对名称先解析；存在性查询、读写、删除及 rename/link 目标均使用同一私有树，原 Drs 始终优先拒写。ProgramData、NVIDIA 其它目录及 `DrsOther` 不匹配。`driver_state_redirected`、`driver_state_redirect_count`、`driver_state_redirect_success_count` 独立于 Save 计数。收尾的 `original_driver_state_check` 只报告原树新增/删除/变化或查询失败，标注外部写入归因未知，不单凭共享驱动状态变化判游戏失败；`driver_state_copy_after` 保存私有树最终 manifest。
+默认私有模式下，NVIDIA Drs 使用与 Save 相同的目录边界 alias：仅原 Drs 根及其子路径的 DOS/NT 完整路径生效，RootDirectory 相对名称先解析；存在性查询、读写、删除及 rename/link 目标均使用同一私有树，原 Drs 优先拒写。ProgramData、NVIDIA 其它目录及 `DrsOther` 不匹配。`driver_state_redirected`、`driver_state_redirect_count`、`driver_state_redirect_success_count` 独立于 Save 计数。收尾的 `original_driver_state_check` 只报告原树新增/删除/变化或查询失败，标注外部写入归因未知，不单凭共享驱动状态变化判游戏失败；`driver_state_copy_after` 保存私有树最终 manifest。native 模式不执行这些 Drs alias，按前述正常驱动访问和独立审计规则运行。
 
-文件守卫检查 NtCreateFile、NtOpenFile、NtDeleteFile、NtWriteFile、NtSetInformationFile，按以下次序保全：原 Save、base、Drs及明确的源EXE/PAC优先拒写（源文件在仓库外也保护）；alias后的当前case路径允许；仓库其余路径拒写；仓库外已解析的普通绝对磁盘路径允许。DOS路径与NT卷路径均检查目录边界和规范化后的路径，RootDirectory相对路径先解析。未知/相对/无法解析的磁盘写目标仍拒绝。没有缓存目录白名单，也不再逐个添加正常OS日志目录。`external_write`记录允许的外部请求及参数，不声称该请求实际修改了磁盘，记录失败不阻断正常OS I/O。
+文件守卫检查 NtCreateFile、NtOpenFile、NtDeleteFile、NtWriteFile、NtSetInformationFile，按以下次序保全：原 Save、base、默认私有模式的Drs及明确的源EXE/PAC优先拒写（源文件在仓库外也保护）；alias后的当前case路径允许；仓库其余路径拒写；仓库外已解析的普通绝对磁盘路径允许。DOS路径与NT卷路径均检查目录边界和规范化后的路径，RootDirectory相对路径先解析。未知/相对/无法解析的磁盘写目标仍拒绝。没有缓存目录白名单，也不再逐个添加正常OS日志目录。`external_write`记录允许的外部请求及参数，不声称该请求实际修改了磁盘，记录失败不阻断正常OS I/O。
 
 已有目录的纯metadata打开和无写入碰撞处理保留；实际数据/元数据修改仍按上述目标范围检查。管道、字符设备及已验证的HID FILE_OPEN保持设备I/O分类，文件游标移动允许；不增加通用Device例外。未注入子进程继续拒绝。任何保全规则拒绝都记录并使本轮失败，不能把拒绝后继续运行记为通过。
 
@@ -59,4 +63,4 @@ C:\Python313\python.exe -B -m unittest discover -s tools -p test_bhe_runtime_ses
 
 离线测试使用临时目录，验证原输入逐字节保全、复制 hash、覆盖拒绝、Windows 路径边界、链接拒绝、CRT 早退拒绝、未选择覆盖包拒绝、原存档/准备产物新增删除修改检测，并用 Node 实际执行同一 JavaScript 路径策略检查目录逃逸。这些测试不创建游戏进程、不 attach、不操作原存档。
 
-2026-10-27本轮完整离线回归为41项，全部通过；独立代码审查未发现Important阻塞。实际运行已越过存档标题导致的CRT终止，并在原版空存档及独立兼容seed对照中停留主菜单，但窗口捕获仍黑。渲染循环、绘制调用和HRESULT正常不等于菜单可见或技能效果通过，当前所有case仍未获得角色玩法验收。
+2026-10-27本轮完整离线回归为46项，全部通过；包括native驱动对照及原Save退出审计读取失败后仍继续驱动审计的回归。独立代码审查未发现Important阻塞，另指出的审计异常边界已修复。实际运行已越过存档标题导致的CRT终止，并在原版空存档及独立兼容seed对照中停留主菜单，但窗口捕获仍黑。F3与Snipaste全局贴图键的冲突已单独识别；移开贴图不等于游戏画面恢复。渲染循环、绘制调用和HRESULT正常不等于菜单可见或技能效果通过，当前所有case仍未获得角色玩法验收。

@@ -316,6 +316,66 @@ class RuntimeSessionTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     harness.verify_prepared(case, self.runtime)
 
+    def test_native_driver_state_does_not_copy_or_reject_normal_driver_drift(self):
+        self.assertIn("native_driver_state", inspect.signature(harness.prepare_case).parameters,
+                      "Explicit native driver-state diagnostic mode is missing")
+        case = self.prepare("native-driver", native_driver_state=True)
+        manifest = harness.verify_prepared(case, self.runtime)
+        self.assertEqual(manifest["driver_state"]["mode"], "native")
+        self.assertIsNone(manifest["driver_state"]["relative_path"])
+        self.assertFalse((case / "driver-cache").exists())
+        self.assertEqual(sorted(manifest["driver_state"]["files"]),
+                         ["nested/db.bin", "nvAppTimestamps", "nvdrssel.bin"])
+        self.assertEqual((self.driver / "nvAppTimestamps").read_bytes(), b"old")
+        (self.driver / "nvAppTimestamps").write_bytes(b"normal OS driver update")
+        (self.driver / "new-cache.bin").write_bytes(b"normal OS driver cache")
+        harness.verify_prepared(case, self.runtime)
+        (case / "game/Update3.pac").write_bytes(b"unexpected payload change")
+        with self.assertRaises(ValueError):
+            harness.verify_prepared(case, self.runtime)
+
+    def test_native_driver_policy_allows_real_drs_io_without_weakening_input_protection(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("Node is unavailable")
+        with self.exe.open("r+b") as stream:
+            for offset, instruction in ((0x3643B9, "ff1560a27d00"), (0x3643CD, "ff1574a27d00")):
+                stream.seek(offset)
+                stream.write(bytes.fromhex(instruction))
+        for native in (False, True):
+            with self.subTest(native=native):
+                case = self.prepare("driver-policy-" + str(native),
+                                    save_seed_dir=self.seed, app_manifest_path=self.app_manifest)
+                manifest = harness.verify_prepared(case, self.runtime)
+                manifest["driver_state"]["mode"] = "native" if native else "private"
+                with patch.object(harness, "native_path", side_effect=lambda value: str(value)):
+                    source = harness.isolation_script(case, manifest)
+                # Execute the actual emitted config and pure policy, before native Frida hooks.
+                policy = source.split("\nfunction cloneObjectAttributes", 1)[0]
+                paths = [str(self.driver / "nvAppTimestamps"), str(self.driver / "new-cache.bin"),
+                         str(self.save / "Script.dat"), str(self.base / "Config.pac"),
+                         str(self.exe), str(self.pac), str(self.seed / "Script.dat"),
+                         str(self.app_manifest), str(harness.PROJECT_ROOT / "unrelated.txt")]
+                policy += "\nconst paths=" + json.dumps(paths) + ";"
+                policy += "\nconsole.log(JSON.stringify({writes:paths.map(permitted),driverAlias:aliasDriverState(paths[0]),saveAlias:permitted(aliasSavePath(paths[2]))}));"
+                result = subprocess.run([node, "-"], input=policy, text=True, capture_output=True, check=True)
+                expected_alias = None if native else "\\??\\" + str(case / "driver-cache/Drs/nvAppTimestamps")
+                self.assertEqual(json.loads(result.stdout), {
+                    "writes": [native, native] + [False] * 7,
+                    "driverAlias": expected_alias, "saveAlias": True})
+
+    def test_native_driver_cli_prepares_an_audited_case_without_driver_copy(self):
+        self.assertIn("native_driver_state", inspect.signature(harness.prepare_case).parameters,
+                      "Explicit native driver-state diagnostic mode is missing")
+        args = ["prepare", "--case", "native-cli", "--base", str(self.base), "--exe", str(self.exe),
+                "--save-dir", str(self.save), "--vanilla", "--fresh-save", "--native-driver-state"]
+        prepare = harness.prepare_case
+        with patch.object(harness, "prepare_case", side_effect=lambda **kwargs: prepare(**kwargs, runtime_root=self.runtime)):
+            self.assertEqual(harness.main(args), 0)
+        case = self.runtime / "native-cli"
+        self.assertEqual(harness.verify_prepared(case, self.runtime)["driver_state"]["mode"], "native")
+        self.assertFalse((case / "driver-cache").exists())
+
     def test_driver_drift_during_copy_is_rejected_with_evidence_retained(self):
         real_copytree = shutil.copytree
 
@@ -336,12 +396,27 @@ class RuntimeSessionTests(unittest.TestCase):
         self.assertFalse(state["driver_state_copy_check"]["source_check"]["unchanged"])
 
     def test_runtime_driver_source_drift_is_reported_without_fault_attribution(self):
-        case = self.prepare("driver-runtime-drift")
+        self.assertIn("native_driver_state", inspect.signature(harness.prepare_case).parameters,
+                      "Explicit native driver-state diagnostic mode is missing")
+        self._check_runtime_driver_source_drift(native=False)
+        self._check_runtime_driver_source_drift(native=True)
+
+    def test_native_driver_exit_audit_survives_original_save_read_error(self):
+        self._check_runtime_driver_source_drift(native=True, save_audit_error=True)
+
+    def test_native_driver_exit_audit_preserves_original_save_difference_failure(self):
+        self._check_runtime_driver_source_drift(native=True, change_save=True)
+
+    def _check_runtime_driver_source_drift(self, *, native, save_audit_error=False, change_save=False):
+        (self.driver / "nvAppTimestamps").write_bytes(b"old")
+        case = self.prepare("driver-runtime-drift-" + str(native), native_driver_state=native)
         child = FakeOwnedProcess()
         child.poll = lambda: 0 if child.dead.is_set() else None
 
         def resume():
             (self.driver / "nvAppTimestamps").write_bytes(b"external update during run")
+            if change_save:
+                (self.save / "Script.dat").write_bytes(b"unexpected user save change")
             child.dead.set()
 
         child.resume = resume
@@ -363,18 +438,45 @@ class RuntimeSessionTests(unittest.TestCase):
             def detach(self):
                 pass
 
+        original_open = Path.open
+
+        def open_with_save_audit_failure(path, *args, **kwargs):
+            if save_audit_error and child.dead.is_set() and path.is_relative_to(self.save):
+                raise OSError("original Save read failure")
+            return original_open(path, *args, **kwargs)
+
         with patch.object(harness, "OwnedProcess", return_value=child), \
                 patch.object(harness, "isolation_script", return_value="offline"), \
+                patch.object(Path, "open", autospec=True, side_effect=open_with_save_audit_failure), \
                 patch.dict(sys.modules, {"frida": types.SimpleNamespace(attach=lambda pid: ReadySession())}):
             result = harness.launch_case(case, runtime_root=self.runtime)
         state = json.loads((case / "state.json").read_text())
-        self.assertEqual(result, 0)
-        self.assertEqual(state["status"], "exited")
-        self.assertIsNone(state["failure"])
+        if save_audit_error or change_save:
+            self.assertEqual(result, 1)
+            self.assertEqual(state["status"], "failed")
+            if save_audit_error:
+                self.assertIn("original Save read failure", state["failure"])
+            else:
+                self.assertEqual(state["failure"], "original_save_changed")
+        else:
+            self.assertEqual(result, 0)
+            self.assertEqual(state["status"], "exited")
+            self.assertIsNone(state["failure"])
+        self.assertIn("original_driver_state_check", state,
+                      "Save audit failure must not skip the independent driver audit")
         self.assertEqual(state["original_driver_state_check"]["changed"], ["nvAppTimestamps"])
         self.assertEqual(state["original_driver_state_check"]["attribution"], "not_determined_external_writers_possible")
-        self.assertEqual((case / "driver-cache/Drs/nvAppTimestamps").read_bytes(), b"old")
-        self.assertTrue(state["original_save_check"]["unchanged"])
+        if native:
+            self.assertFalse((case / "driver-cache").exists())
+            self.assertNotIn("driver_state_copy_after", state)
+            self.assertEqual(state["original_driver_state_before"]["nvAppTimestamps"]["sha256"],
+                             hashlib.sha256(b"old").hexdigest())
+            self.assertEqual(state["original_driver_state_after"]["nvAppTimestamps"]["sha256"],
+                             hashlib.sha256(b"external update during run").hexdigest())
+        else:
+            self.assertEqual((case / "driver-cache/Drs/nvAppTimestamps").read_bytes(), b"old")
+        if not save_audit_error:
+            self.assertEqual(state["original_save_check"]["unchanged"], not change_save)
 
     def test_preflight_rejects_case_outside_expected_root(self):
         case = self.prepare()

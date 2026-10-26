@@ -118,7 +118,7 @@ def write_json(path, value):
 
 
 def prepare_case(*, base_dir, exe_path, pac_paths, save_dir, case_name, runtime_root=RUNTIME_ROOT, vanilla=False,
-                 fresh_save=False, save_seed_dir=None, app_manifest_path=None):
+                 fresh_save=False, save_seed_dir=None, app_manifest_path=None, native_driver_state=False):
     case = case_path(runtime_root, case_name)
     if case.exists():
         raise FileExistsError(f"Case already exists; nothing removed: {case}")
@@ -131,6 +131,7 @@ def prepare_case(*, base_dir, exe_path, pac_paths, save_dir, case_name, runtime_
     seed_source = None if fresh_save else check_no_links(save_seed_dir if save_seed_dir is not None else save)
     app_manifest = check_no_links(app_manifest_path) if app_manifest_path is not None else None
     driver_source = check_no_links(NVIDIA_DRS_SOURCE)
+    driver_mode = "native" if native_driver_state else "private"
     pacs = [check_no_links(path) for path in pac_paths]
     if not base.is_dir() or not save.is_dir():
         raise ValueError("A base directory and save seed directory are required")
@@ -163,6 +164,7 @@ def prepare_case(*, base_dir, exe_path, pac_paths, save_dir, case_name, runtime_
     state = {"status": "preparing", "case": str(case), "created_at": utc_now(),
              "owned_directory": str(case), "source_files_deleted": False,
              "fresh_save": bool(fresh_save), "seed_mode": seed_mode,
+             "driver_state_mode": driver_mode,
              "seed_source": str(seed_source) if seed_source is not None else None,
              "app_manifest_source": str(app_manifest) if app_manifest is not None else None}
     write_json(case / "state.json", state)
@@ -194,18 +196,26 @@ def prepare_case(*, base_dir, exe_path, pac_paths, save_dir, case_name, runtime_
             shutil.copytree(seed_source, documents / SAVE_SUFFIX)
         driver_copy = case / NVIDIA_DRS_COPY
         driver_before = tree_manifest(driver_source)
-        state["driver_state_copy_check"] = {"source": str(driver_source), "before": driver_before}
-        write_json(case / "state.json", state)
-        shutil.copytree(driver_source, driver_copy)
-        driver_after = tree_manifest(driver_source)
-        driver_copied = tree_manifest(driver_copy)
-        source_check = manifest_difference(driver_after, driver_before)
-        copy_check = manifest_difference(driver_copied, driver_before)
-        state["driver_state_copy_check"].update(after=driver_after, copy=driver_copied,
-                                              source_check=source_check, copy_check=copy_check)
-        write_json(case / "state.json", state)
-        if not source_check["unchanged"] or not copy_check["unchanged"]:
-            raise ValueError("NVIDIA Drs tree changed during copying or copied bytes differ; evidence retained")
+        if native_driver_state:
+            driver_after = tree_manifest(driver_source)
+            state["driver_state_prepare_audit"] = {
+                "source": str(driver_source), "before": driver_before, "after": driver_after,
+                "difference": manifest_difference(driver_after, driver_before),
+                "attribution": "not_determined_external_writers_possible"}
+            write_json(case / "state.json", state)
+        else:
+            state["driver_state_copy_check"] = {"source": str(driver_source), "before": driver_before}
+            write_json(case / "state.json", state)
+            shutil.copytree(driver_source, driver_copy)
+            driver_after = tree_manifest(driver_source)
+            driver_copied = tree_manifest(driver_copy)
+            source_check = manifest_difference(driver_after, driver_before)
+            copy_check = manifest_difference(driver_copied, driver_before)
+            state["driver_state_copy_check"].update(after=driver_after, copy=driver_copied,
+                                                  source_check=source_check, copy_check=copy_check)
+            write_json(case / "state.json", state)
+            if not source_check["unchanged"] or not copy_check["unchanged"]:
+                raise ValueError("NVIDIA Drs tree changed during copying or copied bytes differ; evidence retained")
         require_unchanged(game, expected_game, "Copied game")
         require_unchanged(documents / SAVE_SUFFIX, source_seed, "Private save seed")
         require_unchanged(base, source_base, "Original base")
@@ -225,7 +235,8 @@ def prepare_case(*, base_dir, exe_path, pac_paths, save_dir, case_name, runtime_
                     "original_documents": str(save.parents[2]), "isolated_documents": str(documents),
                     "original_save_files": source_save, "save_seed_files": source_seed, "base_files": source_base,
                     "source_files": source_files, "game_files": expected_game, "crt_bytes": "8bff",
-                    "driver_state": {"source": str(driver_source), "relative_path": NVIDIA_DRS_COPY.as_posix(),
+                    "driver_state": {"source": str(driver_source), "mode": driver_mode,
+                                     "relative_path": None if native_driver_state else NVIDIA_DRS_COPY.as_posix(),
                                      "files": driver_before, "file_count": len(driver_before),
                                      "total_bytes": sum(item["size"] for item in driver_before.values())}}
         write_json(case / "manifest.json", manifest)
@@ -264,11 +275,15 @@ def verify_prepared(case_dir, runtime_root=RUNTIME_ROOT):
         if file_record(app_manifest_source) != manifest["source_files"].get(app_manifest_source):
             raise ValueError("Application manifest source changed after preparation")
     driver = manifest.get("driver_state")
-    if (not isinstance(driver, dict) or driver.get("source") != str(check_no_links(NVIDIA_DRS_SOURCE))
-            or driver.get("relative_path") != NVIDIA_DRS_COPY.as_posix()):
+    if not isinstance(driver, dict) or driver.get("source") != str(check_no_links(NVIDIA_DRS_SOURCE)):
         raise ValueError("Missing or unexpected driver state tree; prepare a fresh case")
-    require_unchanged(driver["source"], driver["files"], "Original driver state tree")
-    require_unchanged(case / NVIDIA_DRS_COPY, driver["files"], "Copied driver state tree")
+    driver_mode = driver.get("mode", "private")
+    if (driver_mode not in ("native", "private") or
+            driver.get("relative_path") != (None if driver_mode == "native" else NVIDIA_DRS_COPY.as_posix())):
+        raise ValueError("Unexpected driver state mode or copy path; prepare a fresh case")
+    if driver_mode == "private":
+        require_unchanged(driver["source"], driver["files"], "Original driver state tree")
+        require_unchanged(case / NVIDIA_DRS_COPY, driver["files"], "Copied driver state tree")
     check_crt(case / "game" / manifest["exe_name"])
     return manifest
 
@@ -576,7 +591,9 @@ function observeException(details) {
 
 
 def protected_input_paths(manifest):
-    paths = [manifest["original_save"], manifest["base_dir"], manifest["driver_state"]["source"],
+    driver = manifest["driver_state"]
+    paths = [manifest["original_save"], manifest["base_dir"],
+             *([driver["source"]] if driver.get("mode", "private") == "private" else []),
              manifest["exe_source"], *manifest["pac_sources"]]
     paths.extend(path for path in (manifest.get("seed_source"), manifest.get("app_manifest_source")) if path is not None)
     return list(dict.fromkeys(paths))
@@ -591,6 +608,7 @@ def isolation_script(case, manifest):
             if stream.read(len(expected)) != expected:
                 raise ValueError(f"Unknown Documents call site at file offset 0x{offset:X}")
     driver_source = manifest["driver_state"]["source"]
+    native_driver = manifest["driver_state"].get("mode", "private") == "native"
     protected = protected_input_paths(manifest)
     config = {"documents": manifest["original_documents"], "redirect": str(case / "docs"),
               "allowed": [str(case), native_path(case)], "originalSave": manifest["original_save"],
@@ -598,8 +616,8 @@ def isolation_script(case, manifest):
               "protected": protected + [native_path(path) for path in protected],
               "saveAliasSources": [manifest["original_save"], native_path(manifest["original_save"])],
               "saveAliasTarget": "\\??\\" + str(case / "docs" / SAVE_SUFFIX),
-              "driverStateSources": [driver_source, native_path(driver_source)],
-              "driverStateTarget": "\\??\\" + str(case / NVIDIA_DRS_COPY)}
+              "driverStateSources": [] if native_driver else [driver_source, native_path(driver_source)],
+              "driverStateTarget": None if native_driver else "\\??\\" + str(case / NVIDIA_DRS_COPY)}
     return isolation_policy(config) + isolation_structures() + exception_observer() + r'''
 const hooks = [];
 const pidls = new Set();
@@ -873,6 +891,7 @@ def launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_R
     import frida
     case = check_no_links(case_dir)
     manifest = verify_prepared(case, runtime_root)
+    driver_mode = manifest["driver_state"].get("mode", "private")
     stop_file = case / "STOP"
     if stop_file.exists():
         raise ValueError("STOP already exists; prepare a fresh case")
@@ -882,6 +901,7 @@ def launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_R
         stream.write("\n")
     state = {"status": "launching", "started_at": utc_now(), "case": str(case),
              "fresh_save": manifest.get("fresh_save", False), "seed_mode": manifest.get("seed_mode", "original"),
+             "driver_state_mode": driver_mode,
              "seed_source": manifest.get("seed_source", manifest["original_save"]),
              "app_manifest_source": manifest.get("app_manifest_source"),
              "launcher_pid": os.getpid(), "manifest_sha256": file_record(case / "manifest.json")["sha256"],
@@ -973,6 +993,8 @@ def launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_R
     try:
         # Recheck immediately before creating a process; no shared source is copied at launch.
         require_unchanged(manifest["original_save"], manifest["original_save_files"], "Original save")
+        if driver_mode == "native":
+            state["original_driver_state_before"] = tree_manifest(manifest["driver_state"]["source"])
         child = OwnedProcess(case / "game" / manifest["exe_name"], case / "game")
         state["process"] = child.identity
         state["status"] = "suspended_installing_hooks"
@@ -1106,17 +1128,26 @@ def launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_R
             state["original_save_check"] = compare_manifest(manifest["original_save"], manifest["original_save_files"])
             if not state["original_save_check"]["unchanged"]:
                 failure = "original_save_changed"
+        except BaseException as exc:
+            failure = failure or repr(exc)
+        try:
             driver = manifest["driver_state"]
             try:
-                state["original_driver_state_check"] = compare_manifest(driver["source"], driver["files"])
+                if driver_mode == "native":
+                    state["original_driver_state_after"] = tree_manifest(driver["source"])
+                    state["original_driver_state_check"] = manifest_difference(
+                        state["original_driver_state_after"], state.get("original_driver_state_before", driver["files"]))
+                else:
+                    state["original_driver_state_check"] = compare_manifest(driver["source"], driver["files"])
                 state["original_driver_state_check"]["attribution"] = "not_determined_external_writers_possible"
             except Exception as exc:
                 state["original_driver_state_check"] = {"unchanged": None, "error": repr(exc),
                     "attribution": "not_determined_external_writers_possible"}
-            try:
-                state["driver_state_copy_after"] = tree_manifest(case / NVIDIA_DRS_COPY)
-            except Exception as exc:
-                state["driver_state_copy_after"] = {"error": repr(exc)}
+            if driver_mode == "private":
+                try:
+                    state["driver_state_copy_after"] = tree_manifest(case / NVIDIA_DRS_COPY)
+                except Exception as exc:
+                    state["driver_state_copy_after"] = {"error": repr(exc)}
             state["game_files_after"] = tree_manifest(case / "game")
             payload_names = manifest["game_files"].keys() | state["game_files_after"].keys()
             changed_payload = sorted(name for name in payload_names
@@ -1156,6 +1187,8 @@ def main(argv=None):
     seed_mode.add_argument("--fresh-save", action="store_true", help="Create only an empty private Save; preserve the real --save-dir")
     seed_mode.add_argument("--save-seed-dir", type=Path, help="Copy this independent seed while preserving the real --save-dir")
     prepare.add_argument("--app-manifest", type=Path, help="Copy the explicitly supplied application manifest into this case")
+    prepare.add_argument("--native-driver-state", action="store_true",
+                         help="Diagnostic: use normal global driver state I/O without a private Drs copy or alias")
     launch = sub.add_parser("launch", help="Start one prepared case with isolation installed before resume")
     launch.add_argument("--case", required=True)
     launch.add_argument("--timeout", type=float, default=0, help="Seconds; 0 waits for exit, Ctrl+C or case/STOP")
@@ -1166,7 +1199,7 @@ def main(argv=None):
             result = prepare_case(base_dir=args.base, exe_path=args.exe, pac_paths=args.pac or [],
                                   save_dir=args.save_dir, case_name=args.case, vanilla=args.vanilla,
                                   fresh_save=args.fresh_save, save_seed_dir=args.save_seed_dir,
-                                  app_manifest_path=args.app_manifest)
+                                  app_manifest_path=args.app_manifest, native_driver_state=args.native_driver_state)
             print(json.dumps({"status": "prepared", "case": str(result)}))
             return 0
         if args.timeout < 0 or args.ready_timeout <= 0 or args.ready_timeout > 60:
