@@ -1,7 +1,9 @@
 package com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.redirect.cross;
 
+import com.giga.nexas.dto.bsdx.BsdxInfoCollection;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventChange;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSe;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSprite;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventVoice;
@@ -34,6 +36,10 @@ import java.util.Set;
  * term / InfoCollection 由 term 包统一重编译，避免和 WAZ/SPM/SE 的普通 index 重写混成一团。</p>
  */
 public class CrossRedirectBheCommonProjectileResourcesStep {
+
+    // 此步骤先重绑资源、再重编译Term，因此这里读取的是BHE的JUMP/WAZA语法。
+    private static final int BHE_JUMP_GROUP_INDEX = 16;
+    private static final int BHE_WAZA_JUMP_TYPE = 1;
 
     private final BheInfoCollectionObjectGraphRewriter termRewriter = new BheInfoCollectionObjectGraphRewriter();
 
@@ -114,6 +120,8 @@ public class CrossRedirectBheCommonProjectileResourcesStep {
         }
         if (object instanceof CEventWazaSelect select) {
             rewriteWazaSelect(fileName, select, appendPlan);
+        } else if (object instanceof CEventChange change) {
+            rewriteChangeWazTargets(fileName, change, appendPlan);
         } else if (object instanceof CEventSprite sprite) {
             rewriteSprite(fileName, sprite, appendPlan);
         } else if (object instanceof CEventSe se) {
@@ -145,6 +153,41 @@ public class CrossRedirectBheCommonProjectileResourcesStep {
             } catch (ReflectiveOperationException e) {
                 throw new IllegalStateException("公共 WAZ 交叉重定向解析嵌套 unit 失败: " + field.getName(), e);
             }
+        }
+    }
+
+    private void rewriteChangeWazTargets(
+            String fileName,
+            CEventChange change,
+            BheCommonProjectileAppendPlan appendPlan
+    ) {
+        if (change.getBsdxInfoCollectionList2() == null) {
+            return;
+        }
+        for (BsdxInfoCollection collection : change.getBsdxInfoCollectionList2()) {
+            if (collection == null
+                    || !Integer.valueOf(BHE_JUMP_GROUP_INDEX).equals(collection.getInt1())
+                    || !List.of(BHE_WAZA_JUMP_TYPE).equals(collection.getTypeList())) {
+                continue;
+            }
+            List<Integer> parameters = collection.getParamList();
+            if (parameters == null || parameters.size() < 2) {
+                throw new IllegalStateException("公共 Change 技能跳转缺少group/skill参数: " + fileName);
+            }
+            Integer sourceGroup = parameters.get(0);
+            Integer sourceSkill = parameters.get(1);
+            // 负数保留原生哨兵；不能将phase/算法跳转的参数当作WAZ索引。
+            if (sourceGroup == null || sourceGroup < 0 || sourceSkill == null || sourceSkill < 0) {
+                continue;
+            }
+            Integer targetGroup = appendPlan.getSourceWazIndexToTargetIndex().get(sourceGroup);
+            Integer skillBase = appendPlan.getSourceWazIndexToTargetSkillBase().get(sourceGroup);
+            if (targetGroup == null || skillBase == null) {
+                throw new IllegalStateException("公共 Change 技能跳转缺少追加映射: file="
+                        + fileName + ", sourceWaz=" + sourceGroup + ", sourceSkill=" + sourceSkill);
+            }
+            parameters.set(0, targetGroup);
+            parameters.set(1, Math.addExact(skillBase, sourceSkill));
         }
     }
 
