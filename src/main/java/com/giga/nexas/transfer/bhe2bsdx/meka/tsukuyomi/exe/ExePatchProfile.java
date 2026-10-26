@@ -89,13 +89,7 @@ public class ExePatchProfile {
                 "battle voice gate bypass: sub_60CEC0 ignores sub_60CC20 zero-return for table-driven combat voice requests"
         );
 
-        // ── 3. CRT 非法参数 Watson 弹窗旁路─────────────────────────────
-        profile.addBytes(
-                0x2789F8,
-                new byte[]{(byte) 0x8B, (byte) 0xFF},
-                new byte[]{(byte) 0xC3, (byte) 0x90},
-                "CRT invalid parameter Watson bypass: _invalid_parameter_noinfo returns safely instead of aborting"
-        );
+        // 保留原生CRT错误处理入口；非法参数必须修复输入，不能用RET掩盖。
 
         return profile;
     }
