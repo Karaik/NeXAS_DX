@@ -38,9 +38,19 @@ import com.giga.nexas.transfer.jinki2bsdx.v2.Jinki2BsdxTransferV2;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.HexFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -50,11 +60,28 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TestBheByJinkiRunner {
 
     @Test
-    public void testRunBheByJinki() {
+    public void testRunBheByJinki() throws Exception {
+        runBheByJinki(true);
+    }
+
+    @Test
+    public void testRunNineCharacterRework() throws Exception {
+        runBheByJinki(false);
+    }
+
+    private void runBheByJinki(boolean includeSou) throws Exception {
         Path projectRoot = Paths.get("").toAbsolutePath().normalize();
+        Path buildsRoot = projectRoot.resolve("target/bhe-playable-builds");
+        Files.createDirectories(buildsRoot);
+        Path buildRoot = buildsRoot.resolve("run_" + LocalDateTime.now(ZoneId.of("Asia/Tokyo"))
+                .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS")));
+        // 每轮独立目录；禁止覆盖旧Update3.pac或继承已经吞掉CRT异常的旧EXE。
+        Files.createDirectory(buildRoot);
 
         // 1. akao
         AkaoGraftRequest jinkiRequest = new AkaoGraftRequest();
+        jinkiRequest.setExeOutputDir(buildRoot.resolve("akao"));
+        jinkiRequest.setTargetExePath(projectRoot.resolve("src/main/resources/bsdx_game/BaldrSky.exe"));
         jinkiRequest.setPatchMenuData(true);
         AkaoGraftResult jinkiResult = Jinki2BsdxTransferV2.process(jinkiRequest);
 
@@ -72,6 +99,7 @@ public class TestBheByJinkiRunner {
 
         // 2. tsukuyomi
         TsukuyomiGraftRequest tsukuyomiRequest = new TsukuyomiGraftRequest();
+        tsukuyomiRequest.setExeOutputDir(buildRoot.resolve("tsukuyomi"));
         tsukuyomiRequest.setJinkiGeneratedExePath(jinkiGeneratedExeRelative);
         tsukuyomiRequest.setJinkiGeneratedAssetDir(jinkiGeneratedAssetDirRelative);
         tsukuyomiRequest.setInheritedJinkiResult(jinkiResult);
@@ -94,6 +122,7 @@ public class TestBheByJinkiRunner {
 
         // 3. yuri
         YuriGraftRequest yuriRequest = new YuriGraftRequest();
+        yuriRequest.setExeOutputDir(buildRoot.resolve("yuri"));
         yuriRequest.setJinkiGeneratedExePath(yuriGeneratedExeRelative);
         yuriRequest.setJinkiGeneratedAssetDir(yuriGeneratedAssetDirRelative);
         yuriRequest.setInheritedJinkiResult(jinkiResult);
@@ -116,6 +145,7 @@ public class TestBheByJinkiRunner {
 
         // 4. freja
         FrejaGraftRequest frejaRequest = new FrejaGraftRequest();
+        frejaRequest.setExeOutputDir(buildRoot.resolve("freja"));
         frejaRequest.setJinkiGeneratedExePath(frejaGeneratedExeRelative);
         frejaRequest.setJinkiGeneratedAssetDir(frejaGeneratedAssetDirRelative);
         frejaRequest.setInheritedJinkiResult(jinkiResult);
@@ -138,6 +168,7 @@ public class TestBheByJinkiRunner {
 
         // 5. nagi
         NagiGraftRequest nagiRequest = new NagiGraftRequest();
+        nagiRequest.setExeOutputDir(buildRoot.resolve("nagi"));
         nagiRequest.setJinkiGeneratedExePath(nagiGeneratedExeRelative);
         nagiRequest.setJinkiGeneratedAssetDir(nagiGeneratedAssetDirRelative);
         nagiRequest.setInheritedJinkiResult(jinkiResult);
@@ -160,6 +191,7 @@ public class TestBheByJinkiRunner {
 
         // 6. misaki
         MisakiGraftRequest misakiRequest = new MisakiGraftRequest();
+        misakiRequest.setExeOutputDir(buildRoot.resolve("misaki"));
         misakiRequest.setJinkiGeneratedExePath(misakiGeneratedExeRelative);
         misakiRequest.setJinkiGeneratedAssetDir(misakiGeneratedAssetDirRelative);
         misakiRequest.setInheritedJinkiResult(jinkiResult);
@@ -182,6 +214,7 @@ public class TestBheByJinkiRunner {
 
         // 7. naoto
         NaotoGraftRequest naotoRequest = new NaotoGraftRequest();
+        naotoRequest.setExeOutputDir(buildRoot.resolve("naoto"));
         naotoRequest.setJinkiGeneratedExePath(naotoGeneratedExeRelative);
         naotoRequest.setJinkiGeneratedAssetDir(naotoGeneratedAssetDirRelative);
         naotoRequest.setInheritedJinkiResult(jinkiResult);
@@ -204,6 +237,7 @@ public class TestBheByJinkiRunner {
 
         // 8. katou
         KatouGraftRequest katouRequest = new KatouGraftRequest();
+        katouRequest.setExeOutputDir(buildRoot.resolve("katou"));
         katouRequest.setJinkiGeneratedExePath(katouGeneratedExeRelative);
         katouRequest.setJinkiGeneratedAssetDir(katouGeneratedAssetDirRelative);
         katouRequest.setInheritedJinkiResult(jinkiResult);
@@ -226,6 +260,7 @@ public class TestBheByJinkiRunner {
 
         // 9. wilhelm
         WilhelmGraftRequest wilhelmRequest = new WilhelmGraftRequest();
+        wilhelmRequest.setExeOutputDir(buildRoot.resolve("wilhelm"));
         wilhelmRequest.setJinkiGeneratedExePath(wilhelmGeneratedExeRelative);
         wilhelmRequest.setJinkiGeneratedAssetDir(wilhelmGeneratedAssetDirRelative);
         wilhelmRequest.setInheritedJinkiResult(jinkiResult);
@@ -248,6 +283,7 @@ public class TestBheByJinkiRunner {
 
         // 10. motoki
         MotokiGraftRequest motokiRequest = new MotokiGraftRequest();
+        motokiRequest.setExeOutputDir(buildRoot.resolve("motoki"));
         motokiRequest.setJinkiGeneratedExePath(motokiGeneratedExeRelative);
         motokiRequest.setJinkiGeneratedAssetDir(motokiGeneratedAssetDirRelative);
         motokiRequest.setInheritedJinkiResult(jinkiResult);
@@ -255,11 +291,15 @@ public class TestBheByJinkiRunner {
         motokiRequest.setBheGameResourceRoot(null);
         motokiRequest.setExternalStaticAssetRoot(Paths.get("D:/BDY/NeXAS_Resources/bhe_resources"));
         motokiRequest.setPatchMenuData(true);
-        motokiRequest.setPackUpdatePac(false);
+        motokiRequest.setPackUpdatePac(!includeSou);
         motokiRequest.setMenuOverrideSpec(motokiMenuOverrideSpec());
 
         MotokiGraftResult motokiResult = MotokiTransfer.process(motokiRequest);
         log.info("10 motoki patch append end!");
+        if (!includeSou) {
+            writeBuildReceipt(projectRoot, buildRoot, motokiResult, false);
+            return;
+        }
 
         Path souGeneratedExeRelative = projectRoot.relativize(
                 motokiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
@@ -270,6 +310,7 @@ public class TestBheByJinkiRunner {
 
         // 11. sou
         SouGraftRequest souRequest = new SouGraftRequest();
+        souRequest.setExeOutputDir(buildRoot.resolve("sou"));
         souRequest.setJinkiGeneratedExePath(souGeneratedExeRelative);
         souRequest.setJinkiGeneratedAssetDir(souGeneratedAssetDirRelative);
         souRequest.setInheritedJinkiResult(jinkiResult);
@@ -286,6 +327,43 @@ public class TestBheByJinkiRunner {
 
         SouGraftResult souResult = SouTransfer.process(souRequest);
         log.info("11 sou patch append end!");
+        writeBuildReceipt(projectRoot, buildRoot, souResult, true);
+    }
+
+    private void writeBuildReceipt(Path projectRoot, Path buildRoot,
+                                   TsukuyomiGraftResult result, boolean includeSou) throws Exception {
+        assertNotNull(result.getImportedAssetSet());
+        assertNotNull(result.getPacPackPlan());
+        assertTrue(result.getPacPackPlan().isPacked(), "最终阶段必须封包并完成现有解包字节验收");
+        Path exe = result.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize();
+        Path pac = result.getPacPackPlan().getOutputPacPath().toAbsolutePath().normalize();
+        Map<String, Object> receipt = new LinkedHashMap<>();
+        receipt.put("buildRoot", buildRoot.toString());
+        receipt.put("assetRoot", result.getImportedAssetSet().getOutputRootDir().toAbsolutePath().toString());
+        receipt.put("exe", exe.toString());
+        receipt.put("pac", pac.toString());
+        receipt.put("exeSha256", sha256(exe));
+        receipt.put("pacSha256", sha256(pac));
+        receipt.put("includeSou", includeSou);
+        receipt.put("runtimeValidated", false);
+        receipt.put("characters", includeSou
+                ? List.of("tsukuyomi", "yuri", "freja", "nagi", "misaki", "naoto", "katou", "wilhelm", "motoki", "sou")
+                : List.of("tsukuyomi", "yuri", "freja", "nagi", "misaki", "naoto", "katou", "wilhelm", "motoki"));
+        String json = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(receipt)
+                .replace("\r\n", "\n").replace("\n", "\r\n") + "\r\n";
+        Files.writeString(buildRoot.resolve("build.json"), json, StandardCharsets.UTF_8);
+        Files.writeString(projectRoot.resolve("target/bhe-playable-build-latest.json"), json, StandardCharsets.UTF_8);
+        log.info("构建记录已写出：{}；游戏效果仍需单独验收", buildRoot.resolve("build.json"));
+    }
+
+    private static String sha256(Path path) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (var input = Files.newInputStream(path)) {
+            byte[] buffer = new byte[1024 * 1024];
+            int count;
+            while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count);
+        }
+        return HexFormat.of().formatHex(digest.digest());
     }
 
     // 2. tsukuyomi

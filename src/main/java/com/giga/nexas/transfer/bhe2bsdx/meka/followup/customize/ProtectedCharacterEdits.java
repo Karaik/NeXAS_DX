@@ -3,6 +3,7 @@ package com.giga.nexas.transfer.bhe2bsdx.meka.followup.customize;
 import com.giga.nexas.dto.bsdx.BsdxInfoCollection;
 import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.waz.Waz;
+import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventChange;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventHit;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventTerm;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventValRandom;
@@ -123,6 +124,27 @@ public final class ProtectedCharacterEdits {
     public static boolean frames(SkillInfoObject event, int start, int end) {
         return Integer.valueOf(start).equals(event.getStartFrame())
                 && Integer.valueOf(end).equals(event.getEndFrame());
+    }
+
+    /** 本批三个退出donor原始资源的正常结束签名，不接受跳回持続姿态的同名技能。 */
+    public static void requireNormalEnd(CEventChange change) {
+        if (change == null || !Integer.valueOf(1).equals(change.getFlag())
+                || !Integer.valueOf(0).equals(change.getInt1())
+                || change.getBsdxInfoCollectionList1() == null || change.getBsdxInfoCollectionList1().size() != 1
+                || change.getBsdxInfoCollectionList2() == null || change.getBsdxInfoCollectionList2().size() != 1
+                || !normalEndCollection(change.getBsdxInfoCollectionList1().get(0), 0, List.of(0))
+                || !normalEndCollection(change.getBsdxInfoCollectionList2().get(0), 16, List.of(0, 0))) {
+            throw drift("退出donor不是原始正常结束Change");
+        }
+    }
+
+    private static boolean normalEndCollection(BsdxInfoCollection collection, int root, List<Integer> types) {
+        return collection != null && Integer.valueOf(root).equals(collection.getInt1())
+                && types.equals(collection.getTypeList())
+                && List.of().equals(collection.getParamList())
+                && List.of().equals(collection.getIntList3())
+                && List.of().equals(collection.getIntList4())
+                && Integer.valueOf(0).equals(collection.getInt2());
     }
 
     private static BsdxInfoCollection directPower(CEventHit hit) {

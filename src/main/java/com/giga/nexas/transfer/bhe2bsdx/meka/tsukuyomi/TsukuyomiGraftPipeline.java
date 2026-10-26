@@ -23,7 +23,7 @@ import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.AppendGrpEntriesSte
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.BuildResourceClosureStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.ImportStaticAssetsStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.LoadGraftBaselineStep;
-import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.PadBaselineMekMaterialStep;
+import com.giga.nexas.transfer.bhe2bsdx.meka.followup.graft.PadBaselineMekMaterialStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.RebindMekStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.RebindWazStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.SyncProgramMaterialStep;
@@ -230,6 +230,8 @@ public class TsukuyomiGraftPipeline {
                 reboundTsukuyomiWaz,
                 convertedBundle.getNotes()
         );
+        TsukuyomiCustomizer.INSTANCE.customizeBeforeWrite(reboundTsukuyomiMek, reboundTsukuyomiWaz);
+        padBaselineMekMaterialStep.padMaterialBlock(reboundTsukuyomiMek, bsdxBaseline);
         // initializer 位于 WazaGroup.param 回写之后；当前策略不强塞外部 WAZ skill，但如果未来某机体已有
         // initializer skill 或策略变化导致 skill 数变化，这里仍统一回写，避免 WazaGroup.param 与 WAZ 实际数量分叉。
         syncMainWazaSkillCountAfterInitializer(bsdxBaseline, grpAppendPlan, reboundTsukuyomiWaz);

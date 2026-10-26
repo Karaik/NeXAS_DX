@@ -97,6 +97,13 @@ set MAVEN_OPTS=-Xmx4g
 
 如需了解具体测试目录、生成文件及额外注意事项，请务必阅读 [`src/test/java/AGENT.md`](src/test/java/AGENT.md)。新增或修改流程后，同步更新两个 AGENT 文件，保证下一位同学能「一眼上手」。
 
+### BHE九角色可玩改造（2026-10-27）
+
+- 九角色构建入口为`TestBheByJinkiRunner#testRunNineCharacterRework`，排除Sou，复用JINKI V2→Tsukuyomi→Followup。输入EXE使用只读`bsdx_game/BaldrSky.exe`，每轮输出到独立`target/bhe-playable-builds/run_*`，不覆盖旧包。
+- 角色逻辑仍在现有Customizer；复制变体使用已重绑的本角色MEK/WAZ及独立Material，实际玩家武装号不得超过152。定制后再次补齐Material容量并同步WazaGroup技能数。
+- 两个BHE静态输出器从最终MEK按身份构造14槽初始装备，继承行独立复制；普通武装、FC与initializer不能混槽。
+- `build.json`记录EXE/PAC身份且初始`runtimeValidated=false`；封包字节一致与Java测试不代表实机通过。隔离试跑工具为`tools/bhe_runtime_session.py`，游戏效果及说明书验收独立记录。
+
 ### BHE多角色流水线修复（2026-10-08）
 
 - 实施计划与逐项笔记位于`docs/project-deep-dive/pipeline-fixes/`及`docs/superpowers/plans/2026-10-07-bhe-pipeline-fixes.md`。

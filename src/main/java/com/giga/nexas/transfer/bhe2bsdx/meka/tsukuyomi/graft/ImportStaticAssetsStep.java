@@ -16,6 +16,7 @@ import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.ImportStaticAssetRuntimeCache;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.LayeredAssetResolver;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.AssetDeliveryValidator;
+import com.giga.nexas.transfer.bhe2bsdx.meka.shared.PlayableWeaponLoadouts;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.AssetDeliveryValidationContext;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.BaselineAssetComparison;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
@@ -127,7 +128,7 @@ public class ImportStaticAssetsStep {
 
             // Step 8-2: 先把所有修改过的 grp 和 ProgramMaterial 真正写进产物。
             writePatchedGrpOutputs(bsdxBaseline, syncedProgramMaterial, outputRoot, importedAssetSet);
-            writePatchedConfigDatOutputs(tsukuyomiPackage, bsdxBaseline, outputRoot, importedAssetSet);
+            writePatchedConfigDatOutputs(reboundTsukuyomiMek, bsdxBaseline, outputRoot, importedAssetSet);
 
             // 公共资源已经是 preparedBaseline 的一部分，必须在 selected 主线资源前落盘。
             outputCommonProjectileResourcesStep.output(
@@ -265,12 +266,12 @@ public class ImportStaticAssetsStep {
     }
 
     private void writePatchedConfigDatOutputs(
-            TsukuyomiPackageBundle tsukuyomiPackage,
+            Mek reboundMek,
             TsukuyomiBsdxBaselineBundle bsdxBaseline,
             Path outputRoot,
             TsukuyomiImportedAssetSet importedAssetSet
     ) throws IOException {
-        Dat patchedWeaponEquip = buildPatchedWeaponEquipDat(tsukuyomiPackage, bsdxBaseline);
+        Dat patchedWeaponEquip = PlayableWeaponLoadouts.append(bsdxBaseline.getWeaponEquipDat(), reboundMek);
         if (patchedWeaponEquip == null) {
             return;
         }
@@ -278,51 +279,6 @@ public class ImportStaticAssetsStep {
         Path rootOutput = outputRoot.resolve("WeaponEquip.dat");
         bsdxBinService.generate(rootOutput.toString(), patchedWeaponEquip, CHARSET);
         importedAssetSet.getGeneratedDatFiles().add(rootOutput);
-    }
-
-    private Dat buildPatchedWeaponEquipDat(TsukuyomiPackageBundle tsukuyomiPackage, TsukuyomiBsdxBaselineBundle bsdxBaseline) {
-        if (bsdxBaseline == null) {
-            return null;
-        }
-        Dat baseline = bsdxBaseline.getWeaponEquipDat();
-        if (baseline == null || baseline.getData() == null) {
-            return null;
-        }
-
-        Dat patched = new Dat();
-        patched.setFileName(baseline.getFileName());
-        patched.setExtensionName(baseline.getExtensionName());
-        patched.setColumnCount(baseline.getColumnCount());
-        patched.setColumnTypes(new ArrayList<>(baseline.getColumnTypes()));
-
-        for (List<Object> row : baseline.getData()) {
-            patched.addRow(copyDatRow(row));
-        }
-        patched.addRow(buildTsukuyomiWeaponEquipRow(baseline));
-        return patched;
-    }
-
-    private List<Object> buildTsukuyomiWeaponEquipRow(Dat baseline) {
-        int width = 0;
-        if (baseline != null && baseline.getColumnTypes() != null && !baseline.getColumnTypes().isEmpty()) {
-            width = baseline.getColumnTypes().size();
-        }
-        if (width <= 0 && baseline != null) {
-            width = baseline.getColumnCount();
-        }
-        if (width <= 0) {
-            throw new IllegalStateException("无法确定 WeaponEquip.dat 的列数");
-        }
-
-        List<Object> row = new ArrayList<>(width);
-        for (int i = 0; i < width; i++) {
-            row.add(i == 0 ? 0 : -1);
-        }
-        return row;
-    }
-
-    private List<Object> copyDatRow(List<Object> row) {
-        return row == null ? new ArrayList<>() : new ArrayList<>(row);
     }
 
     private String resolveTargetMekFileName(

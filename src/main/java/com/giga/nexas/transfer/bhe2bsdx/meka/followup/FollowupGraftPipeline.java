@@ -187,6 +187,10 @@ public class FollowupGraftPipeline {
         reboundMek = context.getReboundMek();
         reboundWaz = context.getReboundWaz();
 
+        // 专属定制可能追加武装/技能；最终素材容量和WazaGroup必须使用定制后的数量。
+        padBaselineMekMaterialStep.padMaterialBlock(reboundMek, bsdxBaseline);
+        syncMainWazaSkillCountAfterInitializer(bsdxBaseline, grpAppendPlan, reboundWaz);
+
         result.setBsdxBaseline(bsdxBaseline);
         result.setTsukuyomiPackage(selectedPackage);
         result.setImportPlan(importPlan);
