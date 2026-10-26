@@ -1,0 +1,11 @@
+# Task2源对象隔离
+
+在现有InfoCollectionMapper中补充BSDX事件collection独立复制，覆盖Change、Term、Move、Blur、ScreenYure、SpriteYure。每个collection及typeList、paramList、intList3、intList4独立复制；两路RebindWazStep在普通叶事件Bean复制之后调用，嵌套载荷继续沿原遍历递归，无新pipeline或对象图框架。
+
+新增RebindWazSourceIsolationTest分别调用Tsukuyomi和Followup真实重绑入口，同一source两次处理。RED两项均因源[11,12]变为[200,12]失败，原始报告保存在target/bhe-audit-20261026/RebindWazSourceIsolationTest-red.txt。随后的GREEN两项通过，原有RebindWazStepCommonReferenceTest两项及CommonChangeRedirectTest四项一起通过（总8项、0failure/0error）。
+
+测试还核source Term字典身份不变、两个输出collection与参数列表不共享、修改第一输出不影响source和第二输出。fixture把Change放slot71、位置Term放slot11；未构造错误事件槽布局。全部内存操作，没有写共享JSON/原版资源。
+
+验证命令：mvn -q "-Dtest=RebindWazSourceIsolationTest,RebindWazStepCommonReferenceTest,CommonChangeRedirectTest" test，Exit0。后续角色测试会再次作为组合回归运行。
+
+原先一次选测曾因并发撰写的新角色测试泛型推断出错而testCompile失败；修正后RED得到真实源污染断言失败，未把编译错误计作RED。没有运行默认测试套件。游戏验收仍未进行。

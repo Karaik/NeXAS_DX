@@ -16,6 +16,54 @@ public final class InfoCollectionMapper {
     private InfoCollectionMapper() {
     }
 
+    /**
+     * 重绑会原地重编译Term和Change参数，必须先隔离复制后的collection及四个可变列表。
+     * 普通Bean复制只隔离外层容器，不能保护被多个输出消费的源技能。
+     */
+    public static void copyBsdxToBsdx(SkillInfoObject src, SkillInfoObject dst) {
+        if (src instanceof CEventChange source && dst instanceof CEventChange target) {
+            target.setBsdxInfoCollectionList1(copyBsdxList(source.getBsdxInfoCollectionList1()));
+            target.setBsdxInfoCollectionList2(copyBsdxList(source.getBsdxInfoCollectionList2()));
+        } else if (src instanceof CEventTerm source && dst instanceof CEventTerm target) {
+            target.setBsdxInfoCollectionList(copyBsdxList(source.getBsdxInfoCollectionList()));
+        } else if (src instanceof CEventMove source && dst instanceof CEventMove target) {
+            target.setBsdxInfoCollectionList1(copyBsdxList(source.getBsdxInfoCollectionList1()));
+            target.setBsdxInfoCollectionList2(copyBsdxList(source.getBsdxInfoCollectionList2()));
+        } else if (src instanceof CEventBlur source && dst instanceof CEventBlur target) {
+            target.setBsdxInfoCollectionList(copyBsdxList(source.getBsdxInfoCollectionList()));
+        } else if (src instanceof CEventScreenYure source && dst instanceof CEventScreenYure target) {
+            target.setBsdxInfoCollectionList(copyBsdxList(source.getBsdxInfoCollectionList()));
+        } else if (src instanceof CEventSpriteYure source && dst instanceof CEventSpriteYure target) {
+            target.setBsdxInfoCollectionList(copyBsdxList(source.getBsdxInfoCollectionList()));
+        }
+    }
+
+    private static List<BsdxInfoCollection> copyBsdxList(List<BsdxInfoCollection> source) {
+        if (source == null) {
+            return null;
+        }
+        List<BsdxInfoCollection> target = new ArrayList<>(source.size());
+        for (BsdxInfoCollection collection : source) {
+            if (collection == null) {
+                target.add(null);
+                continue;
+            }
+            BsdxInfoCollection copy = new BsdxInfoCollection();
+            copy.setInt1(collection.getInt1());
+            copy.setInt2(collection.getInt2());
+            copy.setTypeList(copyIntegers(collection.getTypeList()));
+            copy.setParamList(copyIntegers(collection.getParamList()));
+            copy.setIntList3(copyIntegers(collection.getIntList3()));
+            copy.setIntList4(copyIntegers(collection.getIntList4()));
+            target.add(copy);
+        }
+        return target;
+    }
+
+    private static List<Integer> copyIntegers(List<Integer> source) {
+        return source == null ? null : new ArrayList<>(source);
+    }
+
     public static void copyBheToBsdx(
             com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.SkillInfoObject src,
             SkillInfoObject dst

@@ -20,6 +20,7 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGrpAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportPlan;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPackageBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiWazRebindContext;
+import com.giga.nexas.util.InfoCollectionMapper;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -486,6 +487,7 @@ public class RebindWazStep {
     private SkillInfoObject rebuildSimpleLeafObject(SkillInfoObject source) {
         SkillInfoObject target = instantiateLike(source);
         BeanUtil.copyProperties(source, target);
+        InfoCollectionMapper.copyBsdxToBsdx(source, target);
         return target;
     }
 
