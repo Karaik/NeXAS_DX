@@ -70,25 +70,33 @@ class BheToBsdxWazObjectConverter {
             throw new OperationException(500, "CEventFreeParam 目标槽位不是 CEventVal: " + targetSlot);
         }
 
-        boolean foundBufferZero = false;
         eventVal.setInt1(0);
         eventVal.setInt2(0);
         eventVal.setInt3(0);
         eventVal.setInt4(0);
-        for (var unit : sourceFreeParam.getUnitList()) {
-            if (unit.getBuffer() == 0) {
-                foundBufferZero = true;
-                if (unit.getData() instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventVal value) {
-                    eventVal.setInt1(value.getInt1() == null ? 0 : value.getInt1());
-                    eventVal.setInt2(value.getInt2() == null ? 0 : value.getInt2());
-                    eventVal.setInt3(value.getInt3() == null ? 0 : value.getInt3());
-                    eventVal.setInt4(value.getInt4() == null ? 0 : value.getInt4());
+        // buffer是存在标志，unitSlotNum才是通道；DX单计数只承载channel0。
+        // 没有active0时保留零降级，不能挪用其他通道，也不要求存在buffer0哨兵。
+        boolean foundActiveZero = false;
+        if (sourceFreeParam.getUnitList() != null) {
+            for (var unit : sourceFreeParam.getUnitList()) {
+                if (unit == null || !Integer.valueOf(0).equals(unit.getUnitSlotNum())
+                        || unit.getBuffer() == null || unit.getBuffer() == 0) {
+                    continue;
                 }
-                break;
+                if (foundActiveZero || !(unit.getData() instanceof
+                        com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventVal value)) {
+                    throw new IllegalStateException("CEventFreeParam active channel0重复、缺载荷或不是CEventVal");
+                }
+                if (value.getInt1() == null || value.getInt2() == null
+                        || value.getInt3() == null || value.getInt4() == null) {
+                    throw new IllegalStateException("CEventFreeParam active channel0四整数载荷不完整");
+                }
+                foundActiveZero = true;
+                eventVal.setInt1(value.getInt1());
+                eventVal.setInt2(value.getInt2());
+                eventVal.setInt3(value.getInt3());
+                eventVal.setInt4(value.getInt4());
             }
-        }
-        if (!foundBufferZero) {
-            throw new IllegalStateException("CEventFreeParam 缺少 buffer==0 的 CEventVal 数据");
         }
 
         eventVal.setSlotNum(targetSlot);

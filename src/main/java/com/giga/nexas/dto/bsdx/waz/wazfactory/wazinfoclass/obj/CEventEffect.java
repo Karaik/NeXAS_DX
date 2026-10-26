@@ -233,14 +233,27 @@ public class CEventEffect extends SkillInfoObject {
                             valTarget.setInt2(0);
                             valTarget.setInt3(0);
                             valTarget.setInt4(0);
-                            for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventFreeParam.CEventFreeParamUnit fu : bheFree.getUnitList()) {
-                                if (fu.getBuffer() != null && fu.getBuffer() == 1) continue;
-                                if (fu.getData() instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventVal v) {
-                                    valTarget.setInt1(v.getInt1() != null ? v.getInt1() : 0);
-                                    valTarget.setInt2(v.getInt2() != null ? v.getInt2() : 0);
-                                    valTarget.setInt3(v.getInt3() != null ? v.getInt3() : 0);
-                                    valTarget.setInt4(v.getInt4() != null ? v.getInt4() : 0);
-                                    break;
+                            // 与顶层一致：只保留真正存在的channel0，其他通道仍为有损降级。
+                            boolean foundActiveZero = false;
+                            if (bheFree.getUnitList() != null) {
+                                for (var fu : bheFree.getUnitList()) {
+                                    if (fu == null || !Integer.valueOf(0).equals(fu.getUnitSlotNum())
+                                            || fu.getBuffer() == null || fu.getBuffer() == 0) {
+                                        continue;
+                                    }
+                                    if (foundActiveZero || !(fu.getData() instanceof
+                                            com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventVal v)) {
+                                        throw new IllegalStateException("CEventFreeParam active channel0重复、缺载荷或不是CEventVal");
+                                    }
+                                    if (v.getInt1() == null || v.getInt2() == null
+                                            || v.getInt3() == null || v.getInt4() == null) {
+                                        throw new IllegalStateException("CEventFreeParam active channel0四整数载荷不完整");
+                                    }
+                                    foundActiveZero = true;
+                                    valTarget.setInt1(v.getInt1());
+                                    valTarget.setInt2(v.getInt2());
+                                    valTarget.setInt3(v.getInt3());
+                                    valTarget.setInt4(v.getInt4());
                                 }
                             }
                         }
