@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @Author 杩欎綅鍚屽(Karaik)
+ * @Author 这位同学(Karaik)
  * @Date 2025/5/10
  * @Description TermGrp
  */

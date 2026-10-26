@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @Author 杩欎綅鍚屽(Karaik)
+ * @Author 这位同学(Karaik)
  * @Date 2025/2/2
  * @Description GroupMapParser
  */
@@ -19,7 +19,7 @@ public class GrpParser implements ClariasParser<Grp> {
     private final Map<String, GrpFileParser<Grp>> parserMap = new HashMap<>();
 
     public GrpParser() {
-        // 娉ㄥ唽瑙ｆ瀽鍣
+        // 注册解析器
         registerParser(new BatVoiceGrpParser());
         registerParser(new MapGroupGrpParser());
         registerParser(new MekaGroupGrpParser());

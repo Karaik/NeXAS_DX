@@ -11,7 +11,7 @@
  * `std::length_error("vector<T> too long")`；BSDX 原生 Zako116a initializer skill
  * 原样追加到 Tsukuyomi 的武装 hover 演示中也会崩溃。因此本包只复用 BSDX 原生 initializer
  * MEK 武装行，并把 WAZ 模板 skill 清洗为通用版：保留 screen/change/blur 等共性事件，
- * ?????? sprite????? Voice??? unit 52 ??? initializer SE?material trailing entry ???????????
+ * 替换机体专属 sprite，清空模板 Voice，保留 unit 52 的 initializer SE；material trailing entry 复制当前机体已有条目，
  * 由 `weaponCategory=2` 和清洗后的 `INITIALIZER` skill 共同保留初始器语义。</p>
  */
 package com.giga.nexas.transfer.bhe2bsdx.meka.initializer;

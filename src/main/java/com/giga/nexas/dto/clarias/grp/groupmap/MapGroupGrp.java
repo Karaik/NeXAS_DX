@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @Author 杩欎綅鍚屽(Karaik)
+ * @Author 这位同学(Karaik)
  * @Date 2025/5/10
  * @Description MapGroupGrp
  */
@@ -17,7 +17,7 @@ public class MapGroupGrp extends Grp {
     private List<MapGroup> groupList = new ArrayList<>();
 
     /**
-     * existFlag, 3涓瓧绗︿覆, 1涓湭鐭nt(int1), N涓狪tem(姣忛」4涓猧nt), 涓夋 鏁扮粍鐨勬暟缁
+     * existFlag, 3个字符串, 1个未知int(int1), N个Item(每项4个int), 三段 数组的数组
      */
     @Data
     public static class MapGroup {
@@ -28,7 +28,7 @@ public class MapGroupGrp extends Grp {
         private String groupResourceName;
         private int int1;
 
-        // 姣忛」4涓猧nt
+        // 每项4个int
         private List<Item> items = new ArrayList<>();
 
         private List<IntArray> array1 = new ArrayList<>();

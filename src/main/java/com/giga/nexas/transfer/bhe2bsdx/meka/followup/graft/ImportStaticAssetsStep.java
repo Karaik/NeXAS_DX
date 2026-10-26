@@ -704,7 +704,7 @@ public class ImportStaticAssetsStep {
                     }
                 }
             } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException("鏀堕泦 WAZ 鍐呭祵 sprite 鍥惧儚澶辫触: " + field.getName(), e);
+                throw new IllegalStateException("收集 WAZ 内嵌 sprite 图像失败: " + field.getName(), e);
             }
         }
     }

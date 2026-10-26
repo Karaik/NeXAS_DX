@@ -800,7 +800,7 @@ public class TestJinki2BsdxRunner {
                 .filter(entry -> entry.getValue() != null && entry.getValue() == targetSpriteGroupIndex)
                 .map(Map.Entry::getKey)
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("缂哄皯 SpriteGroup 婧?-> 鐩爣鏄犲皠锛宼arget=" + targetSpriteGroupIndex));
+                .orElseThrow(() -> new IllegalStateException("缺少 SpriteGroup 源 -> 目标映射，target=" + targetSpriteGroupIndex));
     }
 
     private void assertWazaGroupParamsMatchActualWaz(AkaoGraftResult result) {

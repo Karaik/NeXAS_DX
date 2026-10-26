@@ -578,7 +578,7 @@ public class PatchExeCapacitiesStep {
         // 多字节 patch 同时接受“原始字节”和“已经 patch 后的字节”，
         // 这样重复运行 pipeline 不会因为目标 exe 已经被处理过而失败。
         if (offset < 0 || offset + targetBytes.length > exeBytes.length) {
-            throw new IllegalStateException(String.format("byte patch 鍋忕Щ瓒婄晫: 0x%06X", offset));
+            throw new IllegalStateException(String.format("byte patch 偏移越界: 0x%06X", offset));
         }
 
         boolean matchesExpected = true;
@@ -595,7 +595,7 @@ public class PatchExeCapacitiesStep {
 
         if (!matchesExpected && !matchesTarget) {
             throw new IllegalStateException(String.format(
-                    "byte patch 鍋忕Щ鍘熷€间笉绗﹀悎棰勬湡: 0x%06X (%s)",
+                    "byte patch 偏移原值不符合预期: 0x%06X (%s)",
                     offset,
                     label
             ));

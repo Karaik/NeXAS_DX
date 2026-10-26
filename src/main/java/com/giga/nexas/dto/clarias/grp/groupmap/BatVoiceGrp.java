@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @Author 杩欎綅鍚屽(Karaik)
+ * @Author 这位同学(Karaik)
  * @Date 2025/5/10
  * @Description BatVoice
  */
@@ -25,7 +25,7 @@ public class BatVoiceGrp extends Grp {
 
     @Data
     public static class BatVoiceGroup {
-        public Integer existFlag; // 浠呰褰曠敤
+        public Integer existFlag; // 仅记录用
         private String characterName;
         private String characterCodeName;
         private List<BatVoice> voices = new ArrayList<>();
@@ -33,7 +33,7 @@ public class BatVoiceGrp extends Grp {
 
     @Data
     public static class BatVoice {
-        public Integer existFlag; // 浠呰褰曠敤
+        public Integer existFlag; // 仅记录用
         private String voice;
         private String voiceCodeName;
         private String voiceFileName;

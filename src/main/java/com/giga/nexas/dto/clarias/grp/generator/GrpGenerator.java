@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @Author 杩欎綅鍚屽(Karaik)
+ * @Author 这位同学(Karaik)
  * @Date 2025/5/16
  */
 public class GrpGenerator implements ClariasGenerator<Grp> {
@@ -23,7 +23,7 @@ public class GrpGenerator implements ClariasGenerator<Grp> {
     private final Map<String, GrpFileGenerator<Grp>> generatorMap = new HashMap<>();
 
     public GrpGenerator() {
-        // 娉ㄥ唽瑙ｆ瀽鍣
+        // 注册生成器
         registerGenerator(new BatVoiceGrpGenerator());
         registerGenerator(new MapGroupGrpGenerator());
         registerGenerator(new MekaGroupGrpGenerator());

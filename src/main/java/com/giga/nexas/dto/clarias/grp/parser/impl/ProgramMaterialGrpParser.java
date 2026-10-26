@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @Author 杩欎綅鍚屽(Karaik)
+ * @Author 这位同学(Karaik)
  * @Date 2025/5/10
  * @Description
  */
@@ -22,10 +22,10 @@ public class ProgramMaterialGrpParser implements GrpFileParser<Grp> {
 
     @Override
     public Grp parse(BinaryReader reader) {
-        // 鍒涘缓缁撴灉瀵硅薄
+        // 创建结果对象
         ProgramMaterialGrp result = new ProgramMaterialGrp();
 
-        // 璇诲彇涓夋鏁扮粍鐨勬暟缁
+        // 读取三段数组的数组
         result.setArray1(readIntArraySegment(reader));
         result.setArray2(readIntArraySegment(reader));
         result.setArray3(readIntArraySegment(reader));
@@ -34,7 +34,7 @@ public class ProgramMaterialGrpParser implements GrpFileParser<Grp> {
     }
 
     /**
-     * 璇诲彇涓€娈碘€滄暟缁勭殑鏁扮粍鈥濓細int32 count -> repeat count: int32 len -> len * int32
+     * 读取一段“数组的数组”：int32 count -> repeat count: int32 len -> len * int32
      */
     private List<ProgramMaterialGrp.IntArray> readIntArraySegment(BinaryReader reader) {
         int segCount = reader.readInt();

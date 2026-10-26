@@ -8,7 +8,7 @@ import com.giga.nexas.io.BinaryWriter;
 import java.io.IOException;
 
 /**
- * @Author 杩欎綅鍚屽(Karaik)
+ * @Author 这位同学(Karaik)
  * @Date 2025/5/16
  * @Description MekaGroupGrpGenerator
  */

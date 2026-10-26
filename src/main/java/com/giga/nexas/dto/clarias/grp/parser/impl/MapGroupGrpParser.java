@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @Author 杩欎綅鍚屽(Karaik)
+ * @Author 这位同学(Karaik)
  * @Date 2025/5/10
  * @Description
  */
@@ -28,18 +28,18 @@ public class MapGroupGrpParser implements GrpFileParser<Grp> {
         for (int gi = 0; gi < groupCount; gi++) {
             MapGroupGrp.MapGroup group = new MapGroupGrp.MapGroup();
 
-            // 璇诲彇瀛樺湪鏍囧織
+            // 读取存在标志
             int existFlag = reader.readInt();
             group.setExistFlag(existFlag);
 
             if (existFlag != 0) {
-                // 璇诲彇缁勫悕
+                // 读取组名
                 group.setGroupName(reader.readNullTerminatedString());
-                // 璇诲彇缁勪唬鍙
+                // 读取组代号
                 group.setGroupCodeName(reader.readNullTerminatedString());
-                // 璇诲彇璧勬簮鍚
+                // 读取资源名
                 group.setGroupResourceName(reader.readNullTerminatedString());
-                // 鏈煡鏁村瀷1
+                // 未知整型1
                 group.setInt1(reader.readInt());
 
                 int itemCount = reader.readInt();
@@ -54,13 +54,13 @@ public class MapGroupGrpParser implements GrpFileParser<Grp> {
                 }
                 group.setItems(items);
 
-                // 璇诲彇涓夋
+                // 读取三段
                 group.setArray1(readIntArraySegment(reader));
                 group.setArray2(readIntArraySegment(reader));
                 group.setArray3(readIntArraySegment(reader));
             }
 
-            // 鍔犲叆缁撴灉
+            // 加入结果
             result.getGroupList().add(group);
         }
 

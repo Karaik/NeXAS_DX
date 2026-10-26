@@ -23,7 +23,7 @@ import java.util.Map;
  * <p>initializer 不是普通 MEK 表行。已有数据表明它必须存在于 MEK 的
  * {@code mekWeaponInfoMap}；如果当前 WAZ 本身已有 {@code INITIALIZER} skill，则武装行指向它。
  * 如果当前 WAZ 没有 initializer skill，本步骤会从 BSDX 原生模板构造一条“通用 initializer skill”：
- * 保留关灯、画面演出、blur、change 等共性事件，剥离机体专属 sprite/SE/voice 资源。</p>
+ * 保留关灯、画面演出、blur、change 等共性事件，替换机体专属 sprite、清空模板 Voice，保留 initializer SE。</p>
  *
  * <p>这里刻意使用 BSDX 原生模板，而不是把 BHE initializer skill 转换后塞入目标 WAZ。
  * 2026-04-19 动态验证发现，BHE 模板转换后的 initializer 会在目标引擎运行时触发
@@ -198,9 +198,9 @@ public class EnsureInitializerWeaponStep {
     }
 
     private void clearActorSpecificVoice(SkillUnit unit) {
-        // unit 53 ?????? Voice??????
-        // unit 52 ? SE ? BSDX initializer ???Aki / Gregory / Zako116a / ?? Zako???????
-        // ?? initializer ???? SE?????
+        // unit 53 承载 Voice；跨机体复制时清空模板角色语音。
+        // unit 52 承载 BSDX initializer SE，沿用模板中的共性音效。
+        // 此处只清空 Voice，不清空 unit 52 的 SE。
         unit.setSkillInfoObjectList(new java.util.ArrayList<>());
         unit.setSkillInfoUnknownList(new java.util.ArrayList<>());
     }

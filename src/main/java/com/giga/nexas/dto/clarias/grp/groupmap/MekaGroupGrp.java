@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @Author 杩欎綅鍚屽(Karaik)
+ * @Author 这位同学(Karaik)
  * @Date 2025/5/10
  * @Description MekaGroupGrp
  */
@@ -18,7 +18,7 @@ public class MekaGroupGrp extends Grp {
 
     @Data
     public static class MekaGroup {
-        public Integer existFlag; // 浠呰褰曠敤
+        public Integer existFlag; // 仅记录用
         private String mekaName;
         private String mekaCodeName;
     }

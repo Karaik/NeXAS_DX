@@ -6,7 +6,7 @@ import com.giga.nexas.dto.clarias.grp.parser.GrpFileParser;
 import com.giga.nexas.io.BinaryReader;
 
 /**
- * @Author 杩欎綅鍚屽(Karaik)
+ * @Author 这位同学(Karaik)
  * @Date 2025/5/10
  * @Description
  */

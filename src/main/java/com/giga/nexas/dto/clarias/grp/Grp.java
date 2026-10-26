@@ -6,7 +6,7 @@ import com.giga.nexas.dto.clarias.Clarias;
 import lombok.Data;
 
 /**
- * @Author 杩欎綅鍚屽(Karaik)
+ * @Author 这位同学(Karaik)
  * @Date 2025/2/2
  * @Description GroupMap
  */
@@ -29,7 +29,7 @@ import lombok.Data;
 @Data
 public class Grp extends Clarias {
 
-    // 鏂囦欢鍚
+    // 文件名
     private String fileName;
 
 }
