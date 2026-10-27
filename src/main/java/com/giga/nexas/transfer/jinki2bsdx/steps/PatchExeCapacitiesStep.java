@@ -153,22 +153,22 @@ public class PatchExeCapacitiesStep {
     private static final int MEKA_CAP_INIT_PREALLOC_EXPECTED = 0x67;
     private static final int MEKA_CAP_INIT_PREALLOC_TARGET = 0x68;
 
-    /** #8b CMekaGroup runtime table init loop bound: 103 * 4336 鈫?104 * 4336 */
+    /** #8b CMekaGroup runtime table init loop bound: 103 * 4336 → 104 * 4336 */
     private static final int MEKA_CAP_RUNTIME_TABLE_LOOP_BOUND_OFFSET = 0x056F45;
     private static final int MEKA_CAP_RUNTIME_TABLE_LOOP_BOUND_EXPECTED = 0x0006D090; // 4336 * 103
     private static final int MEKA_CAP_RUNTIME_TABLE_LOOP_BOUND_TARGET = 0x0006E180;   // 4336 * 104
 
-    /** #9 init prealloc alt path: push 103 ↙ push 104 */
+    /** #9 init prealloc alt path: push 103 → push 104 */
     private static final int MEKA_CAP_INIT_PREALLOC_ALT_OFFSET = 0x056F9B;
     private static final int MEKA_CAP_INIT_PREALLOC_ALT_EXPECTED = 0x67;
     private static final int MEKA_CAP_INIT_PREALLOC_ALT_TARGET = 0x68;
 
-    /** #10 save write alt path: push 103 ↙ push 104 */
+    /** #10 save write alt path: push 103 → push 104 */
     private static final int MEKA_CAP_SAVE_WRITE_ALT_OFFSET = 0x275158;
     private static final int MEKA_CAP_SAVE_WRITE_ALT_EXPECTED = 0x67;
     private static final int MEKA_CAP_SAVE_WRITE_ALT_TARGET = 0x68;
 
-    /** #11 standalone prealloc path: push 103 ↙ push 104 */
+    /** #11 standalone prealloc path: push 103 → push 104 */
     private static final int MEKA_CAP_STANDALONE_PREALLOC_OFFSET = 0x30390A;
     private static final int MEKA_CAP_STANDALONE_PREALLOC_EXPECTED = 0x67;
     private static final int MEKA_CAP_STANDALONE_PREALLOC_TARGET = 0x68;
