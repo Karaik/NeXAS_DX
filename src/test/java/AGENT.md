@@ -87,7 +87,7 @@
 
 ## BHE九角色改造定向回归（2026-10-27）
 
-- 九角色构建：`mvn -q "-DargLine=-Xmx6g" "-Dtest=TestBheByJinkiRunner#testRunNineCharacterRework" test`。Sou不运行，Motoki为最终封包层；产物与hash记录保留在`target/bhe-playable-builds/run_*/build.json`及`target/bhe-playable-build-latest.json`。
+- 九角色构建：`mvn -q "-DargLine=-Xmx6g" "-Dtest=TestBheByJinkiRunner#testRunNineCharacterRework" test`。保留原有Sou阶段，由Sou层最终封包；九个重做角色与保留的Sou分别记入receipt。产物与hash记录保留在`target/bhe-playable-builds/run_*/build.json`及`target/bhe-playable-build-latest.json`。
 - 玩法定向测试包含`FrejaCustomizerTest,YuriCustomizerTest,CharacterWeaponVariantsTest,NagiVariantTest,KatouVariantTest,MisakiVariantTest,NaotoVariantTest,PlayableWeaponLoadoutsTest`，均使用原版只读输入/内存或JUnit临时输出。必须显式`-Dtest`串行运行，禁止默认资源套件。
 - `BheChannelZeroCounterRecoveryTest,CommonChangeRedirectTest,RebindWazSourceIsolationTest,NativeErrorHandlerPreservationTest`覆盖共通计数、公共跳转、源隔离和原生异常链；不把active channel0恢复宣称为四通道等价。
 - 实机准备/启动和原存档保护见`docs/project-deep-dive/bhe-playable-rework/runtime-harness.md`。每次用新case，保留失败现场和锁；不运行会修改WER/吞异常的旧试跑脚本。

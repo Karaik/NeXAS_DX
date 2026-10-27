@@ -1,5 +1,8 @@
 package com.giga.nexas.transfer.bhe2bsdx.mapappend.resource;
 
+import com.giga.nexas.dto.bhe.spm.parser.SpmParser;
+import com.giga.nexas.dto.bsdx.spm.generator.SpmGenerator;
+import com.giga.nexas.transfer.bhe2bsdx.meka.followup.convert.spm.BheToBsdxSpmConverter;
 import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.BheMapAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.BheMapEntryPlan;
 import com.giga.nexas.transfer.bhe2bsdx.mapappend.model.BheMapReferenceType;
@@ -26,6 +29,9 @@ public class BheMapResourceMaterializer {
     private final BheMapOutputResourceReferenceResolver outputReferenceResolver =
             new BheMapOutputResourceReferenceResolver();
     private final BheMapSafeOutputWriter safeOutputWriter = new BheMapSafeOutputWriter();
+    private final SpmParser bheSpmParser = new SpmParser();
+    private final SpmGenerator bsdxSpmGenerator = new SpmGenerator();
+    private final BheToBsdxSpmConverter spmConverter = new BheToBsdxSpmConverter();
 
     public BheMapResourceMaterializationResult materialize(
             BheMapAppendPlan plan,
@@ -34,6 +40,10 @@ public class BheMapResourceMaterializer {
             String charset
     ) {
         BheMapResourceMaterializationResult result = prepare(plan, outputResult, outputRoot, charset);
+        if (result.getOutputConflictCount() > 0) {
+            result.getPendingOutputFiles().clear();
+            return result;
+        }
         try {
             BheMapOutputPreflightResult preflightResult = safeOutputWriter.preflight(result.getPendingOutputFiles());
             if (preflightResult.getConflictCount() > 0) {
@@ -68,6 +78,7 @@ public class BheMapResourceMaterializer {
         }
 
         try {
+            String effectiveCharset = isBlank(charset) ? "windows-31j" : charset;
             Path normalizedOutputRoot = outputRoot.toAbsolutePath().normalize();
             Files.createDirectories(normalizedOutputRoot);
             BheMapResourceMaterializationResult result = new BheMapResourceMaterializationResult();
@@ -76,7 +87,7 @@ public class BheMapResourceMaterializer {
             for (BheMapImportWrittenMap writtenMap : outputResult.getWrittenMaps()) {
                 BheMapEntryPlan entry = entriesByTargetMapFileName.get(writtenMap.getTargetMapFileName());
                 if (entry != null) {
-                    materializeEntry(entry, writtenMap, normalizedOutputRoot, result, uniqueTargets);
+                    materializeEntry(entry, writtenMap, normalizedOutputRoot, result, uniqueTargets, effectiveCharset);
                 }
             }
             result.getPendingOutputFiles().addAll(uniqueTargets.values());
@@ -91,7 +102,8 @@ public class BheMapResourceMaterializer {
             BheMapImportWrittenMap writtenMap,
             Path outputRoot,
             BheMapResourceMaterializationResult result,
-            Map<Path, BheMapPendingOutputFile> uniqueTargets
+            Map<Path, BheMapPendingOutputFile> uniqueTargets,
+            String charset
     ) throws IOException {
         if (entry.getResourceReferences() == null || entry.getResourceReferences().getReferences() == null) {
             return;
@@ -103,7 +115,7 @@ public class BheMapResourceMaterializer {
             if (outputType == null) {
                 continue;
             }
-            materializeReference(reference, outputType, outputRoot, result, uniqueTargets);
+            materializeReference(reference, outputType, outputRoot, result, uniqueTargets, charset);
         }
     }
 
@@ -112,7 +124,8 @@ public class BheMapResourceMaterializer {
             BheMapReferenceType outputType,
             Path outputRoot,
             BheMapResourceMaterializationResult result,
-            Map<Path, BheMapPendingOutputFile> uniqueTargets
+            Map<Path, BheMapPendingOutputFile> uniqueTargets,
+            String charset
     ) throws IOException {
         recordServicedReferenceCount(result, outputType);
         if (reference == null || reference.isMissing() || reference.getSourcePath() == null) {
@@ -126,9 +139,10 @@ public class BheMapResourceMaterializer {
 
         Path targetPath = resolveTargetPath(outputRoot, reference);
         byte[] sourceBytes = Files.readAllBytes(reference.getSourcePath());
+        byte[] outputBytes = isSpm(reference) ? convertSpmBytes(reference, sourceBytes, charset) : sourceBytes;
         BheMapPendingOutputFile existingPending = uniqueTargets.get(targetPath);
         if (existingPending != null) {
-            if (!java.util.Arrays.equals(existingPending.getBytes(), sourceBytes)) {
+            if (!java.util.Arrays.equals(existingPending.getBytes(), outputBytes)) {
                 result.setOutputConflictCount(result.getOutputConflictCount() + 1);
                 com.giga.nexas.transfer.bhe2bsdx.mapappend.output.BheMapOutputConflict conflict =
                         new com.giga.nexas.transfer.bhe2bsdx.mapappend.output.BheMapOutputConflict();
@@ -143,7 +157,7 @@ public class BheMapResourceMaterializer {
 
         BheMapPendingOutputFile pendingFile = new BheMapPendingOutputFile();
         pendingFile.setPath(targetPath);
-        pendingFile.setBytes(sourceBytes);
+        pendingFile.setBytes(outputBytes);
         pendingFile.setConflictType(BheMapOutputConflictType.RESOURCE_FILE_CONFLICT);
         pendingFile.setLogicalName(targetPath.getFileName().toString());
         uniqueTargets.put(targetPath, pendingFile);
@@ -152,6 +166,20 @@ public class BheMapResourceMaterializer {
         recordTypeCount(result, outputType);
         if (isSpm(reference)) {
             result.setSpmWritten(true);
+        }
+    }
+
+    private byte[] convertSpmBytes(BheMapResourceReference reference, byte[] sourceBytes, String charset)
+            throws IOException {
+        // 直引地图SPM也包含BHE形状载荷；先转为DX字节，再参与去重和安全写出预检。
+        var source = bheSpmParser.parse(sourceBytes, reference.getSourcePath().getFileName().toString(), charset);
+        var converted = spmConverter.convert(source);
+        Path stagingPath = Files.createTempFile("bhe-map-resource-", ".spm");
+        try {
+            bsdxSpmGenerator.generate(stagingPath.toString(), converted, charset);
+            return Files.readAllBytes(stagingPath);
+        } finally {
+            Files.deleteIfExists(stagingPath);
         }
     }
 

@@ -66,7 +66,8 @@ public class TestBheByJinkiRunner {
 
     @Test
     public void testRunNineCharacterRework() throws Exception {
-        runBheByJinki(false);
+        // 九角色参与本轮重做；原有Sou仍保留，避免旧配置中的机体编号失效。
+        runBheByJinki(true);
     }
 
     private void runBheByJinki(boolean includeSou) throws Exception {
@@ -345,6 +346,9 @@ public class TestBheByJinkiRunner {
         receipt.put("exeSha256", sha256(exe));
         receipt.put("pacSha256", sha256(pac));
         receipt.put("includeSou", includeSou);
+        receipt.put("reworkedCharacters", List.of("tsukuyomi", "yuri", "freja", "nagi", "misaki",
+                "naoto", "katou", "wilhelm", "motoki"));
+        receipt.put("preservedCharacters", includeSou ? List.of("sou") : List.of());
         receipt.put("runtimeValidated", false);
         receipt.put("characters", includeSou
                 ? List.of("tsukuyomi", "yuri", "freja", "nagi", "misaki", "naoto", "katou", "wilhelm", "motoki", "sou")

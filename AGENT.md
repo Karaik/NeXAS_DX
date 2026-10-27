@@ -99,9 +99,9 @@ set MAVEN_OPTS=-Xmx4g
 
 ### BHE九角色可玩改造（2026-10-27）
 
-- 九角色构建入口为`TestBheByJinkiRunner#testRunNineCharacterRework`，排除Sou，复用JINKI V2→Tsukuyomi→Followup。输入EXE使用只读`bsdx_game/BaldrSky.exe`，每轮输出到独立`target/bhe-playable-builds/run_*`，不覆盖旧包。
+- 九角色构建入口为`TestBheByJinkiRunner#testRunNineCharacterRework`，只排除Sou的角色重做，保留原有Sou构建阶段及ID113，复用JINKI V2→Tsukuyomi→Followup。输入EXE使用只读`bsdx_game/BaldrSky.exe`，每轮输出到独立`target/bhe-playable-builds/run_*`，不覆盖旧包。
 - 角色逻辑仍在现有Customizer；复制变体使用已重绑的本角色MEK/WAZ及独立Material，实际玩家武装号不得超过152。定制后再次补齐Material容量并同步WazaGroup技能数。
-- 两个BHE静态输出器从最终MEK按身份构造14槽初始装备，继承行独立复制；普通武装、FC与initializer不能混槽。
+- 两个BHE静态输出器对九个重做角色从最终MEK按身份构造14槽初始装备，Sou保留旧默认行，继承行独立复制；普通武装、FC与initializer不能混槽。
 - `build.json`记录EXE/PAC身份且初始`runtimeValidated=false`；封包字节一致与Java测试不代表实机通过。隔离试跑工具为`tools/bhe_runtime_session.py`，游戏效果及说明书验收独立记录。
 
 ### BHE多角色流水线修复（2026-10-08）
