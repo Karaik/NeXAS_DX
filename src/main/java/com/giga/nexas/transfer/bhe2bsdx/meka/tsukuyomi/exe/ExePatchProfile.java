@@ -1,5 +1,6 @@
 package com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.exe;
 
+import com.giga.nexas.transfer.bhe2bsdx.meka.shared.MekaLoaderLayoutPatches;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -74,6 +75,12 @@ public class ExePatchProfile {
         profile.addImm8(0x275158, sourceMekaCapacity, targetMekaCapacity, capacityLabel("meka cap save write alt path", sourceMekaCapacity, targetMekaCapacity));
         profile.addImm8(0x30390A, sourceMekaCapacity, targetMekaCapacity, capacityLabel("meka cap standalone prealloc path", sourceMekaCapacity, targetMekaCapacity));
         profile.addImm32(0x05498B, sourceWeaponEquipRows * 56, targetWeaponEquipRows * 56, capacityLabel("weapon-equip fill hard cap: sub_454E60 cmp eax", sourceWeaponEquipRows, targetWeaponEquipRows));
+
+        // 保留的JINKI V2把roster/scan扩至104，但loader对象仍是原版103项布局。
+        int sourceLoaderCapacity = sourceMekaCapacity == 104 ? 103 : sourceMekaCapacity;
+        for (var site : MekaLoaderLayoutPatches.forCapacities(sourceLoaderCapacity, targetMekaCapacity)) {
+            profile.addBytes(site.offset(), site.expectedBytes(), site.targetBytes(), site.label());
+        }
 
         // ── 2. 战斗语音门禁旁路（支持移植机体战斗与 FC 发声）─────────────
         profile.addBytes(
