@@ -245,7 +245,11 @@ public class CrossRedirectBheCommonProjectileResourcesStep {
         if (se.getByteDataList() == null) {
             return;
         }
-        for (byte[] bytes : se.getByteDataList()) {
+        // DTO转换的SE载荷可能与BHE源共享byte[]；重绑只提交到独立的目标副本。
+        List<byte[]> reboundBytes = new ArrayList<>();
+        for (byte[] sourceBytes : se.getByteDataList()) {
+            byte[] bytes = sourceBytes == null ? null : sourceBytes.clone();
+            reboundBytes.add(bytes);
             if (bytes == null || bytes.length < 8) {
                 continue;
             }
@@ -263,6 +267,7 @@ public class CrossRedirectBheCommonProjectileResourcesStep {
             writeLittleEndianInt(bytes, 0, appendPlan.getCommonProjectileSeGroupIndex());
             writeLittleEndianInt(bytes, 4, targetItemIndex);
         }
+        se.setByteDataList(reboundBytes);
     }
 
     private void recordVoiceDependency(

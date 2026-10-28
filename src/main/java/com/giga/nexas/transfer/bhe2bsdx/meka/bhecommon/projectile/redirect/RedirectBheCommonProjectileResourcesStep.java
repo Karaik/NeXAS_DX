@@ -3,6 +3,7 @@ package com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.redirect;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.redirect.cross.CrossRedirectBheCommonProjectileResourcesStep;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.redirect.self.SelfRedirectBheCommonProjectileResourcesStep;
+import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.TsukuyomiSilverBellCustomizer;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiConvertedBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
@@ -38,5 +39,6 @@ public class RedirectBheCommonProjectileResourcesStep {
         selfRedirectStep.redirect(request, rawSourceBundle, inheritedBaseline, convertedBundle, appendPlan);
         // cross redirect 再消费映射结果，重写公共 WAZ 内部引用和 term 语义。
         crossRedirectStep.redirect(request, rawSourceBundle, inheritedBaseline, convertedBundle, appendPlan);
+        TsukuyomiSilverBellCustomizer.customizeAppended(inheritedBaseline, appendPlan);
     }
 }
