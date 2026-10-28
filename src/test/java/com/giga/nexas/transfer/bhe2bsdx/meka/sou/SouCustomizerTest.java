@@ -7,6 +7,7 @@ import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiPackageBundle;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +43,44 @@ public class SouCustomizerTest {
                 assertNotNull(parsed.getMekWeaponInfoMap().get(attack.getMekWeaponInfoMapNo()));
             }
         }
+    }
+
+    @Test
+    void nativeMenuCandidatesFitPlayerBankWithoutDroppingSouWeaponResources() throws Exception {
+        var source = (com.giga.nexas.dto.bhe.mek.Mek) new com.giga.nexas.service.BheBinService()
+                .parse("src/main/resources/game/bhe/mek/sou/sou.mek", "windows-31j").getData();
+        var mek = new com.giga.nexas.transfer.bhe2bsdx.meka.followup.convert.mek.BheToBsdxMekConverter().convert(source);
+        SouCustomizer.INSTANCE.customizeBeforeWrite(contextFor(mek));
+
+        assertEquals(211, mek.getMekWeaponInfoMap().size(), "隐藏菜单条目不能删除武装或改变其编号");
+        assertEquals(211, mek.getMekMaterialBlock().getTrailingEntries().size());
+        assertEquals("EX_HAMMER", mek.getMekWeaponInfoMap().get(153).getWeaponSequence());
+        assertEquals("INITIALIZER", mek.getMekWeaponInfoMap().get(174).getWeaponSequence());
+        assertEquals(java.util.stream.IntStream.range(0, 153).boxed().toList(),
+                mek.getMekWeaponInfoMap().entrySet().stream()
+                        .filter(entry -> (entry.getValue().getWeaponIdentifier() & 2) == 0)
+                        .map(java.util.Map.Entry::getKey).toList(),
+                "4BEFF0在访问153格统计bank前只按identifier bit2过滤，菜单不得枚举越界编号");
+
+        var first = mek.getMekWeaponInfoMap().get(153);
+        var lowBoundary = mek.getMekWeaponInfoMap().get(152);
+        lowBoundary.setWeaponIdentifier(6);
+        first.setWeaponIdentifier(first.getWeaponIdentifier() | 5);
+        SouCustomizer.INSTANCE.customizeBeforeWrite(contextFor(mek));
+        assertEquals(7, first.getWeaponIdentifier(), "隐藏位不能清除已有bit1/4或改变重复处理结果");
+        assertEquals(6, lowBoundary.getWeaponIdentifier(), "低编号已有隐藏位和其它标记必须原样保留");
+        var service = new com.giga.nexas.service.BsdxBinService();
+        Path file = output.resolve("sou-hidden-menu.mek");
+        mek.setExtensionName("mek");
+        service.generate(file.toString(), mek, "windows-31j");
+        var parsed = (Mek) service.parse(file.toString(), "windows-31j").getData();
+        assertEquals(211, parsed.getMekWeaponInfoMap().size());
+        assertEquals(211, parsed.getMekMaterialBlock().getTrailingEntries().size());
+        assertEquals(7, parsed.getMekWeaponInfoMap().get(153).getWeaponIdentifier());
+        assertEquals(6, parsed.getMekWeaponInfoMap().get(152).getWeaponIdentifier());
+        assertEquals(2, parsed.getMekWeaponInfoMap().get(174).getWeaponIdentifier() & 2);
+        assertTrue(parsed.getMekWeaponInfoMap().entrySet().stream().filter(entry -> entry.getKey() >= 153)
+                .allMatch(entry -> (entry.getValue().getWeaponIdentifier() & 2) != 0));
     }
 
     @Test

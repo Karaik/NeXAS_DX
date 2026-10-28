@@ -44,12 +44,25 @@ public final class SouSkillGlitchFixer {
                 SouWeaponMaterialSelection.select(mek, SouSkillGlitchFixer::isDummyOrScriptWeapon);
         filterAndCleanWeapons(mek);
         upgradeMekToMaxLevel(mek);
+        hideWeaponsOutsidePlayerBank(mek);
         if (materials != null) {
             Mek.MekMaterialBlock block = mek.getMekMaterialBlock();
             block.setTrailingEntries(materials);
             java.util.List<Mek.MekMaterialBlock.PluginEntry> entries = new java.util.ArrayList<>(block.getRegularEntries());
             entries.addAll(materials);
             block.setEntries(entries);
+        }
+    }
+
+    private void hideWeaponsOutsidePlayerBank(Mek mek) {
+        if (mek.getMekWeaponInfoMap() == null) return;
+        for (var entry : mek.getMekWeaponInfoMap().entrySet()) {
+            if (entry.getKey() < 153 || entry.getValue() == null) continue;
+            // 4BEFF0先检查identifier bit2，再以原武装号索引153格玩家统计表。
+            // 保留高编号的MEK/Material/WAZ/AI引用，只禁止菜单展示不可装备的编号。
+            Mek.MekWeaponInfo weapon = entry.getValue();
+            int identifier = weapon.getWeaponIdentifier() == null ? 0 : weapon.getWeaponIdentifier();
+            weapon.setWeaponIdentifier(identifier | 2);
         }
     }
 
