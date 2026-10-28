@@ -91,9 +91,11 @@
 - 玩法定向测试包含`FrejaCustomizerTest,YuriCustomizerTest,CharacterWeaponVariantsTest,NagiVariantTest,KatouVariantTest,MisakiVariantTest,NaotoVariantTest,PlayableWeaponLoadoutsTest`，均使用原版只读输入/内存或JUnit临时输出。必须显式`-Dtest`串行运行，禁止默认资源套件。
 - `BheChannelZeroCounterRecoveryTest,CommonChangeRedirectTest,RebindWazSourceIsolationTest,NativeErrorHandlerPreservationTest`覆盖共通计数、公共跳转、源隔离和原生异常链；不把active channel0恢复宣称为四通道等价。
 - 实机准备/启动和原存档保护见`docs/project-deep-dive/bhe-playable-rework/runtime-harness.md`。每次用新case，保留失败现场和锁；不运行会修改WER/吞异常的旧试跑脚本。
+- `MekaPreloadBudgetTest,ImportStaticAssetsStepBheOutputTest`验证103／104／114行费用输出、继承前缀保全及坏表拒绝；`MekaLoaderCapacityTest,MekaLoaderPatchApplicationTest,NativeErrorHandlerPreservationTest`使用与runner相同的`ida-reverse/BaldrSky.exe`基线。静态费用权重验证不能代替原生调度实测。
 
 ## BHE流水线定向回归（2026-10-08）
 
 - `mvn -q "-Dtest=SouCustomizerTest" test`验证等级Material切片、过滤/AI索引、幂等、真实Sou二进制回环及其余九角色单条布局。生成文件仅写`@TempDir`。
 - 本轮测试必须显式指定类，不运行会写出/清理JSON输入的默认资源套件。逐项根因和验证记录见`docs/project-deep-dive/pipeline-fixes/`。
 - `mvn -q "-Dtest=LayeredAssetDeliveryTest,ImportStaticAssetsStepBheOutputTest,RebindMekStepBheResourceRebindTest,AuxConsumerRebindTest,MisakiCustomizerTest,SouCustomizerTest" test`覆盖本轮回归，使用临时目录进行真实资源回环与PAC解包内容验证。LayeredAssetDeliveryTest还覆盖两Importer、公共SPM输出、未用imageData条目以及实际引用图片缺失时继续处理/封包；缺图仅审计，结构损坏等错误单独检查。不能用单测通过宣称实机或整链通过。
+- `BheMapResourceConflictTransactionTest`以临时目录中的两个有效SPM验证prepare同批冲突后地图／MapGroup／资源均零提交、既有内容保全且manifest只计一次；与`BheMapResourceMaterializerTest,BheMapOutputConflictPolicyTest,BheMapOutputResourceReferenceConsistencyTest`显式串行运行。完整媒体根通过`-Dbhe.staticResourceRoot`指定，不运行默认资源套件。

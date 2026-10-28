@@ -21,7 +21,7 @@ class NativeErrorHandlerPreservationTest {
 
     @Test
     void capacityChainWritesNewExecutablesWithoutDisablingNativeInvalidParameterHandling() throws Exception {
-        Path baseline = Path.of("src/main/resources/bsdx_game/BaldrSky.exe");
+        Path baseline = Path.of("src/main/resources/ida-reverse/BaldrSky.exe");
         byte[] original = Files.readAllBytes(baseline);
         byte[] handler = Arrays.copyOfRange(original, 0x2789F8, 0x2789F8 + 32);
         assertArrayEquals(new byte[]{(byte) 0x8B, (byte) 0xFF}, Arrays.copyOf(handler, 2));

@@ -17,6 +17,7 @@ import com.giga.nexas.transfer.bhe2bsdx.meka.shared.ImportStaticAssetRuntimeCach
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.LayeredAssetResolver;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.AssetDeliveryValidator;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.PlayableWeaponLoadouts;
+import com.giga.nexas.transfer.bhe2bsdx.meka.shared.MekaPreloadBudget;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.AssetDeliveryValidationContext;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.BaselineAssetComparison;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
@@ -100,6 +101,7 @@ public class ImportStaticAssetsStep {
             // follow-up 机体是在上一轮目录基础上继续追加，不是从空目录重建完整世界。
             copyInheritedJinkiAssets(request, outputRoot, importedAssetSet);
             writePatchedGrpOutputs(bsdxBaseline, syncedProgramMaterial, outputRoot, importedAssetSet);
+            MekaPreloadBudget.writeIfExpanded(request, bsdxBaseline, outputRoot, importedAssetSet);
             writePatchedConfigDatOutputs(reboundTsukuyomiMek, bsdxBaseline, outputRoot, importedAssetSet);
             outputCommonProjectileResourcesStep.output(
                     request,

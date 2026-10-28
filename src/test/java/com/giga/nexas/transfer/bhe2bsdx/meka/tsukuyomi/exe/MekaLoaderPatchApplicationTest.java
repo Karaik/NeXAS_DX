@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MekaLoaderPatchApplicationTest {
 
-    private static final Path ORIGINAL_EXE = Path.of("src/main/resources/bsdx_game/BaldrSky.exe");
+    private static final Path ORIGINAL_EXE = Path.of("src/main/resources/ida-reverse/BaldrSky.exe");
     private static final int CONSTRUCTOR_STATE_INSTRUCTION = 0x0648A4;
     private static final int CONSTRUCTOR_STATE_OPERAND = 0x0648A6;
 

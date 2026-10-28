@@ -216,6 +216,14 @@ public class BheMapImportPipeline {
                     request.getCharset()
             );
             result.setResourceMaterializationResult(resourceResult);
+            if (resourceResult.getOutputConflictCount() > 0) {
+                // prepare已发现同目标异内容；不能再把去重后的首份资源与地图一同提交。
+                outputResult.getPendingOutputFiles().clear();
+                resourceResult.getPendingOutputFiles().clear();
+                result.setOutputWritten(false);
+                result.setResourcesMaterialized(false);
+                return attachManifest(result);
+            }
 
             List<BheMapPendingOutputFile> pendingFiles = new ArrayList<>();
             pendingFiles.addAll(outputResult.getPendingOutputFiles());

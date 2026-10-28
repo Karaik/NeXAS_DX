@@ -17,6 +17,7 @@ import com.giga.nexas.transfer.bhe2bsdx.meka.shared.ImportStaticAssetRuntimeCach
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.LayeredAssetResolver;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.AssetDeliveryValidator;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.PlayableWeaponLoadouts;
+import com.giga.nexas.transfer.bhe2bsdx.meka.shared.MekaPreloadBudget;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.AssetDeliveryValidationContext;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.BaselineAssetComparison;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
@@ -128,6 +129,7 @@ public class ImportStaticAssetsStep {
 
             // Step 8-2: 先把所有修改过的 grp 和 ProgramMaterial 真正写进产物。
             writePatchedGrpOutputs(bsdxBaseline, syncedProgramMaterial, outputRoot, importedAssetSet);
+            MekaPreloadBudget.writeIfExpanded(request, bsdxBaseline, outputRoot, importedAssetSet);
             writePatchedConfigDatOutputs(reboundTsukuyomiMek, bsdxBaseline, outputRoot, importedAssetSet);
 
             // 公共资源已经是 preparedBaseline 的一部分，必须在 selected 主线资源前落盘。

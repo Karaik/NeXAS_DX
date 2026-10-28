@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MekaLoaderCapacityTest {
 
-    private static final Path ORIGINAL_EXE = Path.of("src/main/resources/bsdx_game/BaldrSky.exe");
+    private static final Path ORIGINAL_EXE = Path.of("src/main/resources/ida-reverse/BaldrSky.exe");
 
     @Test
     void retainedV2ThenBheChainExpandsTheActualLoaderLayoutTo114() throws Exception {

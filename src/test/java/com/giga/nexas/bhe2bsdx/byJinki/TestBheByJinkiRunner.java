@@ -82,7 +82,12 @@ public class TestBheByJinkiRunner {
         // 1. akao
         AkaoGraftRequest jinkiRequest = new AkaoGraftRequest();
         jinkiRequest.setExeOutputDir(buildRoot.resolve("akao"));
-        jinkiRequest.setTargetExePath(projectRoot.resolve("src/main/resources/bsdx_game/BaldrSky.exe"));
+        // bsdx_game中的EXE带旧宽屏补丁，会让原版机体也偏离装备预览视野。
+        jinkiRequest.setTargetExePath(projectRoot.resolve("src/main/resources/ida-reverse/BaldrSky.exe"));
+        Path sourceExe = jinkiRequest.getTargetExePath().toAbsolutePath().normalize();
+        String sourceExeSha256 = sha256(sourceExe);
+        assertEquals("713cf605360a55a863f87bfbdea5453aaeeb2a33983ad4a005c9297e3a86e757", sourceExeSha256,
+                "九角色构建必须使用已实测的800×600参考EXE，不能继承旧宽屏基线");
         jinkiRequest.setPatchMenuData(true);
         AkaoGraftResult jinkiResult = Jinki2BsdxTransferV2.process(jinkiRequest);
 
@@ -298,7 +303,7 @@ public class TestBheByJinkiRunner {
         MotokiGraftResult motokiResult = MotokiTransfer.process(motokiRequest);
         log.info("10 motoki patch append end!");
         if (!includeSou) {
-            writeBuildReceipt(projectRoot, buildRoot, motokiResult, false);
+            writeBuildReceipt(projectRoot, buildRoot, motokiResult, false, sourceExe, sourceExeSha256);
             return;
         }
 
@@ -328,11 +333,13 @@ public class TestBheByJinkiRunner {
 
         SouGraftResult souResult = SouTransfer.process(souRequest);
         log.info("11 sou patch append end!");
-        writeBuildReceipt(projectRoot, buildRoot, souResult, true);
+        writeBuildReceipt(projectRoot, buildRoot, souResult, true, sourceExe, sourceExeSha256);
     }
 
     private void writeBuildReceipt(Path projectRoot, Path buildRoot,
-                                   TsukuyomiGraftResult result, boolean includeSou) throws Exception {
+                                   TsukuyomiGraftResult result, boolean includeSou,
+                                   Path sourceExe, String sourceExeSha256) throws Exception {
+        assertEquals(sourceExeSha256, sha256(sourceExe), "构建期间源EXE不得变化");
         assertNotNull(result.getImportedAssetSet());
         assertNotNull(result.getPacPackPlan());
         assertTrue(result.getPacPackPlan().isPacked(), "最终阶段必须封包并完成现有解包字节验收");
@@ -340,6 +347,8 @@ public class TestBheByJinkiRunner {
         Path pac = result.getPacPackPlan().getOutputPacPath().toAbsolutePath().normalize();
         Map<String, Object> receipt = new LinkedHashMap<>();
         receipt.put("buildRoot", buildRoot.toString());
+        receipt.put("sourceExe", sourceExe.toAbsolutePath().normalize().toString());
+        receipt.put("sourceExeSha256", sourceExeSha256);
         receipt.put("assetRoot", result.getImportedAssetSet().getOutputRootDir().toAbsolutePath().toString());
         receipt.put("exe", exe.toString());
         receipt.put("pac", pac.toString());

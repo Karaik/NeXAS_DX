@@ -10,7 +10,7 @@
 C:\Python313\python.exe -B tools\bhe_runtime_session.py prepare --case tsukuyomi-01 --base src\main\resources\bsdx_game --exe <本轮EXE绝对路径> --pac <本轮Update3.pac绝对路径> --save-dir C:\Users\30250\Documents\GIGA\BALDRSKY_DIVEX\Save
 C:\Python313\python.exe -B tools\bhe_runtime_session.py launch --case tsukuyomi-01
 # 同环境纯原版对照，不启动游戏：
-C:\Python313\python.exe -B tools\bhe_runtime_session.py prepare --case vanilla-01 --base src\main\resources\bsdx_game --exe src\main\resources\bsdx_game\BaldrSky.exe --vanilla --save-dir C:\Users\30250\Documents\GIGA\BALDRSKY_DIVEX\Save
+C:\Python313\python.exe -B tools\bhe_runtime_session.py prepare --case vanilla-01 --base src\main\resources\bsdx_game --exe src\main\resources\ida-reverse\BaldrSky.exe --vanilla --save-dir C:\Users\30250\Documents\GIGA\BALDRSKY_DIVEX\Save
 ```
 
 可选 `--fresh-save` 仅创建空的私有 Save；与 `--save-seed-dir PATH` 互斥。后者复制明确指定的独立完整 seed（例如已修复标题但保留进度的副本），不修改真实原 Save。`--save-dir` 在所有模式下都必须指向真实原 Save，负责原树哈希、拒写保护及 exact alias/CSIDL 来源。默认仍复制原 Save。receipt 用 `seed_mode=original|fresh|provided`、`seed_source`、`fresh_save`、`original_save_files` 和 `save_seed_files` 区分来源；launch 前核独立 seed 源树及私有副本，原 Save 仍独立核验。seed 拒绝链接及与当前 case 重叠，独立兄弟目录可作只读源。
