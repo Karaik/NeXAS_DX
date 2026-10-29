@@ -198,7 +198,7 @@ class CharacterWeaponVariantsTest {
     }
 
     @Test
-    void motokiVariantPreservesSixBombsAndMotionButExitsFlight() throws Exception {
+    void motokiVariantPreservesSixBombPayloadsAndUsesFlightSlices() throws Exception {
         Fixture f = fixture("motoki", 212);
         var original = skill(f.waz(), "飛行形態：集中爆撃", "0023");
         List<CEventEffect> effects = events(original, 1, 48, CEventEffect.class);
@@ -211,13 +211,35 @@ class CharacterWeaponVariantsTest {
 
         MotokiCustomizer.INSTANCE.customizeBeforeWrite(context(f));
 
-        assertAdded(f, before, "集中爆撃・帰投", "0020", "DX_FOCUSED_BOMB_RETURN", 40);
-        var variant = skill(f.waz(), "集中爆撃・帰投", "DX_FOCUSED_BOMB_RETURN");
-        assertEquals(JSON.valueToTree(effects), JSON.valueToTree(events(variant, 1, 48, CEventEffect.class)));
-        assertEquals(List.of(1, 0, 0, 0, 12, 0), speedValues(event(variant, 1, 18, CEventValRandom.class, 0, 11)));
-        assertEquals(List.of(1, 0, 0, 0, 8, 0), speedValues(event(variant, 1, 18, CEventValRandom.class, 12, 59)));
-        assertJump(event(variant, 1, 71, CEventChange.class, 89, 89), 212,
-                f.waz().getSkillList().indexOf(skill(f.waz(), "飛行形態：終了", "BOOST_DASH6")));
+        assertEquals(before.weapons() + 1, f.mek().getMekWeaponInfoMap().size());
+        assertEquals(before.skills() + 2, f.waz().getSkillList().size());
+        var added = weapon(f.mek(), "集中爆撃・帰投", "0020");
+        assertSame(added, f.mek().getMekWeaponInfoMap().get(before.weapons()));
+        assertTrue(before.weapons() <= 152);
+        assertEquals(before.skills(), added.getWazSequence());
+        assertEquals(0, added.getWeaponCategory());
+        assertEquals(40, added.getHeatMinConsumption());
+        assertEquals(40, added.getHeatMaxConsumption());
+        assertEquals(0, added.getUpgradeExp());
+        for (int i = 0; i < before.weapons(); i++) assertEquals(before.weaponTree().get(Integer.toString(i)), JSON.valueToTree(f.mek().getMekWeaponInfoMap().get(i)));
+        assertEquals(before.skillTree(), JSON.valueToTree(f.waz().getSkillList().subList(0, before.skills())));
+        assertEquals(before.materialTree(), JSON.valueToTree(f.mek().getMekMaterialBlock().getTrailingEntries().subList(0, before.weapons())));
+        assertEquals(before.aiTree(), JSON.valueToTree(f.mek().getMekAiInfoList()));
+        assertMaterialViews(f.mek());
+        var router = skill(f.waz(), "集中爆撃・帰投", "DX_FOCUSED_BOMB_RETURN");
+        assertEquals(1, router.getPhaseQuantity());
+        assertJump(event(router, 1, 71, CEventChange.class, 0, 0), 212, before.skills() + 1);
+        var execution = skill(f.waz(), "集中爆撃・帰投：制御", "DX_FOCUSED_BOMB_EXECUTION");
+        assertEquals(4, execution.getPhaseQuantity());
+        assertTrue(events(execution, 2, 48, CEventEffect.class).isEmpty());
+        var release = event(execution, 3, 48, CEventEffect.class, 0, 0);
+        assertEquals(JSON.valueToTree(effects.get(0).getCeventEffectUnitList()), JSON.valueToTree(release.getCeventEffectUnitList()));
+        assertEquals(List.of(1, 0, 0, 0, 12, 0), speedValues(event(execution, 3, 18, CEventValRandom.class, 0, 1)));
+        assertEquals(List.of(1, 0, 0, 0, 8, 0), speedValues(event(execution, 3, 18, CEventValRandom.class, 2, 49)));
+        var exit = event(execution, 3, 71, CEventChange.class, 79, 79).getBsdxInfoCollectionList2().get(0);
+        assertEquals(16, exit.getInt1());
+        assertEquals(List.of(0, 1), exit.getTypeList());
+        assertEquals(List.of(3), exit.getParamList());
         event(skill(f.waz(), "飛行形態：終了", "BOOST_DASH6"), 1, 71, CEventChange.class, 30, 30);
         roundTrip(f, "集中爆撃・帰投", "0020", "DX_FOCUSED_BOMB_RETURN", 40);
         assertIdempotent(f, () -> MotokiCustomizer.INSTANCE.customizeBeforeWrite(context(f)));
