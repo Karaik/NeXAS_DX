@@ -165,3 +165,81 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 - 地狱入口已实测修复；月詠新武装说明可读，但预览双方不可见，用户已确认肉眼也不可见。尚未完成原版机体对照，不能判为捕获问题或宣称技能效果通过。
 - 原生loader布局与实际Apply合计9项通过，已提交6f827a43f，尚未重建该补丁的游戏包；费用表103行问题另行未解。独立地图同批冲突gate已测过，Pipeline级事务gate尚未实施。
 - 当前唯一游戏case rework-hell-sou-01已STOP，CDB已detach退出；failure=null、cleanup_pending=false、原Save unchanged=true，旧PID已不存在。日志、兼容seed、原存档、旧包及原有53行WIP保留；不push。等待用户重新开启目标。
+
+### 用户恢复目标与EXE基线纠正（2026-10-27下午）
+
+- 用户已明确“重新开始直至结束，直到再次说停止”；恢复完整目标，旧暂停检查点保留为历史。原有六项WIP仍53行，不push。
+- Pipeline级资源冲突实际RED1项（MapGroup错误改写342234→342289）；在prepare后发现resource冲突即清双方pending并停止事务，保留单次冲突计数。GREEN4类20项全过，无跳过。
+- 摄像头对照已确认此前runner选错EXE：bsdx_game的2f8c带1920×1080改动，原默认ida-reverse的713cf保留800×600。相同诊断seed、相同原版资源无移植PAC下，713cf能显示甲与敌人、タックル命中；2f8c只地图／热条。详见render-baseline-comparison-20261027.md。
+- 入口已改回713cf并在receipt记录源路径/hash；155314完整构建成功，最终EXE1ac677…、PAC仍e004bc…字节未变。原生114槽布局已进入该EXE，CRT保留。新BHE实机验收准备中，runtimeValidated仍false。
+
+### 正确基线重建及首项预览事件（2026-10-27 17时）
+
+- 费用输出与原生容量/异常链/分层交付共5类37项GREEN；补充坏继承表、103→104、103行不扩容的6项边界测试亦GREEN，均无失败/错误/跳过。坏输入拒绝发生在费用表重写前，不宣称整个Importer输出事务原子。
+- 170134完整构建成功，Sou与ID113保留；EXE仍1ac677…，PAC变为a8869c…，114行费用表原103行前缀逐字节不变。新ID的100M是调度权重政策，force/release/queue实机验收尚未完成。
+- 新case reference-preload-01已实进地狱、选月詠、打开装备。镜头及双方显示正常；武装19「袈裟・一閃」取得真实REQ→START→敌人45伤害（6000→5955）→原生NATIVE_READY，重复多轮。其余武装、训练与角色矩阵仍在继续，runtimeValidated=false。
+- 旧resume-bhe-reference-01新增七hook观察器安装后发生AV，未有有效回合；不归因角色技能。观察器已停用，原现场与dump保留且不提交；本轮仅用既有隔离工具和CDB软件断点。
+
+### 恢复实机与Sou菜单越界（2026-10-28）
+
+- 旧reference-preload-01游戏、launcher与CDB句柄均已不存在；state残留running不能当存活证据。独立复核原Save78文件hash无变化。新case reference-preview-20261028-01使用172154包（与170134的EXE/PAC逐字节相同）。
+- 用户补充Sou滚底闪退。新case的CRT断点实际捕获meka113、weapon153、统计bankCount153，caller4BFC40；小型dump和栈保留。最终Sou211条无hidden2，原测试仅证明Material对齐，未覆盖该菜单消费者。
+- 在现有Sou定制器仅对>=153编号OR隐藏位2，保留211条及Material/AI/WAZ；initializer174也因此不可菜单装备，详见sou-menu-bank-20261028.md。真实数据RED1项预期失败后，Sou11项+默认装备14项GREEN；修复后整包与实机复测尚未完成。
+- 本轮10类63项首次因缺媒体路径跳过10项；补齐`-Dbhe.staticResourceRoot=D:/BDY/NeXAS_Resources/bhe_resources`重跑地图4类20项，失败/错误/跳过均0。普通缺图仍非致命。
+- 终审1044文本未发现新增源码乱码；两份initializer文档12行问号损坏已按现有清Voice、保留SE实现恢复可读说明。未机械重编码全库，原Clarias53行WIP保留。
+- 月詠銀鈴的残留CTama定位到BIT44：slot71无限loop0..147，射击入口却在159/165，源未完成技能也有同一矛盾；15EC是对象累计时钟，不能误当slot71时钟。角色适配与实机复测继续中，runtimeValidated=false。
+
+### 已提交组件与实机边界复测（2026-10-28下午）
+
+- 本地develop提交13a106078修复initializer文档12行乱码；7aae3ef6d修复Sou菜单统计边界；13860e0d2固定正确EXE/hash、费用输出和地图事务冲突门。不push，原六个Clarias WIP仍精确53行未暂存。
+- 161306整包EXE1ac677…／PACb8a6a6…在sou-menu-fixed-20261028-01实机逐页滚到末端，152「朱血染のエッジレギオン」取得真实START、6000→4681扣血及多轮NATIVE_READY，未再CRT；关装备后正常进入训练。case已STOP，failure=null、cleanup_pending=false、原Save unchanged=true。只证明该菜单边界回归，不扩大为全部玩法验收。
+- 銀鈴测试初次出现两项夹具错误（缺Self重绑）不计RED；正确夹具继而暴露311处共享SE byte[]写回源DTO。CrossRedirect现对每条SE copy-on-write，仅成功后替换目标列表；源8WAZ不再被污染。该修复不等于所有converter均彻底隔离。
+- 有效RED为P0/P1窗口159/165均不在本槽loop0..147；post-Cross按appendPlan定位本轮BIT44并深复制，仅改四个frame int。45项GREEN，无失败/错误/跳过；源对象、原DX二进制前缀及BIT65/66/58字节均保全。
+- 162851整包成功，EXE仍1ac677…，PACc26612…；独立比较与161306双方各3884文件，只有tama03.waz四个DWORD不同，其余3883文件逐字节相同。新silver-bell-fixed-20261028-01准备并启动，实际射击/回收等待验收。
+- 原Save默认攻击映射仍是Z/X/C/V；当前自动化字符键会触发日文预编辑，而Escape能切换训练底栏。正在查正常游戏键位设置路径，只对私有诊断存档处理输入问题，不改用户原Save或产品默认键位。
+
+### 用户新增连段可玩性要求（2026-10-28）
+
+- 用户新增第7条：新技能必须与其它技能组成连段、达到游玩程度，并参考互联网与非BHE现有角色。此要求是最终验收硬门；当前单招预览命中／回收不替代连段通过，不缩减九角色、全武装、训练与加载调度目标。
+- 已并行开展DX网页实战连段资料与原生取消／装备槽／受击链调查。尚未把只看slot47或Hit.cancelFlag当作可连段结论，需记录跨武装实际起手、持续连击、heat与敌受击状态。
+- Motoki新增自主起飞方案固定在motoki-flight-design-20261028.md与docs/superpowers/plans/2026-10-28-motoki-ground-flight-bomb.md，沿本角色单phase路由＋私有三phase执行，不改generic架构。SDD ledger在同名.superpowers/sdd目录，根代理独占Maven/UI/CDB/提交。
+- 新Motoki真实RED5项均按预期断言失败，无errors/skips；首次实现GREEN31项出现5个slot40供体guard错误，不算修复通过，已交实现者核真实热量事件签名。生产尚未提交／重建，该源码不能与当前运行的旧162851包混证。
+- 当前实机case仍silver-bell-fixed-20261028-01（EXE1ac677…、PACc26612…）。已对Yuri、Freja、Nagi、Misaki、Naoto、Katou、Wilhelm、Motoki主要变体取得局部预览证据，详见runtime-variants-20261028.md；Motoki原13／新17多数地面预览不命中，正常飛行前置未满足，仍未判可玩。
+
+### 2026-10-29输入恢复和新图实测
+
+- 恢复时旧游戏／launcher／CDB均已不存在，原Save全清单复核不变；不凭旧state的running续用。C盘新input-resume case中，用户实体F9使A绑定提示消失、A显示F9；自动F9此前未被捕获，不能称自动攻击输入已修复。
+- 原生训练Replay输入路径已实机验证：正常UI保存甲的全零模板，只换新录像第三块普通按钮输入，正常载入／播放后真实武装0→2→23、3HIT301、使用链0→3，后两次命中前目标控制20／16。详见replay-validation-20261029.md；九角色还需各自模板、真实连段和中断验收。
+- D盘约1.8GB，runner支持显式bhe.playableBuildRoot跨盘输出并直接继承绝对路径；完整run_20261029_093012_409在C盘构建成功。该runner／Replay工具及操作证据已中文本地提交723a8df8b，未push；原Clarias六文件53行完整留在工作区。
+- Motoki方案改为起飞／准备／释放／落地四block，准备末端复核高度；新落地使用原生gravity50，避免200残留下一招。高度200是准入门，原生转场重排actor间隙仍可发生目标更新，不承诺任意瞬移目标的同步高度下限，实际有效／连段仍是硬门。
+- 上述首个四block包静态33项GREEN、3884文件仅3处变更，但实机新17只升空后回READY、零伤害，验收失败。原因是TURN/INPUT先查SkillSuffix，而复制供体只带(0,0)，入口1不存在；原模型误把参数直接当block。另原倍率(0,0,0,100)实际为0→100插值，实测重力倍率6，不能称恒100。
+- 已新增真实失败回归：suffix8tests／5failures，modifier1test／1failure，均0errors/skips。生产补四个独立入口和恒100端点(0,100,0,100)，新定向35项全过；新整链正在重建，尚未实机证明。单纯NATIVE_READY不再作为投弹／落地证据，失败包、错误观测和正确地址口径都保留于SDD ledger与target报告。
+- 两个已结束C盘case都通过原harness STOP，failure=null、cleanup_pending=false、原Save unchanged=true。整体目标继续active，runtimeValidated仍false；Motoki生产修改尚未提交。
+
+### 2026-10-29新包固定靶通过与本地保存
+
+- suffix／modifier修正后的run_20261029_095154_853完整构建成功，PAC196bcd21d0645240a392dd9bf0cde8516fb8861e93e54a902804a4da36934ae3，EXE仍1ac677…；当前独立case为C:/NeXAS_DX_runs/runtime/motoki-flight-suffix-20261029-02。
+- 新17实机按block0→1→2→3执行，648A00真实发弹时中心高度差204；首次3击407，后续3至6击。61CC30释放时block3／Change本槽clock36或37、Z0、G50、倍率100，随后原生结束TAMA0／SCRIPT0／active-1。仅固定靶预览范围通过，详见motoki-flight-runtime-20261029.md。
+- 供体suffix漂移RED4/4/0/0后加本角色guard和router独立入口，最终39项0失败／错误／跳过；独立复审无open Important。根重生成真实095154 Motoki MEK/WAZ，逐字节相同且源不变，无需把guard修改误当新运行字节。
+- 已本地中文提交8ec6e2aaf保存Motoki逻辑、测试、设计及运行证据；未push。原Clarias53行仍完整未暂存。整体目标未完成，不将该提交或39GREEN视为连段验收。
+- 正常装备UI的实际5E1330提交已确认近距A17、B12、C11；准备在训练保存本角色空Replay模板再试独立输入。hover也会预览，单击选择／第二击装备必须区分；旧自动输入问题不靠改EXE或直接写actor绕过。
+
+### 2026-10-29后台消费者审计继续
+
+- 上一目标回合属于progress：两条本地提交、原生训练三武装输入及Motoki发弹／接地／回收证据改变了下一步。本回合重新查明游戏83032与CDB82380仍为正确case并存活；没有重启旧case，没有活Maven。
+- 根在真实进程CDB读回0086CD58=2、0086CD5C=4，支持当前Hell训练mode4。原生预算事件只在mode3关闭；正常敌种最后实例被击毁后32次wrapper更新可last-ref释放，未证明一般可击毁敌人永久等待。
+- 独立重解析BQUnit实际99行机体字段均0..102；正常CQ玩家原生固定0，菜单只mode1／4应用选机；原103机体无switchToMekNo跳新增ID，最终包未覆盖BQ生成表或任何BIN。当前正常CQ不会加载新增100M费用行，不为假设三新增CQ机体改变政策。未来新增CQ入口或人工脚本／存档注入须重新验收，详见target的preload-mode3-scope-20261029.md及数据。
+- 说明书已按实际UI更正“hover预览不等于装备”、两次单击装备、进入训练路径、Motoki自主起飞行为及095154包身份；本地中文提交5e839477e，不push。仍明确九角色连段未验收，不填未经实际运行的路线。
+- 当前1083文本重新严格UTF8读取、无BOM／FFFD／NUL／C1；相对旧审计52项新增／变化、旧路径无缺失。四个私用区字仅在历史坏字引用，源码两处问号串仍为未知分支注释，不据此猜语义。证据encoding-refresh-20261029.json；本轮技术刷新不替代全部自然语言语义审读。
+- 九角色171武装／285技能正在独立进行SkillSuffix入口专项；所有玩家入口0已证有效，三处源原有INPUT越界分支须继续区分有意结束与缺失恢复，尚未据裸索引改生产。Nagi反击正常CPU设置与有限输入时序也在后台核实。
+- 前台仍在其它应用，先不使用旧坐标操作；连续前台测试便利询问待回复。当前Motoki模板尚未保存，不能用已有甲模板改角色ID来假冒本角色连段。
+
+### 2026-10-29目标空投与实际连段进展
+
+- 用户已明确允许连续前台测试，整体目标继续active。当前唯一case为C:/NeXAS_DX_runs/runtime/motoki-target-drop-20261029-03，PID59844，CDB136608／PTY9965，launcher79869；旧suffix case已正常STOP并验证原Save不变。
+- 原095154随机散布在另一份合法seed上全空，不能以旧固定靶成功结束。新revision3只改17父Effect七个白名单Unit为目标XYZ+80、零散布、水平初速0、Vz-24、G50，保留原13及公共468。42项定向回归在14:57再次全部通过，0失败／错误／跳过；131244新包完整构建和产物审计通过，3884文件只有motoki.waz变，11317引用无越界。EXE仍1ac677…，PACa94c6c…，整包runtimeValidated=false。
+- Motoki008／026两份原生seed均实际生成六弹并命中，总13Hit1204；补观察026时从11伤害到17首伤无61E760恢复，state8击飞输入为空，不能仅control0否定连续受击。17→12虽正常取消START，但12零伤，不算三武装伤害链。
+- Motoki030独立地面17为12Hit1125并正常接地；032通过普通D与方向移动重新接近，同一录像两轮11→17各1204，HP6000→4796→3592，P3自然落地293／783，最后active-1、W0、Z0/Vz0/G50、倍率100、heat0、TAMA0/SCRIPT0。029／031二轮仅输入未START的失败证据保留；近距装备不能在远距自动回找，未据此改引擎。详见motoki-target-combo-runtime-20261029.md。
+- Katou10→20→6在早时序278、中时序307及同录像二轮614均有真实三武装伤害链；新20两次均命中、后继控制为正、最终清理正常，详见katou-combo-runtime-20261029.md。当前仅固定甲靶和两档时序范围。
+- Naoto正常UI模板075保留109／敌0／map68及真实A0／Dash B20／Dash C1。076早时序30／42／74实际0→20内部两拳→外部1，4Hit137、后继precontrol5／4／7；079中时序两轮各137、HP6000→5863→5726，后继precontrol3／4／5，最后地面W0、active-1、G50、倍率100、heat0、TAMA0/SCRIPT0。077／078仅生成不计实测，独立运行报告已固定在naoto-combo-runtime-20261029.md。
+- 使用说明同步最新包与已测路线，仍保留全171菜单武装、其它角色连段、移动／小型／主动CPU／墙边／受击中断、Nagi成功防反、Freja高低FC预算和实际关卡推进等未验项。局部连段不等同于整包或九角色完成；仅develop、中文本地提交、不push，原Clarias六文件53行保留。
