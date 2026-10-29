@@ -4,7 +4,7 @@
 
 **Goal:** 让现有Motoki新武装17从地面可靠起飞、投弹并接地，保留原飞行招式。
 
-**Architecture:** 仅在MotokiCustomizer旁新增角色局部构造器，复用已重绑动作、现有单phase变体接口和原生四phase执行图。旧武装及公共弹体不改，现有输出器继续维护最终技能数和Material容量。2026-10-29修订依据为同名SDD ledger的I1及重力残留裁决。
+**Architecture:** 仅在MotokiCustomizer旁新增角色局部构造器，复用已重绑动作、现有单phase变体接口和原生四phase执行图。旧武装及公共弹体不改，现有输出器继续维护最终技能数和Material容量。2026-10-29修订依据为同名SDD ledger的I1、重力残留及投弹稳定性revision3裁决；当前采用下述P2父Effect白名单控制首候选。
 
 **Tech Stack:** Java、JUnit5、现有BHE/BSDX DTO与二进制服务、原生WAZ Change/ValRandom。
 
@@ -51,7 +51,7 @@ execution.suffix = [(0,0),(1,0),(2,0),(3,0)]
 eachBlock.slot27/28.type0 = (0,100,0,100)
 ```
 
-按Spec逐项检查P0高度门和240取消、P1准备末端10帧再复核／不足回起飞、P2零帧六枚和79转场、P3基准重力50及LANDING／360取消。生成临时MEK/WAZ后重读再检查；保持源文件／对象、原技能／AI、旧9/13与公共Bomb不变。按新Material并集检查三供体。
+按Spec逐项检查P0高度门和240取消、P1准备末端10帧再复核／不足回起飞、P2零帧六枚和79转场、P3基准重力50及LANDING／360取消。P2新父Effect仅Unit7/9/10/11/31/32/33可按revision3改动，真实回环核目标XYZ+80、零scatter、负Vz-24及G50，非白名单载荷、原资源与数量保全。生成临时MEK/WAZ后重读再检查；保持源文件／对象、原技能／AI、旧9/13与公共Bomb不变。按新Material并集检查三供体。
 
 局部运动回归必须读取产物中的速度、重力、门和跳转，而非调用构造器算期望；TURN/INPUT先解析suffix入口再读int1实际block，不能直接param→phase，越界或无可执行入口拒绝。type0 modifier按5E6BA0端点和5E68F0窗口线性求值，恒100为`(0,100,0,100)`，必须检查每block首／中／末帧并拒绝未实现的相对模式；不能只取int4。独立使用原生Vz积分／中心高度公式，覆盖正常地面能投弹、空中不重复爬升、准备期间一次／重复目标升高、过高目标取消且不发弹、真实接地后结束及离开时重力50。排队转场不是一次玩家物理积分，但目标可先更新。明确这不是完整引擎模拟。另验证幂等、坏供体／任意未知投弹载荷／漂移／半成品零提交、CP932可编码日文说明。
 
@@ -76,13 +76,15 @@ P1: 原27的0..9片段; vz=0; gravity=0; modifier=100; 不发弹
     clock10 && HEIGHT2>=200 -> P2
     clock10 && otherwise -> P0
 P2: 原27的10..89片段，窗口减10、跨界start裁0; vz=0; gravity=0; modifier=100
-    clock0发原内层载荷6枚; clock79 -> P3
+    clock0发原资源6枚，新父Effect仅revision3白名单控制; clock79 -> P3
 P3: speed=0; clock0清vz一次; gravity=50; modifier=100
     clock30..359 && LANDING -> END
     clock360 -> END(cancel)
 ```
 
 移除新P0的原热量／Change无限loop；新P3不保留原负重力或无条件30帧END。原27任意未知载荷拒绝；新片段跨10的ValRandom按裁后窗口重新插值，属于允许重做的新动作，不承诺原横移逐帧一致。路由与执行技能有重名、半份或载荷漂移时拒绝；重新构造的目标语义载荷与既有结果一致才幂等。禁止把“正常路径全部超时取消”视为修复。更新日文简介说明离陆、投下前高度再确认、六枚和着地。
+
+revision3先写失败测试再实施父Effect：原7自身POS、9/10随机60、31`(0,2,6,0,0,6)`、33`(0,50,100,0,5,10)`签名漂移与源11/32非预期启用均拒绝且target零写；新的深克隆节点仅7改目标POS、9/10/31清零、11新增+80、32新增-24、33固定50。六整数两端一致且随机量零，位置明确目标Z+80，不是自身Z或200高度。所有非白名单Unit／数量／资源、原13／公共炸弹／源技能／AI／Material／EXE不改，不新增技能或改generic。局部模型改准确命名`playerCenterHeightAtRelease`，独立记录实际spawnZ，并从原生单帧末值计算数步穿越固定目标中心；仅作有限运动检查，不当碰撞或可玩证明。
 
 现有CharacterWeaponVariantsTest仅修改Motoki的单技能计数／原89帧直接退出断言以符合新图；其余角色的原断言保留。原结束供体30帧异常的零写入回归保留。
 
@@ -95,5 +97,7 @@ Run: `mvn -q "-DargLine=-Xmx6g" "-Dtest=MotokiFlightBombVariantTest,CharacterWea
 - [ ] **Step 5: 集成、实机与提交。**
 
 主代理用现有`TestBheByJinkiRunner#testRunNineCharacterRework`完整重建，核EXE仍正确基线、PAC重解析及解包一致。新隔离case用原114行兼容seed，原Save保护保持。记录P1复核和P2零帧发弹实际高度；普通地面及移动目标必须正常投弹并有效命中，结束点必须LANDING、active=-1及弹体计数0。原生调度允许目标在复核后先更新，不能承诺任意瞬移下瞬时高度>=200。补新插值实际位移、不同距离／高度、取消／受击后的基准运动和真正跨武装连段，失败继续重做或取证，不把静态GREEN当可玩通过。
+
+revision3动态门：至少重放原生004与025两个独立初始状态／RNG，另补不同距离和移动目标。记录11命中、17START、父生成XYZ/Vz/G及首次命中、目标是否恢复、12START及伤害来源。必须是不同武装在同一未恢复受击链中的连续伤害；三次START、HUD残留、NATIVE_READY或首招17单独600伤害不计完成。80/-24候选未通过前，不改为“最优”或“已可玩”叙述；同点六枚若暴露同帧受击问题，再另凭证据裁决分时，不在首候选混入。
 
 更新`使用说明.md`、`runtime-variants-20261028.md`和progress实际证据；明确未完成的全九角色训练、全武装、预加载调度范围。仅暂存任务文件，中文提交，不push。

@@ -34,6 +34,7 @@ class MotokiFlightBombVariantTest {
     private static final String ROUTER = "DX_FOCUSED_BOMB_RETURN";
     private static final String EXECUTION = "DX_FOCUSED_BOMB_EXECUTION";
     private static final String EXECUTION_NAME = "集中爆撃・帰投：制御";
+    private static final Set<Integer> BOMB_CONTROL_UNITS = Set.of(7, 9, 10, 11, 31, 32, 33);
     @TempDir Path output;
 
     @Test
@@ -52,7 +53,7 @@ class MotokiFlightBombVariantTest {
         var sourceBomb = skill(f.waz, "飛行形態：集中爆撃", "0023");
         for (var donor : List.of(sourceBomb, skill(f.waz, "飛行形態：開始", "BOOST_DASH4"),
                 skill(f.waz, "飛行形態：終了", "BOOST_DASH6"))) assertSingleEntrySuffix(donor);
-        JsonNode bombEffect = eventPayloadWithoutWindow(events(sourceBomb, 0, 48, CEventEffect.class).get(0));
+        JsonNode bombEffect = effectPayloadOutsideBombControls(events(sourceBomb, 0, 48, CEventEffect.class).get(0));
         var expectedMaterial = materialUnion(f.mek, 13, 9, 10);
 
         customize(f);
@@ -69,8 +70,9 @@ class MotokiFlightBombVariantTest {
         assertTrue(weapons <= 152);
         assertEquals(skills, added.getWazSequence());
         assertGraph(f.waz, skills);
-        assertEquals(bombEffect, eventPayloadWithoutWindow(events(f.waz.getSkillList().get(skills + 1), 2, 48, CEventEffect.class).get(0)),
-                "only the outer effect window changes from 10 to 0; all six-bomb inner payloads survive");
+        var newBombEffect = events(f.waz.getSkillList().get(skills + 1), 2, 48, CEventEffect.class).get(0);
+        assertEquals(bombEffect, effectPayloadOutsideBombControls(newBombEffect),
+                "outer fields, resources, six-bomb amount and every non-whitelisted unit survive");
         for (int i = 0; i < weapons; i++) assertEquals(oldWeapons.get(Integer.toString(i)), JSON.valueToTree(f.mek.getMekWeaponInfoMap().get(i)));
         assertEquals(oldSkills, JSON.valueToTree(f.waz.getSkillList().subList(0, skills)));
         assertEquals(oldMaterial, JSON.valueToTree(f.mek.getMekMaterialBlock().getTrailingEntries().subList(0, weapons)));
@@ -91,6 +93,9 @@ class MotokiFlightBombVariantTest {
         for (String keyword : List.of("離陸", "高度", "六", "着地")) assertTrue(text.contains(keyword), keyword);
         material(f.mek, weapons).getSpriteGroups().get(0)[0] = 999;
         events(requireExecution(f.waz), 0, 19, CEventValRandom.class).get(0).setInt2(999);
+        assertInstanceOf(CEventTerm.class, effectUnit(newBombEffect, 7).getData())
+                .getBsdxInfoCollectionList().get(0).getIntList3().set(0, 99);
+        effectValue(newBombEffect, 9).setInt2(999);
         assertEquals(oldMaterial, JSON.valueToTree(f.mek.getMekMaterialBlock().getTrailingEntries().subList(0, weapons)), "new material arrays must not alias donors");
         assertEquals(oldSkills, JSON.valueToTree(f.waz.getSkillList().subList(0, skills)), "execution phases must not alias original skills");
         assertSources(f);
@@ -103,7 +108,9 @@ class MotokiFlightBombVariantTest {
         var execution = requireExecution(read.waz);
         Motion ground = simulate(execution, 0, 100, 100, frame -> 0);
         assertEquals(6, ground.bombs);
-        assertTrue(ground.bombHeight >= 200);
+        assertTrue(ground.playerCenterHeightAtRelease >= 200);
+        assertEquals(80, ground.spawnZAtRelease);
+        assertEquals(0, ground.targetZAtRelease);
         assertTrue(ground.maxZ > 0, "ground start must really gain height");
         assertTrue(ground.takeoffFrames >= 18 && ground.takeoffFrames < 240);
         assertTrue(ground.landed && ground.normalEnd);
@@ -115,12 +122,14 @@ class MotokiFlightBombVariantTest {
         assertEquals(0, airborne.takeoffFrames, "sufficient center height takes clock0 shortcut");
         assertEquals(300, airborne.maxZ, "clock0 transition must not perform another climb");
         assertEquals(6, airborne.bombs);
+        assertEquals(80, airborne.spawnZAtRelease, "bomb spawn uses target Z+80, not the player's Z300");
         assertTrue(airborne.landed && airborne.normalEnd);
 
         Motion risingTarget = simulate(execution, 0, 100, 100, frame -> frame < 20 ? 0 : 160);
         assertEquals(6, risingTarget.bombs);
         assertTrue(risingTarget.takeoffFrames > ground.takeoffFrames);
-        assertTrue(risingTarget.bombHeight >= 200);
+        assertTrue(risingTarget.playerCenterHeightAtRelease >= 200);
+        assertEquals(240, risingTarget.spawnZAtRelease);
         assertTrue(risingTarget.landed && risingTarget.normalEnd);
         Motion differentCenters = simulate(execution, 0, 80, 180, frame -> 0);
         assertEquals(6, differentCenters.bombs);
@@ -142,7 +151,8 @@ class MotokiFlightBombVariantTest {
         Motion lateRise = simulate(requireExecution(read.waz), 200, 100, 100,
                 frame -> frame == 0 ? 0 : 80);
         assertEquals(6, lateRise.bombs, "a reachable target must still receive a bomb release");
-        assertTrue(lateRise.bombHeight >= 200, "height must hold at release, after target movement");
+        assertTrue(lateRise.playerCenterHeightAtRelease >= 200, "player center-height admission still handles the late target rise");
+        assertEquals(160, lateRise.spawnZAtRelease);
         assertTrue(lateRise.landed && lateRise.normalEnd);
         assertFalse(lateRise.cancelled);
         assertEquals(1, lateRise.preparationRetries, "the late rise must return through takeoff before release");
@@ -187,6 +197,34 @@ class MotokiFlightBombVariantTest {
     }
 
     @Test
+    void reparsedBombParentUsesTargetPositionAndCrossesItsCenterWithinFewVerticalSteps() throws Exception {
+        Fixture f = fixture(); customize(f);
+        Waz.Skill execution = requireExecution(roundTrip(f, "target-bomb-parent").waz);
+        var effect = events(execution, 2, 48, CEventEffect.class).get(0);
+        assertStableBombControls(effect);
+        for (int targetZ : List.of(0, 98, 250)) {
+            BombLaunch launch = decodeBombLaunch(effect, targetZ);
+            assertEquals(6, launch.count);
+            assertEquals(targetZ + 80, launch.spawnZ);
+            assertEquals(0, launch.horizontalSpeed);
+            assertEquals(-24, launch.verticalSpeed);
+            assertEquals(50, launch.gravity);
+            int targetCenterZ = targetZ + 50;
+            int zRaw = launch.spawnZ * 1024, vzRaw = launch.verticalSpeed * 1024;
+            assertTrue(zRaw > targetCenterZ * 1024);
+            int crossedAt = -1;
+            // 5F8C10 subset: 100% modifier, fixed initial Vz and gravityRaw/200.
+            // This checks vertical passage only; it does not simulate hit shapes or prove a combo.
+            for (int step = 1; step <= 8; step++) {
+                zRaw = Math.max(0, zRaw + vzRaw);
+                if (zRaw <= targetCenterZ * 1024) { crossedAt = step; break; }
+                vzRaw -= launch.gravity * 1024 / 200;
+            }
+            assertTrue(crossedAt > 0 && crossedAt <= 4, "candidate must pass the stationary target center in a few steps");
+        }
+    }
+
+    @Test
     void retriesRepeatedPreparationRisesAndCancelsAnUnreachableLateRiseWithoutBombing() throws Exception {
         Fixture f = fixture(); customize(f);
         Waz.Skill execution = requireExecution(roundTrip(f, "repeated-late-target-rise").waz);
@@ -194,7 +232,8 @@ class MotokiFlightBombVariantTest {
                 actorPass -> actorPass == 0 ? 0 : actorPass < 36 ? 80 : 240);
         assertTrue(repeatedRise.preparationRetries >= 2, "both preparation-period rises need another height admission");
         assertEquals(6, repeatedRise.bombs);
-        assertTrue(repeatedRise.bombHeight >= 200);
+        assertTrue(repeatedRise.playerCenterHeightAtRelease >= 200);
+        assertEquals(320, repeatedRise.spawnZAtRelease);
         assertTrue(repeatedRise.landed && repeatedRise.normalEnd);
         assertFalse(repeatedRise.cancelled);
 
@@ -242,6 +281,42 @@ class MotokiFlightBombVariantTest {
         Fixture material = fixture();
         material.mek.getMekMaterialBlock().getTrailingEntries().remove(0);
         assertNoWrites(material);
+    }
+
+    @Test
+    void rejectsChangedSourceBombControlSignaturesWithoutWrites() throws Exception {
+        for (int slot : List.of(7, 9, 10, 31, 33)) {
+            Fixture f = fixture();
+            var effect = sourceBombEffect(f.waz);
+            assertOriginalBombControls(effect);
+            if (slot == 7) {
+                assertInstanceOf(CEventTerm.class, effectUnit(effect, slot).getData())
+                        .getBsdxInfoCollectionList().get(0).getIntList3().set(0, 1);
+            } else {
+                var value = effectValue(effect, slot); value.setInt5(value.getInt5() + 1);
+            }
+            assertNoWrites(f);
+            assertSources(f);
+        }
+    }
+
+    @Test
+    void rejectsUnexpectedSourceHeightOrVerticalSpeedOverrideWithoutWrites() throws Exception {
+        for (int slot : List.of(11, 32)) {
+            Fixture f = fixture();
+            var effect = sourceBombEffect(f.waz);
+            assertOriginalBombControls(effect);
+            var unexpected = new CEventEffect.CEventEffectUnit();
+            unexpected.setUnitSlotNum(slot); unexpected.setCeventEffectUnitQuantity(slot); unexpected.setBuffer(1);
+            var value = new CEventValRandom(3); value.setStartFrame(0); value.setEndFrame(0);
+            value.setInt1(0); value.setInt2(0); value.setInt3(0);
+            value.setInt4(0); value.setInt5(0); value.setInt6(0);
+            unexpected.setData(value);
+            effect.getCeventEffectUnitList().removeIf(unit -> Integer.valueOf(slot).equals(unit.getUnitSlotNum()));
+            effect.getCeventEffectUnitList().add(unexpected);
+            assertNoWrites(f);
+            assertSources(f);
+        }
     }
 
     @Test
@@ -354,6 +429,7 @@ class MotokiFlightBombVariantTest {
         var effects = events(execution, 2, 48, CEventEffect.class);
         assertEquals(1, effects.size()); assertFrames(effects.get(0), 0, 0);
         assertEquals(List.of(0, 1, 0, 0, 6, 0), values(amount(effects.get(0))));
+        assertStableBombControls(effects.get(0));
         var releaseSprites = events(execution, 2, 0, CEventSprite.class);
         assertEquals(2, releaseSprites.size());
         assertFrames(releaseSprites.get(0), 0, 49); assertFrames(releaseSprites.get(1), 50, 79);
@@ -391,6 +467,52 @@ class MotokiFlightBombVariantTest {
                 }
             }
         }
+    }
+
+    private static void assertStableBombControls(CEventEffect effect) {
+        var position = assertInstanceOf(CEventTerm.class, effectUnit(effect, 7).getData());
+        assertEquals(5, position.getTypeId()); assertFrames(position, 0, 0);
+        assertEquals(1, position.getBsdxInfoCollectionList().size());
+        assertCollection(position.getBsdxInfoCollectionList().get(0), 20, List.of(1), List.of(), List.of(1, 0), List.of());
+        for (int slot : List.of(9, 10, 11, 31, 32, 33)) {
+            var value = effectValue(effect, slot);
+            int expected = switch (slot) { case 11 -> 80; case 32 -> -24; case 33 -> 50; default -> 0; };
+            assertEquals(slot == 33 ? 2 : 3, value.getTypeId());
+            assertFrames(value, 0, 0);
+            assertEquals(List.of(0, expected, 0, 0, expected, 0), values(value), "deterministic parent unit " + slot);
+            assertEquals(expected, singleFrameFixedValue(value), "single-frame Work consumes its ending value");
+        }
+    }
+
+    private static void assertOriginalBombControls(CEventEffect effect) {
+        var position = assertInstanceOf(CEventTerm.class, effectUnit(effect, 7).getData());
+        assertCollection(position.getBsdxInfoCollectionList().get(0), 20, List.of(1), List.of(), List.of(0, 0), List.of());
+        assertEquals(List.of(0, 0, 0, 0, 0, 60), values(effectValue(effect, 9)));
+        assertEquals(List.of(0, 0, 0, 0, 0, 60), values(effectValue(effect, 10)));
+        assertEquals(List.of(0, 2, 6, 0, 0, 6), values(effectValue(effect, 31)));
+        assertEquals(List.of(0, 50, 100, 0, 5, 10), values(effectValue(effect, 33)));
+        for (int slot : List.of(11, 32)) assertTrue(effect.getCeventEffectUnitList().stream()
+                .noneMatch(unit -> Integer.valueOf(slot).equals(unit.getUnitSlotNum()) && unit.getBuffer() != 0));
+    }
+
+    /** Only the parent's legal deterministic spawn subset, not collision or an entire projectile WAZ. */
+    private static BombLaunch decodeBombLaunch(CEventEffect effect, int targetZ) {
+        var position = assertInstanceOf(CEventTerm.class, effectUnit(effect, 7).getData());
+        assertCollection(position.getBsdxInfoCollectionList().get(0), 20, List.of(1), List.of(), List.of(1, 0), List.of());
+        assertEquals(0, singleFrameFixedValue(effectValue(effect, 9)), "local subset requires no offset angle");
+        assertEquals(0, singleFrameFixedValue(effectValue(effect, 10)), "local subset requires no radial scatter");
+        return new BombLaunch(singleFrameFixedValue(amount(effect)), targetZ + singleFrameFixedValue(effectValue(effect, 11)),
+                singleFrameFixedValue(effectValue(effect, 31)), singleFrameFixedValue(effectValue(effect, 32)),
+                singleFrameFixedValue(effectValue(effect, 33)));
+    }
+
+    /** 5E6AD0 / 5E68F0: a 0..0 Work selects the ending value and ending random width. */
+    private static int singleFrameFixedValue(CEventValRandom value) {
+        assertTrue(value.getTypeId() == 2 || value.getTypeId() == 3, "supported integer/double ValRandom only");
+        assertFrames(value, 0, 0);
+        assertEquals(0, value.getInt1()); assertEquals(0, value.getInt4(), "local subset rejects relative modes");
+        assertEquals(0, value.getInt3()); assertEquals(0, value.getInt6(), "local subset rejects random widths");
+        return value.getInt5();
     }
 
     private static void assertHeightJump(CEventChange change, int phase) {
@@ -437,7 +559,8 @@ class MotokiFlightBombVariantTest {
      */
     private static Motion simulate(Waz.Skill skill, int initialZ, int selfBodyHeight, int targetBodyHeight, IntUnaryOperator targetZ) {
         int phase = resolveSuffixBlock(skill, 0), clock = 0, vz = 0, gravity = 0, jumpModifier = 100, gravityModifier = 100;
-        int zRaw = initialZ * 1024, maxZ = initialZ, bombs = 0, bombHeight = Integer.MIN_VALUE, takeoffFrames = -1;
+        int zRaw = initialZ * 1024, maxZ = initialZ, bombs = 0, playerCenterHeightAtRelease = Integer.MIN_VALUE, takeoffFrames = -1;
+        int spawnZAtRelease = Integer.MIN_VALUE, targetZAtRelease = Integer.MIN_VALUE;
         int preparationRetries = 0;
         boolean cancelled = false, landed = false;
         for (int actorPass = 0; actorPass < 1000; actorPass++) {
@@ -453,7 +576,9 @@ class MotokiFlightBombVariantTest {
             int z = (zRaw + 512) >> 10;
             int height2 = z + selfBodyHeight / 2 - targetZ.applyAsInt(actorPass) - targetBodyHeight / 2;
             for (var effect : events(skill, phase, 48, CEventEffect.class)) if (active(effect, clock)) {
-                bombs += amount(effect).getInt5(); bombHeight = height2;
+                targetZAtRelease = targetZ.applyAsInt(actorPass);
+                var launch = decodeBombLaunch(effect, targetZAtRelease);
+                bombs += launch.count; spawnZAtRelease = launch.spawnZ; playerCenterHeightAtRelease = height2;
             }
             boolean transitioned = false;
             for (var change : events(skill, phase, 71, CEventChange.class)) {
@@ -468,8 +593,9 @@ class MotokiFlightBombVariantTest {
                 var destination = change.getBsdxInfoCollectionList2().get(0);
                 if (List.of(0, 2).equals(destination.getTypeList())) {
                     boolean normal = List.of(2, 7, 16).equals(c.getTypeList());
-                    return new Motion(bombs, bombHeight, maxZ, z, takeoffFrames, cancelled || !normal, landed,
-                            normal && !cancelled, preparationRetries, gravity / 1024);
+                    return new Motion(bombs, playerCenterHeightAtRelease, spawnZAtRelease, targetZAtRelease,
+                            maxZ, z, takeoffFrames, cancelled || !normal, landed, normal && !cancelled,
+                            preparationRetries, gravity / 1024);
                 }
                 assertEquals(List.of(0, 1), destination.getTypeList());
                 if (phase == 0) { takeoffFrames = clock; cancelled = clock == 240; }
@@ -584,7 +710,19 @@ class MotokiFlightBombVariantTest {
         assertEquals(1, matches.size(), "expected transition frames " + start + ".." + end); return matches.get(0);
     }
     private static CEventValRandom amount(CEventEffect effect) {
-        return (CEventValRandom) effect.getCeventEffectUnitList().stream().filter(u -> Integer.valueOf(4).equals(u.getUnitSlotNum())).findFirst().orElseThrow().getData();
+        return effectValue(effect, 4);
+    }
+    private static CEventEffect sourceBombEffect(Waz waz) {
+        return events(skill(waz, "飛行形態：集中爆撃", "0023"), 0, 48, CEventEffect.class).get(0);
+    }
+    private static CEventEffect.CEventEffectUnit effectUnit(CEventEffect effect, int slot) {
+        var matches = effect.getCeventEffectUnitList().stream().filter(unit -> Integer.valueOf(slot).equals(unit.getUnitSlotNum())).toList();
+        assertEquals(1, matches.size(), "one parent Effect unit " + slot);
+        assertEquals(1, matches.get(0).getBuffer(), "enabled parent Effect unit " + slot);
+        return matches.get(0);
+    }
+    private static CEventValRandom effectValue(CEventEffect effect, int slot) {
+        return assertInstanceOf(CEventValRandom.class, effectUnit(effect, slot).getData());
     }
     private static List<Integer> values(CEventValRandom v) { return List.of(v.getInt1(), v.getInt2(), v.getInt3(), v.getInt4(), v.getInt5(), v.getInt6()); }
     private static void assertValues(List<CEventValRandom> events, List<Integer> expected) {
@@ -625,12 +763,22 @@ class MotokiFlightBombVariantTest {
     private static JsonNode eventPayloadWithoutWindow(SkillInfoObject value) {
         ObjectNode tree = (ObjectNode) payload(value); tree.remove(List.of("startFrame", "endFrame")); return tree;
     }
+    private static JsonNode effectPayloadOutsideBombControls(CEventEffect effect) {
+        ObjectNode tree = (ObjectNode) eventPayloadWithoutWindow(effect);
+        var retained = JSON.createArrayNode();
+        for (JsonNode unit : tree.get("ceventEffectUnitList"))
+            if (!BOMB_CONTROL_UNITS.contains(unit.get("unitSlotNum").asInt())) retained.add(unit);
+        tree.set("ceventEffectUnitList", retained);
+        return tree;
+    }
     private static void removeMetadata(JsonNode node) {
         if (node instanceof ObjectNode object) object.remove(List.of("offset", "length", "slotNum", "unitDescription", "description"));
         node.forEach(MotokiFlightBombVariantTest::removeMetadata);
     }
     private static String sha256(Path file) throws Exception { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(file))); }
     private record Fixture(Mek mek, Waz waz, Map<Path, String> hashes, Object sourceMek, Object sourceWaz, JsonNode sourceMekTree, JsonNode sourceWazTree) { }
-    private record Motion(int bombs, int bombHeight, int maxZ, int finalZ, int takeoffFrames, boolean cancelled,
+    private record BombLaunch(int count, int spawnZ, int horizontalSpeed, int verticalSpeed, int gravity) { }
+    private record Motion(int bombs, int playerCenterHeightAtRelease, int spawnZAtRelease, int targetZAtRelease,
+                          int maxZ, int finalZ, int takeoffFrames, boolean cancelled,
                           boolean landed, boolean normalEnd, int preparationRetries, int finalGravity) { }
 }

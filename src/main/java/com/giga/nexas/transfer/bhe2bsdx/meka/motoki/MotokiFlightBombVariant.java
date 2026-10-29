@@ -162,6 +162,7 @@ public final class MotokiFlightBombVariant {
         if (amounts.size() != 1 || !Integer.valueOf(1).equals(amounts.get(0).getBuffer())
                 || !(amounts.get(0).getData() instanceof CEventValRandom amount)
                 || !List.of(0, 1, 0, 0, 6, 0).equals(values(amount))) throw invalid("十帧六枚投弹签名漂移");
+        requireBombEmissionControls(effect);
         requireJump(single(bomb, 71, CEventChange.class, 89, 89), group, flyingIndex);
         requireValues(single(landing, 19, CEventValRandom.class, 15, 15), 3, List.of(0, 0, 0, 0, 0, 0));
         requireValues(single(landing, 21, CEventValRandom.class, 15, 15), 2, List.of(0, 0, 0, 0, -20, 0));
@@ -207,6 +208,7 @@ public final class MotokiFlightBombVariant {
         setEvents(p2, 19, vector(vertical, 0, 79, 0));
         setEvents(p2, 21, vector(gravity, 0, 79, 0));
         modifiers(p2, modifier, 79);
+        stabilizeBombEmission(single(p2, 48, CEventEffect.class, 0, 0));
         setEvents(p2, 71, jump(templateChange(bomb), 79, 79, always(), phase(3)));
         setEvents(p3, 18, vector(horizontal, 0, 360, 0));
         setEvents(p3, 19, vector(vertical, 0, 0, 0));
@@ -219,6 +221,71 @@ public final class MotokiFlightBombVariant {
         result.setPhasesInfo(new ArrayList<>(List.of(p0.getPhasesInfo().get(0), p1.getPhasesInfo().get(0),
                 p2.getPhasesInfo().get(0), p3.getPhasesInfo().get(0))));
         return result;
+    }
+
+    private static void requireBombEmissionControls(CEventEffect effect) {
+        var position = bombEffectUnit(effect, 7).getData();
+        if (!(position instanceof CEventTerm term) || !Integer.valueOf(5).equals(term.getTypeId())
+                || !frames(term, 0, 0) || !payload(List.of(position(0))).equals(payload(term.getBsdxInfoCollectionList())))
+            throw invalid("投弹供体发射位置不再是原自身XYZ");
+        requireBombEffectValue(effect, 9, 3, List.of(0, 0, 0, 0, 0, 60));
+        requireBombEffectValue(effect, 10, 3, List.of(0, 0, 0, 0, 0, 60));
+        requireBombEffectValue(effect, 31, 3, List.of(0, 2, 6, 0, 0, 6));
+        requireBombEffectValue(effect, 33, 2, List.of(0, 50, 100, 0, 5, 10));
+        for (int slot : List.of(11, 32)) {
+            var entries = effect.getCeventEffectUnitList().stream()
+                    .filter(unit -> Integer.valueOf(slot).equals(unit.getUnitSlotNum())).toList();
+            if (entries.size() > 1 || !entries.isEmpty()
+                    && (!Integer.valueOf(0).equals(entries.get(0).getBuffer()) || entries.get(0).getData() != null))
+                throw invalid("投弹供体意外携带高度或垂直初速Unit" + slot);
+        }
+    }
+
+    /** 仅新增17的独立父Effect；目标Z+80不是玩家高度，也不是已验证的碰撞保证。 */
+    private static void stabilizeBombEmission(CEventEffect effect) {
+        var position = (CEventTerm) bombEffectUnit(effect, 7).getData();
+        position.setBsdxInfoCollectionList(new ArrayList<>(List.of(position(1))));
+        setBombEffectValue(effect, 9, 3, 0);
+        setBombEffectValue(effect, 10, 3, 0);
+        setBombEffectValue(effect, 11, 3, 80);
+        setBombEffectValue(effect, 31, 3, 0);
+        setBombEffectValue(effect, 32, 3, -24);
+        setBombEffectValue(effect, 33, 2, 50);
+        effect.getCeventEffectUnitList().sort(Comparator.comparing(CEventEffect.CEventEffectUnit::getUnitSlotNum));
+    }
+
+    private static BsdxInfoCollection position(int object) {
+        return term(20, List.of(1), List.of(), List.of(object, 0), List.of());
+    }
+
+    private static CEventEffect.CEventEffectUnit bombEffectUnit(CEventEffect effect, int slot) {
+        var entries = effect.getCeventEffectUnitList().stream()
+                .filter(unit -> Integer.valueOf(slot).equals(unit.getUnitSlotNum())).toList();
+        if (entries.size() != 1 || !Integer.valueOf(1).equals(entries.get(0).getBuffer()) || entries.get(0).getData() == null)
+            throw invalid("投弹Effect Unit" + slot + " 缺失、重复或未启用");
+        return entries.get(0);
+    }
+
+    private static void requireBombEffectValue(CEventEffect effect, int slot, int type, List<Integer> expected) {
+        var data = bombEffectUnit(effect, slot).getData();
+        if (!(data instanceof CEventValRandom value) || !frames(value, 0, 0))
+            throw invalid("投弹Effect Unit" + slot + " 类型或窗口漂移");
+        requireValues(value, type, expected);
+    }
+
+    private static void setBombEffectValue(CEventEffect effect, int slot, int type, int constant) {
+        var entries = effect.getCeventEffectUnitList().stream()
+                .filter(unit -> Integer.valueOf(slot).equals(unit.getUnitSlotNum())).toList();
+        if (entries.size() > 1) throw invalid("新投弹Effect Unit" + slot + " 重复");
+        CEventEffect.CEventEffectUnit unit;
+        if (entries.isEmpty()) {
+            unit = new CEventEffect.CEventEffectUnit(); effect.getCeventEffectUnitList().add(unit);
+        } else unit = entries.get(0);
+        CEventValRandom value = new CEventValRandom(type);
+        value.setStartFrame(0); value.setEndFrame(0);
+        value.setInt1(0); value.setInt2(constant); value.setInt3(0);
+        value.setInt4(0); value.setInt5(constant); value.setInt6(0);
+        unit.setUnitSlotNum(slot); unit.setCeventEffectUnitQuantity(slot); unit.setBuffer(1); unit.setData(value);
     }
 
     /** 只切已校验的普通事件；跨界ValRandom按新窗口重新插值，原技能不改。 */

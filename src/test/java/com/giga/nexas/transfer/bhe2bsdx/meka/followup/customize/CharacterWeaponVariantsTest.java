@@ -233,7 +233,14 @@ class CharacterWeaponVariantsTest {
         assertEquals(4, execution.getPhaseQuantity());
         assertTrue(events(execution, 2, 48, CEventEffect.class).isEmpty());
         var release = event(execution, 3, 48, CEventEffect.class, 0, 0);
-        assertEquals(JSON.valueToTree(effects.get(0).getCeventEffectUnitList()), JSON.valueToTree(release.getCeventEffectUnitList()));
+        Set<Integer> bombControls = Set.of(7, 9, 10, 11, 31, 32, 33);
+        assertEquals(JSON.valueToTree(effects.get(0).getCeventEffectUnitList().stream()
+                        .filter(unit -> !bombControls.contains(unit.getUnitSlotNum())).toList()),
+                JSON.valueToTree(release.getCeventEffectUnitList().stream()
+                        .filter(unit -> !bombControls.contains(unit.getUnitSlotNum())).toList()));
+        var position = (CEventTerm) release.getCeventEffectUnitList().stream()
+                .filter(unit -> Integer.valueOf(7).equals(unit.getUnitSlotNum())).findFirst().orElseThrow().getData();
+        assertEquals(List.of(1, 0), position.getBsdxInfoCollectionList().get(0).getIntList3());
         assertEquals(List.of(1, 0, 0, 0, 12, 0), speedValues(event(execution, 3, 18, CEventValRandom.class, 0, 1)));
         assertEquals(List.of(1, 0, 0, 0, 8, 0), speedValues(event(execution, 3, 18, CEventValRandom.class, 2, 49)));
         var exit = event(execution, 3, 71, CEventChange.class, 79, 79).getBsdxInfoCollectionList2().get(0);
