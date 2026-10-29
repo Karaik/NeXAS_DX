@@ -25,7 +25,7 @@ public final class MotokiFlightBombVariant {
     private static final String ROUTER = "DX_FOCUSED_BOMB_RETURN";
     private static final String EXECUTION_NAME = "集中爆撃・帰投：制御";
     private static final String EXECUTION = "DX_FOCUSED_BOMB_EXECUTION";
-    private static final String DESCRIPTION = "自ら離陸し、投下準備後に敵との中心高度差を再確認して六枚の爆弾を投下する。高度が足りなければ上昇をやり直し、確保できない場合は投下せず帰投する。爆撃後は降下し、着地して動作を終える。";
+    private static final String DESCRIPTION = "自ら離陸し、準備後に敵との中心高度差を再確認する。投下時の敵の位置を狙い、その上方から六発の爆弾を落とす。高度不足なら上昇をやり直し、確保できない場合は投下せず帰投する。爆撃後は降下し、着地して動作を終える。";
 
     private MotokiFlightBombVariant() { }
 

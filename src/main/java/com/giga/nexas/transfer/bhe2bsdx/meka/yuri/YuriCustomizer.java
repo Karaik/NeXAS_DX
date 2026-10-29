@@ -43,7 +43,7 @@ public final class YuriCustomizer implements FollowupMekaCustomizer {
         edits.add(weaponCost(daggerWeapon, 0, 40, 28,
                 "踏み込みから鋭く刺し込む一撃。攻撃の有効時間と単発威力を強化し、近距離での反撃に向く。"));
         edits.add(weaponCost(sidestepWeapon, 0, 10, 12,
-                "側方への位置調整を強化した蹴り。相手の正面を外し、ダガーなどの近距離攻撃へつなげたい。"));
+                "側方へ踏み込みながら蹴り上げる攻撃。位置と高さを変え、相手との間合いを見て次の攻めを選ぶ。"));
 
         // 全対象を検証する前に、先に見つかった攻撃だけを書き換えない。
         edits.forEach(Runnable::run);

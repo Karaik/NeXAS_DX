@@ -253,3 +253,11 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 - 旧case03于10月29日20:02:31以code0退出，case04于21:41:55以code0退出；两个退出事件均非exception，launcher正常完成、cleanup_pending=false、原Save全量不变。case04仅有菜单preview，没有可验收的普通Replay输入，不算039通过；各历史exception计数和共享驱动变化照实保留。
 - case05鼠标采样正常，但旧标题画面与native状态不一致；真正标题走脚本选择器，ID75实为隐藏滚动条，不是Start。最小化恢复后黑，render loop、TestCooperativeLevel和Present成功仍不能证明像素正常。根保留现场后通过harness STOP，游戏停止码E0000001为主动终止、工具会话exit0，不能混作游戏自然exit0或异常崩溃。原Save不变、cleanup_pending=false，039真实输入0。关闭证据见`target/bhe-audit-20261026/closure05-20261030/`。
 - case06沿同131244包、case04只读seed重开，仍捕获黑屏；根启动CDB时遗漏交互终端，EOF导致DEBUGGER_INACTIVE退出C0000354，不能当游戏自身崩溃或运行通过。该操作失误与现场保留；以后CDB显式TTY并用-pd确保调试器退出时分离。case07已独立启动，PID240480、CDB PTY80824、launcher51443，Sky窗口10093462；当前标题native为scene1／kind40000／有效脚本选择器，仍捕获黑屏，没有新连段输入。未复用case锁／PID，目标仍active，整包runtimeValidated=false。
+
+### 2026-10-30说明校准与交付整理
+
+- 当前全部934个src Java及1111个相关文本重新筛查，没有新增确定源码乱码；两处未知分支问号注释没有证据恢复为具体语义，保留未知状态。旧txt清单BOM与既有LF另记，没有借机全库改格式或混入Clarias WIP。
+- 最终九角色171武装／285技能的日文复审确认11条定制简介无重大逻辑写反，但Yuri后继推荐、Motoki投弹定位和Misaki敌方视角仍可误导玩家。只在三处既有Customizer校准说明，未改事件、动作、伤害、热耗或架构；手册的Motoki12准确名已单独中文提交7c9d6a270，未push。
+- 四类36项相关回归0失败／错误／跳过，随后267.305秒完整构建成功，目录run_20261030_031642_167、EXE032001且hash仍1ac677…，PAC53711b4d74162e0e3c3b008d1c8d53c3b222ac89ae23efda5beaea012440ee5b。独立全3884资产对比仅三个MEK指定说明变化，20个WAZ全相同，18原始块其余字节保全；合408字符串CP932严格往返。详见japanese-descriptions-20261030.md，新包runtimeValidated=false。
+- 已从原131244整理独立开发候选C:/NeXAS_DX_runs/delivery-candidates/BHE_DX_131244_development_20261030_031021：同轮EXE／PAC统一安装名，附7c9d6a270版手册、七份引用报告、原receipt、14项基础PAC身份及逐文件校验清单。15文件由独立代理全hash复核通过，无Save、Drs、诊断PS1或原版媒体混入。该候选保留为原实测包，不混作032001；后续候选绑定各自说明与hash。
+- case07仍为旧131244且持续存活，本轮重新捕获仍黑；未重复开同样case、未使用内存强制菜单／出招。用户肉眼观察问题仍待回复，Yuri039及剩余角色连段、Nagi成功防反、Freja预算、全武装与关卡推进未扩大验收。目标继续active，不将文案或交付完整性当玩法完成。

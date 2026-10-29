@@ -61,6 +61,8 @@ public final class MisakiCustomizer implements FollowupMekaCustomizer {
                 "転移手・挟撃", "DX_PINCER_HANDS", 36,
                 "前方、続いて後方から転移手を叩き込む二段の挟撃。床召還で動きを制限し、手を避けた相手には掴みを重ねたい。",
                 copy -> addRearBeat(copy, rear, targetGroup, hand, trail), donor);
+        mek.getMekBasicInfo().setMekDescription(
+                "リンカネーターと融合したみさき。転移手による前後の挟撃や床召還で相手を牽制し、掴みや血水晶の武装を使い分ける。");
     }
 
     private static void addRearBeat(Waz.Skill copy, Waz.Skill rear, int group, int hand, int trail) {
