@@ -243,3 +243,13 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 - Katou10→20→6在早时序278、中时序307及同录像二轮614均有真实三武装伤害链；新20两次均命中、后继控制为正、最终清理正常，详见katou-combo-runtime-20261029.md。当前仅固定甲靶和两档时序范围。
 - Naoto正常UI模板075保留109／敌0／map68及真实A0／Dash B20／Dash C1。076早时序30／42／74实际0→20内部两拳→外部1，4Hit137、后继precontrol5／4／7；079中时序两轮各137、HP6000→5863→5726，后继precontrol3／4／5，最后地面W0、active-1、G50、倍率100、heat0、TAMA0/SCRIPT0。077／078仅生成不计实测，独立运行报告已固定在naoto-combo-runtime-20261029.md。
 - 使用说明同步最新包与已测路线，仍保留全171菜单武装、其它角色连段、移动／小型／主动CPU／墙边／受击中断、Nagi成功防反、Freja高低FC预算和实际关卡推进等未验项。局部连段不等同于整包或九角色完成；仅develop、中文本地提交、不push，原Clarias六文件53行保留。
+
+### 2026-10-30恢复与新增路线
+
+- 月詠实际装备近A8／Dash B19／Dash C2。081窗口候选的第三武装虽START却零伤；085将C提前至新19命中后2帧，真实8→19→2三Hit151、后继控制56／49。086同回合反向两轮各151，HP6000→5849→5698、轮内无恢复，末尾地面W0／active-1／G50／倍率100／heat0／TAMA0／SCRIPT0。082至084仅生成不计实机，详见tsukuyomi-combo-runtime-20261029.md。
+- Yuri已验证两条不同连接：034上翻踢3→侧踢4连续229，随后匕首1启动但零伤；036匕首1→普通匕首0实际210+三次13共249，弹体5/329的owner和目标可对应，末尾地面W0／G50／倍率100／heat0／TAMA0／SCRIPT0。1→4门后侧踢仍未命中，BOUNDS实读倒地目标hurt0..14、攻击者Z34以上；不靠无限扫输入或盲改硬直凑路线。034末尾G100已核来自原BHE W15 block1，不能借036状态写成全部G50。039重新接近后的第二轮尚未实测。
+- 临时input JSON在生成fixture后统一CRLF，使7件input源hash不同于旧receipt；已按旧SHA严格重建原LF字节为排他.bin sidecar，逐件核JSON值相同、编译结果等真实Replay第三块、Replay整文件仍匹配receipt。旧receipt和录像没有覆盖，独立审计两份均通过；三份运行报告已补准确对应关系。
+- 已本地中文提交0da38d63d保存Motoki目标空投修复，f9b0f46c8保存Katou／Naoto／Motoki路线和说明书，不push。原Clarias六文件53行未改未暂存。
+- 旧case03于10月29日20:02:31以code0退出，case04于21:41:55以code0退出；两个退出事件均非exception，launcher正常完成、cleanup_pending=false、原Save全量不变。case04仅有菜单preview，没有可验收的普通Replay输入，不算039通过；各历史exception计数和共享驱动变化照实保留。
+- case05鼠标采样正常，但旧标题画面与native状态不一致；真正标题走脚本选择器，ID75实为隐藏滚动条，不是Start。最小化恢复后黑，render loop、TestCooperativeLevel和Present成功仍不能证明像素正常。根保留现场后通过harness STOP，游戏停止码E0000001为主动终止、工具会话exit0，不能混作游戏自然exit0或异常崩溃。原Save不变、cleanup_pending=false，039真实输入0。关闭证据见`target/bhe-audit-20261026/closure05-20261030/`。
+- case06沿同131244包、case04只读seed重开，仍捕获黑屏；根启动CDB时遗漏交互终端，EOF导致DEBUGGER_INACTIVE退出C0000354，不能当游戏自身崩溃或运行通过。该操作失误与现场保留；以后CDB显式TTY并用-pd确保调试器退出时分离。case07已独立启动，PID240480、CDB PTY80824、launcher51443，Sky窗口10093462；当前标题native为scene1／kind40000／有效脚本选择器，仍捕获黑屏，没有新连段输入。未复用case锁／PID，目标仍active，整包runtimeValidated=false。

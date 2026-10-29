@@ -16,6 +16,8 @@
 
 实际最终字节与非白名单／来源保全见`target/bhe-audit-20261026/motoki-revision3-artifact-20261029/`。运行证据集中在`target/bhe-audit-20261026/motoki-target-runtime-20261029/`：原录像及receipt副本、每个已完成输入段的原字节范围／hash、独立JSON和分阶段报告。原runtime.cdb.log仍可继续增长，不能称整个日志已闭合；这里只固定已到RESET及本次最终query的片段。
 
+输入字节补证：031／032生成后，其计划JSON统一为CRLF，当前文件SHA因此不同于旧receipt记录的LF输入SHA。匹配旧SHA的LF字节已重建并以同名`*.recorded-json-bytes.bin`排他保存在`target/bhe-audit-20261026/input-newline-evidence-20261029/`；独立复核确认两种换行形式的JSON值相同，`fixture.compile_inputs`输出均逐字节等于各自真实Replay第三块，Replay整文件仍匹配旧receipt。七件对应校验见`target/bhe-audit-20261026/input-newline-independent-review-20261029.json`；旧receipt和Replay保留，此补证不增加实机验收范围。
+
 ## 新17的改动及两个高度量
 
 只有新增17执行图P2父Effect按当前Spec白名单改变：目标完整XYZ加Z80，清位置偏角／径向随机，父水平初速0、Vz=-24、G50；仍六枚、仍使用原公共Tama05[468]，原13和公共弹体字节保留。P0/P1的玩家中心高度差200准入／复核、P3 G50落地保持，不同时改伤害、范围或EXE。

@@ -57,6 +57,8 @@ Replay079经正常UI实际回放至STOP15.00：900帧、tail240，输入为第�
 
 独立证据目录：`target/bhe-audit-20261026/naoto-runtime-audit-20261029/`，含075／076／079保全副本、`runtime-early-v1.snapshot.log`、`audit-early-v1.json`及最后的`runtime-final-v1.snapshot.log`／`audit-final-v1.json`。最终快照155052字节，SHA256为`e540fbb99ac53464cd6e679a064689565f5c70969472c9c2344985454f26a773`。
 
+输入字节补证：079的`naoto-repeat-middle-input-20261029.json`在生成后统一为CRLF，当前SHA因此不同于旧receipt中的LF输入SHA。匹配旧SHA的原LF字节以同名`*.recorded-json-bytes.bin`排他保存在`target/bhe-audit-20261026/input-newline-evidence-20261029/`；独立复核确认其JSON值与当前CRLF相同，两者经`fixture.compile_inputs`均逐字节匹配真实079第三块，079整文件仍匹配旧receipt。七件对应校验见`target/bhe-audit-20261026/input-newline-independent-review-20261029.json`；旧receipt与Replay保留，本补证不改变上述连段结论及其限制。
+
 审计从日志实际`NAOTO_REPLAY_TRIALS_BEGIN`之后开始，明确排除了此前装备菜单预览中重复的frame1079记录。每次已计划的连段到C输入之后首个正常RESET为止，后续菜单预览即使复用录像最后帧号也不计为额外命中；原始事件仍完整保留。
 
 读取器为`target/bhe-audit-20261026/audit_naoto_runtime_20261029.py`，只读取文件和写新target证据，不触碰游戏进程、原Save或生产逻辑。实际UI配置和原生回放由根代理执行；独立审计没有运行UI、Maven、CDB命令或Frida。
