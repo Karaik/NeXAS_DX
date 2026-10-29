@@ -72,7 +72,8 @@ public class TestBheByJinkiRunner {
 
     private void runBheByJinki(boolean includeSou) throws Exception {
         Path projectRoot = Paths.get("").toAbsolutePath().normalize();
-        Path buildsRoot = projectRoot.resolve("target/bhe-playable-builds");
+        Path buildsRoot = Paths.get(System.getProperty("bhe.playableBuildRoot",
+                projectRoot.resolve("target/bhe-playable-builds").toString())).toAbsolutePath().normalize();
         Files.createDirectories(buildsRoot);
         Path buildRoot = buildsRoot.resolve("run_" + LocalDateTime.now(ZoneId.of("Asia/Tokyo"))
                 .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS")));
@@ -91,12 +92,8 @@ public class TestBheByJinkiRunner {
         jinkiRequest.setPatchMenuData(true);
         AkaoGraftResult jinkiResult = Jinki2BsdxTransferV2.process(jinkiRequest);
 
-        Path jinkiGeneratedExeRelative = projectRoot.relativize(
-                jinkiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
-        );
-        Path jinkiGeneratedAssetDirRelative = projectRoot.relativize(
-                jinkiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
-        );
+        Path jinkiGeneratedExe = jinkiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize();
+        Path jinkiGeneratedAssetDir = jinkiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize();
         log.info("01 akao patch append end!");
 
         //-----------------------------------------------------------------------
@@ -106,8 +103,8 @@ public class TestBheByJinkiRunner {
         // 2. tsukuyomi
         TsukuyomiGraftRequest tsukuyomiRequest = new TsukuyomiGraftRequest();
         tsukuyomiRequest.setExeOutputDir(buildRoot.resolve("tsukuyomi"));
-        tsukuyomiRequest.setJinkiGeneratedExePath(jinkiGeneratedExeRelative);
-        tsukuyomiRequest.setJinkiGeneratedAssetDir(jinkiGeneratedAssetDirRelative);
+        tsukuyomiRequest.setJinkiGeneratedExePath(jinkiGeneratedExe);
+        tsukuyomiRequest.setJinkiGeneratedAssetDir(jinkiGeneratedAssetDir);
         tsukuyomiRequest.setInheritedJinkiResult(jinkiResult);
         tsukuyomiRequest.setBheGameResourceRoot(null);
         tsukuyomiRequest.setTsukuyomiResourceDir(Paths.get("tsukuyomi"));
@@ -119,18 +116,14 @@ public class TestBheByJinkiRunner {
         TsukuyomiGraftResult tsukuyomiResult = TsukuyomiTransfer.process(tsukuyomiRequest);
         log.info("02 tsukuyomi patch append end!");
 
-        Path yuriGeneratedExeRelative = projectRoot.relativize(
-                tsukuyomiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
-        );
-        Path yuriGeneratedAssetDirRelative = projectRoot.relativize(
-                tsukuyomiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
-        );
+        Path yuriGeneratedExe = tsukuyomiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize();
+        Path yuriGeneratedAssetDir = tsukuyomiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize();
 
         // 3. yuri
         YuriGraftRequest yuriRequest = new YuriGraftRequest();
         yuriRequest.setExeOutputDir(buildRoot.resolve("yuri"));
-        yuriRequest.setJinkiGeneratedExePath(yuriGeneratedExeRelative);
-        yuriRequest.setJinkiGeneratedAssetDir(yuriGeneratedAssetDirRelative);
+        yuriRequest.setJinkiGeneratedExePath(yuriGeneratedExe);
+        yuriRequest.setJinkiGeneratedAssetDir(yuriGeneratedAssetDir);
         yuriRequest.setInheritedJinkiResult(jinkiResult);
         yuriRequest.setPreviousCharacterResult(tsukuyomiResult);
         yuriRequest.setBheGameResourceRoot(null);
@@ -142,18 +135,14 @@ public class TestBheByJinkiRunner {
         YuriGraftResult yuriResult = YuriTransfer.process(yuriRequest);
         log.info("03 yuri patch append end!");
 
-        Path frejaGeneratedExeRelative = projectRoot.relativize(
-                yuriResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
-        );
-        Path frejaGeneratedAssetDirRelative = projectRoot.relativize(
-                yuriResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
-        );
+        Path frejaGeneratedExe = yuriResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize();
+        Path frejaGeneratedAssetDir = yuriResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize();
 
         // 4. freja
         FrejaGraftRequest frejaRequest = new FrejaGraftRequest();
         frejaRequest.setExeOutputDir(buildRoot.resolve("freja"));
-        frejaRequest.setJinkiGeneratedExePath(frejaGeneratedExeRelative);
-        frejaRequest.setJinkiGeneratedAssetDir(frejaGeneratedAssetDirRelative);
+        frejaRequest.setJinkiGeneratedExePath(frejaGeneratedExe);
+        frejaRequest.setJinkiGeneratedAssetDir(frejaGeneratedAssetDir);
         frejaRequest.setInheritedJinkiResult(jinkiResult);
         frejaRequest.setPreviousCharacterResult(yuriResult);
         frejaRequest.setBheGameResourceRoot(null);
@@ -165,18 +154,14 @@ public class TestBheByJinkiRunner {
         FrejaGraftResult frejaResult = FrejaTransfer.process(frejaRequest);
         log.info("04 freja patch append end!");
 
-        Path nagiGeneratedExeRelative = projectRoot.relativize(
-                frejaResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
-        );
-        Path nagiGeneratedAssetDirRelative = projectRoot.relativize(
-                frejaResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
-        );
+        Path nagiGeneratedExe = frejaResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize();
+        Path nagiGeneratedAssetDir = frejaResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize();
 
         // 5. nagi
         NagiGraftRequest nagiRequest = new NagiGraftRequest();
         nagiRequest.setExeOutputDir(buildRoot.resolve("nagi"));
-        nagiRequest.setJinkiGeneratedExePath(nagiGeneratedExeRelative);
-        nagiRequest.setJinkiGeneratedAssetDir(nagiGeneratedAssetDirRelative);
+        nagiRequest.setJinkiGeneratedExePath(nagiGeneratedExe);
+        nagiRequest.setJinkiGeneratedAssetDir(nagiGeneratedAssetDir);
         nagiRequest.setInheritedJinkiResult(jinkiResult);
         nagiRequest.setPreviousCharacterResult(frejaResult);
         nagiRequest.setBheGameResourceRoot(null);
@@ -188,18 +173,14 @@ public class TestBheByJinkiRunner {
         NagiGraftResult nagiResult = NagiTransfer.process(nagiRequest);
         log.info("05 nagi patch append end!");
 
-        Path misakiGeneratedExeRelative = projectRoot.relativize(
-                nagiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
-        );
-        Path misakiGeneratedAssetDirRelative = projectRoot.relativize(
-                nagiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
-        );
+        Path misakiGeneratedExe = nagiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize();
+        Path misakiGeneratedAssetDir = nagiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize();
 
         // 6. misaki
         MisakiGraftRequest misakiRequest = new MisakiGraftRequest();
         misakiRequest.setExeOutputDir(buildRoot.resolve("misaki"));
-        misakiRequest.setJinkiGeneratedExePath(misakiGeneratedExeRelative);
-        misakiRequest.setJinkiGeneratedAssetDir(misakiGeneratedAssetDirRelative);
+        misakiRequest.setJinkiGeneratedExePath(misakiGeneratedExe);
+        misakiRequest.setJinkiGeneratedAssetDir(misakiGeneratedAssetDir);
         misakiRequest.setInheritedJinkiResult(jinkiResult);
         misakiRequest.setPreviousCharacterResult(nagiResult);
         misakiRequest.setBheGameResourceRoot(null);
@@ -211,18 +192,14 @@ public class TestBheByJinkiRunner {
         MisakiGraftResult misakiResult = MisakiTransfer.process(misakiRequest);
         log.info("06 misaki patch append end!");
 
-        Path naotoGeneratedExeRelative = projectRoot.relativize(
-                misakiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
-        );
-        Path naotoGeneratedAssetDirRelative = projectRoot.relativize(
-                misakiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
-        );
+        Path naotoGeneratedExe = misakiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize();
+        Path naotoGeneratedAssetDir = misakiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize();
 
         // 7. naoto
         NaotoGraftRequest naotoRequest = new NaotoGraftRequest();
         naotoRequest.setExeOutputDir(buildRoot.resolve("naoto"));
-        naotoRequest.setJinkiGeneratedExePath(naotoGeneratedExeRelative);
-        naotoRequest.setJinkiGeneratedAssetDir(naotoGeneratedAssetDirRelative);
+        naotoRequest.setJinkiGeneratedExePath(naotoGeneratedExe);
+        naotoRequest.setJinkiGeneratedAssetDir(naotoGeneratedAssetDir);
         naotoRequest.setInheritedJinkiResult(jinkiResult);
         naotoRequest.setPreviousCharacterResult(misakiResult);
         naotoRequest.setBheGameResourceRoot(null);
@@ -234,18 +211,14 @@ public class TestBheByJinkiRunner {
         NaotoGraftResult naotoResult = NaotoTransfer.process(naotoRequest);
         log.info("07 naoto patch append end!");
 
-        Path katouGeneratedExeRelative = projectRoot.relativize(
-                naotoResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
-        );
-        Path katouGeneratedAssetDirRelative = projectRoot.relativize(
-                naotoResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
-        );
+        Path katouGeneratedExe = naotoResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize();
+        Path katouGeneratedAssetDir = naotoResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize();
 
         // 8. katou
         KatouGraftRequest katouRequest = new KatouGraftRequest();
         katouRequest.setExeOutputDir(buildRoot.resolve("katou"));
-        katouRequest.setJinkiGeneratedExePath(katouGeneratedExeRelative);
-        katouRequest.setJinkiGeneratedAssetDir(katouGeneratedAssetDirRelative);
+        katouRequest.setJinkiGeneratedExePath(katouGeneratedExe);
+        katouRequest.setJinkiGeneratedAssetDir(katouGeneratedAssetDir);
         katouRequest.setInheritedJinkiResult(jinkiResult);
         katouRequest.setPreviousCharacterResult(naotoResult);
         katouRequest.setBheGameResourceRoot(null);
@@ -257,18 +230,14 @@ public class TestBheByJinkiRunner {
         KatouGraftResult katouResult = KatouTransfer.process(katouRequest);
         log.info("08 katou patch append end!");
 
-        Path wilhelmGeneratedExeRelative = projectRoot.relativize(
-                katouResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
-        );
-        Path wilhelmGeneratedAssetDirRelative = projectRoot.relativize(
-                katouResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
-        );
+        Path wilhelmGeneratedExe = katouResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize();
+        Path wilhelmGeneratedAssetDir = katouResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize();
 
         // 9. wilhelm
         WilhelmGraftRequest wilhelmRequest = new WilhelmGraftRequest();
         wilhelmRequest.setExeOutputDir(buildRoot.resolve("wilhelm"));
-        wilhelmRequest.setJinkiGeneratedExePath(wilhelmGeneratedExeRelative);
-        wilhelmRequest.setJinkiGeneratedAssetDir(wilhelmGeneratedAssetDirRelative);
+        wilhelmRequest.setJinkiGeneratedExePath(wilhelmGeneratedExe);
+        wilhelmRequest.setJinkiGeneratedAssetDir(wilhelmGeneratedAssetDir);
         wilhelmRequest.setInheritedJinkiResult(jinkiResult);
         wilhelmRequest.setPreviousCharacterResult(katouResult);
         wilhelmRequest.setBheGameResourceRoot(null);
@@ -280,18 +249,14 @@ public class TestBheByJinkiRunner {
         WilhelmGraftResult wilhelmResult = WilhelmTransfer.process(wilhelmRequest);
         log.info("09 wilhelm patch append end!");
 
-        Path motokiGeneratedExeRelative = projectRoot.relativize(
-                wilhelmResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
-        );
-        Path motokiGeneratedAssetDirRelative = projectRoot.relativize(
-                wilhelmResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
-        );
+        Path motokiGeneratedExe = wilhelmResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize();
+        Path motokiGeneratedAssetDir = wilhelmResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize();
 
         // 10. motoki
         MotokiGraftRequest motokiRequest = new MotokiGraftRequest();
         motokiRequest.setExeOutputDir(buildRoot.resolve("motoki"));
-        motokiRequest.setJinkiGeneratedExePath(motokiGeneratedExeRelative);
-        motokiRequest.setJinkiGeneratedAssetDir(motokiGeneratedAssetDirRelative);
+        motokiRequest.setJinkiGeneratedExePath(motokiGeneratedExe);
+        motokiRequest.setJinkiGeneratedAssetDir(motokiGeneratedAssetDir);
         motokiRequest.setInheritedJinkiResult(jinkiResult);
         motokiRequest.setPreviousCharacterResult(wilhelmResult);
         motokiRequest.setBheGameResourceRoot(null);
@@ -307,18 +272,14 @@ public class TestBheByJinkiRunner {
             return;
         }
 
-        Path souGeneratedExeRelative = projectRoot.relativize(
-                motokiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize()
-        );
-        Path souGeneratedAssetDirRelative = projectRoot.relativize(
-                motokiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize()
-        );
+        Path souGeneratedExe = motokiResult.getExePatchPlan().getOutputExePath().toAbsolutePath().normalize();
+        Path souGeneratedAssetDir = motokiResult.getImportedAssetSet().getOutputRootDir().toAbsolutePath().normalize();
 
         // 11. sou
         SouGraftRequest souRequest = new SouGraftRequest();
         souRequest.setExeOutputDir(buildRoot.resolve("sou"));
-        souRequest.setJinkiGeneratedExePath(souGeneratedExeRelative);
-        souRequest.setJinkiGeneratedAssetDir(souGeneratedAssetDirRelative);
+        souRequest.setJinkiGeneratedExePath(souGeneratedExe);
+        souRequest.setJinkiGeneratedAssetDir(souGeneratedAssetDir);
         souRequest.setInheritedJinkiResult(jinkiResult);
         souRequest.setPreviousCharacterResult(motokiResult);
         souRequest.setBheGameResourceRoot(null);

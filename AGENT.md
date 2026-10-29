@@ -99,10 +99,11 @@ set MAVEN_OPTS=-Xmx4g
 
 ### BHE九角色可玩改造（2026-10-27）
 
-- 九角色构建入口为`TestBheByJinkiRunner#testRunNineCharacterRework`，只排除Sou的角色重做，保留原有Sou构建阶段及ID113，复用JINKI V2→Tsukuyomi→Followup。输入EXE使用只读`ida-reverse/BaldrSky.exe`（713cf…）；`bsdx_game`仅作运行资源目录，其2f8c…EXE带有会使预览视野异常的旧宽屏补丁。入口在首段process前校验完整基线hash，并在完成时核源未变；每轮独立输出，不覆盖旧包，receipt记录实际源EXE路径及起始hash。
+- 九角色构建入口为`TestBheByJinkiRunner#testRunNineCharacterRework`，只排除Sou的角色重做，保留原有Sou构建阶段及ID113，复用JINKI V2→Tsukuyomi→Followup。输入EXE使用只读`ida-reverse/BaldrSky.exe`（713cf…）；`bsdx_game`仅作运行资源目录，其2f8c…EXE带有会使预览视野异常的旧宽屏补丁。入口在首段process前校验完整基线hash，并在完成时核源未变；每轮独立输出，不覆盖旧包，receipt记录实际源EXE路径及起始hash；可用`-Dbhe.playableBuildRoot=C:/NeXAS_DX_runs/builds`指定跨盘输出根目录。
 - 角色逻辑仍在现有Customizer；复制变体使用已重绑的本角色MEK/WAZ及独立Material，实际玩家武装号不得超过152。定制后再次补齐Material容量并同步WazaGroup技能数。
 - 两个BHE静态输出器对九个重做角色从最终MEK按身份构造14槽初始装备，Sou保留旧默认行，继承行独立复制；普通武装、FC与initializer不能混槽。
 - `build.json`记录EXE/PAC身份且初始`runtimeValidated=false`；封包字节一致与Java测试不代表实机通过。隔离试跑工具为`tools/bhe_runtime_session.py`，游戏效果及说明书验收独立记录。
+- 连段输入可用游戏原生训练Replay验收；`tools/bhe_replay_input_fixture.py`仅从当前角色正常UI保存的模板生成新录像，保留前两块，只替换普通按钮输入块，不覆盖旧文件。先经正常载入／播放，再核不同武装START、同一目标控制、热量与收尾；格式通过不能代替玩法通过，操作证据见`replay-validation-20261029.md`。
 - 两个BHE静态输出器通过`MekaPreloadBudget`补齐`BQMekaMemory.dat`至最终MekaGroup行数；优先保留继承表的schema及全部行，只在本轮目录追加新ID。100M是显式调度权重，不是精确内存；原生force/release/queue与关卡推进仍须实机验收。
 
 ### BHE多角色流水线修复（2026-10-08）
