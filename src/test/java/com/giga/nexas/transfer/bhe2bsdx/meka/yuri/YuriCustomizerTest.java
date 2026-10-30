@@ -37,6 +37,7 @@ class YuriCustomizerTest {
     @Test
     void realDaggerAndSidestepKeepTheirDistinctCombatRoles() throws Exception {
         Fixture fixture = fixture();
+        int originalSkillCount = fixture.waz().getSkillList().size();
         Waz.Skill dagger = skill(fixture.waz(), "アサシンダガー", "STRAIGHT04");
         Waz.Skill sidestep = skill(fixture.waz(), "サイドステップキック", "SIDESTEPKICK04");
         CEventHit daggerHit = event(dagger, 3, 41, CEventHit.class, 46, 48);
@@ -61,7 +62,8 @@ class YuriCustomizerTest {
         assertEquals(timeout, JSON.valueToTree(event(dagger, 3, 71, CEventChange.class, 92, 92)));
         assertEquals(kickHit, JSON.valueToTree(event(sidestep, 1, 41, CEventHit.class, 18, 42)));
         assertEquals(recovery, JSON.valueToTree(event(sidestep, 1, 18, CEventValRandom.class, 29, 46)));
-        assertEquals(otherSkills, fixture.waz().getSkillList().stream()
+        assertEquals(originalSkillCount + 6, fixture.waz().getSkillList().size());
+        assertEquals(otherSkills, fixture.waz().getSkillList().stream().limit(originalSkillCount)
                 .filter(value -> value != dagger && value != sidestep).map(value -> JSON.<JsonNode>valueToTree(value)).toList());
         assertEquals(sourceMek, JSON.valueToTree(fixture.sourceMek()));
         assertEquals(sourceWaz, JSON.valueToTree(fixture.sourceWaz()));

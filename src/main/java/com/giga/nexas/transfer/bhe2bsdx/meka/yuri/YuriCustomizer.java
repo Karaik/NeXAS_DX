@@ -49,6 +49,7 @@ public final class YuriCustomizer implements FollowupMekaCustomizer {
         edits.forEach(Runnable::run);
         mek.getMekBasicInfo().setMekDescription(
                 "ダガーとエネルギーガンを使い分ける高速戦闘型。サイドステップキックで位置を変え、アサシンダガーで鋭く刺し込む。近距離の切り返しと射撃による牽制を組み合わせ、同じ場所に留まらず戦いたい。");
+        YuriAdditionalVariants.append(mek, waz);
     }
 
     private static void requireOriginalHitExit(CEventChange change) {

@@ -41,5 +41,6 @@ public final class FrejaCustomizer implements FollowupMekaCustomizer {
         edits.forEach(Runnable::run);
         mek.getMekBasicInfo().setMekDescription(
                 "ハルバードの間合いを生かして戦う四足型。踏み込みを強化したスピアを軸に、斬り上げとバックキックを使い分ける。遠距離ではジャベリンで牽制し、相手の動きを見て接近したい。");
+        FrejaAdditionalVariants.appendAll(mek, waz);
     }
 }

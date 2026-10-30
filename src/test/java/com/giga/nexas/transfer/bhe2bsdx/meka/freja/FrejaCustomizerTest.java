@@ -36,6 +36,7 @@ class FrejaCustomizerTest {
     @Test
     void realSpearImprovesBothBranchesAndPreservesOtherCombatData() throws Exception {
         Fixture fixture = fixture();
+        int originalSkillCount = fixture.waz().getSkillList().size();
         Waz.Skill spear = skill(fixture.waz(), "スピア", "0002");
         CEventHit first = event(spear, 3, 41, CEventHit.class, 3, 10);
         CEventHit second = event(spear, 5, 41, CEventHit.class, 16, 24);
@@ -67,7 +68,8 @@ class FrejaCustomizerTest {
         assertEquals(secondCombat, combatExceptPower(second));
         assertEquals(recovery, JSON.valueToTree(event(spear, 3, 18, CEventValRandom.class, 9, 19)));
         assertEquals(decoy, JSON.valueToTree(numericDecoy), "同数值的非速度槽事件不能被改写");
-        assertEquals(otherSkills, fixture.waz().getSkillList().stream()
+        assertEquals(originalSkillCount + 6, fixture.waz().getSkillList().size());
+        assertEquals(otherSkills, fixture.waz().getSkillList().stream().limit(originalSkillCount)
                 .filter(value -> value != spear).map(value -> JSON.<JsonNode>valueToTree(value)).toList());
         assertEquals(sourceMek, JSON.valueToTree(fixture.sourceMek()));
         assertEquals(sourceWaz, JSON.valueToTree(fixture.sourceWaz()), "不能通过共享列表改坏BHE源对象");

@@ -55,6 +55,7 @@ public final class TsukuyomiCustomizer {
                     speed.setInt2(32);
                     exit.getBsdxInfoCollectionList2().get(0).setParamList(new ArrayList<>(List.of(group, target)));
                 }, sheathWeapon);
+        TsukuyomiAdditionalVariants.appendAll(mek, waz);
     }
 
     private static void requireJump(CEventChange change, int group, int skill) {

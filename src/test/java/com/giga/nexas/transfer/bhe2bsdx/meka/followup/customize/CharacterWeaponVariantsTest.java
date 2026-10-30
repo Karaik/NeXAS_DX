@@ -153,7 +153,7 @@ class CharacterWeaponVariantsTest {
 
         customizeTsukuyomi(f);
 
-        assertAdded(f, before, "袈裟・一閃", "PUNCH", "DX_KESA_ISSEN", 12);
+        assertAdded(f, before, "袈裟・一閃", "PUNCH", "DX_KESA_ISSEN", 12, 6);
         var variant = skill(f.waz(), "袈裟・一閃", "DX_KESA_ISSEN");
         assertEquals(List.of(0, 32, 0, 0, 0, 0), speedValues(event(variant, 1, 18, CEventValRandom.class, 8, 11)));
         assertEquals(List.of(30), power(event(variant, 1, 41, CEventHit.class, 10, 11)).getParamList());
@@ -362,8 +362,12 @@ class CharacterWeaponVariantsTest {
     }
 
     private static void assertAdded(Fixture f, Snapshot before, String name, String sequence, String english, int heat) {
-        assertEquals(before.weapons() + 1, f.mek().getMekWeaponInfoMap().size());
-        assertEquals(before.skills() + 1, f.waz().getSkillList().size());
+        assertAdded(f, before, name, sequence, english, heat, 1);
+    }
+
+    private static void assertAdded(Fixture f, Snapshot before, String name, String sequence, String english, int heat, int addedCount) {
+        assertEquals(before.weapons() + addedCount, f.mek().getMekWeaponInfoMap().size());
+        assertEquals(before.skills() + addedCount, f.waz().getSkillList().size());
         var added = weapon(f.mek(), name, sequence);
         assertSame(added, f.mek().getMekWeaponInfoMap().get(before.weapons()));
         assertTrue(before.weapons() <= 152);
