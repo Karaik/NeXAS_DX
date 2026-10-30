@@ -26,6 +26,11 @@ public final class NagiCustomizer implements FollowupMekaCustomizer {
     public void customizeBeforeWrite(FollowupMekaContext context) {
         Mek mek = requireMek(context, "Nagi");
         Waz waz = requireWaz(context, "Nagi");
+        NagiAdditionalVariants.appendAll(mek, waz);
+    }
+
+    static void appendBase(Mek mek, Waz waz) {
+        validateBaseSuffixes(waz);
         Waz.Skill original = skill(waz, "シールド：ディフレクト", "0016", 2);
         Mek.MekWeaponInfo source = weapon(mek, waz, original, "シールド：ディフレクト", "0018");
         if (!Integer.valueOf(0).equals(source.getHeatMinConsumption())
@@ -35,8 +40,25 @@ public final class NagiCustomizer implements FollowupMekaCustomizer {
         }
         CharacterWeaponVariants.append(mek, waz, source, original,
                 "瞬間ディフレクト", "DX_QUICK_DEFLECT", 12,
-                "短い受付で攻撃を受け止め、成功時はディフレクトへ移る。長く構えず、読み合いから素早く攻めへ戻りたい。",
+                "短い受付で攻撃を受け止め、成功時に斬り返す。反撃後は盾を解き、斬上げなど次の攻めへつなぐ。",
                 NagiCustomizer::shortenGuardWindow);
+    }
+
+    static void validateBaseSuffixes(Waz waz) {
+        requireLiteralSuffix(skill(waz, "シールド：ディフレクト", "0016", 2), List.of(List.of(0, 0), List.of(1, 0)));
+        requireLiteralSuffix(skill(waz, "シールド：持続", "0014", 2), List.of(List.of(0, 0), List.of(1, 0)));
+        requireLiteralSuffix(skill(waz, "シールド：終了", "0015", 1), List.of(List.of(0, 0)));
+    }
+
+    private static void requireLiteralSuffix(Waz.Skill source, List<List<Integer>> expected) {
+        if (!Integer.valueOf(expected.size()).equals(source.getPhaseQuantity())
+                || source.getSkillSuffixList() == null || source.getSkillSuffixList().size() != expected.size())
+            throw drift(source.getSkillNameJapanese() + " phase或原生suffix数量不符");
+        for (int i = 0; i < expected.size(); i++) {
+            var actual = source.getSkillSuffixList().get(i);
+            if (actual == null || !expected.get(i).equals(java.util.Arrays.asList(actual.getInt1(), actual.getInt2())))
+                throw drift(source.getSkillNameJapanese() + " 原生suffix入口不符");
+        }
     }
 
     private static void shortenGuardWindow(Waz.Skill copy) {
@@ -68,6 +90,7 @@ public final class NagiCustomizer implements FollowupMekaCustomizer {
         counter.setEndFrame(19);
         timeout.setStartFrame(39);
         timeout.setEndFrame(39);
+        NagiAdditionalVariants.releaseCounterArmor(copy);
     }
 
     private static void requireValues(CEventVal event, List<Integer> expected) {

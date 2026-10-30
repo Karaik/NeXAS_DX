@@ -2,6 +2,8 @@ package com.giga.nexas.transfer.bhe2bsdx.meka.nagi;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.*;
@@ -45,17 +47,22 @@ class NagiVariantTest {
 
         NagiCustomizer.INSTANCE.customizeBeforeWrite(context(f));
 
-        assertEquals(weaponCount + 1, f.mek().getMekWeaponInfoMap().size(), "必须保留原武装并追加短窗变体");
+        assertEquals(weaponCount + 6, f.mek().getMekWeaponInfoMap().size(), "必须保留原武装并追加六个独立武装");
         assertVariant(f.mek(), f.waz());
         assertEquals(originalSkills, JSON.valueToTree(f.waz().getSkillList().subList(0, skillCount)));
         for (int i = 0; i < weaponCount; i++) {
             assertEquals(originalWeapons.get(Integer.toString(i)), JSON.valueToTree(f.mek().getMekWeaponInfoMap().get(i)));
         }
-        assertEquals(weaponCount + 1, f.mek().getMekWeaponInfoMap().size());
-        assertEquals(skillCount + 1, f.waz().getSkillList().size());
-        assertEquals(tailCount + 1, f.mek().getMekMaterialBlock().getTrailingEntries().size());
+        assertEquals(weaponCount + 6, f.mek().getMekWeaponInfoMap().size());
+        assertEquals(skillCount + 6, f.waz().getSkillList().size());
+        assertEquals(tailCount + 6, f.mek().getMekMaterialBlock().getTrailingEntries().size());
         Waz.Skill copy = skill(f.waz(), ENGLISH);
-        assertEquals(JSON.valueToTree(original.getPhasesInfo().get(1)), JSON.valueToTree(copy.getPhasesInfo().get(1)));
+        ObjectNode counterWithoutArmorRelease = JSON.valueToTree(copy.getPhasesInfo().get(1));
+        ArrayNode counterUnits = (ArrayNode) counterWithoutArmorRelease.get("skillUnitCollection");
+        for (int i = counterUnits.size() - 1; i >= 0; i--) if (counterUnits.get(i).get("unitQuantity").asInt() == 36) counterUnits.remove(i);
+        assertEquals(JSON.valueToTree(original.getPhasesInfo().get(1)), counterWithoutArmorRelease,
+                "only the approved successful-counter armor release may differ");
+        assertEquals(List.of(0, 0, 0, 0), values(event(copy, 2, 36, CEventVal.class, 0, 0)));
         var originalChange = event(original, 1, 71, CEventChange.class, 5, 93);
         var copiedChange = event(copy, 1, 71, CEventChange.class, 5, 19);
         assertNotSame(originalChange.getBsdxInfoCollectionList1().get(0), copiedChange.getBsdxInfoCollectionList1().get(0));
@@ -80,7 +87,9 @@ class NagiVariantTest {
         int sourceIndex = f.mek().getMekWeaponInfoMap().entrySet().stream()
                 .filter(e -> "シールド：ディフレクト".equals(e.getValue().getWeaponName())).findFirst().orElseThrow().getKey();
         var source = block.getTrailingEntries().get(sourceIndex);
-        var copy = block.getTrailingEntries().get(block.getTrailingEntries().size() - 1);
+        int copyIndex = f.mek().getMekWeaponInfoMap().entrySet().stream()
+                .filter(e -> NAME.equals(e.getValue().getWeaponName())).findFirst().orElseThrow().getKey();
+        var copy = block.getTrailingEntries().get(copyIndex);
         assertNotSame(source, copy);
         assertEquals(JSON.valueToTree(source.getSpriteGroups()), JSON.valueToTree(copy.getSpriteGroups()));
         assertNotSame(source.getSpriteGroups(), copy.getSpriteGroups());
@@ -153,7 +162,14 @@ class NagiVariantTest {
         Mek mek = new BheToBsdxMekConverter().convert(sourceMek);
         Waz waz = new BheToBsdxWazConverter().convert(sourceWaz);
         new BheInfoCollectionObjectGraphRewriter().rewrite(waz, "NagiVariantTest");
+        int sourceGroup = mek.getMekBasicInfo().getWazFileSequence();
         mek.getMekBasicInfo().setWazFileSequence(233);
+        for (var s : waz.getSkillList()) for (var phase : s.getPhasesInfo())
+            for (var unit : phase.getSkillUnitCollection()) for (var value : unit.getSkillInfoObjectList())
+                if (value instanceof CEventChange change) for (var destination : change.getBsdxInfoCollectionList2())
+                    if (Integer.valueOf(16).equals(destination.getInt1()) && List.of(1).equals(destination.getTypeList())
+                            && destination.getParamList().size() == 2 && Integer.valueOf(sourceGroup).equals(destination.getParamList().get(0)))
+                        destination.setParamList(new java.util.ArrayList<>(List.of(233, destination.getParamList().get(1))));
         return new Fixture(sourceMek, sourceWaz, mek, waz, mekBytes, wazBytes);
     }
 

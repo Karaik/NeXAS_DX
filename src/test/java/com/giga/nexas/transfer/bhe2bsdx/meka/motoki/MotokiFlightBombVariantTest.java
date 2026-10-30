@@ -58,8 +58,8 @@ class MotokiFlightBombVariantTest {
 
         customize(f);
 
-        assertEquals(weapons + 1, f.mek.getMekWeaponInfoMap().size());
-        assertEquals(skills + 2, f.waz.getSkillList().size(), "one router plus one private execution skill");
+        assertEquals(weapons + 6, f.mek.getMekWeaponInfoMap().size());
+        assertEquals(skills + 7, f.waz.getSkillList().size(), "six equipable rows plus one private bomb execution skill");
         var added = f.mek.getMekWeaponInfoMap().get(weapons);
         assertEquals(NAME, added.getWeaponName());
         assertEquals("0020", added.getWeaponSequence());

@@ -180,7 +180,7 @@ class CharacterWeaponVariantsTest {
 
         WilhelmCustomizer.INSTANCE.customizeBeforeWrite(context(f));
 
-        assertAdded(f, before, "交互砲撃・離脱", "0007", "DX_ALTERNATE_CANNON_EXIT", 40);
+        assertAdded(f, before, "交互砲撃・離脱", "0007", "DX_ALTERNATE_CANNON_EXIT", 40, 6);
         var variant = skill(f.waz(), "交互砲撃・離脱", "DX_ALTERNATE_CANNON_EXIT");
         List<CEventEffect> effects = events(variant, 2, 48, CEventEffect.class);
         assertEquals(10, effects.size());
@@ -211,8 +211,8 @@ class CharacterWeaponVariantsTest {
 
         MotokiCustomizer.INSTANCE.customizeBeforeWrite(context(f));
 
-        assertEquals(before.weapons() + 1, f.mek().getMekWeaponInfoMap().size());
-        assertEquals(before.skills() + 2, f.waz().getSkillList().size());
+        assertEquals(before.weapons() + 6, f.mek().getMekWeaponInfoMap().size());
+        assertEquals(before.skills() + 7, f.waz().getSkillList().size());
         var added = weapon(f.mek(), "集中爆撃・帰投", "0020");
         assertSame(added, f.mek().getMekWeaponInfoMap().get(before.weapons()));
         assertTrue(before.weapons() <= 152);

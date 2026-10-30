@@ -16,6 +16,6 @@ public final class MotokiCustomizer implements FollowupMekaCustomizer {
     public void customizeBeforeWrite(FollowupMekaContext context) {
         var mek = requireMek(context, "Motoki");
         var waz = requireWaz(context, "Motoki");
-        MotokiFlightBombVariant.append(mek, waz);
+        MotokiAdditionalVariants.appendAll(mek, waz);
     }
 }

@@ -23,6 +23,11 @@ public final class WilhelmCustomizer implements FollowupMekaCustomizer {
     public void customizeBeforeWrite(FollowupMekaContext context) {
         var mek = requireMek(context, "Wilhelm");
         var waz = requireWaz(context, "Wilhelm");
+        WilhelmAdditionalVariants.appendAll(mek, waz);
+    }
+
+    static void appendBase(com.giga.nexas.dto.bsdx.mek.Mek mek, com.giga.nexas.dto.bsdx.waz.Waz waz) {
+        validateBaseSuffixes(waz);
         var source = skill(waz, "キャタピラ：主砲斉射", "0017", 2);
         var sourceWeapon = weapon(mek, waz, source, "主砲斉射", "0007");
         var continuous = skill(waz, "キャタピラ：持続", "TACKLE07", 2);
@@ -74,7 +79,25 @@ public final class WilhelmCustomizer implements FollowupMekaCustomizer {
                         effect.setEndFrame(8);
                     }
                     exit.getBsdxInfoCollectionList2().get(0).setParamList(new ArrayList<>(List.of(group, target)));
+                    WilhelmAdditionalVariants.prepareAlternate(copy);
                 }, endingWeapon);
+    }
+
+    static void validateBaseSuffixes(com.giga.nexas.dto.bsdx.waz.Waz waz) {
+        requireLiteralSuffix(skill(waz, "キャタピラ：主砲斉射", "0017", 2), List.of(List.of(0, 0), List.of(1, 0)));
+        requireLiteralSuffix(skill(waz, "キャタピラ：持続", "TACKLE07", 2), List.of(List.of(0, 0), List.of(1, 0)));
+        requireLiteralSuffix(skill(waz, "キャタピラ：終了", "TACKLE05", 1), List.of(List.of(0, 0)));
+    }
+
+    private static void requireLiteralSuffix(com.giga.nexas.dto.bsdx.waz.Waz.Skill source, List<List<Integer>> expected) {
+        if (!Integer.valueOf(expected.size()).equals(source.getPhaseQuantity())
+                || source.getSkillSuffixList() == null || source.getSkillSuffixList().size() != expected.size())
+            throw new IllegalStateException(source.getSkillNameJapanese() + " phase或原生suffix数量漂移");
+        for (int i = 0; i < expected.size(); i++) {
+            var actual = source.getSkillSuffixList().get(i);
+            if (actual == null || !expected.get(i).equals(java.util.Arrays.asList(actual.getInt1(), actual.getInt2())))
+                throw new IllegalStateException(source.getSkillNameJapanese() + " 原生suffix入口漂移");
+        }
     }
 
     private static void requireJump(CEventChange change, int group, int skill) {
