@@ -316,6 +316,9 @@ class SouHumanCannonCounterTest {
         int mainGroup = baseline.getWazaGroupGrp().getWazaList().size();
         privatePlan.setWazaGroupIndex(mainGroup);
         privatePlan.getSourceWazGroupIndexToTargetIndex().put(rawMek.getMekBasicInfo().getWazFileSequence(), mainGroup);
+        // The real Flare caller's role-private SE pair uses this nonidentity mapping; audio delivery is outside this protocol fixture.
+        privatePlan.getSourceSeGroupIndexToTargetIndex().put(16, 46);
+        privatePlan.getSourceSeItemIndexToTargetIndexByGroup().put(16, new LinkedHashMap<>(Map.of(4, 11)));
         BheResourceIndexResolver resolver = new BheResourceIndexResolver(plan, privatePlan);
         rebindWazaSelects(main, resolver, Collections.newSetFromMap(new IdentityHashMap<>()));
         new BheInfoCollectionObjectGraphRewriter().rewrite(main, "SouHumanCannonCounterTest main");
@@ -352,6 +355,7 @@ class SouHumanCannonCounterTest {
         // Prime the other role repairs so complete non-counter graphs stay stable; the first public call still installs the counter.
         SouCursedBladeSingleTargetFixer.fix(context);
         SouSnowMoonSingleTargetFixer.fix(context);
+        SouFlareSeekerSingleTargetFixer.fix(context);
         assertEquals(211, mek.getMekWeaponInfoMap().size());
         assertTrue(currentSou.getCommonProjectileResourceBundle().getWazByFileName().isEmpty(),
                 "Sou inherits prepared hosts; a fresh Sou converted common bundle is empty in the real pipeline");
@@ -418,6 +422,23 @@ class SouHumanCannonCounterTest {
 
     private static void rebindWazaSelects(Object node, BheResourceIndexResolver resolver, Set<Object> seen) throws Exception {
         if (node == null || node instanceof Number || node instanceof String || node instanceof Boolean || !seen.add(node)) return;
+        if (node instanceof CEventSe se && se.getByteDataList() != null) {
+            List<byte[]> rebound = null;
+            for (int i = 0; i < se.getByteDataList().size(); i++) {
+                byte[] source = se.getByteDataList().get(i);
+                if (source == null || source.length < 8) continue;
+                var pair = java.nio.ByteBuffer.wrap(source).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+                if (pair.getInt(0) != 16 || pair.getInt(4) != 4) continue;
+                var target = resolver.resolveSe(16, 4);
+                byte[] independent = source.clone();
+                var bytes = java.nio.ByteBuffer.wrap(independent).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+                bytes.putInt(0, target.targetGroupIndex()); bytes.putInt(4, target.targetItemIndex());
+                if (rebound == null) rebound = new ArrayList<>(se.getByteDataList());
+                rebound.set(i, independent);
+            }
+            if (rebound != null) se.setByteDataList(rebound);
+            return;
+        }
         if (node instanceof CEventWazaSelect ref && ref.getWazFileNo() != null && ref.getWazFileNo() >= 0) {
             int sourceGroup = ref.getWazFileNo();
             ref.setWazSequenceNo(resolver.resolveWazSkillIndex(sourceGroup, ref.getWazSequenceNo()));
