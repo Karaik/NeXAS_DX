@@ -44,10 +44,10 @@ class KatouVariantTest {
 
         KatouCustomizer.INSTANCE.customizeBeforeWrite(context(f));
 
-        assertEquals(weapons + 1, f.mek().getMekWeaponInfoMap().size(), "必须保留原连打并追加固定二连变体");
+        assertEquals(weapons + 6, f.mek().getMekWeaponInfoMap().size(), "保留原连打并有六个独立变体");
         assertVariant(f.mek(), f.waz());
-        assertEquals(weapons + 1, f.mek().getMekWeaponInfoMap().size());
-        assertEquals(skills + 1, f.waz().getSkillList().size());
+        assertEquals(weapons + 6, f.mek().getMekWeaponInfoMap().size());
+        assertEquals(skills + 6, f.waz().getSkillList().size());
         assertEquals(originalSkills, JSON.valueToTree(f.waz().getSkillList().subList(0, skills)));
         for (int i = 0; i < weapons; i++) {
             assertEquals(originalWeapons.get(Integer.toString(i)), JSON.valueToTree(f.mek().getMekWeaponInfoMap().get(i)));
@@ -80,7 +80,7 @@ class KatouVariantTest {
         var block = f.mek().getMekMaterialBlock();
         int sourceIndex = weaponIndex(f.mek(), "トンファー連打");
         int donorIndex = weaponIndex(f.mek(), "トンファー収納");
-        var copy = block.getTrailingEntries().get(block.getTrailingEntries().size() - 1);
+        var copy = block.getTrailingEntries().get(weaponIndex(f.mek(), NAME));
         assertNotSame(block.getTrailingEntries().get(sourceIndex), copy);
         for (int i = 0; i < copy.getSpriteGroups().size(); i++) {
             int[] values = copy.getSpriteGroups().get(i);

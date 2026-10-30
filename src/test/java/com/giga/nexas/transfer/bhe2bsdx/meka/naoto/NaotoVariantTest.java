@@ -38,8 +38,8 @@ class NaotoVariantTest {
         JsonNode beforeWeapons = JSON.valueToTree(f.mek().getMekWeaponInfoMap());
         JsonNode rawMek = JSON.valueToTree(f.rawMek()), rawWaz = JSON.valueToTree(f.rawWaz());
         NaotoCustomizer.INSTANCE.customizeBeforeWrite(context(f));
-        assertEquals(weapons + 1, f.mek().getMekWeaponInfoMap().size(), "追加命中确认装备，保留原jab");
-        assertEquals(skills + 1, f.waz().getSkillList().size(), "Straight不改，不复制隐藏终结技");
+        assertEquals(weapons + 6, f.mek().getMekWeaponInfoMap().size(), "六个独立装备，保留原jab");
+        assertEquals(skills + 7, f.waz().getSkillList().size(), "六主技能加一私有Rise，原Straight不改");
         assertVariant(f.mek(), f.waz());
         assertEquals(beforeSkills, JSON.valueToTree(f.waz().getSkillList().subList(0, skills)));
         for (int i = 0; i < weapons; i++) assertEquals(beforeWeapons.get(Integer.toString(i)), JSON.valueToTree(f.mek().getMekWeaponInfoMap().get(i)));
@@ -116,6 +116,12 @@ class NaotoVariantTest {
         for (var weapon : mek.getMekWeaponInfoMap().values()) {
             if (Integer.valueOf(12).equals(weapon.getWazSequence())) weapon.setWazSequence(13);
             else if (Integer.valueOf(13).equals(weapon.getWazSequence())) weapon.setWazSequence(12);
+        }
+        for (var s : waz.getSkillList()) if (s != null) for (var p : s.getPhasesInfo()) for (var u : p.getSkillUnitCollection()) for (var o : u.getSkillInfoObjectList()) if (o instanceof CEventChange c) for (var target : c.getBsdxInfoCollectionList2()) {
+            if (List.of(1).equals(target.getTypeList()) && target.getParamList().size() == 2 && Integer.valueOf(15).equals(target.getParamList().get(0))) {
+                int index = target.getParamList().get(1); if (index == 12) index = 13; else if (index == 13) index = 12;
+                target.setParamList(new java.util.ArrayList<>(List.of(233, index)));
+            }
         }
         mek.getMekBasicInfo().setWazFileSequence(233);
         var rawYuri = (com.giga.nexas.dto.bhe.waz.Waz) service.parse("src/main/resources/game/bhe/waz/yuri/yuri.waz", CS).getData();

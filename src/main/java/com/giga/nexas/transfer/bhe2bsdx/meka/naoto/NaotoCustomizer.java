@@ -42,6 +42,7 @@ public final class NaotoCustomizer implements FollowupMekaCustomizer {
                 "ワンツー・コンファーム", "DX_HIT_CONFIRM_ONE_TWO", 20,
                 "ジャブの命中時だけストレートへつなぐ。空振りでは追撃せず、近距離の確認から次の展開を選ぶ。",
                 copy -> addHitConfirm(copy, group, straightIndex), donor);
+        NaotoAdditionalVariants.append(mek, waz);
     }
 
     private static void addHitConfirm(Waz.Skill copy, int group, int straightIndex) {

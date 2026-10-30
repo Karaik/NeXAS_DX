@@ -63,6 +63,7 @@ public final class MisakiCustomizer implements FollowupMekaCustomizer {
                 copy -> addRearBeat(copy, rear, targetGroup, hand, trail), donor);
         mek.getMekBasicInfo().setMekDescription(
                 "リンカネーターと融合したみさき。転移手による前後の挟撃や床召還で相手を牽制し、掴みや血水晶の武装を使い分ける。");
+        MisakiAdditionalVariants.append(mek, waz, context);
     }
 
     private static void addRearBeat(Waz.Skill copy, Waz.Skill rear, int group, int hand, int trail) {

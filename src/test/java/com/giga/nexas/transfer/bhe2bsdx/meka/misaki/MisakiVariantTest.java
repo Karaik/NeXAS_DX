@@ -42,8 +42,8 @@ class MisakiVariantTest {
             ObjectNode n = JSON.valueToTree(e); n.put("startFrame", 12); n.put("endFrame", 12); return (JsonNode) n;
         }).toList();
         MisakiCustomizer.INSTANCE.customizeBeforeWrite(f.context());
-        assertEquals(weapons + 1, f.mek().getMekWeaponInfoMap().size(), "前後错拍必须是独立可装备变体");
-        assertEquals(skills + 1, f.waz().getSkillList().size()); assertVariant(f.mek(), f.waz());
+        assertEquals(weapons + 6, f.mek().getMekWeaponInfoMap().size(), "前後错拍和五个新增必须均为独立可装备变体");
+        assertEquals(skills + 6, f.waz().getSkillList().size()); assertVariant(f.mek(), f.waz());
         assertEquals(originals, JSON.valueToTree(f.waz().getSkillList().subList(0, skills)));
         List<CEventEffect> actual = effects(skill(f.waz(), EN));
         assertEquals(first, actual.subList(0, 4).stream().map(e -> JSON.<JsonNode>valueToTree(e)).toList());
@@ -106,9 +106,10 @@ class MisakiVariantTest {
         var rawCommon = (com.giga.nexas.dto.bhe.waz.Waz) service.parse("src/main/resources/game/bhe/waz/tama05.waz", CS).getData();
         Mek mek = new BheToBsdxMekConverter().convert(rawMek); Waz waz = new BheToBsdxWazConverter().convert(rawWaz);
         new BheInfoCollectionObjectGraphRewriter().rewrite(waz, "MisakiVariantTest"); mek.getMekBasicInfo().setWazFileSequence(233);
-        for (String identity : List.of("WARP_P1_11", "WARP_P1_09")) for (CEventEffect e : effects(skill(waz, identity))) {
-            var target = select(e); assertEquals(5, target.getWazFileNo());
-            target.setWazFileNo(9); target.setWazSequenceNo(32 + target.getWazSequenceNo());
+        for (var s : waz.getSkillList()) if (s != null) for (var p : s.getPhasesInfo()) for (var u : p.getSkillUnitCollection()) for (var o : u.getSkillInfoObjectList()) if (o instanceof CEventEffect e) {
+            var target = select(e); if (Integer.valueOf(5).equals(target.getWazFileNo())) {
+                target.setWazFileNo(9); target.setWazSequenceNo(32 + target.getWazSequenceNo());
+            }
         }
         Waz common = new BheToBsdxWazConverter().convert(rawCommon);
         TsukuyomiRawSourceBundle rawBundle = new TsukuyomiRawSourceBundle(); rawBundle.getCommonProjectileWazByFileName().put("tama05.waz", rawCommon);

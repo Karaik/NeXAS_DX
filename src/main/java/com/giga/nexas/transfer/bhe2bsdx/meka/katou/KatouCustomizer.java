@@ -44,6 +44,7 @@ public final class KatouCustomizer implements FollowupMekaCustomizer {
                 "トンファー・二連打", "DX_TONFA_TWO_HIT", 18,
                 "左右の二撃を出し切り、トンファーを収納する。長い連打に付き合わず、短い攻めから距離を取り直したい。",
                 copy -> makeFixedTwoHits(copy, group, stanceIndex, storageIndex), donor);
+        KatouAdditionalVariants.append(mek, waz);
     }
 
     private static void makeFixedTwoHits(Waz.Skill copy, int group, int stance, int storage) {
