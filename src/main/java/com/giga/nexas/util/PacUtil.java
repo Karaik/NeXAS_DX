@@ -99,6 +99,7 @@ public class PacUtil {
         environment.put("PATH", executableDirectory + File.pathSeparator + environment.getOrDefault("PATH", ""));
         environment.put("TEMP", session.toAbsolutePath().normalize().toString());
         environment.put("TMP", session.toAbsolutePath().normalize().toString());
+        environment.put("TMPDIR", session.toAbsolutePath().normalize().toString());
         return builder;
     }
 

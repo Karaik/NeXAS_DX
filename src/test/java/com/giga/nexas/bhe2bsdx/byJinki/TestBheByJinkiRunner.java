@@ -38,15 +38,10 @@ import com.giga.nexas.transfer.jinki2bsdx.v2.Jinki2BsdxTransferV2;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -72,17 +67,34 @@ public class TestBheByJinkiRunner {
 
     private void runBheByJinki(boolean includeSou) throws Exception {
         Path projectRoot = Paths.get("").toAbsolutePath().normalize();
-        Path buildsRoot = Paths.get(System.getProperty("bhe.playableBuildRoot",
-                projectRoot.resolve("target/bhe-playable-builds").toString())).toAbsolutePath().normalize();
-        Files.createDirectories(buildsRoot);
-        Path buildRoot = buildsRoot.resolve("run_" + LocalDateTime.now(ZoneId.of("Asia/Tokyo"))
-                .format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss_SSS")));
-        // 每轮独立目录；禁止覆盖旧Update3.pac或继承已经吞掉CRT异常的旧EXE。
-        Files.createDirectory(buildRoot);
+        String temporaryProperty = System.getProperty("java.io.tmpdir");
+        if (temporaryProperty == null || temporaryProperty.isBlank()) {
+            throw new IllegalStateException("必须通过仓库内受控入口设置JVM临时目录");
+        }
+        Path temporary = Paths.get(temporaryProperty).toAbsolutePath().normalize();
+        if (!temporary.startsWith(projectRoot.resolve("target")) || !Files.isDirectory(temporary)
+                || !temporary.toRealPath().equals(temporary)) {
+            throw new IllegalStateException("JVM临时目录必须是仓库target内的真实目录；请使用tools/Invoke-BheChecks.ps1");
+        }
+        try (ManagedPlayableBuild build = ManagedPlayableBuild.start(projectRoot,
+                System.getProperty("bhe.playableBuildRoot"), message -> log.warn("{}", message))) {
+            try {
+                runBheByJinki(includeSou, projectRoot, build);
+            } catch (Exception | Error failure) {
+                try { build.failed(failure); }
+                catch (Exception cleanup) { failure.addSuppressed(cleanup); }
+                throw failure;
+            }
+        }
+    }
+
+    private void runBheByJinki(boolean includeSou, Path projectRoot, ManagedPlayableBuild build) throws Exception {
+        Path buildRoot = build.runRoot();
 
         // 1. akao
         AkaoGraftRequest jinkiRequest = new AkaoGraftRequest();
         jinkiRequest.setExeOutputDir(buildRoot.resolve("akao"));
+        jinkiRequest.setPackUpdatePac(false);
         // bsdx_game中的EXE带旧宽屏补丁，会让原版机体也偏离装备预览视野。
         jinkiRequest.setTargetExePath(projectRoot.resolve("src/main/resources/ida-reverse/BaldrSky.exe"));
         Path sourceExe = jinkiRequest.getTargetExePath().toAbsolutePath().normalize();
@@ -268,7 +280,7 @@ public class TestBheByJinkiRunner {
         MotokiGraftResult motokiResult = MotokiTransfer.process(motokiRequest);
         log.info("10 motoki patch append end!");
         if (!includeSou) {
-            writeBuildReceipt(projectRoot, buildRoot, motokiResult, false, sourceExe, sourceExeSha256);
+            writeBuildReceipt(build, motokiResult, false, sourceExe, sourceExeSha256);
             return;
         }
 
@@ -294,12 +306,13 @@ public class TestBheByJinkiRunner {
 
         SouGraftResult souResult = SouTransfer.process(souRequest);
         log.info("11 sou patch append end!");
-        writeBuildReceipt(projectRoot, buildRoot, souResult, true, sourceExe, sourceExeSha256);
+        writeBuildReceipt(build, souResult, true, sourceExe, sourceExeSha256);
     }
 
-    private void writeBuildReceipt(Path projectRoot, Path buildRoot,
+    private void writeBuildReceipt(ManagedPlayableBuild build,
                                    TsukuyomiGraftResult result, boolean includeSou,
                                    Path sourceExe, String sourceExeSha256) throws Exception {
+        Path buildRoot = build.runRoot();
         assertEquals(sourceExeSha256, sha256(sourceExe), "构建期间源EXE不得变化");
         assertNotNull(result.getImportedAssetSet());
         assertNotNull(result.getPacPackPlan());
@@ -323,10 +336,7 @@ public class TestBheByJinkiRunner {
         receipt.put("characters", includeSou
                 ? List.of("tsukuyomi", "yuri", "freja", "nagi", "misaki", "naoto", "katou", "wilhelm", "motoki", "sou")
                 : List.of("tsukuyomi", "yuri", "freja", "nagi", "misaki", "naoto", "katou", "wilhelm", "motoki"));
-        String json = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(receipt)
-                .replace("\r\n", "\n").replace("\n", "\r\n") + "\r\n";
-        Files.writeString(buildRoot.resolve("build.json"), json, StandardCharsets.UTF_8);
-        Files.writeString(projectRoot.resolve("target/bhe-playable-build-latest.json"), json, StandardCharsets.UTF_8);
+        build.complete(receipt);
         log.info("构建记录已写出：{}；游戏效果仍需单独验收", buildRoot.resolve("build.json"));
     }
 

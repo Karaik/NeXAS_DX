@@ -1,12 +1,15 @@
 """Offline safety contracts; never starts a game or attaches to a process."""
 
+import sys
+sys.dont_write_bytecode = True
+
 import hashlib
 import inspect
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
-import sys
 import tempfile
 import threading
 import types
@@ -23,9 +26,16 @@ class RuntimeSessionTests(unittest.TestCase):
     def setUp(self):
         if harness is None:
             self.fail("The isolated runtime session implementation is missing")
-        self.temp = tempfile.TemporaryDirectory()
+        fixture_parent = Path(__file__).resolve().parents[1] / "target" / "bhe-runtime-test-fixtures"
+        fixture_parent.mkdir(parents=True, exist_ok=True)
+        self.temp = tempfile.TemporaryDirectory(dir=fixture_parent)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
+        for name, value in (("PROJECT_ROOT", self.root),
+                            ("RUNTIME_ROOT", self.root / "target/bhe-playable-runtime")):
+            replacement = patch.object(harness, name, value)
+            replacement.start()
+            self.addCleanup(replacement.stop)
         self.base = self.root / "base"
         self.base.mkdir()
         (self.base / "Config.pac").write_bytes(b"base config")
@@ -316,25 +326,14 @@ class RuntimeSessionTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     harness.verify_prepared(case, self.runtime)
 
-    def test_native_driver_state_does_not_copy_or_reject_normal_driver_drift(self):
-        self.assertIn("native_driver_state", inspect.signature(harness.prepare_case).parameters,
-                      "Explicit native driver-state diagnostic mode is missing")
-        case = self.prepare("native-driver", native_driver_state=True)
-        manifest = harness.verify_prepared(case, self.runtime)
-        self.assertEqual(manifest["driver_state"]["mode"], "native")
-        self.assertIsNone(manifest["driver_state"]["relative_path"])
-        self.assertFalse((case / "driver-cache").exists())
-        self.assertEqual(sorted(manifest["driver_state"]["files"]),
-                         ["nested/db.bin", "nvAppTimestamps", "nvdrssel.bin"])
-        self.assertEqual((self.driver / "nvAppTimestamps").read_bytes(), b"old")
-        (self.driver / "nvAppTimestamps").write_bytes(b"normal OS driver update")
-        (self.driver / "new-cache.bin").write_bytes(b"normal OS driver cache")
-        harness.verify_prepared(case, self.runtime)
-        (case / "game/Update3.pac").write_bytes(b"unexpected payload change")
-        with self.assertRaises(ValueError):
-            harness.verify_prepared(case, self.runtime)
+    def test_native_driver_state_is_rejected_before_creating_output(self):
+        before = harness.tree_manifest(self.driver)
+        with self.assertRaisesRegex(ValueError, "Native driver-state"):
+            self.prepare("native-driver", native_driver_state=True)
+        self.assertFalse(self.runtime.exists())
+        self.assertEqual(harness.tree_manifest(self.driver), before)
 
-    def test_native_driver_policy_allows_real_drs_io_without_weakening_input_protection(self):
+    def test_private_driver_policy_redirects_drs_and_rejects_original_disk_writes(self):
         node = shutil.which("node")
         if not node:
             self.skipTest("Node is unavailable")
@@ -342,39 +341,29 @@ class RuntimeSessionTests(unittest.TestCase):
             for offset, instruction in ((0x3643B9, "ff1560a27d00"), (0x3643CD, "ff1574a27d00")):
                 stream.seek(offset)
                 stream.write(bytes.fromhex(instruction))
-        for native in (False, True):
-            with self.subTest(native=native):
-                case = self.prepare("driver-policy-" + str(native),
-                                    save_seed_dir=self.seed, app_manifest_path=self.app_manifest)
-                manifest = harness.verify_prepared(case, self.runtime)
-                manifest["driver_state"]["mode"] = "native" if native else "private"
-                with patch.object(harness, "native_path", side_effect=lambda value: str(value)):
-                    source = harness.isolation_script(case, manifest)
-                # Execute the actual emitted config and pure policy, before native Frida hooks.
-                policy = source.split("\nfunction cloneObjectAttributes", 1)[0]
-                paths = [str(self.driver / "nvAppTimestamps"), str(self.driver / "new-cache.bin"),
-                         str(self.save / "Script.dat"), str(self.base / "Config.pac"),
-                         str(self.exe), str(self.pac), str(self.seed / "Script.dat"),
-                         str(self.app_manifest), str(harness.PROJECT_ROOT / "unrelated.txt")]
-                policy += "\nconst paths=" + json.dumps(paths) + ";"
-                policy += "\nconsole.log(JSON.stringify({writes:paths.map(permitted),driverAlias:aliasDriverState(paths[0]),saveAlias:permitted(aliasSavePath(paths[2]))}));"
-                result = subprocess.run([node, "-"], input=policy, text=True, capture_output=True, check=True)
-                expected_alias = None if native else "\\??\\" + str(case / "driver-cache/Drs/nvAppTimestamps")
-                self.assertEqual(json.loads(result.stdout), {
-                    "writes": [native, native] + [False] * 7,
-                    "driverAlias": expected_alias, "saveAlias": True})
+        case = self.prepare("driver-policy", save_seed_dir=self.seed, app_manifest_path=self.app_manifest)
+        manifest = harness.verify_prepared(case, self.runtime)
+        with patch.object(harness, "native_path", side_effect=lambda value: str(value)):
+            source = harness.isolation_script(case, manifest)
+        policy = source.split("\nfunction cloneObjectAttributes", 1)[0]
+        paths = [str(self.driver / "nvAppTimestamps"), str(self.driver / "new-cache.bin"),
+                 str(self.save / "Script.dat"), str(self.base / "Config.pac"), str(self.exe),
+                 str(self.pac), str(self.seed / "Script.dat"), str(self.app_manifest),
+                 str(harness.PROJECT_ROOT / "unrelated.txt")]
+        policy += "\nconst paths=" + json.dumps(paths) + ";"
+        policy += "\nconsole.log(JSON.stringify({writes:paths.map(permitted),driverAlias:aliasDriverState(paths[0]),saveAlias:permitted(aliasSavePath(paths[2]))}));"
+        result = subprocess.run([node, "-"], input=policy, text=True, capture_output=True, check=True)
+        self.assertEqual(json.loads(result.stdout), {
+            "writes": [False] * 9,
+            "driverAlias": "\\??\\" + str(case / "driver-cache/Drs/nvAppTimestamps"), "saveAlias": True})
 
-    def test_native_driver_cli_prepares_an_audited_case_without_driver_copy(self):
-        self.assertIn("native_driver_state", inspect.signature(harness.prepare_case).parameters,
-                      "Explicit native driver-state diagnostic mode is missing")
+    def test_native_driver_cli_rejects_before_copying(self):
         args = ["prepare", "--case", "native-cli", "--base", str(self.base), "--exe", str(self.exe),
                 "--save-dir", str(self.save), "--vanilla", "--fresh-save", "--native-driver-state"]
         prepare = harness.prepare_case
         with patch.object(harness, "prepare_case", side_effect=lambda **kwargs: prepare(**kwargs, runtime_root=self.runtime)):
-            self.assertEqual(harness.main(args), 0)
-        case = self.runtime / "native-cli"
-        self.assertEqual(harness.verify_prepared(case, self.runtime)["driver_state"]["mode"], "native")
-        self.assertFalse((case / "driver-cache").exists())
+            self.assertEqual(harness.main(args), 1)
+        self.assertFalse((self.runtime / "native-cli").exists())
 
     def test_driver_drift_during_copy_is_rejected_with_evidence_retained(self):
         real_copytree = shutil.copytree
@@ -399,13 +388,12 @@ class RuntimeSessionTests(unittest.TestCase):
         self.assertIn("native_driver_state", inspect.signature(harness.prepare_case).parameters,
                       "Explicit native driver-state diagnostic mode is missing")
         self._check_runtime_driver_source_drift(native=False)
-        self._check_runtime_driver_source_drift(native=True)
 
-    def test_native_driver_exit_audit_survives_original_save_read_error(self):
-        self._check_runtime_driver_source_drift(native=True, save_audit_error=True)
+    def test_private_driver_exit_audit_survives_original_save_read_error(self):
+        self._check_runtime_driver_source_drift(native=False, save_audit_error=True)
 
-    def test_native_driver_exit_audit_preserves_original_save_difference_failure(self):
-        self._check_runtime_driver_source_drift(native=True, change_save=True)
+    def test_private_driver_exit_audit_preserves_original_save_difference_failure(self):
+        self._check_runtime_driver_source_drift(native=False, change_save=True)
 
     def _check_runtime_driver_source_drift(self, *, native, save_audit_error=False, change_save=False):
         (self.driver / "nvAppTimestamps").write_bytes(b"old")
@@ -529,7 +517,7 @@ class RuntimeSessionTests(unittest.TestCase):
         result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
         self.assertEqual(json.loads(result.stdout), [True, False, False, False, True, True, True, True, False, False, False])
 
-    def test_normal_external_os_writes_are_allowed_but_original_inputs_stay_protected(self):
+    def test_external_os_disk_writes_are_rejected_with_original_inputs_protected(self):
         node = shutil.which("node")
         if not node:
             self.skipTest("Node is unavailable for offline JavaScript execution")
@@ -554,7 +542,7 @@ class RuntimeSessionTests(unittest.TestCase):
             r"E:\inputs\Game.exe:stream",
         ]) + ".map(permitted)));"
         result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
-        self.assertEqual(json.loads(result.stdout), [True] * 6 + [False] * 7)
+        self.assertEqual(json.loads(result.stdout), [False] * 13)
 
     def test_unresolved_write_targets_still_fail_closed_in_preservation_mode(self):
         node = shutil.which("node")
@@ -989,6 +977,113 @@ console.log('native structures preserved');
         self.assertEqual(kernel.closed, [0x222, 0x111])
         self.assertEqual(state["closed_handles"], ["thread_handle", "process_handle"])
         self.assertTrue(state["original_save_check"]["unchanged"])
+
+
+    def cleanup_state(self, case):
+        return {"launcher_pid": os.getpid(), "owned_process_exit_confirmed": True,
+                "guard_cleanup_complete": True, "cleanup_pending": False,
+                "manifest_sha256": harness.file_record(case / "manifest.json")["sha256"]}
+
+    def test_other_runtime_root_is_rejected_before_creating_anything(self):
+        outside = self.root / "other-target"
+        with self.assertRaisesRegex(ValueError, "repository target"):
+            self.prepare(runtime_root=outside)
+        self.assertFalse(outside.exists())
+        self.assertFalse(self.runtime.exists())
+
+    def test_case_temp_environment_is_local_and_restored(self):
+        case = self.prepare()
+        keys = ("TEMP", "TMP", "TMPDIR", "PYTHONDONTWRITEBYTECODE")
+        before = {key: os.environ.get(key) for key in keys}
+        previous_temp = tempfile.tempdir
+        with harness.case_temp_environment(case) as local:
+            self.assertEqual(local, case / "tmp")
+            self.assertEqual(Path(tempfile.gettempdir()), local)
+            for key in ("TEMP", "TMP", "TMPDIR"):
+                self.assertEqual(os.environ[key], str(local))
+            self.assertEqual(os.environ["PYTHONDONTWRITEBYTECODE"], "1")
+        self.assertEqual(before, {key: os.environ.get(key) for key in keys})
+        self.assertEqual(tempfile.tempdir, previous_temp)
+
+    def test_finished_cleanup_removes_only_reproducible_input_copies(self):
+        case = self.prepare()
+        manifest = harness.verify_prepared(case, self.runtime)
+        (case / "game/Config.pac").write_bytes(b"changed unique evidence")
+        added = case / "game/new-result.txt"
+        added.write_text("new diagnostic", encoding="utf-8")
+        before_save = harness.tree_manifest(case / "docs")
+        original_base = harness.tree_manifest(self.base)
+        result = harness.remove_verified_input_copies(case, manifest, self.cleanup_state(case), self.runtime)
+        self.assertIn("Update3.pac", result["removed"])
+        self.assertIn("Config.pac", result["retained_changed_or_unique"])
+        self.assertFalse((case / "game/BaldrSky.exe").exists())
+        self.assertEqual((case / "game/Config.pac").read_bytes(), b"changed unique evidence")
+        self.assertEqual(added.read_text(encoding="utf-8"), "new diagnostic")
+        self.assertEqual(before_save, harness.tree_manifest(case / "docs"))
+        self.assertEqual(original_base, harness.tree_manifest(self.base))
+        self.assertEqual(result["errors"], [])
+
+    def test_cleanup_keeps_a_copy_when_its_original_was_removed(self):
+        case = self.prepare()
+        manifest = harness.verify_prepared(case, self.runtime)
+        self.pac.unlink()
+        result = harness.remove_verified_input_copies(case, manifest, self.cleanup_state(case), self.runtime)
+        self.assertTrue((case / "game/Update3.pac").is_file())
+        self.assertIn("Update3.pac", result["retained_changed_or_unique"])
+
+    def test_cleanup_refuses_unconfirmed_or_foreign_launcher(self):
+        case = self.prepare()
+        manifest = harness.verify_prepared(case, self.runtime)
+        before = harness.tree_manifest(case / "game")
+        for field, value in (("owned_process_exit_confirmed", False),
+                             ("guard_cleanup_complete", False), ("cleanup_pending", True),
+                             ("launcher_pid", os.getpid() + 1)):
+            state = self.cleanup_state(case)
+            state[field] = value
+            with self.assertRaises(ValueError):
+                harness.remove_verified_input_copies(case, manifest, state, self.runtime)
+            self.assertEqual(before, harness.tree_manifest(case / "game"))
+
+    def test_cleanup_rejects_escape_ads_drive_relative_and_empty_path_parts(self):
+        case = self.prepare()
+        original = harness.verify_prepared(case, self.runtime)
+        before = harness.tree_manifest(case / "game")
+        for key in ("../Config.pac", "D:Config.pac", "Config.pac:stream", "sub/./Config.pac",
+                    "sub//Config.pac", "/Config.pac", "sub/../Config.pac"):
+            manifest = json.loads(json.dumps(original))
+            manifest["game_files"][key] = {"size": 1, "sha256": "0" * 64}
+            with self.assertRaises(ValueError):
+                harness.remove_verified_input_copies(case, manifest, self.cleanup_state(case), self.runtime)
+            self.assertEqual(before, harness.tree_manifest(case / "game"))
+
+    def test_artifact_lease_includes_a_directory_source_and_releases_on_failure(self):
+        build = self.root / "target/bhe-playable-builds/run_20261031_000000_001"
+        build.mkdir(parents=True)
+        marker = {"schema": "nexas.bhe-playable-managed/v1", "projectRoot": str(self.root),
+                  "buildsRoot": str(build.parent), "runName": build.name,
+                  "runId": "00000000-0000-0000-0000-000000000001", "state": "COMPLETE"}
+        (build / ".bhe-playable-owned.json").write_text(json.dumps(marker), encoding="utf-8")
+        (build / ".artifact-use.lock").write_bytes(b"\x00")
+        acquired = []
+        with patch.object(harness, "_shared_artifact_lock", side_effect=lambda stream, value: acquired.append(value)):
+            with self.assertRaisesRegex(RuntimeError, "body failed"):
+                with harness.artifact_use_leases([build, build / "result.exe"]):
+                    self.assertEqual(acquired, [True])
+                    raise RuntimeError("body failed")
+        self.assertEqual(acquired, [True, False])
+
+    def test_unverified_managed_artifact_is_not_used(self):
+        build = self.root / "target/bhe-playable-builds/run_20261031_000000_002"
+        build.mkdir(parents=True)
+        marker = {"schema": "nexas.bhe-playable-managed/v1", "projectRoot": str(self.root),
+                  "buildsRoot": str(build.parent), "runName": build.name,
+                  "runId": "00000000-0000-0000-0000-000000000002", "state": "BUILDING"}
+        (build / ".bhe-playable-owned.json").write_text(json.dumps(marker), encoding="utf-8")
+        (build / ".artifact-use.lock").write_bytes(b"\x00")
+        with self.assertRaisesRegex(ValueError, "unverified managed build"):
+            with harness.artifact_use_leases([build]):
+                self.fail("A build still being produced must not be leased for launch")
+
 
 
 class FakeOwnedProcess:

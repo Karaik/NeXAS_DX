@@ -1,8 +1,12 @@
 """Prepare and observe one isolated BSDX session. No UI automation or EXE patches."""
 
+import sys
+sys.dont_write_bytecode = True
+
 import argparse
 import ctypes
 from ctypes import wintypes
+from contextlib import contextmanager, ExitStack
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -12,9 +16,10 @@ import queue
 import re
 import shutil
 import subprocess
-import sys
+import tempfile
 import threading
 import time
+import uuid
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -101,10 +106,124 @@ def case_path(runtime_root, case_name):
                              *[f"LPT{i}" for i in range(10)]}:
         raise ValueError("Windows device names are not valid case names")
     root = check_no_links(runtime_root)
+    expected_root = check_no_links(PROJECT_ROOT / "target" / "bhe-playable-runtime")
+    if root != expected_root:
+        raise ValueError("Runtime output must be the repository target/bhe-playable-runtime")
     path = check_no_links(root / case_name)
     if path.parent != root:
         raise ValueError("Case must be a direct child of the runtime root")
     return path
+
+
+@contextmanager
+def case_temp_environment(case):
+    """Configure launcher/Frida/child temporary writes before importing Frida."""
+    case = check_no_links(case)
+    if case != case_path(PROJECT_ROOT / "target" / "bhe-playable-runtime", case.name):
+        raise ValueError("Temporary output is outside the managed case")
+    temp = check_no_links(case / "tmp")
+    temp.mkdir(parents=True, exist_ok=True)
+    keys = ("TEMP", "TMP", "TMPDIR", "PYTHONDONTWRITEBYTECODE")
+    previous = {key: os.environ.get(key) for key in keys}
+    previous_temp = tempfile.tempdir
+    for key in ("TEMP", "TMP", "TMPDIR"):
+        os.environ[key] = str(temp)
+    os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
+    tempfile.tempdir = str(temp)
+    try:
+        yield temp
+    finally:
+        tempfile.tempdir = previous_temp
+        for key, value in previous.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+
+
+def _shared_artifact_lock(stream, acquire):
+    stream.seek(0)
+    if os.name == "nt":
+        import msvcrt
+
+        class Offset(ctypes.Structure):
+            _fields_ = [("internal", ctypes.c_size_t), ("internal_high", ctypes.c_size_t),
+                        ("offset", wintypes.DWORD), ("offset_high", wintypes.DWORD),
+                        ("event", wintypes.HANDLE)]
+
+        kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        handle = wintypes.HANDLE(msvcrt.get_osfhandle(stream.fileno()))
+        offset = Offset()
+        if acquire:
+            function = kernel.LockFileEx
+            function.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.DWORD,
+                                 wintypes.DWORD, wintypes.DWORD, ctypes.POINTER(Offset)]
+            function.restype = wintypes.BOOL
+            # FAIL_IMMEDIATELY, without EXCLUSIVE: compatible with other runtime readers.
+            result = function(handle, 1, 0, 1, 0, ctypes.byref(offset))
+        else:
+            function = kernel.UnlockFileEx
+            function.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.DWORD,
+                                 wintypes.DWORD, ctypes.POINTER(Offset)]
+            function.restype = wintypes.BOOL
+            result = function(handle, 0, 1, 0, ctypes.byref(offset))
+        if not result:
+            raise ctypes.WinError(ctypes.get_last_error())
+    else:
+        import fcntl
+        fcntl.lockf(stream.fileno(), (fcntl.LOCK_SH | fcntl.LOCK_NB) if acquire else fcntl.LOCK_UN,
+                    1, 0, os.SEEK_SET)
+
+
+def _managed_artifact_roots(paths):
+    project = check_no_links(PROJECT_ROOT)
+    target = check_no_links(project / "target")
+    roots = {}
+    for path in paths:
+        source = check_no_links(path)
+        if not source.is_relative_to(target):
+            continue  # Explicit external inputs are read-only; never create locks beside them.
+        for parent in (source, *source.parents):
+            if parent == target or not parent.is_relative_to(target):
+                break
+            marker = parent / ".bhe-playable-owned.json"
+            if not marker.is_file():
+                continue
+            check_no_links(marker)
+            raw = marker.read_bytes()
+            owner = json.loads(raw.decode("utf-8"))
+            if (owner.get("schema") != "nexas.bhe-playable-managed/v1"
+                    or not isinstance(owner.get("projectRoot"), str) or not owner["projectRoot"]
+                    or not isinstance(owner.get("buildsRoot"), str) or not owner["buildsRoot"]
+                    or check_no_links(owner.get("projectRoot", "")) != project
+                    or check_no_links(owner.get("buildsRoot", "")) != parent.parent
+                    or owner.get("runName") != parent.name or not owner.get("runId")
+                    or owner.get("state") != "COMPLETE"):
+                raise ValueError("Source belongs to an unverified managed build: " + str(parent))
+            try:
+                uuid.UUID(owner["runId"])
+            except (ValueError, TypeError, AttributeError) as error:
+                raise ValueError("Managed artifact has an invalid owner identity") from error
+            roots[parent] = raw
+            break
+    return roots
+
+
+@contextmanager
+def artifact_use_leases(paths):
+    """Lock existing managed inputs for this process; prepared metadata covers the CLI gap."""
+    roots = _managed_artifact_roots(paths)
+    with ExitStack() as stack:
+        for root, marker in sorted(roots.items(), key=lambda item: str(item[0])):
+            lock = check_no_links(root / ".artifact-use.lock")
+            if not lock.is_file() or lock.read_bytes() != b"\x00":
+                raise ValueError("Managed artifact has no valid use lock: " + str(root))
+            stream = stack.enter_context(lock.open("rb", buffering=0))
+            _shared_artifact_lock(stream, True)
+            stack.callback(_shared_artifact_lock, stream, False)
+            if (root / ".bhe-playable-owned.json").read_bytes() != marker:
+                raise ValueError("Managed artifact changed while its use lock was acquired")
+        yield
 
 
 def write_json(path, value):
@@ -119,6 +238,21 @@ def write_json(path, value):
 
 def prepare_case(*, base_dir, exe_path, pac_paths, save_dir, case_name, runtime_root=RUNTIME_ROOT, vanilla=False,
                  fresh_save=False, save_seed_dir=None, app_manifest_path=None, native_driver_state=False):
+    case_path(runtime_root, case_name)  # Reject external output before touching any input or creating directories.
+    if native_driver_state:
+        raise ValueError("Native driver-state writes are disabled by the repository-only policy")
+    inputs = [base_dir, exe_path, save_dir, *pac_paths,
+              *([save_seed_dir] if save_seed_dir is not None else []),
+              *([app_manifest_path] if app_manifest_path is not None else [])]
+    with artifact_use_leases(inputs):
+        return _prepare_case(base_dir=base_dir, exe_path=exe_path, pac_paths=pac_paths,
+                             save_dir=save_dir, case_name=case_name, runtime_root=runtime_root,
+                             vanilla=vanilla, fresh_save=fresh_save, save_seed_dir=save_seed_dir,
+                             app_manifest_path=app_manifest_path, native_driver_state=False)
+
+
+def _prepare_case(*, base_dir, exe_path, pac_paths, save_dir, case_name, runtime_root, vanilla,
+                  fresh_save, save_seed_dir, app_manifest_path, native_driver_state):
     case = case_path(runtime_root, case_name)
     if case.exists():
         raise FileExistsError(f"Case already exists; nothing removed: {case}")
@@ -281,11 +415,82 @@ def verify_prepared(case_dir, runtime_root=RUNTIME_ROOT):
     if (driver_mode not in ("native", "private") or
             driver.get("relative_path") != (None if driver_mode == "native" else NVIDIA_DRS_COPY.as_posix())):
         raise ValueError("Unexpected driver state mode or copy path; prepare a fresh case")
+    if driver_mode != "private":
+        raise ValueError("Only private driver-state cases may be launched")
     if driver_mode == "private":
         require_unchanged(driver["source"], driver["files"], "Original driver state tree")
         require_unchanged(case / NVIDIA_DRS_COPY, driver["files"], "Copied driver state tree")
     check_crt(case / "game" / manifest["exe_name"])
+    for source, expected in manifest["source_files"].items():
+        if file_record(source) != expected:
+            raise ValueError("Source input changed after preparation: " + source)
     return manifest
+
+
+def remove_verified_input_copies(case_dir, manifest, state, runtime_root=RUNTIME_ROOT):
+    """Remove only this launcher's unchanged, still reproducible input copies after exit."""
+    case = check_no_links(case_dir)
+    if case != case_path(runtime_root, case.name) or manifest.get("case") != str(case):
+        raise ValueError("Copy cleanup does not belong to the managed case")
+    if (state.get("launcher_pid") != os.getpid()
+            or state.get("owned_process_exit_confirmed") is not True
+            or state.get("guard_cleanup_complete") is not True
+            or state.get("cleanup_pending") is not False):
+        raise ValueError("Owned process/guard cleanup is not confirmed; input copies retained")
+    if file_record(case / "manifest.json")["sha256"] != state.get("manifest_sha256"):
+        raise ValueError("Manifest changed; input copies retained")
+    game = check_no_links(case / "game")
+    if game.parent != case:
+        raise ValueError("Game copies escape their managed case")
+    result = {"removed": [], "removed_bytes": 0, "retained_changed_or_unique": [], "errors": []}
+    candidates = []
+    pac_sources = {Path(p).name.casefold(): Path(p) for p in manifest["pac_sources"]}
+    for name, expected in manifest["game_files"].items():
+        if not isinstance(name, str):
+            raise ValueError("Copied input name must be text")
+        raw_parts = name.replace("\\", "/").split("/")
+        if any(part in ("", ".", "..") or ":" in part for part in raw_parts):
+            raise ValueError("Unexpected copied input path: " + name)
+        relative = Path(name)
+        if relative.is_absolute() or relative.drive:
+            raise ValueError("Unexpected copied input path: " + name)
+        target = check_no_links(game / relative)
+        if not target.is_relative_to(game):
+            raise ValueError("Copied input escapes game directory")
+        if name.casefold() == manifest["exe_name"].casefold():
+            original = Path(manifest["exe_source"])
+        elif name.casefold() == str(manifest.get("app_manifest_name") or "").casefold():
+            original = Path(manifest["app_manifest_source"])
+        elif name.casefold() in pac_sources:
+            original = pac_sources[name.casefold()]
+        else:
+            original = Path(manifest["base_dir"]) / relative
+        try:
+            original = check_no_links(original)
+            if original.is_relative_to(case):
+                raise ValueError("Original input overlaps copied game")
+            if (not target.is_file() or not original.is_file()
+                    or file_record(target) != expected or file_record(original) != expected):
+                result["retained_changed_or_unique"].append(name)
+                continue
+            candidates.append((target, original, name, expected))
+        except OSError as error:
+            result["retained_changed_or_unique"].append(name)
+            result["errors"].append({"file": name, "error": repr(error)})
+    # All paths are validated before any deletion. Fresh hashes close the ordinary change window.
+    for target, original, name, expected in candidates:
+        try:
+            check_no_links(target)
+            check_no_links(original)
+            if file_record(target) != expected or file_record(original) != expected:
+                result["retained_changed_or_unique"].append(name)
+                continue
+            target.unlink()
+            result["removed"].append(name)
+            result["removed_bytes"] += expected["size"]
+        except OSError as error:
+            result["errors"].append({"file": name, "error": repr(error)})
+    return result
 
 
 class OwnedProcessIdentityError(RuntimeError):
@@ -463,7 +668,7 @@ function writeScope(path) {
     return 'repository';
   return 'external';
 }
-function permitted(path) { return ['case', 'external'].includes(writeScope(path)); }
+function permitted(path) { return writeScope(path) === 'case'; }
 function metadataOpenOnly(access, options, disposition, existingDirectory) {
   // Opening an existing directory for attributes/MAXIMUM_ALLOWED is not a
   // data write. Actual metadata mutation still goes through the write guard.
@@ -631,7 +836,7 @@ function inspectWrite(api, path, details) {
   const scope = writeScope(path);
   if (scope === 'external') {
     try { announce('external_write', Object.assign({api: api, path: path,
-      observation: 'permitted request; actual disk mutation not asserted'}, details || {})); }
+      observation: 'blocked external disk-write request; actual disk mutation not asserted'}, details || {})); }
     catch (_) { /* Optional observation must not turn normal OS I/O into a failure. */ }
   }
   return scope;
@@ -728,7 +933,7 @@ replace('NtCreateFile', ['pointer','uint32','pointer','pointer','pointer','uint3
       if (mmcss) announce('mmcss_device_open', Object.assign({api: 'NtCreateFile', path: path}, details));
       if (writable(a[1], a[8], a[7]) && !hid && !mmcss && !ipcPath(path)) {
         const scope = inspectWrite('NtCreateFile', path, details);
-        if (!['case', 'external'].includes(scope)) {
+        if (scope !== 'case') {
           if (scope === 'unresolved' || !metadataOpenOnly(a[1], a[8], a[7], existingDirectory(a[2])))
             return deny('NtCreateFile', path, 'write rejected: ' + scope, a[3], details);
           announce('directory_metadata_open', Object.assign({api: 'NtCreateFile', path: path}, details));
@@ -751,7 +956,7 @@ replace('NtOpenFile', ['pointer','uint32','pointer','pointer','uint32','uint32']
     if (mmcss) announce('mmcss_device_open', Object.assign({api: 'NtOpenFile', path: path}, details));
     if (writable(a[1], a[5], 1) && !hid && !mmcss && !ipcPath(path)) {
       const scope = inspectWrite('NtOpenFile', path, details);
-      if (!['case', 'external'].includes(scope)) {
+      if (scope !== 'case') {
         if (scope === 'unresolved' || !metadataOpenOnly(a[1], a[5], 1, existingDirectory(a[2])))
           return deny('NtOpenFile', path, 'write rejected: ' + scope, a[3], details);
         announce('directory_metadata_open', Object.assign({api: 'NtOpenFile', path: path}, details));
@@ -881,16 +1086,30 @@ announce('hook_ready', {hooks: hooks, module: main.path, base: main.base.toStrin
   documentsLocationReturn: locationReturn.toString(),
   documentsPathReturn: pathReturn.toString(), saveAliasSources: config.saveAliasSources, saveAliasTarget: config.saveAliasTarget,
   driverStateSources: config.driverStateSources, driverStateTarget: config.driverStateTarget,
-  policy: 'input/save preservation: case and resolved external OS writes allowed; repository neighbors and original inputs protected; exceptions never handled'});
+  policy: 'repository-only case writes; external disk writes and original inputs protected; exceptions never handled'});
 '''
 
 
 def launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_ROOT):
+    case = check_no_links(case_dir)
+    if case != case_path(runtime_root, case.name):
+        raise ValueError("Launch case is outside the managed runtime root")
+    manifest = json.loads((case / "manifest.json").read_text(encoding="utf-8"))
+    inputs = [manifest["base_dir"], manifest["original_save"], *manifest["source_files"],
+              *([manifest["seed_source"]] if manifest.get("seed_source") is not None else [])]
+    with artifact_use_leases(inputs):
+        verified = verify_prepared(case, runtime_root)
+        with case_temp_environment(case):
+            return _launch_case(case, timeout=timeout, ready_timeout=ready_timeout,
+                                runtime_root=runtime_root, prepared_manifest=verified)
+
+
+def _launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_ROOT, prepared_manifest):
     if os.name != "nt":
         raise RuntimeError("Launching is supported only on Windows")
     import frida
     case = check_no_links(case_dir)
-    manifest = verify_prepared(case, runtime_root)
+    manifest = prepared_manifest
     driver_mode = manifest["driver_state"].get("mode", "private")
     stop_file = case / "STOP"
     if stop_file.exists():
@@ -1158,6 +1377,29 @@ def launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_R
                 state["changed_payload"] = changed_payload
         except BaseException as exc:
             failure = failure or repr(exc)
+        try:
+            state["original_base_check"] = compare_manifest(manifest["base_dir"], manifest["base_files"])
+            state["source_files_check"] = {path: file_record(path) == expected
+                                           for path, expected in manifest["source_files"].items()}
+            if not state["original_base_check"]["unchanged"] or not all(state["source_files_check"].values()):
+                failure = failure or "original_inputs_changed"
+        except BaseException as exc:
+            failure = failure or repr(exc)
+            state["source_files_check_error"] = repr(exc)
+        state["owned_process_exit_confirmed"] = child is None or state["exit_code"] is not None
+        session = attachment.get("session")
+        state["guard_cleanup_complete"] = ((worker is None or not worker.is_alive())
+                                             and (session is None or state.get("frida_detached") is True))
+        state["cleanup_pending"] = not (state["owned_process_exit_confirmed"]
+                                        and state["guard_cleanup_complete"])
+        state["guard_session_retained"] = not state["guard_cleanup_complete"]
+        try:
+            state["input_copy_cleanup"] = remove_verified_input_copies(case, manifest, state, runtime_root)
+            if state["input_copy_cleanup"]["errors"]:
+                failure = failure or "input_copy_cleanup_failed"
+        except BaseException as exc:
+            state["input_copy_cleanup_error"] = repr(exc)
+            failure = failure or repr(exc)
         if not failure and not state["stop_reason"]:
             if not state["hook_ready"] or (state["redirect_count"] == 0 and state["save_path_redirect_success_count"] == 0):
                 failure = "documents_or_successful_save_io_redirection_was_not_observed"
@@ -1188,7 +1430,7 @@ def main(argv=None):
     seed_mode.add_argument("--save-seed-dir", type=Path, help="Copy this independent seed while preserving the real --save-dir")
     prepare.add_argument("--app-manifest", type=Path, help="Copy the explicitly supplied application manifest into this case")
     prepare.add_argument("--native-driver-state", action="store_true",
-                         help="Diagnostic: use normal global driver state I/O without a private Drs copy or alias")
+                         help="Unsupported: repository-only output policy requires private driver state")
     launch = sub.add_parser("launch", help="Start one prepared case with isolation installed before resume")
     launch.add_argument("--case", required=True)
     launch.add_argument("--timeout", type=float, default=0, help="Seconds; 0 waits for exit, Ctrl+C or case/STOP")

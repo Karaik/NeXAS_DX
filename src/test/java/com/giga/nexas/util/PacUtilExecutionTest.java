@@ -36,6 +36,7 @@ class PacUtilExecutionTest {
         assertEquals(executable.getParent().toFile(), builder.directory());
         assertEquals(session.toString(), builder.environment().get("TEMP"));
         assertEquals(session.toString(), builder.environment().get("TMP"));
+        assertEquals(session.toString(), builder.environment().get("TMPDIR"));
         assertTrue(builder.environment().get("PATH").startsWith(executable.getParent().toString() + java.io.File.pathSeparator));
         assertEquals(input.toString(), builder.command().get(1));
         assertTrue(builder.redirectErrorStream());
