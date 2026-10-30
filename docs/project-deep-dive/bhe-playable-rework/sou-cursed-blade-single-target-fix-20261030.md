@@ -1,5 +1,7 @@
 # Sou「呪装刀」单目标适配：2026-10-30
 
+> 2026-10-31资料状态：本文测试计数和旧运行身份只对应记录当时的代码。原target已清空，旧报告／运行日志路径不再作为当前可访问文件保证。现保全的资料见[实机文本证据说明](../../../src/test/resources/bhe-runtime-evidence-20261030/README.md)；程序、PAC、转储、截图、录像、存档及内存二进制没有转存。历史GREEN不能转记为当前源码已通过。
+
 Sou菜单第63项进入攻击后会反复重入同一阶段，达到999 HIT仍不收招。根因是BHE的“剩余多锁目标数大于0”在DX条件转换中降为无条件，而多锁生产、游标和消费事件已被丢弃，原本有限的逐目标动作因此失去退出条件。
 
 ## 实际修复范围
@@ -15,7 +17,7 @@ Sou菜单第63项进入攻击后会反复重入同一阶段，达到999 HIT仍�
 - 原BHE三等级P1回边的条件为MULTILOCK／TARGETCOUNTER_MAX > 0；旧目标BIN对应包成为无条件INPUT1。源及目标的46／49帧恢复出口都还存在，只是旧无条件回边遮住了出口。
 - 原P1没有松键或热量退出条件；三等级全部FreeParam／Heat／Charge相关空头已直接核原BIN，不能靠补一个未经证实的HC消费处理此问题。
 
-原字节证据见[target/sou063-debug-20261030/independent-investigation.md](D:/Code/NeXAS_DX/target/sou063-debug-20261030/independent-investigation.md)、[Astra设计与字段核验](D:/Code/NeXAS_DX/target/sou063-single-target-design-20261030/design.md)及[独立交叉审查](D:/Code/NeXAS_DX/target/sou063-cross-review-20261030-mnk/report.md)。
+原字节证据见target/sou063-debug-20261030/independent-investigation.md（历史路径`target/sou063-debug-20261030/independent-investigation.md`，已清空）、Astra设计与字段核验（历史路径`target/sou063-single-target-design-20261030/design.md`，已清空）及独立交叉审查（历史路径`target/sou063-cross-review-20261030-mnk/report.md`，已清空）。
 
 ## 验证边界
 
@@ -23,4 +25,4 @@ Sou菜单第63项进入攻击后会反复重入同一阶段，达到999 HIT仍�
 
 首次修复后27项中仅二进制完整图比较失败。完整差异盘点恰为209个phaseQuantity=0、阶段／suffix均空的技能壳，其两个名称从null读回为空字符串，共418字段；这些技能的empty为false，不是flag0禁用技能。现有BinaryWriter对null名称写NUL，Parser读回空串；二进制比较的期望图只对已核实的空壳名称作对应处理，其余图和生产代码保持严格比较。首次失败、完整图诊断和后续结果分别保存，不能把测试夹具表示差异当作游戏缺陷。
 
-root最终显式运行原26类206项加新增7项，得到27类213项、0失败／0错误／0跳过；日志为[target/bhe-audit-20261026/sou063-single-target-full-regression-20261030.log](D:/Code/NeXAS_DX/target/bhe-audit-20261026/sou063-single-target-full-regression-20261030.log)，27份XML和汇总冻结于[green-sou063-full](D:/Code/NeXAS_DX/.superpowers/sdd/2026-10-30-six-variants-and-sou-validation/green-sou063-full/summary.json)。本源码修复尚未产生新的整链交付包，未证明修后菜单、训练、命中／落空或受击中断通过。180550仍是包含旧自回边的失败对照；后续须在新包重新验收63，不使用其它武装的READY代替。
+root最终显式运行原26类206项加新增7项，得到27类213项、0失败／0错误／0跳过；日志为target/bhe-audit-20261026/sou063-single-target-full-regression-20261030.log（历史路径`target/bhe-audit-20261026/sou063-single-target-full-regression-20261030.log`，已清空），27份XML和汇总冻结于[green-sou063-full](D:/Code/NeXAS_DX/.superpowers/sdd/2026-10-30-six-variants-and-sou-validation/green-sou063-full/summary.json)。本源码修复尚未产生新的整链交付包，未证明修后菜单、训练、命中／落空或受击中断通过。180550仍是包含旧自回边的失败对照；后续须在新包重新验收63，不使用其它武装的READY代替。

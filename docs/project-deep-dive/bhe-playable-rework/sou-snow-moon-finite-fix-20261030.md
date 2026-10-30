@@ -1,5 +1,7 @@
 # Sou「雪月花」有限发射适配：2026-10-30
 
+> 2026-10-31资料状态：本文测试计数和旧运行身份只对应记录当时的代码。原target已清空，旧报告／运行日志路径不再作为当前可访问文件保证。现保全的资料见[实机文本证据说明](../../../src/test/resources/bhe-runtime-evidence-20261030/README.md)；程序、PAC、转储、截图、录像、存档及内存二进制没有转存。历史GREEN不能转记为当前源码已通过。
+
 旧180550包的菜单135「雪月花」预览在74个游戏帧内产生182,279个对象，停在控制弹生成后的结果登记链表查找中，UI显示999 HIT且输入超时。原BHE把999作为受多锁剩余数逐发截断的发射上限；DX没有这段0x20多锁检查与消费，主武装先生成大量控制弹，控制弹又各自生成大量冻结弹，形成两层放大。
 
 ## 修复行为
@@ -18,12 +20,12 @@
 
 原BHE三主技能和三个公共依赖，按完整真实Skill记录字节的长度／SHA256验证，不依赖旧JSON定位结果。目标三个公共技能通过原有转换与CrossRedirect在独立DTO和plan副本上重建，完整核对自然出口、伤害和资源；主技能核Effect／Change全槽、循环记录、阶段和suffix。全部候选构造与验证完成后才发布主列表、宿主列表及计数；源数据、原plan和其它角色不写入。
 
-[完整原字节与原生因果报告](D:/Code/NeXAS_DX/target/sou135-object-explosion-20261030/report.md)、[设计](D:/Code/NeXAS_DX/target/sou135-object-explosion-20261030/design.md)、[实现交叉审查](D:/Code/NeXAS_DX/target/sou135-object-explosion-20261030/implementation-review.md)保留全部证据。64D617已确认是链表线性查找，不把无符号栈尾推测成分配器崩溃。
+完整原字节与原生因果报告（历史路径`target/sou135-object-explosion-20261030/report.md`，已清空）、设计（历史路径`target/sou135-object-explosion-20261030/design.md`，已清空）、实现交叉审查（历史路径`target/sou135-object-explosion-20261030/implementation-review.md`，已清空）属于当时的完整分析记录，其原文件现未保全；本页、源码守卫及已保留运行文本仍可核关键结论。64D617已确认是链表线性查找，不把无符号栈尾推测成分配器崩溃。
 
 ## 验证与现场保留
 
-9项新测试经root实际执行得到9失败／0错误，再实现修复。首轮定向4类36项已全部通过，包括三等级完整主图精确差异、危险发射单点预算与循环窗排除、公共宿主完整图和真实字节前缀、动态尾部、自然零值出口、源／目标漂移拒绝、幂等及主／宿主真正二进制两次回环。漂移检查还覆盖主P1非零scalar、控制弹20帧零写、公共514退出条件和516父阶段检测；旧Counter／Blade测试仅隔离另一已独立验证的局部修复，原完整图强断言不删。root随后实际运行完整28类222项，0失败／0错误／0跳过；[运行日志](D:/Code/NeXAS_DX/target/bhe-audit-20261026/sou135-single-target-full-regression-20261030.log)与[28份XML汇总](D:/Code/NeXAS_DX/.superpowers/sdd/2026-10-30-six-variants-and-sou-validation/green-sou135-full/summary.json)已固定。
+9项新测试经root实际执行得到9失败／0错误，再实现修复。首轮定向4类36项已全部通过，包括三等级完整主图精确差异、危险发射单点预算与循环窗排除、公共宿主完整图和真实字节前缀、动态尾部、自然零值出口、源／目标漂移拒绝、幂等及主／宿主真正二进制两次回环。漂移检查还覆盖主P1非零scalar、控制弹20帧零写、公共514退出条件和516父阶段检测；旧Counter／Blade测试仅隔离另一已独立验证的局部修复，原完整图强断言不删。root随后实际运行完整28类222项，0失败／0错误／0跳过；运行日志（历史路径`target/bhe-audit-20261026/sou135-single-target-full-regression-20261030.log`，已清空）与[28份XML汇总](D:/Code/NeXAS_DX/.superpowers/sdd/2026-10-30-six-variants-and-sou-validation/green-sou135-full/summary.json)已固定。
 
-旧case09保存转储、原生事件、四份对象内存、日志前缀、终止意图和[证据清单](C:/NeXAS_DX_runs/runtime/sou-counter-camera-validation-20261030-09/evidence/sou135-preserved-evidence-manifest.json)。之后通过原隔离启动器STOP人工终止，退出码E0000001；原Save复核未变、guard violations为空、owned handles已关闭。首次等待调试器事件超过10秒的失败状态原样保留。它是人工结束的挂起试跑，不是自然异常退出；case09输入文件和全部故障证据完整保留。
+旧case09当时保存转储、原生事件、四份对象内存、日志前缀、终止意图和证据清单。当前仓库保留的是[原生运行文本](../../../src/test/resources/bhe-runtime-evidence-20261030/records/runtime/sou-counter-camera-validation-20261030-09/runtime.cdb.log.json)及清单中的身份／哈希，不含转储、对象内存或截图本体。之后通过原隔离启动器STOP人工终止，退出码E0000001；原Save复核未变、guard violations为空、owned handles已关闭。首次等待调试器事件超过10秒的失败状态原样保留。它是人工结束的挂起试跑，不是自然异常退出；当时case09输入文件和故障证据留在C盘；这些二进制未再次复制，不能视为当前仓库已保全完整case。
 
-本源码修复尚未完成新整链和修后实机，不宣称已通过菜单、训练、受击中断或连段验收。剩余134公共控制路径另行调查，不用本修复掩盖其它同型风险。
+本源码修复尚未完成新整链和修后实机，不宣称已通过菜单、训练、受击中断或连段验收。134现已有[独立源码适配](sou-flare-seeker-finite-fix-20261031.md)，同样未完成修后构建或实机验证。

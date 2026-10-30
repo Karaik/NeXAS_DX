@@ -1,5 +1,7 @@
 # Sou30／Sou33新包菜单预览复测：case09原始证据冻结
 
+> 2026-10-31保全更新：原target冻结目录已清空；当前可用来源是仓库内[完整运行文本](../../../src/test/resources/bhe-runtime-evidence-20261030/records/runtime/sou-counter-camera-validation-20261030-09/runtime.cdb.log.json)。本次只读重建文字字节后，前411254字节及[31567,411254)片段的SHA256仍与下表一致，REQ33／武装30与REQ77／武装33的原READY标记均存在。原图、转储及程序没有转存，本文的看图和运行结论属于当时记录，不是本轮重新运行或新源码验收。
+
 结论：新包中Sou30「人間砲弾」默认level0预览、Sou33「カワラブレイク」预览各有同一REQ对应的原生START、收招和READY证据。本结论仅覆盖这两个预览，不代表Sou153项或九角色54项追加技能全部通过。
 
 本代理独立只读核验，未执行Maven、Java、UI、CDB，未改写活日志、Source、Save或输入。冻结主目录为 `D:/Code/NeXAS_DX/target/sou-counter-camera-runtime-20261030`；机器索引见audit.json，逐条原生记录见observations.json。审计时间：2026-10-30T10:22:47.525249+00:00。
