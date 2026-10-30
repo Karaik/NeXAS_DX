@@ -287,6 +287,8 @@ class SouHumanCannonCounterTest {
         var rawMek = (com.giga.nexas.dto.bhe.mek.Mek) bhe.parse(mekPath.toString(), CHARSET).getData();
         var rawMain = (com.giga.nexas.dto.bhe.waz.Waz) bhe.parse(mainPath.toString(), CHARSET).getData();
         TsukuyomiRawSourceBundle raw = loadCommonSource(bhe);
+        raw.setTsukuyomiMek(rawMek);
+        raw.getWazByFileName().put("sou.waz", rawMain);
         var rawTama = raw.getCommonProjectileWazByFileName().get("tama05.waz");
         JsonNode beforeRawMek = JSON.valueToTree(rawMek);
         JsonNode beforeRawMain = JSON.valueToTree(rawMain);
@@ -339,13 +341,16 @@ class SouHumanCannonCounterTest {
         request.setWazFileName("sou.waz"); request.setMekFileName("Sou.mek"); request.setSpriteFileName("sou.spm");
         TsukuyomiConvertedBundle currentSou = new TsukuyomiConvertedBundle();
         currentSou.setCommonProjectileAppendPlan(plan);
+        currentSou.setRawSourceBundle(raw);
         currentSou.setPreparedBaselineBundle(baseline);
         currentSou.setSelectedResourceBundle(selected);
         FollowupMekaContext context = new FollowupMekaContext();
         context.setRequest(request); context.setBaseline(baseline); context.setConvertedBundle(currentSou);
         context.setSelectedPackage(selected); context.setGrpAppendPlan(privatePlan);
         context.setReboundMek(mek); context.setReboundWaz(main);
-        SouSkillGlitchFixer.INSTANCE.fix(context); // baseline prime must not invoke the future codec
+        SouSkillGlitchFixer.INSTANCE.fix(context); // baseline prime must not install the counter codec
+        // Keep this suite's complete non-counter graphs stable while the first public call still installs the counter.
+        SouCursedBladeSingleTargetFixer.fix(context);
         assertEquals(211, mek.getMekWeaponInfoMap().size());
         assertTrue(currentSou.getCommonProjectileResourceBundle().getWazByFileName().isEmpty(),
                 "Sou inherits prepared hosts; a fresh Sou converted common bundle is empty in the real pipeline");

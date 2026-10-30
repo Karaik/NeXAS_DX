@@ -20,5 +20,6 @@ public final class SouCustomizer implements FollowupMekaCustomizer {
         // 委派至专门的技能重映射器处理 140 组常规武器升级至 Lv3 完全体及热量消耗规整
         SouSkillGlitchFixer.INSTANCE.fix(context);
         SouHumanCannonCounterFixer.fix(context);
+        SouCursedBladeSingleTargetFixer.fix(context);
     }
 }
