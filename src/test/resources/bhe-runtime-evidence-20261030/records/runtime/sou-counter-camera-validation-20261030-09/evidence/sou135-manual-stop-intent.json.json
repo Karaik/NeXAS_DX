@@ -1,0 +1,5 @@
+{
+  "format": "nexas-runtime-text-v1",
+  "encoding": "utf-8",
+  "text": "{\r\n  \"reason\": \"manual_stop_of_isolated_hang_after_evidence_preservation\",\r\n  \"gamePid\": 480908,\r\n  \"cdbPid\": 489268,\r\n  \"request\": 1027,\r\n  \"startTick\": 288929,\r\n  \"snapshotTick\": 289003,\r\n  \"activeWeapon\": 135,\r\n  \"objectCount\": 182279,\r\n  \"notNaturalCrash\": true,\r\n  \"actorMemoryWrites\": false,\r\n  \"evidence\": [\r\n    \"sou135-object-explosion-first.dmp\",\r\n    \"sou135-player-370042a8.bin\",\r\n    \"sou135-parent-58325620.bin\",\r\n    \"sou135-pending-ec9dc188.bin\",\r\n    \"sou135-existing-d131d370.bin\",\r\n    \"sou135-hang-log-prefix.bin\"\r\n  ],\r\n  \"mechanism\": \"existing launcher STOP file with owned process identity verification\"\r\n}\r\n"
+}

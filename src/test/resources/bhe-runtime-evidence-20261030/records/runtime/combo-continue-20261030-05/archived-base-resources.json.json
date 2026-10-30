@@ -1,0 +1,5 @@
+{
+  "format": "nexas-runtime-text-v1",
+  "encoding": "utf-8",
+  "text": "{\r\n  \"archive\": \"C:\\\\NeXAS_DX_runs\\\\archives\\\\base-resource-plan-20261030-mnk-three-stopped\",\r\n  \"plan\": \"C:\\\\NeXAS_DX_runs\\\\archives\\\\base-resource-plan-20261030-mnk-three-stopped\\\\plan.json\",\r\n  \"restore\": \"C:\\\\NeXAS_DX_runs\\\\archives\\\\base-resource-plan-20261030-mnk-three-stopped\\\\restore-base-resources.py\",\r\n  \"plan_sha256\": \"f97812282725e8ac13f2e303a31ff4ebd1eccf7069dd2b6819e2dfdbd59bc4ad\",\r\n  \"restore_sha256\": \"e07cc1d79212d463352dfe153840747ad8400f827de4557b2af9f16f16891645\",\r\n  \"case\": \"combo-continue-20261030-05\",\r\n  \"reason\": \"identical native base PAC copies only; restore before reusing game\"\r\n}\r\n"
+}

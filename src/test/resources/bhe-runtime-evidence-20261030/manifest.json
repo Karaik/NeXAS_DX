@@ -1,0 +1,1197 @@
+{
+  "format": "nexas-runtime-text-evidence-v1",
+  "created_jst": "2026-10-31T00:06:53.310875+09:00",
+  "source_root": "C:\\NeXAS_DX_runs",
+  "text_only": true,
+  "binary_files_copied": 0,
+  "source_files_modified": false,
+  "build_executed": false,
+  "source_text_bytes": 12863290,
+  "record_count": 131,
+  "records": [
+    {
+      "source_relative_path": "archives/base-resource-plan-20261030-guarded/completed.json",
+      "stored_relative_path": "records/archives/base-resource-plan-20261030-guarded/completed.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 233,
+      "source_sha256": "941d6bdbb810e939b5d8b92aedf718fda72173e4868f40becb5a0f89b382ce30",
+      "stored_bytes": 353,
+      "stored_sha256": "9acaf40efe3af4ba5a6885465d288416e498ff44f7179b9b0d183ce20c0d0050"
+    },
+    {
+      "source_relative_path": "archives/base-resource-plan-20261030-guarded/plan.json",
+      "stored_relative_path": "records/archives/base-resource-plan-20261030-guarded/plan.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 20263,
+      "source_sha256": "13fe93dbbdf287f844a6c8872064290e4c72c4e680d5a6a8463f4dc0c18b15a6",
+      "stored_bytes": 23455,
+      "stored_sha256": "055e7fa0efbeae5433a2a8113aa4354708d83cec194b62472ce71ef67477454a"
+    },
+    {
+      "source_relative_path": "archives/base-resource-plan-20261030-mnk-three-stopped/README.md",
+      "stored_relative_path": "records/archives/base-resource-plan-20261030-mnk-three-stopped/README.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 3293,
+      "source_sha256": "4f7bc58049a2ef16d3da6235110f2ec8e4b653b2c511de903c24da7fb68f2177",
+      "stored_bytes": 3423,
+      "stored_sha256": "124c2a653e780c2b0bfed4ee22d95d33c62ad901534ef4fb13329af834facec2"
+    },
+    {
+      "source_relative_path": "archives/base-resource-plan-20261030-mnk-three-stopped/completed.json",
+      "stored_relative_path": "records/archives/base-resource-plan-20261030-mnk-three-stopped/completed.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 5928,
+      "source_sha256": "c7630c62b40ee73ab740de4e39181a532930bfa6fd0cd2e67f1ca575f12bbf0e",
+      "stored_bytes": 6838,
+      "stored_sha256": "d968991cea3e85ac07ba9b3a921000cc7bffdda6689c7be31c66714cbc3c7c93"
+    },
+    {
+      "source_relative_path": "archives/base-resource-plan-20261030-mnk-three-stopped/plan.json",
+      "stored_relative_path": "records/archives/base-resource-plan-20261030-mnk-three-stopped/plan.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 57903,
+      "source_sha256": "f97812282725e8ac13f2e303a31ff4ebd1eccf7069dd2b6819e2dfdbd59bc4ad",
+      "stored_bytes": 63217,
+      "stored_sha256": "304c778b0d30738c64e04ffe937cdb3f81e3c16015249ddaa7196a933eb3f21c"
+    },
+    {
+      "source_relative_path": "archives/base-resource-plan-20261030-mnk-three-stopped/pre-removal-verification.json",
+      "stored_relative_path": "records/archives/base-resource-plan-20261030-mnk-three-stopped/pre-removal-verification.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 94716,
+      "source_sha256": "8fff78afff68cdc183570a2c80704e8d36a161a3bd515e49be31cd9c19fd3875",
+      "stored_bytes": 103384,
+      "stored_sha256": "f1d9d801889439784ec9be656fbe29ab167752315881637932a74365d01af17d"
+    },
+    {
+      "source_relative_path": "archives/base-resource-plan-20261030-mnk-three-stopped/recovery-dry-run.log",
+      "stored_relative_path": "records/archives/base-resource-plan-20261030-mnk-three-stopped/recovery-dry-run.log.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 6116,
+      "source_sha256": "897e3fb0a1d04cec3d8bc1deadbaacd21db5c2610ea34bdc452b5d52e2add681",
+      "stored_bytes": 6788,
+      "stored_sha256": "644c918b94b9f6527d7dae6560c8bd3d1966cada1c9f3ab70fd93424e5af8df7"
+    },
+    {
+      "source_relative_path": "archives/base-resource-plan-20261030-mnk-three-stopped/removal-journal.jsonl",
+      "stored_relative_path": "records/archives/base-resource-plan-20261030-mnk-three-stopped/removal-journal.jsonl.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 10254,
+      "source_sha256": "f78913ac7d54c140ef52f5b71e3c2a12a281abc95e17b1f12f0904bf72c05f33",
+      "stored_bytes": 11512,
+      "stored_sha256": "9d3ac1c93c343fac855a77e1783294c39f1bccf7c55ebd96c85b665abf65fd66"
+    },
+    {
+      "source_relative_path": "archives/base-resource-plan-20261030-mnk-two-stopped/README.md",
+      "stored_relative_path": "records/archives/base-resource-plan-20261030-mnk-two-stopped/README.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 2935,
+      "source_sha256": "de4a2a0dbc22092f3e48372528b981e415cb95c1917d90d085c3a4733bf079f9",
+      "stored_bytes": 3061,
+      "stored_sha256": "499c66a607ccff9d7e1703e11d1d162669952c7dcf13a4ee1ac75cfdbb2e44d8"
+    },
+    {
+      "source_relative_path": "archives/base-resource-plan-20261030-mnk-two-stopped/plan.json",
+      "stored_relative_path": "records/archives/base-resource-plan-20261030-mnk-two-stopped/plan.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 36697,
+      "source_sha256": "a4e5978e2ab70640126aa25df7bc188755ae290f1958e3322b900e0af52f05cf",
+      "stored_bytes": 40341,
+      "stored_sha256": "90d0bcf10c980595aafa9fa0914751c741234911f4c29487be4b9265137a5cba"
+    },
+    {
+      "source_relative_path": "archives/sou063-first-red-20261030/manifest.json",
+      "stored_relative_path": "records/archives/sou063-first-red-20261030/manifest.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1255,
+      "source_sha256": "220403c00ea182f320bdedf14e024f796e0d0366887cb194761b1fe16e4516f7",
+      "stored_bytes": 1479,
+      "stored_sha256": "7bdb0df4587bf3aa88384ebe0ce8912b5e6ec9238af592743c2b5a17c130bd6e"
+    },
+    {
+      "source_relative_path": "audits/nine-six-variants-130704-v2/audit.json",
+      "stored_relative_path": "records/audits/nine-six-variants-130704-v2/audit.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 137487,
+      "source_sha256": "f38fb89eaa3a16873f372425c3bcf57f169182094dfe9faddf54593af1bedad5",
+      "stored_bytes": 155723,
+      "stored_sha256": "4461278ba400d0e5df4238a8ef76d931acc15461a77a3b0b196a41383468c0f6"
+    },
+    {
+      "source_relative_path": "audits/nine-six-variants-130704/audit.json",
+      "stored_relative_path": "records/audits/nine-six-variants-130704/audit.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 135996,
+      "source_sha256": "b5e7a99f6b95875fc14634316b995cd986d39cd6c49d0fb1b63cb933d549a025",
+      "stored_bytes": 154054,
+      "stored_sha256": "cc41ec9086f621b917934dc143e0703a7c67c491d989f448096539759d908948"
+    },
+    {
+      "source_relative_path": "audits/nine-six-variants-pac-130704/audit.json",
+      "stored_relative_path": "records/audits/nine-six-variants-pac-130704/audit.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1140096,
+      "source_sha256": "5e583d01a5d864f2a947af207f405360fab7613aea567d459818e3c523bb435e",
+      "stored_bytes": 1264578,
+      "stored_sha256": "cbe2cd25ed5fd04c70961c2766f2a1d399f52883cc250a1f96cc668e082696b3"
+    },
+    {
+      "source_relative_path": "audits/nine-six-variants-pac-130704/temporary-copy-cleanup.json",
+      "stored_relative_path": "records/audits/nine-six-variants-pac-130704/temporary-copy-cleanup.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 849,
+      "source_sha256": "df4f7170acae97935f12757ee135ece92abce68a3804b31a54dec0bef18ffac2",
+      "stored_bytes": 1021,
+      "stored_sha256": "956634b1d6753aa4f7c19ab12a20c6fd7e02fca39dd199125ed9aeb830394222"
+    },
+    {
+      "source_relative_path": "audits/sou-counter-camera-180550/audit.json",
+      "stored_relative_path": "records/audits/sou-counter-camera-180550/audit.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 19951,
+      "source_sha256": "1e997defca287a74145e89c8b08c5ce758595d02f8ce5457e14892da7d8ab682",
+      "stored_bytes": 22711,
+      "stored_sha256": "aaef483448ae21821a9f9b3bc0e2e55746a1e9593a90d93d9ef5281825b3b0f6"
+    },
+    {
+      "source_relative_path": "audits/sou-counter-camera-pac-180550/audit.json",
+      "stored_relative_path": "records/audits/sou-counter-camera-pac-180550/audit.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1132223,
+      "source_sha256": "e8306a539da215874f758d4d63def5d74263cca9537a437d7bb5c837bb181cf0",
+      "stored_bytes": 1256683,
+      "stored_sha256": "d4ccd957f704763955f435fc389fc45cdcdcf06bc697f8cdce3ade9fce4c3c05"
+    },
+    {
+      "source_relative_path": "builds/run_20261029_093012_409/build.json",
+      "stored_relative_path": "records/builds/run_20261029_093012_409/build.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1046,
+      "source_sha256": "e2205e213a53779667b714e923a83211a45d42e4e5a0c07385b93b48cb351a58",
+      "stored_bytes": 1290,
+      "stored_sha256": "93719068225f9584e10f8d9b9b530e63802072513585d802af396126ef8780c5"
+    },
+    {
+      "source_relative_path": "builds/run_20261029_095154_853/build.json",
+      "stored_relative_path": "records/builds/run_20261029_095154_853/build.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1046,
+      "source_sha256": "86e33a500c875e142319542108283cdff591ebf15bb617d9ee9cd8cdb07e4f3e",
+      "stored_bytes": 1290,
+      "stored_sha256": "1bd1ca02f52873e814470041042bc5f34a9138d9eede1d4726664054728a34c3"
+    },
+    {
+      "source_relative_path": "builds/run_20261029_130952_143/build.json",
+      "stored_relative_path": "records/builds/run_20261029_130952_143/build.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1046,
+      "source_sha256": "1d49545afda9ba476b2aabfcbd66164e61e702b061b568a0edc17611205a09c3",
+      "stored_bytes": 1290,
+      "stored_sha256": "6ee1ae1beb4505e9a827872d9ff967d83b34efdd84e2ea8dff1c4d864c1cbeb0"
+    },
+    {
+      "source_relative_path": "builds/run_20261030_031642_167/build.json",
+      "stored_relative_path": "records/builds/run_20261030_031642_167/build.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1046,
+      "source_sha256": "7570f50f46f12c301152408fef8ed219206659bb11e0803027f722da71383900",
+      "stored_bytes": 1290,
+      "stored_sha256": "e2519c08350b5304474a7c6fdc549cf29375fc52c4831ef3bc436b46ce3af270"
+    },
+    {
+      "source_relative_path": "builds/run_20261030_130356_492/build.json",
+      "stored_relative_path": "records/builds/run_20261030_130356_492/build.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1046,
+      "source_sha256": "0b14801531c17951a5b72d7218153f509163ddff54a1797ce8f1308aa1e2126e",
+      "stored_bytes": 1290,
+      "stored_sha256": "9ea7ec4d770fb232e964c4e294e7302139fd21495aa97eb9f0c624198a2400a5"
+    },
+    {
+      "source_relative_path": "builds/run_20261030_180259_554/build.json",
+      "stored_relative_path": "records/builds/run_20261030_180259_554/build.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1046,
+      "source_sha256": "6a77b4e54a7834af8bf3ff53953f00692bbe9e2886be9d56be43df6a65eafe57",
+      "stored_bytes": 1290,
+      "stored_sha256": "8e3fb17c167c15c2a6e7e59589821ddb73c00636b88583e5116efd1948ca0b40"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/SHA256SUMS.txt",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/SHA256SUMS.txt.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1384,
+      "source_sha256": "7112997cbb8dd39fc7d37c595a50869bd8f9d597a2990138b3720b87c1fdf86a",
+      "stored_bytes": 1496,
+      "stored_sha256": "653f40966c2037ed9d94e92bd1e3957d0e004bbd03e9a06d1ca7e048585481d6"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/baseline-pac-sha256.json",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/baseline-pac-sha256.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 2299,
+      "source_sha256": "c52e39e9d92716833954e2f8fa051a4c0cb3d5d171a575a06cc31311707fdc6c",
+      "stored_bytes": 2633,
+      "stored_sha256": "dc86b52f1d0014887cde8c8506ed739cc01e9be8c9c7beabe583af772b75cce3"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/build-source.json",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/build-source.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1046,
+      "source_sha256": "7570f50f46f12c301152408fef8ed219206659bb11e0803027f722da71383900",
+      "stored_bytes": 1290,
+      "stored_sha256": "e2519c08350b5304474a7c6fdc549cf29375fc52c4831ef3bc436b46ce3af270"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/delivery.json",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/delivery.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 2993,
+      "source_sha256": "45e89a3a205da4dfafa4d4853c76eafe777259d47fe7504498a0a771c16c0992",
+      "stored_bytes": 3431,
+      "stored_sha256": "c5cadfbb6ce50a20e92ed0c97094a774f0e30728a8c86b8d3d31f9712cb5fe4c"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/japanese-descriptions-20261030.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/japanese-descriptions-20261030.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 3288,
+      "source_sha256": "09c1a43d5bebe70437e644675021eef3a9b9a577a4441a6a51697ed3d242c7f8",
+      "stored_bytes": 3440,
+      "stored_sha256": "b16dfc9db362537b7a4f901abcc50b3ffd67b8fd2bf5248d3eaa8658e13ed328"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/katou-combo-runtime-20261029.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/katou-combo-runtime-20261029.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 8732,
+      "source_sha256": "31d09b5e9f184d2c1402bd5643ffa8e1206a347d98bf77f54898578086c09ed8",
+      "stored_bytes": 9026,
+      "stored_sha256": "2d8c633b7e5bb0d852b7f484b1ec01e7218a06e37e0a58ac20b1c63ab86d6800"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/motoki-flight-runtime-20261029.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/motoki-flight-runtime-20261029.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 3711,
+      "source_sha256": "794be9a08c59a67241a801ed96b902f4d2da38b5cdc4f1e6a752378a370331f3",
+      "stored_bytes": 3869,
+      "stored_sha256": "f07ec97708d000c1fe43e97e52785e7e5112cccba66b4ff1c8e5fb3ca7b44783"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/motoki-target-combo-runtime-20261029.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/motoki-target-combo-runtime-20261029.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 12179,
+      "source_sha256": "a284a17d2d3a5099beb84e9935830abbbaf43dc8789f69a8407677b3d0f72bd3",
+      "stored_bytes": 12509,
+      "stored_sha256": "0f0b79c12d21783aea23dc1f30bb5f10a372fa2f9ce2af02bc29a5ae71c505d8"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/naoto-combo-runtime-20261029.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/naoto-combo-runtime-20261029.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 7297,
+      "source_sha256": "eef600a7875b6dc652a6b4adc5277b589465a69edd765c2d2b4d117a4e882146",
+      "stored_bytes": 7511,
+      "stored_sha256": "d4c3b684ccc139e441c1055ab9c3eb0490e1946c5cec533f36f7b6dbdbeefdcf"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/runtime-variants-20261028.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/runtime-variants-20261028.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 4456,
+      "source_sha256": "1d91cce512240cdfec528ec0410501f62ac7a8dd0f4e4b1eee7ba79cf06fe67b",
+      "stored_bytes": 4600,
+      "stored_sha256": "e0072717fd921fc811346d8078210f975c1b46cde74b322887bddf72229d9a83"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/tsukuyomi-combo-runtime-20261029.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/tsukuyomi-combo-runtime-20261029.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 12868,
+      "source_sha256": "3c7258c1a0ca15d322386d86e8f13898a7a4e3c47b8487eaafa1717a08d896c8",
+      "stored_bytes": 13190,
+      "stored_sha256": "29e729af4cd905dea774cde6e15a36e3ebcfd2ed9a8e4ff2d95da53c86e85c10"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/yuri-combo-runtime-20261029.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/yuri-combo-runtime-20261029.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 11851,
+      "source_sha256": "b2ac0831ce2103c848455195cf0ce7f3f631d38c1c83a2b3a576937b72f3bd2d",
+      "stored_bytes": 12171,
+      "stored_sha256": "ca3a1bd7753329c621ac732964ef442d8da71f6ad42a3571914841fa8c1ce052"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/使用说明.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/使用说明.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 19328,
+      "source_sha256": "555dd4970a56e84549d462e4420af557531d76d9d1855e60e4dd3b17d4da343d",
+      "stored_bytes": 19720,
+      "stored_sha256": "61039eb80ab9e8179a9577362da299ea3998fe6471b9151e137e2ea335b2e92b"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_032001_development_20261030_032838/先读我.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_032001_development_20261030_032838/先读我.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1253,
+      "source_sha256": "23e5be90434bd1639dbad696ce00d560654ebe42743dc3cfcd3d90cd199dcf39",
+      "stored_bytes": 1361,
+      "stored_sha256": "c1c4fbe1b18b15ecc9e716d73700a51882bb4579a55c3586985a322dca65b4c1"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/SHA256SUMS.txt",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/SHA256SUMS.txt.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1283,
+      "source_sha256": "8cf5f617869bd87af228505933a42239d48bdecdc8332b36a1e0737d40e2b80c",
+      "stored_bytes": 1393,
+      "stored_sha256": "a875ad26773970df662a85a94e194323d1eb73d71d8ce519661ff624786a0e07"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/baseline-pac-sha256.json",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/baseline-pac-sha256.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 2259,
+      "source_sha256": "616796c537cbe82b7b0aa542f5ae07912bf7513574c8933e51ccca47bec94089",
+      "stored_bytes": 2593,
+      "stored_sha256": "a5e8766afa16e8b092a11ca8936b8254bb5e12a36df7bc12e59b9810b8cf984c"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/build-source.json",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/build-source.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1046,
+      "source_sha256": "1d49545afda9ba476b2aabfcbd66164e61e702b061b568a0edc17611205a09c3",
+      "stored_bytes": 1290,
+      "stored_sha256": "6ee1ae1beb4505e9a827872d9ff967d83b34efdd84e2ea8dff1c4d864c1cbeb0"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/delivery.json",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/delivery.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 2572,
+      "source_sha256": "168f98bc47fb02ab0fb71c0330000662e9757fc6b2aa518992babdab3190a252",
+      "stored_bytes": 2976,
+      "stored_sha256": "2e42dbdf9aec4b2443722d0319ac1d9399f58bb60be7be62dca2ff4fd7c1a7a8"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/katou-combo-runtime-20261029.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/katou-combo-runtime-20261029.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 8732,
+      "source_sha256": "31d09b5e9f184d2c1402bd5643ffa8e1206a347d98bf77f54898578086c09ed8",
+      "stored_bytes": 9026,
+      "stored_sha256": "2d8c633b7e5bb0d852b7f484b1ec01e7218a06e37e0a58ac20b1c63ab86d6800"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/motoki-flight-runtime-20261029.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/motoki-flight-runtime-20261029.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 3711,
+      "source_sha256": "794be9a08c59a67241a801ed96b902f4d2da38b5cdc4f1e6a752378a370331f3",
+      "stored_bytes": 3869,
+      "stored_sha256": "f07ec97708d000c1fe43e97e52785e7e5112cccba66b4ff1c8e5fb3ca7b44783"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/motoki-target-combo-runtime-20261029.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/motoki-target-combo-runtime-20261029.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 12179,
+      "source_sha256": "a284a17d2d3a5099beb84e9935830abbbaf43dc8789f69a8407677b3d0f72bd3",
+      "stored_bytes": 12509,
+      "stored_sha256": "0f0b79c12d21783aea23dc1f30bb5f10a372fa2f9ce2af02bc29a5ae71c505d8"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/naoto-combo-runtime-20261029.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/naoto-combo-runtime-20261029.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 7297,
+      "source_sha256": "eef600a7875b6dc652a6b4adc5277b589465a69edd765c2d2b4d117a4e882146",
+      "stored_bytes": 7511,
+      "stored_sha256": "d4c3b684ccc139e441c1055ab9c3eb0490e1946c5cec533f36f7b6dbdbeefdcf"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/runtime-variants-20261028.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/runtime-variants-20261028.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 4456,
+      "source_sha256": "1d91cce512240cdfec528ec0410501f62ac7a8dd0f4e4b1eee7ba79cf06fe67b",
+      "stored_bytes": 4600,
+      "stored_sha256": "e0072717fd921fc811346d8078210f975c1b46cde74b322887bddf72229d9a83"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/tsukuyomi-combo-runtime-20261029.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/tsukuyomi-combo-runtime-20261029.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 12868,
+      "source_sha256": "3c7258c1a0ca15d322386d86e8f13898a7a4e3c47b8487eaafa1717a08d896c8",
+      "stored_bytes": 13190,
+      "stored_sha256": "29e729af4cd905dea774cde6e15a36e3ebcfd2ed9a8e4ff2d95da53c86e85c10"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/yuri-combo-runtime-20261029.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/yuri-combo-runtime-20261029.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 11851,
+      "source_sha256": "b2ac0831ce2103c848455195cf0ce7f3f631d38c1c83a2b3a576937b72f3bd2d",
+      "stored_bytes": 12171,
+      "stored_sha256": "ca3a1bd7753329c621ac732964ef442d8da71f6ad42a3571914841fa8c1ce052"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/使用说明.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/使用说明.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 18704,
+      "source_sha256": "601170e183ec7c6a079ef0c2a300af714cf44fd8f0b3755c2ec130cf9cac8943",
+      "stored_bytes": 19094,
+      "stored_sha256": "bb980626404c6c55685d2205801091e080fcadd9c8aa305980a76258272342c0"
+    },
+    {
+      "source_relative_path": "delivery-candidates/BHE_DX_131244_development_20261030_031021/先读我.md",
+      "stored_relative_path": "records/delivery-candidates/BHE_DX_131244_development_20261030_031021/先读我.md.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1157,
+      "source_sha256": "c580bc0349d27a263fcb36f4ea741f20ddbe54deae6b7e299304accc1d01c838",
+      "stored_bytes": 1265,
+      "stored_sha256": "4b796a3283ff7402a4a7961626fd66803d3be735ac19e4f1cae264d38e6672f5"
+    },
+    {
+      "source_relative_path": "runtime/combo-capture-recover-20261030-07/archived-base-resources.json",
+      "stored_relative_path": "records/runtime/combo-capture-recover-20261030-07/archived-base-resources.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 6959,
+      "source_sha256": "836a68bbfb19aec3c10a0994978c84dcad48020665fdfc7fe468d72c9a8a8365",
+      "stored_bytes": 8093,
+      "stored_sha256": "d2550eaf299c6849d77fd1633d0bdeac6e38316a51ed8f8707086a300e555063"
+    },
+    {
+      "source_relative_path": "runtime/combo-capture-recover-20261030-07/events.jsonl",
+      "stored_relative_path": "records/runtime/combo-capture-recover-20261030-07/events.jsonl.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 681241,
+      "source_sha256": "b8580e039c5a3a6a10f0dd07de148dda30e8d7535f669f3610491d31464d33a1",
+      "stored_bytes": 793795,
+      "stored_sha256": "1bd63ac15b29ed0cdaf6e76d5caa75618ea1436f24809860982eb88746e1bd99"
+    },
+    {
+      "source_relative_path": "runtime/combo-capture-recover-20261030-07/manifest.json",
+      "stored_relative_path": "records/runtime/combo-capture-recover-20261030-07/manifest.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 38043,
+      "source_sha256": "7a7e42f1b5a86926c64f96922c337c393ce9bb8878dd891c6b5e9d41a63058c7",
+      "stored_bytes": 42635,
+      "stored_sha256": "947f26b1f5514f3be7f9ffc1e35ad8b926275c4c74ac74252edc380e84de24e7"
+    },
+    {
+      "source_relative_path": "runtime/combo-capture-recover-20261030-07/runtime.cdb.log",
+      "stored_relative_path": "records/runtime/combo-capture-recover-20261030-07/runtime.cdb.log.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 255202,
+      "source_sha256": "4ebfcd1fba81c2f99261b6f1fd5324ca70c121f5152c44f751d15992149491e9",
+      "stored_bytes": 258036,
+      "stored_sha256": "225eed55ba74432d3a3645d8619c70ba1c373c0461648c108f9faf8c7aa5c89f"
+    },
+    {
+      "source_relative_path": "runtime/combo-capture-recover-20261030-07/state.json",
+      "stored_relative_path": "records/runtime/combo-capture-recover-20261030-07/state.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 14523,
+      "source_sha256": "74164cab65d9ca821322d6975aeeb0d66ce75dc84384345789665d788d4295dd",
+      "stored_bytes": 16581,
+      "stored_sha256": "a425e0c7a09b1f97351516eb9b92d15899131fe239096e8ec2d5a267c8dfb7c1"
+    },
+    {
+      "source_relative_path": "runtime/combo-continue-20261030-05/archived-base-resources.json",
+      "stored_relative_path": "records/runtime/combo-continue-20261030-05/archived-base-resources.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 615,
+      "source_sha256": "a727286a32d9f4fd858ae8328a4f5522a6ad8299e467d88046f05a952199559c",
+      "stored_bytes": 765,
+      "stored_sha256": "28148c36b26131320c50d6f2c89de5675b6628c9dcb5a11d3f3cf84ac9ca9684"
+    },
+    {
+      "source_relative_path": "runtime/combo-continue-20261030-05/events.jsonl",
+      "stored_relative_path": "records/runtime/combo-continue-20261030-05/events.jsonl.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 146383,
+      "source_sha256": "646f9ab364c35f92955cdb0c0e900e4340f39004bf2e06ac6d838b2bf9946b07",
+      "stored_bytes": 167363,
+      "stored_sha256": "ae2227d4efe4b6d9abf56382b18e3823366cc57613706595602f395869ab4df5"
+    },
+    {
+      "source_relative_path": "runtime/combo-continue-20261030-05/manifest.json",
+      "stored_relative_path": "records/runtime/combo-continue-20261030-05/manifest.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 38029,
+      "source_sha256": "9a660a610fad66cb0b8b044d7b4e46a7a1eb8d0aae22327098c850de4837018f",
+      "stored_bytes": 42621,
+      "stored_sha256": "3a425bed6734eb997c04671f61e659e5158dff15cb2b1c7a868d69248bc5cc44"
+    },
+    {
+      "source_relative_path": "runtime/combo-continue-20261030-05/runtime.cdb.log",
+      "stored_relative_path": "records/runtime/combo-continue-20261030-05/runtime.cdb.log.json",
+      "source_encoding": "cp932",
+      "source_bytes": 105028,
+      "source_sha256": "baaa1b3ea0f2b5845cf0491026fd3aa766c06176f74bc224088f5584f9cd25fb",
+      "stored_bytes": 109391,
+      "stored_sha256": "2b67477e42f845e256f2ffeca1510e60a90fdc4849dbd8ae1c59db03e7d371bf"
+    },
+    {
+      "source_relative_path": "runtime/combo-continue-20261030-05/state.json",
+      "stored_relative_path": "records/runtime/combo-continue-20261030-05/state.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 13567,
+      "source_sha256": "38dc988fe51b847198337415151e2e4513e31ac198b195ebedd7b7325cdeb8df",
+      "stored_bytes": 15439,
+      "stored_sha256": "1d5f598557eef25e1f58b6ef5741e7e7066bddd9bf916c8b954f43ed2ea17097"
+    },
+    {
+      "source_relative_path": "runtime/combo-fresh-render-20261030-06/events.jsonl",
+      "stored_relative_path": "records/runtime/combo-fresh-render-20261030-06/events.jsonl.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 2734974,
+      "source_sha256": "4289728839485ea597589cc0dec3c26950d2d816803585f77add38a4907da05f",
+      "stored_bytes": 3187362,
+      "stored_sha256": "e9dc2d5bda41168bb7c1118b2e15302662767504ef88f333c1cc9a63c83e3dc9"
+    },
+    {
+      "source_relative_path": "runtime/combo-fresh-render-20261030-06/manifest.json",
+      "stored_relative_path": "records/runtime/combo-fresh-render-20261030-06/manifest.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 38037,
+      "source_sha256": "07bd3c5f7b19fa923c06352055f81f7389db058a272cdbeec1ff295a9774faf5",
+      "stored_bytes": 42629,
+      "stored_sha256": "470bc21670b1188f8ab50bd60d643af481d244fdc2a144907f02350b96c1ceec"
+    },
+    {
+      "source_relative_path": "runtime/combo-fresh-render-20261030-06/runtime.cdb.log",
+      "stored_relative_path": "records/runtime/combo-fresh-render-20261030-06/runtime.cdb.log.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 11308,
+      "source_sha256": "92bb2bc430b3a8567671814d336a3ecc986291f725c34fc4c1fa7179d989cd99",
+      "stored_bytes": 12191,
+      "stored_sha256": "ff600c9112d845f0fbc559c294f02733751e59a5246649fd1ca6964afe795193"
+    },
+    {
+      "source_relative_path": "runtime/combo-fresh-render-20261030-06/state.json",
+      "stored_relative_path": "records/runtime/combo-fresh-render-20261030-06/state.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 14475,
+      "source_sha256": "40c4313b6c928a38b883b10aa4760735da8ae2d3ae12de0e7c3c594a866a7402",
+      "stored_bytes": 16523,
+      "stored_sha256": "8ac4502b108e344d1c3c1766c319f90aa54ba78fd8ae24629eb05ec19448f819"
+    },
+    {
+      "source_relative_path": "runtime/combo-yuri-follow-20261029-04/archived-base-resources.json",
+      "stored_relative_path": "records/runtime/combo-yuri-follow-20261029-04/archived-base-resources.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 6847,
+      "source_sha256": "28659ae1ea680eb659c3091eb2900948b9a8a20b1ab0baab32d5f53e5f58443e",
+      "stored_bytes": 7981,
+      "stored_sha256": "705cffe5d9835602d9d67279a2333f9f1165a52e2597f1fb2a2a931813f39b40"
+    },
+    {
+      "source_relative_path": "runtime/combo-yuri-follow-20261029-04/events.jsonl",
+      "stored_relative_path": "records/runtime/combo-yuri-follow-20261029-04/events.jsonl.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 211857,
+      "source_sha256": "a4b5fd6e31760f10e89874d42290541b387e6aab5dca9e0e9540851210744767",
+      "stored_bytes": 243855,
+      "stored_sha256": "55aa72735a137ee8256104f93d736a181c3bd95dd3f990b8aa2532047f2d4b66"
+    },
+    {
+      "source_relative_path": "runtime/combo-yuri-follow-20261029-04/manifest.json",
+      "stored_relative_path": "records/runtime/combo-yuri-follow-20261029-04/manifest.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 38036,
+      "source_sha256": "85a23aecbd7e9b48c6ea4da3364a12edf1c00fcc6deec3a1a68d403f23786a0c",
+      "stored_bytes": 42628,
+      "stored_sha256": "643936a90ecdb42f98e91063b9113274a4edc8da959fdf0e37108458d09590fa"
+    },
+    {
+      "source_relative_path": "runtime/combo-yuri-follow-20261029-04/runtime.cdb.log",
+      "stored_relative_path": "records/runtime/combo-yuri-follow-20261029-04/runtime.cdb.log.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 46452,
+      "source_sha256": "79a03a35f8668944903ef9e9faee0b76c9124a8bffa9524c3e0f01c53ab018ed",
+      "stored_bytes": 47728,
+      "stored_sha256": "e2db8aa08f32e8774aa94981408c308e722fad42836813401ead6ea1ba168e8c"
+    },
+    {
+      "source_relative_path": "runtime/combo-yuri-follow-20261029-04/state.json",
+      "stored_relative_path": "records/runtime/combo-yuri-follow-20261029-04/state.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 14443,
+      "source_sha256": "a36638a1b0e6773470fb94be565607a57e2e4d6f8d9c9eeb28ff4ea64948ef6f",
+      "stored_bytes": 16489,
+      "stored_sha256": "60d66c18514cd24807cf43c046ceefe3a35fc19e0a26eaf7f72d84cd9a5d7307"
+    },
+    {
+      "source_relative_path": "runtime/input-resume-20261029-01/archived-base-resources.json",
+      "stored_relative_path": "records/runtime/input-resume-20261029-01/archived-base-resources.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 613,
+      "source_sha256": "8880850c9333b059f55ddcffb30299f151b39028f0505d9a40c301b117412874",
+      "stored_bytes": 763,
+      "stored_sha256": "97767f39051c942945e77cd09b64f36b307da6ba30c6a2378161fcb6f4ee93bc"
+    },
+    {
+      "source_relative_path": "runtime/input-resume-20261029-01/combo.cdb.log",
+      "stored_relative_path": "records/runtime/input-resume-20261029-01/combo.cdb.log.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 21852,
+      "source_sha256": "0fcc2b94cdc5534844242eb00fc2bd8399b4f84c171604edce6f1116ba09fdef",
+      "stored_bytes": 23041,
+      "stored_sha256": "d20b9f8dbe593649c6d8cd60209c18ebde051a77903810fc70b218e9d69c525c"
+    },
+    {
+      "source_relative_path": "runtime/input-resume-20261029-01/events.jsonl",
+      "stored_relative_path": "records/runtime/input-resume-20261029-01/events.jsonl.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 170211,
+      "source_sha256": "46c4377cc680665e9db31ec23f8f545b4ee1a0ee4d6902d573c8ef55918240d4",
+      "stored_bytes": 195625,
+      "stored_sha256": "f7f3ae1f752cef88ed7395c6dc06c89b2a250f1050d7ddf57a98a305b0f25dfe"
+    },
+    {
+      "source_relative_path": "runtime/input-resume-20261029-01/manifest.json",
+      "stored_relative_path": "records/runtime/input-resume-20261029-01/manifest.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 31899,
+      "source_sha256": "2fc627a9f5550fb5833e229b3b4fb842afd16af4d0f27313aa7f85af65a0ac75",
+      "stored_bytes": 35775,
+      "stored_sha256": "3ca522caf09714f15e34ebdfb5d9a56736dddbea8858c950ff9b9d4c9b004fee"
+    },
+    {
+      "source_relative_path": "runtime/input-resume-20261029-01/state.json",
+      "stored_relative_path": "records/runtime/input-resume-20261029-01/state.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 14646,
+      "source_sha256": "967cea03c6b8ef5287ae2da9b6be411007ff2632aebac2a670f4b4ae4bf6ea3f",
+      "stored_bytes": 16722,
+      "stored_sha256": "1d820c31d0afee91d3cbd6bcccf1eb1b0720a451a1782438c820e0a1951fc6d8"
+    },
+    {
+      "source_relative_path": "runtime/motoki-flight-fixed-20261029-01/archived-base-resources.json",
+      "stored_relative_path": "records/runtime/motoki-flight-fixed-20261029-01/archived-base-resources.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 620,
+      "source_sha256": "df9fd58617324de2881b79d2a75ff70c959ef75621570095aef7af9923bf7dcb",
+      "stored_bytes": 770,
+      "stored_sha256": "ee35160e7185f91bbf1272be462b15144c89a7595b426022d02404f17b9d16cf"
+    },
+    {
+      "source_relative_path": "runtime/motoki-flight-fixed-20261029-01/events.jsonl",
+      "stored_relative_path": "records/runtime/motoki-flight-fixed-20261029-01/events.jsonl.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 147365,
+      "source_sha256": "05ce0309a159f79bdfed6b899de7e97bc124f3f77bebeb010428b0c560dbfca7",
+      "stored_bytes": 168501,
+      "stored_sha256": "b38c6be66794c1ac7b7b92c67a95ebf970c4a7e19bed275899a55110b66fdacc"
+    },
+    {
+      "source_relative_path": "runtime/motoki-flight-fixed-20261029-01/manifest.json",
+      "stored_relative_path": "records/runtime/motoki-flight-fixed-20261029-01/manifest.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 32050,
+      "source_sha256": "7817cab4e3ca24928d423264bcce6c856f43d95f26705801c837441adad85e09",
+      "stored_bytes": 35938,
+      "stored_sha256": "c15d882a6919af7b004d2db4bb82675707a9e0d86d057c0b33c33115fbf3ccc3"
+    },
+    {
+      "source_relative_path": "runtime/motoki-flight-fixed-20261029-01/runtime.cdb.log",
+      "stored_relative_path": "records/runtime/motoki-flight-fixed-20261029-01/runtime.cdb.log.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 28230,
+      "source_sha256": "c748d8225740344fc2865c71be9fd837ea52724a58c5141fe83b6350e0ce4361",
+      "stored_bytes": 29389,
+      "stored_sha256": "bb74680dc4ae634e2b2b4c08f4bfc4d0c9b4ee49f0d54405750ea48b3a905848"
+    },
+    {
+      "source_relative_path": "runtime/motoki-flight-fixed-20261029-01/state.json",
+      "stored_relative_path": "records/runtime/motoki-flight-fixed-20261029-01/state.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 13568,
+      "source_sha256": "6d715fd8263c7bd3819696af184f37bda6763a6dbfc7c61d458365620909b252",
+      "stored_bytes": 15440,
+      "stored_sha256": "f331d403679c542cd75b13e84145596f0da31518db91c80d3ea8edcba1f8c5e4"
+    },
+    {
+      "source_relative_path": "runtime/motoki-flight-suffix-20261029-02/events.jsonl",
+      "stored_relative_path": "records/runtime/motoki-flight-suffix-20261029-02/events.jsonl.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 316484,
+      "source_sha256": "d0d2e54baadd0c74948ed5bcfcd9738321c1f4860b71d41180459b1b195fe717",
+      "stored_bytes": 367682,
+      "stored_sha256": "42a69784fadc82ed0c29d6d41ea0073ed1a163f93486fce14ff185a8683bc45c"
+    },
+    {
+      "source_relative_path": "runtime/motoki-flight-suffix-20261029-02/manifest.json",
+      "stored_relative_path": "records/runtime/motoki-flight-suffix-20261029-02/manifest.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 32052,
+      "source_sha256": "0f9110e068865d10991dd56b34e71e051c0caeeb9ed7babdfc04f101443637f0",
+      "stored_bytes": 35940,
+      "stored_sha256": "6a3ab87766a0d499856495078b64d571515903a8f1dd169538e43f3f2547d968"
+    },
+    {
+      "source_relative_path": "runtime/motoki-flight-suffix-20261029-02/runtime.cdb.log",
+      "stored_relative_path": "records/runtime/motoki-flight-suffix-20261029-02/runtime.cdb.log.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 291357,
+      "source_sha256": "2789ac5dbf5141e42e6679797ac8a96631e02dff1e8494daa38bcb2b272d1a46",
+      "stored_bytes": 292888,
+      "stored_sha256": "85b9fdec9d66c10f5487c2d41f4ce5a0b86dafe539c3c65ad6e8593505e2eb81"
+    },
+    {
+      "source_relative_path": "runtime/motoki-flight-suffix-20261029-02/state.json",
+      "stored_relative_path": "records/runtime/motoki-flight-suffix-20261029-02/state.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 14454,
+      "source_sha256": "ae0c6a2aa9ddb622976f830f551eaea1fc97bb7bbed8226129f20fe8b76edb04",
+      "stored_bytes": 16502,
+      "stored_sha256": "952e308719281222385dc56f0c19b83ba883caabb0bb2abd0ced7dedaeb5b8a7"
+    },
+    {
+      "source_relative_path": "runtime/motoki-target-drop-20261029-03/archived-base-resources.json",
+      "stored_relative_path": "records/runtime/motoki-target-drop-20261029-03/archived-base-resources.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 6875,
+      "source_sha256": "de63a803ceeab82c006920cf3b898eb4c87ab4fd690371f21693beb453e4c988",
+      "stored_bytes": 8009,
+      "stored_sha256": "a72a5f79da9a46608ba4690beeca53d7240a65f1f3cfb4ae4c603e495464c924"
+    },
+    {
+      "source_relative_path": "runtime/motoki-target-drop-20261029-03/events.jsonl",
+      "stored_relative_path": "records/runtime/motoki-target-drop-20261029-03/events.jsonl.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 370816,
+      "source_sha256": "e10e269c0295325e6188f8fcbdbe556079f13bcf18e2d1bee60f5b924ab139c0",
+      "stored_bytes": 433868,
+      "stored_sha256": "df17a25e3218969befa59358b9528cfc953c501aa37d71e38586c919cc9d6e6e"
+    },
+    {
+      "source_relative_path": "runtime/motoki-target-drop-20261029-03/manifest.json",
+      "stored_relative_path": "records/runtime/motoki-target-drop-20261029-03/manifest.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 34355,
+      "source_sha256": "583a7755b121ae5f0a3371fb414160811d077c7fe20965796908ac91caea553a",
+      "stored_bytes": 38513,
+      "stored_sha256": "0fd72de474413355b23f2d4fa05606b267296ef6e9e64747f81d1fcdf4fe3c76"
+    },
+    {
+      "source_relative_path": "runtime/motoki-target-drop-20261029-03/runtime.cdb.log",
+      "stored_relative_path": "records/runtime/motoki-target-drop-20261029-03/runtime.cdb.log.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1088134,
+      "source_sha256": "3695a6d45dc4235b89a7c39ca7079559bb7b65ad4aae261543517738e7991f78",
+      "stored_bytes": 1096427,
+      "stored_sha256": "260c2c2cdb67f43875f568149da1761511c9f345b4fba14ca93614da4589927c"
+    },
+    {
+      "source_relative_path": "runtime/motoki-target-drop-20261029-03/state.json",
+      "stored_relative_path": "records/runtime/motoki-target-drop-20261029-03/state.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 14460,
+      "source_sha256": "d9409b67a6ee85bfd968134fe4355714dd3a0168b6090804860a53f05a5183aa",
+      "stored_bytes": 16508,
+      "stored_sha256": "37a3765c2fd8b27629f342b924b1933a2e7fefbf9492f93588293cecad9a4ca2"
+    },
+    {
+      "source_relative_path": "runtime/six-variants-validation-20261030-08/events.jsonl",
+      "stored_relative_path": "records/runtime/six-variants-validation-20261030-08/events.jsonl.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 160112,
+      "source_sha256": "03d59a525d5d6ee11f1500f46d279b252f27e35c4dcabff840f294200ceffc79",
+      "stored_bytes": 183498,
+      "stored_sha256": "6f773f2660ed209ae69b4bee7b538e40beaa562827538a73ab4b41fdf91b1d29"
+    },
+    {
+      "source_relative_path": "runtime/six-variants-validation-20261030-08/evidence/sou-preview-helper.recorded-js.txt",
+      "stored_relative_path": "records/runtime/six-variants-validation-20261030-08/evidence/sou-preview-helper.recorded-js.txt.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1524,
+      "source_sha256": "8efcbb69fb25eb5f142ac6432c4993b6b80f2971ff66c06c5a78312cbd7f39c8",
+      "stored_bytes": 1620,
+      "stored_sha256": "f4bb60d45dafc057f0caa294a4a97c9cf7538372e70ec89f665f11a7556093b7"
+    },
+    {
+      "source_relative_path": "runtime/six-variants-validation-20261030-08/evidence/sou-ui-batch-002-006.json",
+      "stored_relative_path": "records/runtime/six-variants-validation-20261030-08/evidence/sou-ui-batch-002-006.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1835,
+      "source_sha256": "0742d08c9f51bda51d2bff76b2f7e5a09518f8a5c85186951ee757237004027f",
+      "stored_bytes": 2269,
+      "stored_sha256": "d7e4996b0e0de34cf6b7cbb7523ef61827ffc1669e2e8c75918a9794d2b2c3f7"
+    },
+    {
+      "source_relative_path": "runtime/six-variants-validation-20261030-08/evidence/sou-ui-batch-007-011.json",
+      "stored_relative_path": "records/runtime/six-variants-validation-20261030-08/evidence/sou-ui-batch-007-011.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 3364,
+      "source_sha256": "10e095852ce78f525bd9410454850e36fa2e8dd9016cf57f18cf480d83a03654",
+      "stored_bytes": 4088,
+      "stored_sha256": "a12503adace350ba9288cd85c345ed87db74006d5f387d67bd288c03192dedca"
+    },
+    {
+      "source_relative_path": "runtime/six-variants-validation-20261030-08/evidence/sou-ui-batch-012-016.json",
+      "stored_relative_path": "records/runtime/six-variants-validation-20261030-08/evidence/sou-ui-batch-012-016.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 4899,
+      "source_sha256": "76d23437c7703af9c6072454fe53e01c41976a0e9c448ea7ee7854ed8e6e6493",
+      "stored_bytes": 5913,
+      "stored_sha256": "2f58cbbfecb871913fd8feea661f4be09817dd804cc150159f2d54470a194be9"
+    },
+    {
+      "source_relative_path": "runtime/six-variants-validation-20261030-08/evidence/sou-ui-batch-017-019.json",
+      "stored_relative_path": "records/runtime/six-variants-validation-20261030-08/evidence/sou-ui-batch-017-019.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 5820,
+      "source_sha256": "c12837f925c278cae6cb3c82b679464826467288fb1ef5a67048fca9701ee142",
+      "stored_bytes": 7008,
+      "stored_sha256": "0746a854c35c8cd87bf9fc88a4c3145a8a309da603e4ec07e39609c33af9709e"
+    },
+    {
+      "source_relative_path": "runtime/six-variants-validation-20261030-08/evidence/sou-ui-batch-020-024.json",
+      "stored_relative_path": "records/runtime/six-variants-validation-20261030-08/evidence/sou-ui-batch-020-024.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 7355,
+      "source_sha256": "91512a18c72dfb3e044fba291934d9e764fe3fb4b02f9b32ef150c97b362f541",
+      "stored_bytes": 8833,
+      "stored_sha256": "ce51648dbf2bdc7b8ac7632373bf29a20e6249950cb7a91b078967d2f0b5a826"
+    },
+    {
+      "source_relative_path": "runtime/six-variants-validation-20261030-08/evidence/sou-ui-batch-025-029.json",
+      "stored_relative_path": "records/runtime/six-variants-validation-20261030-08/evidence/sou-ui-batch-025-029.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 8890,
+      "source_sha256": "40c76b6594cbbce4e37126299fbb98ca6fb9ddc916b08093ba9fa144e6d66c7e",
+      "stored_bytes": 10658,
+      "stored_sha256": "3393ac4db40c6b2d8a4a5b0ccb66c04e6a64725d35f27929cb2f7632a65acd6e"
+    },
+    {
+      "source_relative_path": "runtime/six-variants-validation-20261030-08/manifest.json",
+      "stored_relative_path": "records/runtime/six-variants-validation-20261030-08/manifest.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 25909,
+      "source_sha256": "23594e744b01acbc85422f2f6fb92eeabea86bfe127f1e3edfb877a813caea0d",
+      "stored_bytes": 29093,
+      "stored_sha256": "da9f42378b49595edc8faa1a5d1aa412d7119d44ce81453464ec1fbb3a8617e2"
+    },
+    {
+      "source_relative_path": "runtime/six-variants-validation-20261030-08/runtime.cdb.log",
+      "stored_relative_path": "records/runtime/six-variants-validation-20261030-08/runtime.cdb.log.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 742556,
+      "source_sha256": "f46658441fb322a666ca5b64062c2039dd98095b43f4e884c1f9caf5a1040958",
+      "stored_bytes": 744403,
+      "stored_sha256": "4ab71ceeae1b5d5d10a656fec13d54a994e55e99979ed7daff8130aaaf6e77e4"
+    },
+    {
+      "source_relative_path": "runtime/six-variants-validation-20261030-08/state.json",
+      "stored_relative_path": "records/runtime/six-variants-validation-20261030-08/state.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 13072,
+      "source_sha256": "4d78038900f101682fd82d9cc8b407c715e877ae525ec38447a2511f54ef7df3",
+      "stored_bytes": 14902,
+      "stored_sha256": "607feeea6379046635a609cfa22eff64fc82c966a8ed1ea95db9872b288fd145"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/events.jsonl",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/events.jsonl.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 246882,
+      "source_sha256": "82eba68cb0584d13f42259a599805d1781f3f1de8ab7b3c42793832f1a2e7fe9",
+      "stored_bytes": 279744,
+      "stored_sha256": "24625c647517053f56417c85ba536f96407e0a3280c9b1a73d91000b8861d63e"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-preview-helper.recorded-js.txt",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-preview-helper.recorded-js.txt.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1580,
+      "source_sha256": "fe10bf444329bf6ec2ad51f2231f5f64ab845c66f37739ec0584cfc0c1219e79",
+      "stored_bytes": 1676,
+      "stored_sha256": "5ff38c12fa399f29a8f6e00ce5a5700f05a381c12a0b3f83b2871a640653f9a9"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-104-long-lived-positive.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-104-long-lived-positive.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 22587,
+      "source_sha256": "ceb6e6103f03c0021826b3dfbbd55eecd7a5d863011902dc58a2e7180d92321c",
+      "stored_bytes": 26921,
+      "stored_sha256": "eed6b5f7088bc4fbb2c3dd6e1c5bc26c065b25e6a0a5a72c72021674650447f5"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-034-038.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-034-038.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 2272,
+      "source_sha256": "53a7f0fc93bdec264040af073e1cab659bc0b6b415bea8efa22a80335640867b",
+      "stored_bytes": 2788,
+      "stored_sha256": "2861da48ceabc1437640f1b0b6c336804deb878306676c3d8df113a1b4945a50"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-039.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-039.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 2579,
+      "source_sha256": "cfd8ad13d569797d2fd68cbc86e3547cada9e8f096542cf4d33dac47ecc0470c",
+      "stored_bytes": 3153,
+      "stored_sha256": "fb7903d84acbd3c9660df1092439c04f24d78ac3edc94c9ed940badea4aaecea"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-040-044.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-040-044.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 4114,
+      "source_sha256": "dc81309eacd2833e4bdb9e69226488490fb8f7d021edd61dec620afd2dcb71fa",
+      "stored_bytes": 4978,
+      "stored_sha256": "a80eb73f40331e52d4e9fd415f3922067d60dcf2d8967a4362cca0add446019f"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-045-049.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-045-049.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 5649,
+      "source_sha256": "871bf8c435e06234540947616bcc5d9f4156ee07c7ef74b759ef33bc100083cd",
+      "stored_bytes": 6803,
+      "stored_sha256": "5514f8c2c8a78c4071cdbf1f92271c54ba63c923eca7b4b92e0a0bbb373120d0"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-050-054.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-050-054.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 7184,
+      "source_sha256": "c96aca8e7671c0507ad46fedbc3c54d0bdedee980e16a187c3b64fe33f4d6d73",
+      "stored_bytes": 8628,
+      "stored_sha256": "f8d392f1266f02ee7ac6fb165f0e9281fc85a5b8215f744a0eb9f6f3578b3283"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-055-059.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-055-059.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 8719,
+      "source_sha256": "964e3eaf3a8a5a832149bb8ec4a1e3640b43051267bc9842933f38626d45874b",
+      "stored_bytes": 10453,
+      "stored_sha256": "3f9319de3ec2b602164d0fc85d63d477a4e97950026e3a9b9dce949c2e45fe74"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-064.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-064.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 10080,
+      "source_sha256": "9e386a6c8ba7aea0e2530199e54d4956f2cbbb67b6a875ccf3de89cea5971e10",
+      "stored_bytes": 12070,
+      "stored_sha256": "70849ae3b16dc14efe84a5f2039a3f1afeddd9dba9b80cd849ca0c137ed518e5"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-065-069.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-065-069.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 11625,
+      "source_sha256": "9a522d75c7bd596a9511e97d11d65188fe2c2b863ec936b608eb035adc49eac9",
+      "stored_bytes": 13905,
+      "stored_sha256": "b409f1b42a9df4c7cc9996a695e0452e04c69a33ace07ef23ad3b4bc3201364f"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-070-074.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-070-074.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 13170,
+      "source_sha256": "7996b62b54bb8c00b82e078edc6cfae7bfa851f5d87758d77103dc9603f44fc9",
+      "stored_bytes": 15740,
+      "stored_sha256": "f23cca14aeab8df8c7bbaaf11c6e5419e876bdad157a6fa4452bccd6d579b75f"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-075-079.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-075-079.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 14715,
+      "source_sha256": "e63fc164b6b3202cd18e0fa964d86fbf5155dfd14cb8d3812bb00f419c2e3e29",
+      "stored_bytes": 17575,
+      "stored_sha256": "a91ea33a02f2e4864117d846b94df6273abc42855d6852c5e192ad576e9dcf17"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-080-084.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-080-084.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 16260,
+      "source_sha256": "ca13b329276663408474ab29258e798d7d8056dd6993ce8201b90c6016a54810",
+      "stored_bytes": 19410,
+      "stored_sha256": "d8a12a84d0baea551989e703125a30a321ffd19e73c4b9fd38d65b53d8f97d7e"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-085-089.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-085-089.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 17805,
+      "source_sha256": "77e1aa5c28f3457745789554f0c3aed851571b21f662bd5f0b563e4c0f0603a3",
+      "stored_bytes": 21245,
+      "stored_sha256": "e3396c3173520d5c20ce2d3a38b6893d9dc296c8d54cb5c19867af3ad488306e"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-090-094.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-090-094.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 19350,
+      "source_sha256": "328d216b51c184b1c3bf27b47fc6a72ae022b8d4a76f61b87838eac0e7df0159",
+      "stored_bytes": 23080,
+      "stored_sha256": "8c21cbfe39b609622ae0f3d960069a9ac3ad85925a18dee402c263b9e5698d5b"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-095-099.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-095-099.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 20895,
+      "source_sha256": "655e56027ab51fcce41971eec16c55c42368ba1cb8f47ddacf0d7bd4c5ea67da",
+      "stored_bytes": 24915,
+      "stored_sha256": "c6a895bf6fed8203400be537a0084fa079a14ac990e984a73f8d7fb60021d9cf"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-108-112.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-108-112.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 24901,
+      "source_sha256": "4d35599a4c59f9ce179bb3bf967164eb5cf7c1f68b6ea3408a5692d6d331f900",
+      "stored_bytes": 29665,
+      "stored_sha256": "d672df2c5d9aedbfc09e91f7830ff70516ad1a12f41f61f700c4bf96c903d164"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-113-115.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-113-115.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 25836,
+      "source_sha256": "baf722fb3ced00f5e84829be0544f725f27eb669f3274334c109dbf5148e21c5",
+      "stored_bytes": 30774,
+      "stored_sha256": "a3bdafef07cf58e3884b2d05a88206108afaebad17014a4edf93caae2d37045c"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-116-119.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-batch-116-119.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 27088,
+      "source_sha256": "298ef7fe2936b27f94d41f3348b0478eec6555fe66b0380490fc2846fd0363c1",
+      "stored_bytes": 32258,
+      "stored_sha256": "95e05706e1f004a9b5c77f018b1c0dfac5b5c193ea167e4f33f7b48f24e3ae58"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-records-through-038.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-records-through-038.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 2272,
+      "source_sha256": "53a7f0fc93bdec264040af073e1cab659bc0b6b415bea8efa22a80335640867b",
+      "stored_bytes": 2788,
+      "stored_sha256": "2861da48ceabc1437640f1b0b6c336804deb878306676c3d8df113a1b4945a50"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-records-through-063.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-records-through-063.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 9773,
+      "source_sha256": "18a6a33b98b907263def99dd75e783fe9c367d12539f446ea3e2513eda5e4b5b",
+      "stored_bytes": 11705,
+      "stored_sha256": "850fc79cd24606b29b1de5f5dc5979bda11bf5d2b55be2e4e325a8520ab643b5"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-through-104-checkpoint.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-through-104-checkpoint.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 22275,
+      "source_sha256": "ccfccede7643da9f070164650867e0c59410853f3e9f561068a20b0bd7843a1b",
+      "stored_bytes": 26551,
+      "stored_sha256": "79c82ed28e03ea0b0001f2826ee194f3a74486ff77397873df099f34c89624a7"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-through-107-checkpoint.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou-ui-through-107-checkpoint.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 23345,
+      "source_sha256": "4351d2dfce3c01726b4b70db0250a71d68d50ec6292b5ed6b1caefca57c1f347",
+      "stored_bytes": 27819,
+      "stored_sha256": "178a02e8bacc27ae86da65b9e248c4a54f8e2bfd39bd8941f6ee7c0e30987770"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou030-fixed-preview-ready.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou030-fixed-preview-ready.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 271,
+      "source_sha256": "bb92914cd4d04f4b1ec852ccca66f839c8781c03a87007ee412e57ef44ac8bcb",
+      "stored_bytes": 411,
+      "stored_sha256": "5fde59bcb00424471c6b1cc02e12cae61498f15d05a2a5d61d55a5fa69bf0c1c"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou033-fixed-preview-ready.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou033-fixed-preview-ready.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 273,
+      "source_sha256": "0867e1917992797f484d0b894dd59e6cf99eaa474e18fcf46916279913b40cca",
+      "stored_bytes": 413,
+      "stored_sha256": "758eb126962504d4ec2cd53bccd6e4d914ce1eb33646b68f248801d48796f7f0"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou135-manual-stop-intent.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou135-manual-stop-intent.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 631,
+      "source_sha256": "47fc666a5a8ce973cd32d84ff8dfb51c27a84c7784c53a59cc5657dcb534504c",
+      "stored_bytes": 795,
+      "stored_sha256": "bee4ff569e4e20b648fb8c4f06bc43cad692a5d54a29868b0780f572c70f739d"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/evidence/sou135-preserved-evidence-manifest.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/evidence/sou135-preserved-evidence-manifest.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1591,
+      "source_sha256": "16139111b2f0012235ccf857d2721c31459abc52f065c5f55707750c813f3e88",
+      "stored_bytes": 1883,
+      "stored_sha256": "0b1d17477981d29a137352b304877b7a66176d2758e9dc7ee739ce6595582e03"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/manifest.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/manifest.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 25921,
+      "source_sha256": "5b02d0cf36c6ffddc26ebd1aa9a2f73efe8d6a60656e02bedc5ca68ccdc33e11",
+      "stored_bytes": 29105,
+      "stored_sha256": "5efb6a4297160ceadca23f24f3385fc4293375dee297d8400f0ebdc1cd41d71b"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/runtime.cdb.log",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/runtime.cdb.log.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 1239431,
+      "source_sha256": "958d94186059d3c1954ffa2016310ac596e8fed28d0f45d2962392b5aee011a0",
+      "stored_bytes": 1245765,
+      "stored_sha256": "eaa9c51c166f7c16cea0866483afda15de33ce1cf801fcc6fd73c91d3eac3dfa"
+    },
+    {
+      "source_relative_path": "runtime/sou-counter-camera-validation-20261030-09/state.json",
+      "stored_relative_path": "records/runtime/sou-counter-camera-validation-20261030-09/state.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 14227,
+      "source_sha256": "3a95b2c8104cb177085e69ed629d884363a7460cbb45e2f90df7783f110f0876",
+      "stored_bytes": 16259,
+      "stored_sha256": "f99fe4622dd89abfff642fc55938da88c65b13b9e866adde7ac305d6f900844e"
+    },
+    {
+      "source_relative_path": "seeds/six-variants-20261030-130704/seed.json",
+      "stored_relative_path": "records/seeds/six-variants-20261030-130704/seed.json.json",
+      "source_encoding": "utf-8",
+      "source_bytes": 5322,
+      "source_sha256": "a045a9da2d0b371619dff679d868a2cfc1c6c7ea7246ad1faecf1a53b21a2bee",
+      "stored_bytes": 6042,
+      "stored_sha256": "596bb2dbe0a4f2890a9ce87aa4302e27fa32b04d3888bc634cb6f0c7f6acd4af"
+    }
+  ],
+  "limitations": [
+    "Text observations only; no EXE, PAC, dump, screenshot, replay, save, resource binary or archive is copied.",
+    "Encoding the text field using its recorded encoding exactly reconstructs original log bytes and offsets.",
+    "Historical observations do not prove completion of outstanding runtime validation."
+  ]
+}

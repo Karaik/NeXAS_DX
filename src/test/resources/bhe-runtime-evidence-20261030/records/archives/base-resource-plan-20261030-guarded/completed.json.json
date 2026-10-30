@@ -1,0 +1,5 @@
+{
+  "format": "nexas-runtime-text-v1",
+  "encoding": "utf-8",
+  "text": "{\r\n  \"completed\": \"2026-10-30T08:31:15.4344536Z\",\r\n  \"files\": 42,\r\n  \"bytes\": 13009363377,\r\n  \"plan\": \"C:\\\\NeXAS_DX_runs\\\\archives\\\\base-resource-plan-20261030-guarded\\\\plan.json\",\r\n  \"restoreScript\": \"restore-base-resources.py\"\r\n}\r\n"
+}

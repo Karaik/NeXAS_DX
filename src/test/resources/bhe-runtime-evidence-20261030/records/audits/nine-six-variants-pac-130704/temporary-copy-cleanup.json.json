@@ -1,0 +1,5 @@
+{
+  "format": "nexas-runtime-text-v1",
+  "encoding": "utf-8",
+  "text": "{\r\n  \"timeUtc\": \"2026-10-30T05:32:58.902961+00:00\",\r\n  \"removedTemporaryArchiveCopy\": \"C:\\\\NeXAS_DX_runs\\\\audits\\\\nine-six-variants-pac-130704\\\\Update3.pac\",\r\n  \"canonicalArchivePreserved\": \"C:\\\\NeXAS_DX_runs\\\\builds\\\\run_20261030_130356_492\\\\sou\\\\Update3.pac\",\r\n  \"runtimeArchivePreserved\": \"C:/NeXAS_DX_runs/runtime/six-variants-validation-20261030-08/game/Update3.pac\",\r\n  \"verifiedBeforeRemovalSha256\": \"86296c31b693a6260f2d73bf38dfc1d3e44217a8e0261ee5a4a3e0ac7da8f672\",\r\n  \"bytesFreed\": 1460488767,\r\n  \"unpackedProofPreserved\": \"C:\\\\NeXAS_DX_runs\\\\audits\\\\nine-six-variants-pac-130704\\\\Update3\",\r\n  \"originalAuditPreserved\": \"C:\\\\NeXAS_DX_runs\\\\audits\\\\nine-six-variants-pac-130704\\\\audit.json\",\r\n  \"reason\": \"Low disk space; one redundant archive copy created for this extraction audit was removed after all three archive hashes matched.\"\r\n}\r\n"
+}

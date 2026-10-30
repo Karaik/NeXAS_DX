@@ -1,0 +1,5 @@
+{
+  "format": "nexas-runtime-text-v1",
+  "encoding": "utf-8",
+  "text": "# BHE九角色DX改造包：开发测试候选\r\n\r\n本目录整理自131244测试包，尚未完成九角色、全部171个菜单武装及关卡推进验收。当前显示／捕获问题仍在排查，不能视为最终发行版。\r\n\r\n1. 准备独立的DX游戏副本，并备份原EXE、补丁包和存档。\r\n2. 对照baseline-pac-sha256.json核对基础PAC文件；清单不符的版本尚未验证兼容性。\r\n3. 关闭游戏，将本目录BaldrSky.exe和Update3.pac放入该游戏副本；EXE已经使用安装目标名，不需要从多个阶段目录挑选。\r\n4. 如副本已有其它来源的Update3.pac至Update7.pac，先妥善备份并移开，避免覆盖优先级混用。\r\n5. 阅读使用说明.md，按其中日文武装名称与实际槽位装备。固定靶实测范围和未通过路线均有记录。\r\n\r\n恢复时关闭游戏，移走本次两个文件后还原备份。不要删除存档。\r\n\r\ndelivery.json列出本目录文件的SHA256与安装目标名；SHA256SUMS.txt还包括delivery.json自身。build-source.json保留原构建记录。随附的运行报告是说明书引用的证据，安装只需上面两个游戏文件。\r\n"
+}

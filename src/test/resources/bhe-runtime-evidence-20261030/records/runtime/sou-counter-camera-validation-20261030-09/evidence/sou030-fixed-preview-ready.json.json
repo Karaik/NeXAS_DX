@@ -1,0 +1,5 @@
+{
+  "format": "nexas-runtime-text-v1",
+  "encoding": "utf-8",
+  "text": "{\r\n  \"weapon\": 30,\r\n  \"requestSeq\": 33,\r\n  \"variant\": 0,\r\n  \"startSeq\": 33,\r\n  \"readyTick\": 62444,\r\n  \"actor\": \"2166d360\",\r\n  \"group\": 120,\r\n  \"idleSkill\": 0,\r\n  \"requestedWeapon\": 30,\r\n  \"closed\": true,\r\n  \"elapsedMs\": 2933,\r\n  \"logStart\": 68450,\r\n  \"logEnd\": 69335\r\n}\r\n"
+}
