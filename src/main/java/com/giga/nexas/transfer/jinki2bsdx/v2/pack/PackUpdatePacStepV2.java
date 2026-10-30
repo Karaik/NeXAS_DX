@@ -31,8 +31,13 @@ public class PackUpdatePacStepV2 {
         plan.setSourceFolder(sourceFolder);
         plan.setCompressMode(request.getPacCompressMode());
 
+        if (!request.isPackUpdatePac()) {
+            plan.setPackLog("链式构建跳过中间JINKI封包，由最终阶段封包");
+            return plan;
+        }
+
         try {
-            String packLog = PacUtil.pack(sourceFolder.toString(), request.getPacCompressMode());
+            String packLog = PacUtil.pack(sourceFolder.toString(), request.getPacCompressMode(), sourceFolder.getParent());
             plan.setPackLog(packLog);
 
             Path pacNew = sourceFolder.resolveSibling(sourceFolder.getFileName().toString() + ".pacNew");

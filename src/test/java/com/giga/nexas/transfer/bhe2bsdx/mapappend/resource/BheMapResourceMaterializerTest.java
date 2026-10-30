@@ -52,6 +52,34 @@ class BheMapResourceMaterializerTest {
     Path outputRoot;
 
     @Test
+    void prepareStagesBesideTheOwnedOutputAndDoesNotCreateTheFinalFlatDirectory() throws Exception {
+        Path operation = Files.createDirectory(outputRoot.resolve("owned-operation"));
+        Path flat = operation.resolve("flat");
+        byte[] sourceBytes = Files.readAllBytes(REAL_SPM);
+        BheMapEntryPlan entry = new BheMapEntryPlan();
+        entry.setTargetMapFileName(TARGET_MAP);
+        entry.getResourceReferences().getReferences().add(directReference(BheMapReferenceType.SPRITE_MAP));
+        BheMapAppendPlan plan = new BheMapAppendPlan();
+        plan.getEntries().add(entry);
+        BheMapImportWrittenMap map = new BheMapImportWrittenMap();
+        map.setTargetMapFileName(TARGET_MAP); map.setMapPath(flat.resolve(TARGET_MAP));
+        BheMapImportOutputResult output = new BheMapImportOutputResult();
+        output.getWrittenMaps().add(map);
+        try (var watcher = operation.getFileSystem().newWatchService()) {
+            operation.register(watcher, java.nio.file.StandardWatchEventKinds.ENTRY_CREATE);
+            BheMapResourceMaterializationResult result = new BheMapResourceMaterializer().prepare(plan, output, flat, CHARSET);
+            var changes = watcher.poll(2, java.util.concurrent.TimeUnit.SECONDS);
+            assertNotNull(changes, "the actual SPM writer must stage in the operation parent, not global java.io.tmpdir");
+            assertTrue(changes.pollEvents().stream().anyMatch(event -> event.context().toString().startsWith("bhe-map-resource-")));
+            assertFalse(Files.exists(flat), "prepare must not create the final flat output directory");
+            assertEquals(1, result.getPendingOutputFiles().size());
+            assertEquals(38, new SpmParser().parse(result.getPendingOutputFiles().get(0).getBytes(), TARGET_SPM, CHARSET).getPageData().size());
+        }
+        try (var files = Files.list(operation)) { assertEquals(0, files.count(), "all owned staging files are removed"); }
+        assertArrayEquals(sourceBytes, Files.readAllBytes(REAL_SPM));
+    }
+
+    @Test
     void realDirectSpriteMapConvertsB6SpmAndPreservesSourceBytes() throws Exception {
         byte[] sourceBytes = Files.readAllBytes(REAL_SPM);
         Spm parsed = materializeDirectAndRead(BheMapReferenceType.SPRITE_MAP);

@@ -119,7 +119,10 @@ public class BheMapImportOutputWriter {
 
         String effectiveCharset = isBlank(charset) ? "windows-31j" : charset;
         Path normalizedOutputRoot = outputRoot.toAbsolutePath().normalize();
-        Files.createDirectories(normalizedOutputRoot);
+        Path stagingParent = normalizedOutputRoot.getParent();
+        if (stagingParent == null) throw new IllegalArgumentException("outputRoot must have an owned staging parent");
+        // Only commit creates the final flat directory after every output/resource conflict has been checked.
+        Files.createDirectories(stagingParent);
         Path normalizedCurrentMapGroupPath = currentTargetMapGroupPath.toAbsolutePath().normalize();
         byte[] baselineMapGroupBytes = Files.readAllBytes(normalizedCurrentMapGroupPath);
 
@@ -140,7 +143,7 @@ public class BheMapImportOutputWriter {
                 }
                 result.setConvertedMapCount(result.getConvertedMapCount() + 1);
                 Path targetMapPath = normalizedOutputRoot.resolve(entry.getTargetMapFileName()).normalize();
-                byte[] mapBytes = generateMapDataBytes(conversion.mapData(), effectiveCharset);
+                byte[] mapBytes = generateMapDataBytes(conversion.mapData(), effectiveCharset, stagingParent);
                 verifyMapDataBytes(mapBytes, entry.getTargetMapFileName(), effectiveCharset);
                 result.getPendingOutputFiles().add(pendingFile(
                         targetMapPath,
@@ -153,7 +156,7 @@ public class BheMapImportOutputWriter {
                     composedSpmPath = normalizedOutputRoot.resolve(
                             conversion.compositionResult().getCompositionPlan().getTargetComposedSpriteMapFileName()
                     ).normalize();
-                    byte[] spmBytes = generateSpmBytes(conversion.compositionResult().getComposedSpm(), effectiveCharset);
+                    byte[] spmBytes = generateSpmBytes(conversion.compositionResult().getComposedSpm(), effectiveCharset, stagingParent);
                     verifySpmBytes(
                             spmBytes,
                             conversion.compositionResult().getCompositionPlan().getTargetComposedSpriteMapFileName(),
@@ -177,8 +180,8 @@ public class BheMapImportOutputWriter {
 
         appendMapGroupEntries(outputMapGroup, writtenEntries, result);
         Path outputMapGroupPath = normalizedOutputRoot.resolve(MAPGROUP_FILE_NAME).normalize();
-        byte[] mapGroupBytes = generateMapGroupBytes(outputMapGroup, effectiveCharset);
-        MapGroupGrp verifiedMapGroup = parseMapGroupBytes(mapGroupBytes, MAPGROUP_FILE_NAME, effectiveCharset);
+        byte[] mapGroupBytes = generateMapGroupBytes(outputMapGroup, effectiveCharset, stagingParent);
+        MapGroupGrp verifiedMapGroup = parseMapGroupBytes(mapGroupBytes, MAPGROUP_FILE_NAME, effectiveCharset, stagingParent);
         BheMapPendingOutputFile mapGroupPendingFile = pendingFile(
                 outputMapGroupPath,
                 mapGroupBytes,
@@ -254,8 +257,8 @@ public class BheMapImportOutputWriter {
         return (MapGroupGrp) bsdxBinService.parse(mapGroupPath.toString(), charset).getData();
     }
 
-    private byte[] generateMapDataBytes(com.giga.nexas.dto.bsdx.map.MapData mapData, String charset) throws IOException {
-        Path stagingPath = Files.createTempFile("bhe-map-import-", ".map");
+    private byte[] generateMapDataBytes(com.giga.nexas.dto.bsdx.map.MapData mapData, String charset, Path stagingParent) throws IOException {
+        Path stagingPath = Files.createTempFile(stagingParent, "bhe-map-import-", ".map");
         try {
             mapDataGenerator.generate(stagingPath.toString(), mapData, charset);
             return Files.readAllBytes(stagingPath);
@@ -264,8 +267,8 @@ public class BheMapImportOutputWriter {
         }
     }
 
-    private byte[] generateSpmBytes(com.giga.nexas.dto.bsdx.spm.Spm spm, String charset) throws IOException {
-        Path stagingPath = Files.createTempFile("bhe-map-import-", ".spm");
+    private byte[] generateSpmBytes(com.giga.nexas.dto.bsdx.spm.Spm spm, String charset, Path stagingParent) throws IOException {
+        Path stagingPath = Files.createTempFile(stagingParent, "bhe-map-import-", ".spm");
         try {
             spmGenerator.generate(stagingPath.toString(), spm, charset);
             return Files.readAllBytes(stagingPath);
@@ -274,10 +277,10 @@ public class BheMapImportOutputWriter {
         }
     }
 
-    private byte[] generateMapGroupBytes(MapGroupGrp mapGroup, String charset) throws IOException {
+    private byte[] generateMapGroupBytes(MapGroupGrp mapGroup, String charset, Path stagingParent) throws IOException {
         mapGroup.setFileName("mapgroup");
         mapGroup.setExtensionName("grp");
-        Path stagingPath = Files.createTempFile("bhe-map-import-", ".grp");
+        Path stagingPath = Files.createTempFile(stagingParent, "bhe-map-import-", ".grp");
         try {
             bsdxBinService.generate(stagingPath.toString(), mapGroup, charset);
             return Files.readAllBytes(stagingPath);
@@ -286,11 +289,11 @@ public class BheMapImportOutputWriter {
         }
     }
 
-    private MapGroupGrp parseMapGroupBytes(byte[] bytes, String fileName, String charset) {
+    private MapGroupGrp parseMapGroupBytes(byte[] bytes, String fileName, String charset, Path stagingParent) {
         Path stagingDir = null;
         Path stagingPath = null;
         try {
-            stagingDir = Files.createTempDirectory("bhe-map-import-");
+            stagingDir = Files.createTempDirectory(stagingParent, "bhe-map-import-");
             stagingPath = stagingDir.resolve(fileName);
             Files.write(stagingPath, bytes);
             return (MapGroupGrp) bsdxBinService.parse(stagingPath.toString(), charset).getData();

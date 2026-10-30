@@ -263,7 +263,7 @@ public class Bhe2BsdxSingleRunner {
             assetCopier.copyAssets(outputDir, staticRoot, assetSpm, assetGrp);
         }
 
-        String packLog = PacUtil.pack(outputPath, config.getPacCompressMode());
+        String packLog = PacUtil.pack(outputPath, config.getPacCompressMode(), outputDir.toAbsolutePath().normalize().getParent());
         log.info("outputPath === {}", packLog);
 
         Path pacNew = outputDir.resolveSibling(outputDir.getFileName().toString() + ".pacNew");

@@ -27,6 +27,8 @@ public class AkaoGraftRequest {
     private Path targetExePath = Paths.get("src/main/resources/ida-reverse/BaldrSky.exe");
     private Path exeOutputDir = Paths.get("src/main/resources/out");
     private String pacCompressMode = "4";
+    /** 链式构建可跳过本层封包，最终阶段仍负责生成交付PAC。 */
+    private boolean packUpdatePac = true;
 
     private String mekaCodeName = "AKAO";
     private String wazCodeName = "AKAO";

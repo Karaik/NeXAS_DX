@@ -80,7 +80,10 @@ public class BheMapResourceMaterializer {
         try {
             String effectiveCharset = isBlank(charset) ? "windows-31j" : charset;
             Path normalizedOutputRoot = outputRoot.toAbsolutePath().normalize();
-            Files.createDirectories(normalizedOutputRoot);
+            Path stagingParent = normalizedOutputRoot.getParent();
+            if (stagingParent == null) throw new IllegalArgumentException("outputRoot must have an owned staging parent");
+            // Prepare only produces pending bytes; sibling staging must not create or dirty the final flat directory.
+            Files.createDirectories(stagingParent);
             BheMapResourceMaterializationResult result = new BheMapResourceMaterializationResult();
             Map<String, BheMapEntryPlan> entriesByTargetMapFileName = entriesByTargetMapFileName(plan);
             Map<Path, BheMapPendingOutputFile> uniqueTargets = new HashMap<>();
@@ -139,7 +142,7 @@ public class BheMapResourceMaterializer {
 
         Path targetPath = resolveTargetPath(outputRoot, reference);
         byte[] sourceBytes = Files.readAllBytes(reference.getSourcePath());
-        byte[] outputBytes = isSpm(reference) ? convertSpmBytes(reference, sourceBytes, charset) : sourceBytes;
+        byte[] outputBytes = isSpm(reference) ? convertSpmBytes(reference, sourceBytes, charset, outputRoot.getParent()) : sourceBytes;
         BheMapPendingOutputFile existingPending = uniqueTargets.get(targetPath);
         if (existingPending != null) {
             if (!java.util.Arrays.equals(existingPending.getBytes(), outputBytes)) {
@@ -169,12 +172,12 @@ public class BheMapResourceMaterializer {
         }
     }
 
-    private byte[] convertSpmBytes(BheMapResourceReference reference, byte[] sourceBytes, String charset)
+    private byte[] convertSpmBytes(BheMapResourceReference reference, byte[] sourceBytes, String charset, Path stagingParent)
             throws IOException {
         // 直引地图SPM也包含BHE形状载荷；先转为DX字节，再参与去重和安全写出预检。
         var source = bheSpmParser.parse(sourceBytes, reference.getSourcePath().getFileName().toString(), charset);
         var converted = spmConverter.convert(source);
-        Path stagingPath = Files.createTempFile("bhe-map-resource-", ".spm");
+        Path stagingPath = Files.createTempFile(stagingParent, "bhe-map-resource-", ".spm");
         try {
             bsdxSpmGenerator.generate(stagingPath.toString(), converted, charset);
             return Files.readAllBytes(stagingPath);

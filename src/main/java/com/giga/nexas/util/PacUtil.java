@@ -1,125 +1,201 @@
 package com.giga.nexas.util;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class PacUtil {
-
     private static final String NEXAS_PAC_EXE = "NexasPack.exe";
 
-    // 获取指定的命令行
-    private static String getExePath(String exeName) throws IOException {
-        // 临时目录
-        File tempDir = new File(System.getProperty("java.io.tmpdir"), "nexas_exe");
-        if (!tempDir.exists()) {
-            tempDir.mkdirs();
-        }
-
-        // src/main/resources/exe
-        String[] filesToExtract = {
-                "NexasPack.exe",
-                "zlib.dll",
-                "libzstd.dll"
-        };
-
-        ClassLoader classLoader = PacUtil.class.getClassLoader();
-
-        for (String fileName : filesToExtract) {
-            File target = new File(tempDir, fileName);
-            if (!target.exists()) {
-                try (InputStream in = classLoader.getResourceAsStream("exe/" + fileName);
-                     OutputStream out = new FileOutputStream(target)) {
-                    if (in == null) {
-                        throw new IOException("can't find resource: exe/" + fileName);
-                    }
-                    byte[] buf = new byte[1024];
-                    int len;
-                    while ((len = in.read(buf)) != -1) {
-                        out.write(buf, 0, len);
-                    }
-                }
-                if (fileName.endsWith(".exe")) {
-                    target.setExecutable(true); // 赋予可执行权限
-                }
-            }
-        }
-
-        return new File(tempDir, exeName).getAbsolutePath();
-    }
-
-    private static void copyFile(File source, File destination) throws IOException {
-        try (InputStream in = new FileInputStream(source);
-             OutputStream out = new FileOutputStream(destination)) {
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
-        }
-    }
-
-    /**
-     * 执行 pac 解包命令
-     *
-     * @param pacPath pac 文件路径
-     * @return 解包过程输出
-     * @throws IOException 执行失败
-     */
+    /** GUI兼容入口：工具不写入原PAC目录；构建应使用显式ownedWorkRoot重载。 */
     public static String unpack(String pacPath) throws IOException {
-        String exe = getExePath(NEXAS_PAC_EXE);
-        return executeCommand(List.of(exe, pacPath), false, null);
+        Path legacyWorkspace = Files.createTempDirectory("nexas-pac-unpack-");
+        Throwable failure = null;
+        try {
+            return unpack(pacPath, legacyWorkspace);
+        } catch (IOException | RuntimeException | Error error) {
+            failure = error;
+            throw error;
+        } finally {
+            cleanupOwnedDirectory(legacyWorkspace, failure);
+        }
     }
 
-    /**
-     * 执行 pac 封包命令，并模拟输入压缩方式
-     *
-     * @param folderPath 输入文件夹路径
-     * @param compressMode 压缩方式（0=no compress, 4=zlib, 7=zstd）
-     * @return 封包过程输出
-     * @throws IOException 执行失败
-     */
+    /** 在调用方拥有的工作根内缓存工具和创建单次临时目录，不改变原PAC位置及解包语义。 */
+    public static String unpack(String pacPath, Path ownedWorkRoot) throws IOException {
+        Path source = Path.of(pacPath).toAbsolutePath().normalize();
+        return run(source, false, null, ownedWorkRoot);
+    }
+
+    /** GUI兼容入口：工具位于待封包目录的父级，不混入flat资源。 */
     public static String pack(String folderPath, String compressMode) throws IOException {
-        String exe = getExePath(NEXAS_PAC_EXE);
-        return executeCommand(List.of(exe, folderPath), true, compressMode);
+        Path source = Path.of(folderPath).toAbsolutePath().normalize();
+        if (source.getParent() == null) throw new IOException("pack source has no operation parent: " + source);
+        return pack(source.toString(), compressMode, source.getParent());
     }
 
-    /**
-     * 执行命令，并可选模拟输入
-     *
-     * @param commandArgs 命令字符串
-     * @param simulateInput 是否模拟输入
-     * @param inputText 模拟输入内容（回车结尾）
-     * @return 执行过程控制台输出
-     * @throws IOException 执行失败
-     */
-    private static String executeCommand(List<String> commandArgs, boolean simulateInput, String inputText) throws IOException {
+    /** 构建入口显式指定本轮owned工作根；压缩方式0/4/7仍原样交给NexasPack。 */
+    public static String pack(String folderPath, String compressMode, Path ownedWorkRoot) throws IOException {
+        return run(Path.of(folderPath).toAbsolutePath().normalize(), true, compressMode, ownedWorkRoot);
+    }
+
+    private static String run(Path source, boolean pack, String inputText, Path ownedWorkRoot) throws IOException {
+        if (ownedWorkRoot == null) throw new IllegalArgumentException("ownedWorkRoot must not be null");
+        Path toolDirectory = ownedWorkRoot.toAbsolutePath().normalize().resolve(".nexas-tools");
+        if (pack) validatePackToolDirectory(source, toolDirectory);
+        Path executable = getExePath(toolDirectory);
+        Path session = Files.createTempDirectory(toolDirectory, "session-");
+        Throwable failure = null;
+        try {
+            return executeCommand(List.of(executable.toString(), source.toString()), pack, inputText, session);
+        } catch (IOException | RuntimeException | Error error) {
+            failure = error;
+            throw error;
+        } finally {
+            // executeCommand returns or throws only after its owned native process has exited.
+            cleanupOwnedDirectory(session, failure);
+        }
+    }
+
+    private static void validatePackToolDirectory(Path source, Path toolDirectory) throws IOException {
+        if (toolDirectory.toAbsolutePath().normalize().startsWith(source.toAbsolutePath().normalize()))
+            throw new IOException("owned tools must be outside the folder being packed: " + toolDirectory);
+    }
+
+    private static synchronized Path getExePath(Path toolDirectory) throws IOException {
+        Files.createDirectories(toolDirectory);
+        for (String fileName : List.of(NEXAS_PAC_EXE, "zlib.dll", "libzstd.dll")) {
+            Path target = toolDirectory.resolve(fileName);
+            if (Files.exists(target)) {
+                if (!Files.isRegularFile(target)) throw new IOException("native tool is not a regular file: " + target);
+                continue;
+            }
+            try (InputStream input = PacUtil.class.getClassLoader().getResourceAsStream("exe/" + fileName)) {
+                if (input == null) throw new IOException("can't find resource: exe/" + fileName);
+                try {
+                    Files.copy(input, target);
+                } catch (IOException error) {
+                    try { Files.deleteIfExists(target); }
+                    catch (IOException cleanup) { error.addSuppressed(cleanup); }
+                    throw error;
+                }
+            }
+            if (fileName.endsWith(".exe")) target.toFile().setExecutable(true);
+        }
+        return toolDirectory.resolve(NEXAS_PAC_EXE).toAbsolutePath().normalize();
+    }
+
+    private static ProcessBuilder createProcessBuilder(List<String> commandArgs, Path session) {
+        Path executableDirectory = Path.of(commandArgs.get(0)).toAbsolutePath().normalize().getParent();
         ProcessBuilder builder = new ProcessBuilder(commandArgs);
         builder.redirectErrorStream(true);
-
-        File exeDir = new File(System.getProperty("java.io.tmpdir"), "nexas_exe");
-        builder.directory(exeDir);
-        builder.environment().put("PATH", exeDir.getAbsolutePath() + File.pathSeparator + System.getenv("PATH"));
-
-        Process process = builder.start();
-
-        if (simulateInput && inputText != null) {
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()))) {
-                writer.write(inputText);
-                writer.newLine(); // 模拟按下回车
-                writer.flush();
-            }
-        }
-
-        String encoding = System.getProperty("sun.jnu.encoding");
-        StringBuilder output = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), simulateInput?encoding:"windows-31j"))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line).append(System.lineSeparator());
-            }
-        }
-
-        return output.toString();
+        builder.directory(executableDirectory.toFile());
+        var environment = builder.environment();
+        environment.put("PATH", executableDirectory + File.pathSeparator + environment.getOrDefault("PATH", ""));
+        environment.put("TEMP", session.toAbsolutePath().normalize().toString());
+        environment.put("TMP", session.toAbsolutePath().normalize().toString());
+        return builder;
     }
 
+    private static String executeCommand(List<String> arguments, boolean input, String text, Path session) throws IOException {
+        Charset encoding = input
+                ? Charset.forName(System.getProperty("sun.jnu.encoding", Charset.defaultCharset().name()))
+                : Charset.forName("windows-31j");
+        Process process = createProcessBuilder(arguments, session).start();
+        try {
+            return collectProcess(process, input, text, encoding);
+        } finally {
+            // Also cover a failure while the output collector itself is being initialized.
+            boolean interrupted = stopAndConfirmExit(process);
+            closeQuietly(process.getOutputStream());
+            closeQuietly(process.getInputStream());
+            closeQuietly(process.getErrorStream());
+            if (interrupted) Thread.currentThread().interrupt();
+        }
+    }
+
+    private static String collectProcess(Process process, boolean simulateInput, String inputText, Charset encoding) throws IOException {
+        StringBuilder output = new StringBuilder();
+        AtomicReference<IOException> readFailure = new AtomicReference<>();
+        Thread drainer = new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), encoding))) {
+                for (String line; (line = reader.readLine()) != null;) output.append(line).append(System.lineSeparator());
+            } catch (IOException error) {
+                readFailure.set(error);
+                process.destroyForcibly();
+            }
+        }, "nexas-pac-output");
+        drainer.setDaemon(true);
+        boolean interrupted = false;
+        try {
+            drainer.start();
+            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream(), encoding))) {
+                if (simulateInput && inputText != null) { writer.write(inputText); writer.newLine(); writer.flush(); }
+            }
+            int exitCode = process.waitFor();
+            drainer.join();
+            if (readFailure.get() != null) throw readFailure.get();
+            if (exitCode != 0) throw new IOException("NexasPack exited with code " + exitCode + System.lineSeparator() + output);
+            return output.toString();
+        } catch (InterruptedException error) {
+            interrupted = true;
+            InterruptedIOException failure = new InterruptedIOException("interrupted while waiting for NexasPack to exit");
+            failure.initCause(error);
+            throw failure;
+        } finally {
+            interrupted |= stopAndConfirmExit(process);
+            closeQuietly(process.getOutputStream());
+            closeQuietly(process.getInputStream());
+            closeQuietly(process.getErrorStream());
+            interrupted |= joinUninterruptibly(drainer);
+            if (interrupted) Thread.currentThread().interrupt();
+        }
+    }
+
+    private static boolean stopAndConfirmExit(Process process) {
+        boolean interrupted = Thread.interrupted();
+        if (process.isAlive()) process.destroy();
+        while (process.isAlive()) {
+            try {
+                if (!process.waitFor(500, TimeUnit.MILLISECONDS)) process.destroyForcibly();
+            } catch (InterruptedException error) {
+                interrupted = true;
+                process.destroyForcibly();
+            }
+        }
+        for (;;) {
+            try { process.waitFor(); return interrupted; }
+            catch (InterruptedException error) { interrupted = true; if (process.isAlive()) process.destroyForcibly(); }
+        }
+    }
+
+    private static boolean joinUninterruptibly(Thread thread) {
+        boolean interrupted = false;
+        for (;;) {
+            try { thread.join(); return interrupted; }
+            catch (InterruptedException error) { interrupted = true; }
+        }
+    }
+
+    private static void closeQuietly(Closeable stream) {
+        try { stream.close(); }
+        catch (IOException ignored) { }
+    }
+
+    private static void cleanupOwnedDirectory(Path directory, Throwable failure) throws IOException {
+        boolean interrupted = Thread.interrupted();
+        try (var paths = Files.walk(directory)) {
+            for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) Files.deleteIfExists(path);
+        } catch (IOException cleanup) {
+            if (failure != null) failure.addSuppressed(cleanup);
+            else throw cleanup;
+        } finally {
+            if (interrupted) Thread.currentThread().interrupt();
+        }
+    }
 }

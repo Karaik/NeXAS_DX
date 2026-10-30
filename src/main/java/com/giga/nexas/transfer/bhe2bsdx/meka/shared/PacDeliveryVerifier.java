@@ -20,7 +20,7 @@ public final class PacDeliveryVerifier {
         try {
             Path copy = workspace.resolve("delivery.pac");
             Files.copy(pac, copy);
-            PacUtil.unpack(copy.toString());
+            PacUtil.unpack(copy.toString(), workspace.getParent());
             Path unpacked = workspace.resolve("delivery");
             if (!Files.isDirectory(unpacked)) throw new IllegalStateException("PAC 解包未生成目录: " + unpacked);
             Map<String, String> expected = manifest(source), actual = manifest(unpacked);

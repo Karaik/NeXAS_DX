@@ -40,7 +40,7 @@ public class PackUpdatePacStep {
         try {
             Path stalePacNew = sourceFolder.resolveSibling(sourceFolder.getFileName().toString() + ".pacNew");
             if (Files.exists(stalePacNew)) throw new IllegalStateException("拒绝复用旧 pacNew: " + stalePacNew);
-            String packLog = PacUtil.pack(sourceFolder.toString(), request.getPacCompressMode());
+            String packLog = PacUtil.pack(sourceFolder.toString(), request.getPacCompressMode(), sourceFolder.getParent());
             plan.setPackLog(packLog);
 
             Path pacNew = sourceFolder.resolveSibling(sourceFolder.getFileName().toString() + ".pacNew");

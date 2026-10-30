@@ -37,6 +37,55 @@ class BheMapImportOutputWriterTest {
     Path outputRoot;
 
     @Test
+    void prepareKeepsAllGeneratedAndVerificationFilesOutsideTheAbsentFinalFlatDirectory() throws Exception {
+        Path operation = Files.createDirectory(outputRoot.resolve("owned-prepare"));
+        Path flat = operation.resolve("flat");
+        Path baseline = Path.of("src/main/resources/game/bsdx/grp/MapGroup.grp").toAbsolutePath().normalize();
+        byte[] before = Files.readAllBytes(baseline);
+        java.util.List<Path> staged = new java.util.ArrayList<>();
+        BsdxBinService observed = new BsdxBinService() {
+            @Override public <T extends com.giga.nexas.dto.bsdx.Bsdx> com.giga.nexas.dto.ResponseDTO<?> generate(String path, T value, String charset) throws java.io.IOException {
+                Path actual = Path.of(path).toAbsolutePath().normalize();
+                assertTrue(actual.startsWith(operation)); assertFalse(actual.startsWith(flat)); staged.add(actual);
+                return super.generate(path, value, charset);
+            }
+            @Override public com.giga.nexas.dto.ResponseDTO<?> parse(String path, String charset) throws java.io.IOException {
+                Path actual = Path.of(path).toAbsolutePath().normalize();
+                if (!actual.equals(baseline)) { assertTrue(actual.startsWith(operation)); assertFalse(actual.startsWith(flat)); staged.add(actual); }
+                return super.parse(path, charset);
+            }
+        };
+        BheMapImportOutputResult result = new BheMapImportOutputWriter(null, observed, null, null, null, null)
+                .prepare(new BheMapAppendPlan(), baseline, flat, "windows-31j");
+        assertFalse(Files.exists(flat));
+        assertEquals(1, result.getPendingOutputFiles().size());
+        assertTrue(staged.size() >= 2, "the real generator and verification parser must both run");
+        for (Path file : staged) assertFalse(Files.exists(file));
+        try (var files = Files.list(operation)) { assertEquals(0, files.count()); }
+        org.junit.jupiter.api.Assertions.assertArrayEquals(before, Files.readAllBytes(baseline));
+    }
+
+    @Test
+    void failedGenerationRemovesOwnedStagingWithoutCreatingFinalOutput() throws Exception {
+        Path operation = Files.createDirectory(outputRoot.resolve("owned-failure"));
+        Path flat = operation.resolve("flat");
+        Path baseline = Path.of("src/main/resources/game/bsdx/grp/MapGroup.grp").toAbsolutePath().normalize();
+        byte[] before = Files.readAllBytes(baseline);
+        BsdxBinService failing = new BsdxBinService() {
+            @Override public <T extends com.giga.nexas.dto.bsdx.Bsdx> com.giga.nexas.dto.ResponseDTO<?> generate(String path, T value, String charset) throws java.io.IOException {
+                assertTrue(Path.of(path).toAbsolutePath().normalize().startsWith(operation));
+                throw new java.io.IOException("intentional generation failure");
+            }
+        };
+        org.junit.jupiter.api.Assertions.assertThrows(java.io.IOException.class,
+                () -> new BheMapImportOutputWriter(null, failing, null, null, null, null)
+                        .prepare(new BheMapAppendPlan(), baseline, flat, "windows-31j"));
+        assertFalse(Files.exists(flat));
+        try (var files = Files.list(operation)) { assertEquals(0, files.count()); }
+        org.junit.jupiter.api.Assertions.assertArrayEquals(before, Files.readAllBytes(baseline));
+    }
+
+    @Test
     void completeStaticResourceRootWritesConvertibleMapsAndAppendsMapGroupEntries() throws Exception {
         Path completeResourceRoot = resolveCompleteStaticResourceRoot();
         assumeTrue(
