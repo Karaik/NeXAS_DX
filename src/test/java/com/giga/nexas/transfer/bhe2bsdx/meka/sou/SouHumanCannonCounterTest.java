@@ -349,8 +349,9 @@ class SouHumanCannonCounterTest {
         context.setSelectedPackage(selected); context.setGrpAppendPlan(privatePlan);
         context.setReboundMek(mek); context.setReboundWaz(main);
         SouSkillGlitchFixer.INSTANCE.fix(context); // baseline prime must not install the counter codec
-        // Keep this suite's complete non-counter graphs stable while the first public call still installs the counter.
+        // Prime the other role repairs so complete non-counter graphs stay stable; the first public call still installs the counter.
         SouCursedBladeSingleTargetFixer.fix(context);
+        SouSnowMoonSingleTargetFixer.fix(context);
         assertEquals(211, mek.getMekWeaponInfoMap().size());
         assertTrue(currentSou.getCommonProjectileResourceBundle().getWazByFileName().isEmpty(),
                 "Sou inherits prepared hosts; a fresh Sou converted common bundle is empty in the real pipeline");

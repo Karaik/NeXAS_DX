@@ -287,9 +287,10 @@ class SouCursedBladeSingleTargetTest {
         context.setRequest(request); context.setBaseline(baseline); context.setConvertedBundle(currentSou);
         context.setSelectedPackage(selected); context.setGrpAppendPlan(privatePlan);
         context.setReboundMek(mek); context.setReboundWaz(main);
-        // Prime only the existing two repairs. The future Sou63 adapter must first run through the public boundary in each test.
+        // Prime the other role repairs; Blade must first run through the public boundary in each test.
         SouSkillGlitchFixer.INSTANCE.fix(context);
         SouHumanCannonCounterFixer.fix(context);
+        SouSnowMoonSingleTargetFixer.fix(context);
         Fixture f = new Fixture(context, raw, mainGroup, sourceFiles);
         for (int i = 0; i < 3; i++) {
             assertEquals(SUFFIX, suffix(family(main, i)));
