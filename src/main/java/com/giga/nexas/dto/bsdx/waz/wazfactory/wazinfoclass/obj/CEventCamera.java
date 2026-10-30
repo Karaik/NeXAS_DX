@@ -144,6 +144,35 @@ public class CEventCamera extends SkillInfoObject {
                     InfoCollectionMapper.copyBheToBsdx(bheUnit.getData(), inner);
                     inner.setSlotNum(CEVENT_CAMERA_ENTRIES[i].getType());
                     inner.typeId = CEVENT_CAMERA_ENTRIES[i].getType(); // 修复：恢复正确的 BSDX typeId
+                    // DX camera requires an object target; this verified self position changes snapshot to live object.
+                    // Check source and target: the mapper normalizes nulls and truncates source collections.
+                    if (i == 0
+                            && bheUnit.getData() instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventTerm sourcePosition
+                            && Integer.valueOf(7).equals(sourcePosition.getTypeId())
+                            && inner instanceof CEventTerm targetPosition
+                            && Integer.valueOf(5).equals(targetPosition.getTypeId())
+                            && sourcePosition.getBheInfoCollectionList() != null
+                            && sourcePosition.getBheInfoCollectionList().size() == 1
+                            && targetPosition.getBsdxInfoCollectionList() != null
+                            && targetPosition.getBsdxInfoCollectionList().size() == 1) {
+                        var sourceCollection = sourcePosition.getBheInfoCollectionList().get(0);
+                        var targetCollection = targetPosition.getBsdxInfoCollectionList().get(0);
+                        if (sourceCollection != null && targetCollection != null
+                                && Integer.valueOf(20).equals(sourceCollection.getInt1())
+                                && List.of(3).equals(sourceCollection.getTypeList())
+                                && sourceCollection.getParamList() != null && sourceCollection.getParamList().isEmpty()
+                                && List.of(0, 0).equals(sourceCollection.getIntList3())
+                                && sourceCollection.getIntList4() != null && sourceCollection.getIntList4().isEmpty()
+                                && Integer.valueOf(0).equals(sourceCollection.getInt2())
+                                && Integer.valueOf(20).equals(targetCollection.getInt1())
+                                && List.of(3).equals(targetCollection.getTypeList())
+                                && targetCollection.getParamList() != null && targetCollection.getParamList().isEmpty()
+                                && List.of(0, 0).equals(targetCollection.getIntList3())
+                                && targetCollection.getIntList4() != null && targetCollection.getIntList4().isEmpty()
+                                && Integer.valueOf(0).equals(targetCollection.getInt2())) {
+                            targetCollection.setTypeList(new ArrayList<>(List.of(1)));
+                        }
+                    }
                     bsdxUnit.setBuffer(1);
                     bsdxUnit.setData(inner);
                 }
