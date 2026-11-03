@@ -365,6 +365,96 @@ class RuntimeSessionTests(unittest.TestCase):
             self.assertEqual(harness.main(args), 1)
         self.assertFalse((self.runtime / "native-cli").exists())
 
+    def test_capture_log_is_a_new_empty_private_file_without_copying_the_original(self):
+        with patch.object(harness.shutil, "copy2", wraps=shutil.copy2) as copied:
+            case = self.prepare("capture-log")
+        private = case / "driver-cache/ShadowPlay/CaptureCore.log"
+        self.assertTrue(private.is_file(), "FILE_OPEN needs a pre-existing private CaptureCore.log")
+        self.assertEqual(private.read_bytes(), b"")
+        self.assertNotIn(r"C:\ProgramData\NVIDIA Corporation\ShadowPlay\CaptureCore.log",
+                         [str(call.args[0]) for call in copied.call_args_list])
+        manifest = harness.verify_prepared(case, self.runtime)
+        self.assertEqual(manifest["capture_log"], {
+            "source": r"C:\ProgramData\NVIDIA Corporation\ShadowPlay\CaptureCore.log",
+            "relative_path": "driver-cache/ShadowPlay/CaptureCore.log"})
+
+    def test_capture_log_preflight_rejects_missing_changed_or_redirected_private_file(self):
+        for mutation in ("missing", "changed", "mapping"):
+            with self.subTest(mutation=mutation):
+                case = self.prepare("capture-preflight-" + mutation)
+                private = case / "driver-cache/ShadowPlay/CaptureCore.log"
+                if mutation == "missing":
+                    private.unlink(missing_ok=True)
+                elif mutation == "changed":
+                    private.parent.mkdir(parents=True, exist_ok=True)
+                    private.write_bytes(b"changed before launch")
+                else:
+                    manifest_path = case / "manifest.json"
+                    manifest = json.loads(manifest_path.read_text())
+                    manifest["capture_log"] = {"source": r"C:\ProgramData\NVIDIA Corporation\ShadowPlay\CaptureCore.log",
+                                               "relative_path": "../outside.log"}
+                    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+                with self.assertRaises(ValueError):
+                    harness.verify_prepared(case, self.runtime)
+
+    def test_capture_log_alias_matches_only_the_exact_file_and_never_allows_the_original(self):
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "Node is required for exact CaptureCore.log policy checks")
+        original = r"C:\ProgramData\NVIDIA Corporation\ShadowPlay\CaptureCore.log"
+        device = r"\Device\HarddiskVolume1\ProgramData\NVIDIA Corporation\ShadowPlay\CaptureCore.log"
+        target = r"\??\D:\case\driver-cache\ShadowPlay\CaptureCore.log"
+        config = {"allowed": [r"D:\case"], "captureLogSources": [original, device], "captureLogTarget": target}
+        negatives = [original + suffix for suffix in ("Other", ".bak", ":stream", "\\child", "\\..\\Other.log", "\0")]
+        negatives += [original.replace("ShadowPlay", "ShadowPlayOther"), original.replace("CaptureCore.log", "Other.log"),
+                      original.replace("ShadowPlay", "Other"), original.replace("NVIDIA Corporation", "NVIDIA CorporationOther"),
+                      r"C:\ProgramData\NVIDIA Corporation\ShadowPlay", r"C:\ProgramData\unrelated.log"]
+        positives = [original, "\\??\\" + original, "\\\\?\\" + original, original.upper(), device]
+        script = harness.isolation_policy(config) + "\nconst originals=" + json.dumps(positives + negatives) + ";"
+        script += "\nif(typeof aliasCaptureLog!=='function'){console.log('missing');process.exit(0)}"
+        script += "\nconsole.log(JSON.stringify({aliases: originals.map(aliasCaptureLog), allowed: originals.map(permitted), redirectedAllowed:permitted(aliasCaptureLog(originals[0]))}));"
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        self.assertNotEqual(result.stdout.strip(), "missing", "Exact CaptureCore.log alias is missing")
+        self.assertEqual(json.loads(result.stdout), {"aliases": [target] * len(positives) + [None] * len(negatives),
+                                                   "allowed": [False] * (len(positives) + len(negatives)),
+                                                   "redirectedAllowed": True})
+
+    def test_capture_log_route_uses_cloned_attributes_and_records_its_own_event(self):
+        node = shutil.which("node")
+        self.assertIsNotNone(node, "Node is required for the CaptureCore.log route check")
+        with self.exe.open("r+b") as stream:
+            for offset, instruction in ((0x3643B9, "ff1560a27d00"), (0x3643CD, "ff1574a27d00")):
+                stream.seek(offset)
+                stream.write(bytes.fromhex(instruction))
+        case = self.prepare("capture-route")
+        manifest = harness.verify_prepared(case, self.runtime)
+        with patch.object(harness, "native_path", side_effect=lambda value: str(value)):
+            source = harness.isolation_script(case, manifest)
+        policy = source.split("\nfunction cloneObjectAttributes", 1)[0]
+        route = "function saveObjectRoute" + source.split("function saveObjectRoute", 1)[1].split("function deny", 1)[0]
+        script = policy + r'''
+const assert = require('node:assert/strict'), ps=4, captured=[];
+function objectPath(attributes) { return attributes.path; }
+let clones=0;
+function cloneObjectAttributes(attributes, target, size) {
+  clones++; assert.equal(size,4);
+  return {pointer:{path:target},keepalive:[attributes,target]};
+}
+function announce(type,payload){captured.push({type,...payload});}
+''' + route + "\nconst original={path:" + json.dumps("\\??\\C:\\ProgramData\\NVIDIA Corporation\\ShadowPlay\\CaptureCore.log") + "};"
+        script += r'''
+const before=JSON.stringify(original), mapped=saveObjectRoute(original);
+assert.notEqual(mapped.attributes,original);
+assert.equal(clones,1); assert.equal(JSON.stringify(original),before);
+assert.equal(mapped.kind,'capture_log'); assert.equal(permitted(mapped.path),true);
+assert.equal(reportSaveRoute('NtCreateFile',mapped,0),0);
+assert.equal(captured[0].type,'capture_log_redirected');
+assert.equal(captured[0].succeeded,true); assert.equal(captured[0].from,original.path);
+console.log('ok');
+'''
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(result.stdout.strip(), "ok")
+
     def test_driver_drift_during_copy_is_rejected_with_evidence_retained(self):
         real_copytree = shutil.copytree
 

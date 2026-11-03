@@ -20,6 +20,32 @@
 
 ## 当前边界
 
-当前尚无本轮新整链包或实机通过结果。Sou153项、九角色54追加武装的效果、跨武装连段、取消、中断、再次起手、重载和关卡推进必须继续逐项验收。
+本轮新整链包已构建并完成静态身份核验，尚无武装实机通过结果。Sou153项、九角色54追加武装的效果、跨武装连段、取消、中断、再次起手、重载和关卡推进必须继续逐项验收。
 
 旧target观察器源码已丢，但保全的case09文本日志回显了四个原观察断点及请求关联条件。恢复观察工具时保留这些条件，安装前核对EXE身份和指令字节；仅观察，不强制出招、不修改动作或异常行为。正式工具存入tools，原始二进制与私人存档不提交。
+
+## 本轮整链与成品核验
+
+受控入口`TestBheByJinkiRunner#testRunNineCharacterRework`真实完成，退出码0；JUnit记录1项、失败0、错误0、跳过0，耗时242.399秒。
+
+- 唯一构建目录：`target/bhe-playable-builds/run_20261103_154924_549_070a8f21`，受管状态COMPLETE。
+- EXE：`sou/BaldrSky_20261103_155143_736.exe`，4793856字节，SHA256 `1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae`。
+- PAC：`sou/Update3.pac`，1460490768字节，SHA256 `10a6d5f50cd528e9206744c53a0dfaac5836f204d384ab3219d07085f5ab1996`。最终封包步骤在发布前调用`PacDeliveryVerifier`真实解包并核路径/内容，成功后清除它创建的验证副本；没有另做第二套解包副本。
+- 独立读取最终3884个资产，与保全的180550解包审计比对；先核保全容器和重建原文本的长度/SHA。无新增、无删除，仅`WazaGroup.grp`、`sou.waz`、`tama05.waz`变化；其余3881个长度及SHA相同。审计文本为`target/bhe-checks-20261103/built-assets-vs-180550.json`，不复制旧二进制。
+- receipt仍为构建时的`runtimeValidated=false`；上述核验不替代实机。
+
+## 首次隔离运行
+
+case `sou-finite-20261103-01`使用本轮EXE/PAC及空私有Save。4个观察挂点的运行时签名核对和安装实际成功，随后出现正常自动更新询问框；选择不启用更新。
+
+后续出现`NtCreateFile`写入`C:/ProgramData/NVIDIA Corporation/ShadowPlay/CaptureCore.log`请求，守卫拒绝外部写入并主动终止自有进程，终止码`E0000001`。此轮状态`failed/guard_violation`，不能记作游戏自然崩溃，也不算任何武装通过。随后仅对该完整日志路径实现case内私有重定向，不放宽ProgramData目录写权限。
+
+退出已确认、guard释放完成、`cleanup_pending=false`；程序实际清除28份仍与输入一致的game副本，共5805648253字节，清理错误0、保留改变/唯一文件0。私有Config、运行文本与所需临时资料保留；未删除源游戏或构建包，未写删C盘原件。
+
+## 观察工具与精确日志重定向
+
+正式工具`tools/bhe_runtime_observer.py`由保全的四挂点恢复，默认不启用；Astra6 Ultra与root分别核对了被动性、固定EXE/指令签名、请求关联及安装时序。root另补越界请求不能保留旧accepted关联的真实RED，修后20项全通过。
+
+首次守卫停止后，为准确CaptureCore.log路径补4个测试方法，先真实取得6个断言失败、错误0的RED，再实现私有空日志及精确别名；未读取或复制原日志。当前58项harness与20项observer联合回归共78项，失败0、错误0、跳过0，退出码0，11.241秒。`capture-log-all-green.log`及小体积RED日志位于`target/bhe-observer-checks`。
+
+该补丁只影响试跑隔离工具，游戏成品EXE/PAC没有再次构建或修改。新case `sou-finite-20261103-02`使用上一轮已退出case的私有Config作为独立种子，不覆盖真实Save；后续结果另记，不能由78项离线通过推导实机已通过。

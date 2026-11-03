@@ -28,6 +28,8 @@ CRT_OFFSET = 0x2789F8
 SAVE_SUFFIX = Path("GIGA/BALDRSKY_DIVEX/Save")
 NVIDIA_DRS_SOURCE = Path(os.environ.get("ProgramData", r"C:\ProgramData")) / "NVIDIA Corporation/Drs"
 NVIDIA_DRS_COPY = Path("driver-cache/Drs")
+NVIDIA_CAPTURE_LOG_SOURCE = Path(r"C:\ProgramData\NVIDIA Corporation\ShadowPlay\CaptureCore.log")
+NVIDIA_CAPTURE_LOG_COPY = Path("driver-cache/ShadowPlay/CaptureCore.log")
 
 
 def utc_now():
@@ -350,6 +352,11 @@ def _prepare_case(*, base_dir, exe_path, pac_paths, save_dir, case_name, runtime
             write_json(case / "state.json", state)
             if not source_check["unchanged"] or not copy_check["unchanged"]:
                 raise ValueError("NVIDIA Drs tree changed during copying or copied bytes differ; evidence retained")
+        # The observed FILE_OPEN requires an existing file. Never read or copy the C: log.
+        capture_log = case / NVIDIA_CAPTURE_LOG_COPY
+        capture_log.parent.mkdir(parents=True, exist_ok=True)
+        with capture_log.open("xb"):
+            pass
         require_unchanged(game, expected_game, "Copied game")
         require_unchanged(documents / SAVE_SUFFIX, source_seed, "Private save seed")
         require_unchanged(base, source_base, "Original base")
@@ -369,6 +376,8 @@ def _prepare_case(*, base_dir, exe_path, pac_paths, save_dir, case_name, runtime
                     "original_documents": str(save.parents[2]), "isolated_documents": str(documents),
                     "original_save_files": source_save, "save_seed_files": source_seed, "base_files": source_base,
                     "source_files": source_files, "game_files": expected_game, "crt_bytes": "8bff",
+                    "capture_log": {"source": str(NVIDIA_CAPTURE_LOG_SOURCE),
+                                    "relative_path": NVIDIA_CAPTURE_LOG_COPY.as_posix()},
                     "driver_state": {"source": str(driver_source), "mode": driver_mode,
                                      "relative_path": None if native_driver_state else NVIDIA_DRS_COPY.as_posix(),
                                      "files": driver_before, "file_count": len(driver_before),
@@ -420,6 +429,11 @@ def verify_prepared(case_dir, runtime_root=RUNTIME_ROOT):
     if driver_mode == "private":
         require_unchanged(driver["source"], driver["files"], "Original driver state tree")
         require_unchanged(case / NVIDIA_DRS_COPY, driver["files"], "Copied driver state tree")
+    if manifest.get("capture_log") != {"source": str(NVIDIA_CAPTURE_LOG_SOURCE),
+                                       "relative_path": NVIDIA_CAPTURE_LOG_COPY.as_posix()}:
+        raise ValueError("Unexpected CaptureCore.log alias; prepare a fresh case")
+    if file_record(case / NVIDIA_CAPTURE_LOG_COPY) != {"size": 0, "sha256": hashlib.sha256(b"").hexdigest()}:
+        raise ValueError("Private CaptureCore.log changed before launch")
     check_crt(case / "game" / manifest["exe_name"])
     for source, expected in manifest["source_files"].items():
         if file_record(source) != expected:
@@ -711,6 +725,12 @@ function aliasDriverState(path) {
   }
   return null;
 }
+function aliasCaptureLog(path) {
+  const name = normalize(path);
+  for (const source of config.captureLogSources || [])
+    if (name === normalize(source)) return config.captureLogTarget;
+  return null;
+}
 function redirectDocuments(pidls, pidl, succeeded, gameCall, readPath, writePath) {
   if (!succeeded || !gameCall || !pidls.has(pidl)) return false;
   const actual = readPath();
@@ -799,7 +819,7 @@ def protected_input_paths(manifest):
     driver = manifest["driver_state"]
     paths = [manifest["original_save"], manifest["base_dir"],
              *([driver["source"]] if driver.get("mode", "private") == "private" else []),
-             manifest["exe_source"], *manifest["pac_sources"]]
+              manifest["exe_source"], *manifest["pac_sources"], str(NVIDIA_CAPTURE_LOG_SOURCE)]
     paths.extend(path for path in (manifest.get("seed_source"), manifest.get("app_manifest_source")) if path is not None)
     return list(dict.fromkeys(paths))
 
@@ -822,7 +842,9 @@ def isolation_script(case, manifest):
               "saveAliasSources": [manifest["original_save"], native_path(manifest["original_save"])],
               "saveAliasTarget": "\\??\\" + str(case / "docs" / SAVE_SUFFIX),
               "driverStateSources": [] if native_driver else [driver_source, native_path(driver_source)],
-              "driverStateTarget": None if native_driver else "\\??\\" + str(case / NVIDIA_DRS_COPY)}
+              "driverStateTarget": None if native_driver else "\\??\\" + str(case / NVIDIA_DRS_COPY),
+              "captureLogSources": [str(NVIDIA_CAPTURE_LOG_SOURCE), native_path(NVIDIA_CAPTURE_LOG_SOURCE)],
+              "captureLogTarget": "\\??\\" + str(case / NVIDIA_CAPTURE_LOG_COPY)}
     return isolation_policy(config) + isolation_structures() + exception_observer() + r'''
 const hooks = [];
 const pidls = new Set();
@@ -877,14 +899,16 @@ function objectPath(attributes) {
 function saveObjectRoute(attributes) {
   const from = objectPath(attributes);
   const saveTarget = aliasSavePath(from);
-  const to = saveTarget === null ? aliasDriverState(from) : saveTarget;
+  const driverTarget = saveTarget === null ? aliasDriverState(from) : null;
+  const to = saveTarget !== null ? saveTarget : (driverTarget !== null ? driverTarget : aliasCaptureLog(from));
   if (to === null) return {attributes: attributes, path: from, from: from, to: null, keepalive: []};
   const copy = cloneObjectAttributes(attributes, to, ps);
   return {attributes: copy.pointer, path: to, from: from, to: to, keepalive: copy.keepalive,
-    kind: saveTarget === null ? 'driver' : 'save'};
+    kind: saveTarget !== null ? 'save' : (driverTarget !== null ? 'driver' : 'capture_log')};
 }
 function reportSaveRoute(api, route, result) {
-  if (route.to !== null) announce(route.kind === 'driver' ? 'driver_state_redirected' : 'save_path_redirected',
+  if (route.to !== null) announce(route.kind === 'driver' ? 'driver_state_redirected' :
+    (route.kind === 'capture_log' ? 'capture_log_redirected' : 'save_path_redirected'),
     {api: api, from: route.from, to: route.to,
     status: '0x' + (result >>> 0).toString(16), succeeded: result >= 0});
   // Keep all nested native allocations reachable until the original call returns.
@@ -1086,11 +1110,12 @@ announce('hook_ready', {hooks: hooks, module: main.path, base: main.base.toStrin
   documentsLocationReturn: locationReturn.toString(),
   documentsPathReturn: pathReturn.toString(), saveAliasSources: config.saveAliasSources, saveAliasTarget: config.saveAliasTarget,
   driverStateSources: config.driverStateSources, driverStateTarget: config.driverStateTarget,
+   captureLogSources: config.captureLogSources, captureLogTarget: config.captureLogTarget,
   policy: 'repository-only case writes; external disk writes and original inputs protected; exceptions never handled'});
 '''
 
 
-def launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_ROOT):
+def launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_ROOT, observe_gameplay=False):
     case = check_no_links(case_dir)
     if case != case_path(runtime_root, case.name):
         raise ValueError("Launch case is outside the managed runtime root")
@@ -1101,15 +1126,24 @@ def launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_R
         verified = verify_prepared(case, runtime_root)
         with case_temp_environment(case):
             return _launch_case(case, timeout=timeout, ready_timeout=ready_timeout,
-                                runtime_root=runtime_root, prepared_manifest=verified)
+                                runtime_root=runtime_root, prepared_manifest=verified,
+                                observe_gameplay=observe_gameplay)
 
 
-def _launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_ROOT, prepared_manifest):
+def _launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_ROOT,
+                 prepared_manifest, observe_gameplay=False):
     if os.name != "nt":
         raise RuntimeError("Launching is supported only on Windows")
-    import frida
     case = check_no_links(case_dir)
     manifest = prepared_manifest
+    # Opt-in observation validates/generates both scripts before creating a process.
+    # The default isolation-only mode keeps its established lifecycle unchanged.
+    script_source = None
+    if observe_gameplay:
+        from bhe_runtime_observer import observer_script
+        script_source = (observer_script(case / "game" / manifest["exe_name"]) + "\n" +
+                         isolation_script(case, manifest))
+    import frida
     driver_mode = manifest["driver_state"].get("mode", "private")
     stop_file = case / "STOP"
     if stop_file.exists():
@@ -1160,7 +1194,8 @@ def _launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_
                 {"event": "frida_detached", "reason": reason, "crash": str(crash) if crash else None}))
             if cancel.is_set():
                 return
-            script = session.create_script(isolation_script(case, manifest), name="bhe-save-isolation")
+            script = session.create_script(script_source if script_source is not None else
+                                           isolation_script(case, manifest), name="bhe-save-isolation")
             attachment["script"] = script
             script.on("message", on_message)
             script.load()
@@ -1435,6 +1470,8 @@ def main(argv=None):
     launch.add_argument("--case", required=True)
     launch.add_argument("--timeout", type=float, default=0, help="Seconds; 0 waits for exit, Ctrl+C or case/STOP")
     launch.add_argument("--ready-timeout", type=float, default=30)
+    launch.add_argument("--observe-gameplay", action="store_true",
+                        help="Passively observe native requests/START/READY for the exact known EXE")
     args = parser.parse_args(argv)
     try:
         if args.command == "prepare":
@@ -1446,7 +1483,8 @@ def main(argv=None):
             return 0
         if args.timeout < 0 or args.ready_timeout <= 0 or args.ready_timeout > 60:
             raise ValueError("timeout must be >= 0; ready-timeout must be in (0, 60]")
-        return launch_case(case_path(RUNTIME_ROOT, args.case), timeout=args.timeout, ready_timeout=args.ready_timeout)
+        return launch_case(case_path(RUNTIME_ROOT, args.case), timeout=args.timeout,
+                           ready_timeout=args.ready_timeout, observe_gameplay=args.observe_gameplay)
     except Exception as exc:
         print(json.dumps({"status": "refused", "error": repr(exc)}), file=sys.stderr)
         return 1
