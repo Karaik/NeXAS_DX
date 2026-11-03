@@ -208,13 +208,18 @@ class ManagedPlayableBuildTest {
     void lockedPayloadFailsPreflightWithoutPartiallyDeletingOtherFiles() throws Exception {
         Path old = completed(null, "old");
         Path protectedFile = old.resolve("sou/Update3.pac");
-        try (FileChannel file = FileChannel.open(protectedFile, READ, WRITE);
-             FileLock ignored = file.lock(); ManagedPlayableBuild fresh = open(null)) {
-            assertThrows(IOException.class, () -> fresh.complete(receipt(fresh.runRoot(), "new")));
-            assertTrue(Files.exists(old.resolve("sou/game.exe")), "all files are probed before any payload deletion");
-            assertTrue(Files.exists(protectedFile));
+        try (ManagedPlayableBuild fresh = open(null)) {
+            try (FileChannel file = FileChannel.open(protectedFile, READ, WRITE);
+                 FileLock ignored = file.lock()) {
+                assertThrows(IOException.class, () -> fresh.complete(receipt(fresh.runRoot(), "new")));
+                assertTrue(Files.exists(old.resolve("sou/game.exe")), "all files are probed before any payload deletion");
+                assertTrue(Files.exists(protectedFile));
+            }
         }
         assertEquals("old pac", Files.readString(protectedFile));
+        Path recovered = completed(null, "recovered");
+        assertFalse(Files.exists(old), "unlocking the old payload permits a later build to retire it");
+        assertEquals("recovered pac", Files.readString(recovered.resolve("sou/Update3.pac")));
     }
 
     @Test

@@ -87,7 +87,7 @@
 
 ## BHE九角色改造定向回归（2026-10-27）
 
-- 九角色构建入口为`tools/Invoke-BheChecks.ps1 -Test "TestBheByJinkiRunner#testRunNineCharacterRework"`：Maven缓存、JVM临时目录和构建输出均在仓库内。`bhe.playableBuildRoot`覆盖值也只接受本仓库target子目录；外部目录在写入前拒绝。保留Sou阶段且只最终封包，中间JINKI V2封包关闭。成功验证新receipt后清旧受管理run；活动/准备中的case、使用锁、未知文件或不完整失败现场会阻断删除和后续堆积。当前用户仅允许源码修改，构建及测试命令均不得执行。
+- 九角色构建入口为`tools/Invoke-BheChecks.ps1 -Test "TestBheByJinkiRunner#testRunNineCharacterRework"`：Maven缓存、JVM临时目录和构建输出均在仓库内。`bhe.playableBuildRoot`覆盖值也只接受本仓库target子目录；外部目录在写入前拒绝。保留Sou阶段且只最终封包，中间JINKI V2封包关闭。成功验证新receipt后清旧受管理run；活动/准备中的case、使用锁、未知文件或不完整失败现场会阻断删除和后续堆积。2026-11-03用户已允许仓库内构建、测试和实机验收；禁止仓库外写删及上传二进制，实际验证范围见`docs/project-deep-dive/bhe-playable-rework/resumed-validation-20261103.md`。
 - 玩法定向测试包含`FrejaCustomizerTest,YuriCustomizerTest,CharacterWeaponVariantsTest,NagiVariantTest,KatouVariantTest,MisakiVariantTest,NaotoVariantTest,PlayableWeaponLoadoutsTest`，均使用原版只读输入/内存或JUnit临时输出。必须显式`-Dtest`串行运行，禁止默认资源套件。
 - `MotokiFlightBombVariantTest`补充真实回环、四条SkillSuffix入口、类型0端点插值、原数据保全及漂移零写；局部运动模型仍不能代替引擎碰撞／命中。整链与固定靶投弹／接地证据见`motoki-flight-runtime-20261029.md`，跨武装及中断仍单独验收。
 - `BheChannelZeroCounterRecoveryTest,CommonChangeRedirectTest,RebindWazSourceIsolationTest,NativeErrorHandlerPreservationTest`覆盖共通计数、公共跳转、源隔离和原生异常链；不把active channel0恢复宣称为四通道等价。
