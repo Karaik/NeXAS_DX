@@ -261,7 +261,8 @@ class SouFlareSeekerSingleTargetTest {
             assertArrayEquals(Files.readAllBytes(first), Files.readAllBytes(second));
             assertPayloadEquals(expectedReadback, parsed[index], "second full binary readback graph " + index);
         }
-        Path group1 = output.resolve("flare-WazaGroup1.grp"), group2 = output.resolve("flare-WazaGroup2.grp");
+        Path group1 = output.resolve("flare-group-pass1/WazaGroup.grp");
+        Path group2 = output.resolve("flare-group-pass2/WazaGroup.grp");
         service.generate(group1.toString(), f.context().getBaseline().getWazaGroupGrp(), CHARSET);
         WazaGroupGrp parsedGroup = (WazaGroupGrp) service.parse(group1.toString(), CHARSET).getData();
         service.generate(group2.toString(), parsedGroup, CHARSET);
