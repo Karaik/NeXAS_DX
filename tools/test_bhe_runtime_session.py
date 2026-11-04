@@ -315,16 +315,27 @@ class RuntimeSessionTests(unittest.TestCase):
         self.assertEqual((self.driver / "nested/db.bin").read_bytes(), b"database")
         self.assertEqual((self.driver / "nvAppTimestamps").read_bytes(), b"old")
 
-    def test_preflight_rejects_changed_original_or_copied_driver_tree(self):
-        for changed in ("source", "copy"):
-            with self.subTest(changed=changed):
-                (self.driver / "nvAppTimestamps").write_bytes(b"old")
-                case = self.prepare("driver-drift-" + changed)
-                target = (self.driver if changed == "source" else case / "driver-cache/Drs") / "nvAppTimestamps"
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(b"external update")
-                with self.assertRaises(ValueError):
-                    harness.verify_prepared(case, self.runtime)
+    def test_preflight_reports_original_driver_drift_without_changing_the_manifest(self):
+        case = self.prepare("driver-drift-source")
+        before_manifest = (case / "manifest.json").read_bytes()
+        baseline = json.loads(before_manifest)["driver_state"]["files"]
+        (self.driver / "nvAppTimestamps").write_bytes(b"external update")
+        verified = harness.verify_prepared(case, self.runtime)
+        audit = verified["driver_state_preflight"]
+        self.assertEqual(audit["preparation_baseline"], baseline)
+        self.assertEqual(audit["observed"], harness.tree_manifest(self.driver))
+        self.assertEqual(audit["difference"]["changed"], ["nvAppTimestamps"])
+        self.assertFalse(audit["difference"]["unchanged"])
+        self.assertEqual(audit["attribution"], "not_determined_external_writers_possible")
+        self.assertEqual((case / "manifest.json").read_bytes(), before_manifest)
+        self.assertEqual(verified["driver_state"]["files"], baseline)
+        self.assertEqual((case / "driver-cache/Drs/nvAppTimestamps").read_bytes(), b"old")
+
+    def test_preflight_still_rejects_changed_private_driver_copy(self):
+        case = self.prepare("driver-drift-copy")
+        (case / "driver-cache/Drs/nvAppTimestamps").write_bytes(b"private changed")
+        with self.assertRaisesRegex(ValueError, "Copied driver state tree"):
+            harness.verify_prepared(case, self.runtime)
 
     def test_native_driver_state_is_rejected_before_creating_output(self):
         before = harness.tree_manifest(self.driver)
@@ -455,6 +466,106 @@ console.log('ok');
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(result.stdout.strip(), "ok")
 
+    def test_cryptnet_prepare_creates_only_empty_private_directories_and_pins_the_mapping(self):
+        with patch.object(harness.shutil, "copytree", wraps=shutil.copytree) as copied:
+            case = self.prepare("cryptnet-empty")
+        root = case / "driver-cache/CryptnetUrlCache"
+        self.assertTrue((root / "MetaData").is_dir())
+        self.assertTrue((root / "Content").is_dir())
+        self.assertEqual(list((root / "MetaData").iterdir()), [])
+        self.assertEqual(list((root / "Content").iterdir()), [])
+        original = r"C:\Users\30250\AppData\LocalLow\Microsoft\CryptnetUrlCache"
+        self.assertNotIn(original, [str(call.args[0]) for call in copied.call_args_list])
+        manifest = harness.verify_prepared(case, self.runtime)
+        self.assertEqual(manifest["cryptnet_cache"], {"source": original,
+            "relative_path": "driver-cache/CryptnetUrlCache",
+            "metadata_file": "329B6147266C1E26CD774EA22B79EC2E"})
+        self.assertIn(original, harness.protected_input_paths(manifest))
+
+    def test_cryptnet_preflight_refuses_changed_mapping_missing_or_nonempty_cache(self):
+        for mutation in ("mapping", "missing", "nonempty", "extra_directory"):
+            with self.subTest(mutation=mutation):
+                case = self.prepare("cryptnet-preflight-" + mutation)
+                root = case / "driver-cache/CryptnetUrlCache"
+                if mutation == "mapping":
+                    path = case / "manifest.json"
+                    manifest = json.loads(path.read_text())
+                    manifest["cryptnet_cache"] = {"source": r"C:\other", "relative_path": "../other",
+                                                 "metadata_file": "329B6147266C1E26CD774EA22B79EC2E"}
+                    path.write_text(json.dumps(manifest), encoding="utf-8")
+                elif mutation == "missing":
+                    if (root / "Content").exists():
+                        (root / "Content").rmdir()
+                else:
+                    (root / "MetaData").mkdir(parents=True, exist_ok=True)
+                    if mutation == "nonempty":
+                        (root / "MetaData/329B6147266C1E26CD774EA22B79EC2E").write_bytes(b"unexpected before launch")
+                    else:
+                        (root / "unexpected").mkdir()
+                with self.assertRaises(ValueError):
+                    harness.verify_prepared(case, self.runtime)
+
+    def test_cryptnet_alias_is_only_the_observed_metadata_file_and_external_paths_remain_denied(self):
+        node = shutil.which("node")
+        self.assertIsNotNone(node)
+        root = r"C:\Users\30250\AppData\LocalLow\Microsoft\CryptnetUrlCache"
+        device = r"\Device\HarddiskVolume1\Users\30250\AppData\LocalLow\Microsoft\CryptnetUrlCache"
+        leaf = "329B6147266C1E26CD774EA22B79EC2E"
+        original = root + "\\MetaData\\" + leaf
+        target_root = r"\??\D:\case\driver-cache\CryptnetUrlCache"
+        config = {"allowed": [r"D:\case"], "protected": [root, device],
+                  "cryptnetCacheSources": [root, device], "cryptnetCacheTarget": target_root,
+                  "cryptnetMetadataFile": leaf}
+        positives = [original, "\\??\\" + original, "\\\\?\\" + original, original.lower(), device + "\\MetaData\\" + leaf]
+        negatives = [root, root + "\\MetaData", root + "\\Content", root + "\\Content\\" + leaf,
+                     original + ":stream", original + "x", original + "\\child", original + "\\", original + "\0",
+                     root + "\\MetaData\\" + "A" * 32, root + "\\MetaData\\" + "G" * 32,
+                     root + "\\MetaData\\" + leaf[:-1], root + "\\Other\\" + leaf,
+                     root + "\\MetaData\\nested\\" + leaf, root + "\\MetaData\\..\\MetaData\\" + leaf,
+                     root + "\\.\\MetaData\\" + leaf, original.replace("CryptnetUrlCache", "CryptnetUrlCacheOther"),
+                     original.replace("Microsoft", "MicrosoftOther"), original.replace("LocalLow", "Local")]
+        script = harness.isolation_policy(config) + "\nconst paths=" + json.dumps(positives + negatives) + ";"
+        script += "\nif(typeof aliasCryptnetCache!=='function'){console.log('missing');process.exit(0)}"
+        script += "\nconsole.log(JSON.stringify({aliases:paths.map(aliasCryptnetCache), direct:paths.map(permitted), redirected:permitted(aliasCryptnetCache(paths[0]))}));"
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True, check=True)
+        self.assertNotEqual(result.stdout.strip(), "missing", "The observed Cryptnet metadata alias is missing")
+        self.assertEqual(json.loads(result.stdout), {
+            "aliases": [target_root + "\\MetaData\\" + leaf] * len(positives) + [None] * len(negatives),
+            "direct": [False] * (len(positives) + len(negatives)), "redirected": True})
+
+    def test_cryptnet_file_route_clones_attributes_and_preserves_original_request(self):
+        node = shutil.which("node")
+        self.assertIsNotNone(node)
+        with self.exe.open("r+b") as stream:
+            for offset, instruction in ((0x3643B9, "ff1560a27d00"), (0x3643CD, "ff1574a27d00")):
+                stream.seek(offset)
+                stream.write(bytes.fromhex(instruction))
+        case = self.prepare("cryptnet-route")
+        manifest = harness.verify_prepared(case, self.runtime)
+        with patch.object(harness, "native_path", side_effect=lambda value: str(value)):
+            source = harness.isolation_script(case, manifest)
+        policy = source.split("\nfunction cloneObjectAttributes", 1)[0]
+        route = "function saveObjectRoute" + source.split("function saveObjectRoute", 1)[1].split("function deny", 1)[0]
+        script = policy + r'''
+const assert=require('node:assert/strict'),ps=4,events=[];
+function objectPath(attributes){return attributes.path;}
+let clones=0;
+function cloneObjectAttributes(attributes,target,size){clones++;assert.equal(size,4);return {pointer:{path:target},keepalive:[attributes,target]};}
+function announce(type,payload){events.push({type,...payload});}
+''' + route + "\nconst original={path:" + json.dumps("\\??\\C:\\Users\\30250\\AppData\\LocalLow\\Microsoft\\CryptnetUrlCache\\MetaData\\329B6147266C1E26CD774EA22B79EC2E") + "};"
+        script += r'''
+const before=JSON.stringify(original),mapped=saveObjectRoute(original);
+assert.notEqual(mapped.attributes,original);assert.equal(clones,1);
+assert.equal(JSON.stringify(original),before);assert.equal(mapped.kind,'cryptnet_cache');
+assert.equal(permitted(mapped.path),true);assert.equal(permitted(original.path),false);
+assert.equal(reportSaveRoute('NtCreateFile',mapped,0),0);
+assert.equal(events[0].type,'cryptnet_cache_redirected');assert.equal(events[0].succeeded,true);
+console.log('ok');
+'''
+        result = subprocess.run([node, "-"], input=script, text=True, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(result.stdout.strip(), "ok")
+
     def test_driver_drift_during_copy_is_rejected_with_evidence_retained(self):
         real_copytree = shutil.copytree
 
@@ -485,19 +596,42 @@ console.log('ok');
     def test_private_driver_exit_audit_preserves_original_save_difference_failure(self):
         self._check_runtime_driver_source_drift(native=False, change_save=True)
 
-    def _check_runtime_driver_source_drift(self, *, native, save_audit_error=False, change_save=False):
+    def test_prelaunch_driver_drift_alone_is_recorded_and_does_not_fail_a_private_run(self):
+        self._check_runtime_driver_source_drift(native=False, prelaunch_drift=True, runtime_drift=False)
+
+    def test_prelaunch_and_runtime_driver_drift_are_separate_observations(self):
+        self._check_runtime_driver_source_drift(native=False, prelaunch_drift=True)
+
+    def test_prelaunch_driver_drift_never_masks_a_real_save_preservation_failure(self):
+        self._check_runtime_driver_source_drift(native=False, prelaunch_drift=True, change_save=True)
+
+    def _check_runtime_driver_source_drift(self, *, native, save_audit_error=False, change_save=False,
+                                         prelaunch_drift=False, runtime_drift=True):
         (self.driver / "nvAppTimestamps").write_bytes(b"old")
         case = self.prepare("driver-runtime-drift-" + str(native), native_driver_state=native)
+        manifest_bytes = (case / "manifest.json").read_bytes()
+        preparation = json.loads(manifest_bytes)["driver_state"]["files"]
+        if prelaunch_drift:
+            (self.driver / "nvAppTimestamps").write_bytes(b"external update before run")
+        run_before = harness.tree_manifest(self.driver)
         child = FakeOwnedProcess()
         child.poll = lambda: 0 if child.dead.is_set() else None
 
         def resume():
-            (self.driver / "nvAppTimestamps").write_bytes(b"external update during run")
+            if runtime_drift:
+                changed_path = self.driver / ("nested/db.bin" if prelaunch_drift else "nvAppTimestamps")
+                changed_path.write_bytes(b"external update during run")
             if change_save:
                 (self.save / "Script.dat").write_bytes(b"unexpected user save change")
             child.dead.set()
 
         child.resume = resume
+
+        def create_owned_process(*args, **kwargs):
+            initial_state = json.loads((case / "state.json").read_text())
+            self.assertEqual(initial_state.get("original_driver_state_before"), run_before,
+                             "The actual run-before snapshot must be saved before process creation")
+            return child
 
         class ReadySession:
             def __init__(self):
@@ -523,7 +657,7 @@ console.log('ok');
                 raise OSError("original Save read failure")
             return original_open(path, *args, **kwargs)
 
-        with patch.object(harness, "OwnedProcess", return_value=child), \
+        with patch.object(harness, "OwnedProcess", side_effect=create_owned_process), \
                 patch.object(harness, "isolation_script", return_value="offline"), \
                 patch.object(Path, "open", autospec=True, side_effect=open_with_save_audit_failure), \
                 patch.dict(sys.modules, {"frida": types.SimpleNamespace(attach=lambda pid: ReadySession())}):
@@ -542,7 +676,16 @@ console.log('ok');
             self.assertIsNone(state["failure"])
         self.assertIn("original_driver_state_check", state,
                       "Save audit failure must not skip the independent driver audit")
-        self.assertEqual(state["original_driver_state_check"]["changed"], ["nvAppTimestamps"])
+        expected_all = (["nested/db.bin", "nvAppTimestamps"] if prelaunch_drift and runtime_drift else ["nvAppTimestamps"])
+        expected_runtime = (["nested/db.bin"] if prelaunch_drift else ["nvAppTimestamps"]) if runtime_drift else []
+        self.assertEqual(state["original_driver_state_preparation_baseline"], preparation)
+        self.assertEqual(state["original_driver_state_before"], run_before)
+        self.assertEqual(state["original_driver_state_prelaunch_check"]["changed"], ["nvAppTimestamps"] if prelaunch_drift else [])
+        self.assertEqual(state["original_driver_state_check"]["changed"], expected_all)
+        self.assertEqual(state["original_driver_state_runtime_check"]["changed"], expected_runtime)
+        self.assertEqual(state["original_driver_state_runtime_check"]["unchanged"], not runtime_drift)
+        self.assertEqual((case / "manifest.json").read_bytes(), manifest_bytes,
+                         "Driver drift audit must not rewrite the preparation manifest")
         self.assertEqual(state["original_driver_state_check"]["attribution"], "not_determined_external_writers_possible")
         if native:
             self.assertFalse((case / "driver-cache").exists())

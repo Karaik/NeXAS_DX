@@ -15,6 +15,8 @@ C:\Python313\python.exe -B tools\bhe_runtime_session.py launch --case checked-01
 
 需要被动出招观测时，在launch后加`--observe-gameplay`。该模式只接受已验证的`1ac677...`完整EXE身份，创建进程前生成并校验观察脚本，四个挂点内存签名全部符合后安装。菜单REQUEST、真实START与原生READY严格按同一请求关联；对象未清、身份变化、读取失败、越界或新请求替代旧请求都不能补记通过。只读寄存器/内存并记录离散事件，不调用出招、不改动作、返回值或异常处理。
 
+同时加`--observe-combat`可记录七处已有原生战斗/录像观测点；它要求`--observe-gameplay`，默认仍只有四挂点。记录真实扣血、反应应用、恢复入口、状态切换、武装消耗与清链，不能把RESET当目标恢复。录像消费者的active字节`+159D`由固定EXE指令确认，inactive不读取输入。普通事件的`lastReplayFrame/lastReplayConsumer/replayReadTick`仅为最后读取快照；只有录像输入事件本身携带`frame`，避免把停止后的旧帧拼入新预览。普通/SD门与SD预算只记原始字段，不据单个标志判定取消可用或连段通过。
+
 `--pac`与`--vanilla`二选一，PAC只允许明确选择的Update3–7；未选择的旧overlay阻断准备。原版对照明确使用只读`ida-reverse/BaldrSky.exe`，基底目录的旧宽屏EXE不作为参考。
 
 准备把基底和本轮EXE/PAC复制到新game。真实`--save-dir`始终只读并受写保护；默认复制到私有`docs/GIGA/BALDRSKY_DIVEX/Save`。`--fresh-save`与`--save-seed-dir`互斥，分别建立空私有Save或复制明确独立seed。显式`--app-manifest`只复制用户提供文件，不生成locale设置。输入、种子、原Save及副本独立记录长度和SHA256，不回写原件。
@@ -35,7 +37,11 @@ Documents重定向只作用于已验证sub_764FA0调用，返回RVA为0x364FBF/0
 
 NVIDIA Drs默认复制并alias到case/driver-cache/Drs，复制前后核原树与副本。`--native-driver-state`只保留为显式报错参数，不能再准备或启动不隔离全局驱动状态的case；旧native记录属于历史版本。
 
+原Drs属于系统可变状态，prepare后可能被其它进程更新。launch继续严格校验私有副本，但原树漂移仅作只读审计，不重写准备清单或替换私有副本。创建进程前记录准备基线、当时原树及差异；退出分别记录准备→退出、启动前→退出两段差异，归因为未知且可能有外部写入者。真实Save、独立种子、游戏输入、源EXE/PAC的变化仍阻断启动。
+
 2026-11-03实机启动观察到`C:/ProgramData/NVIDIA Corporation/ShadowPlay/CaptureCore.log`写入请求。仅此完整文件名精确alias到case内新建的空日志；不读取或复制原C日志，不放行ShadowPlay目录、同名前后缀/ADS、兄弟文件或其它NVIDIA路径。prepare记录精确映射，launch前核私有日志仍为空且映射未变；所有实际写入继续经过case守卫。旧case没有此准备信息时拒绝重用，须建立新case。
+
+2026-11-04又观察到当前用户LocalLow下`Microsoft/CryptnetUrlCache/MetaData/329B6147266C1E26CD774EA22B79EC2E`缓存写入。仅该完整MetaData文件alias到case内同名私有路径；不读取或复制原缓存。prepare只建私有MetaData/Content空目录，preflight核映射、空树和无重解析点。Content文件、其它32位名称、ADS、路径前后缀/层级伪装和其它Microsoft目录仍拒绝外部写入；原缓存root列为受保护输入，不通过目录白名单绕过。
 
 目标进程磁盘写入只允许本case；原Save、原输入、仓库其它路径及普通外部路径均拒绝。NtCreate/NtOpen的内联检查与NtWrite/NtDelete/metadata修改一致。外部请求记录为blocked，不能记作已允许。既有目录只读metadata、准确HID/MMCSS设备及IPC例外不是普通磁盘写白名单。
 
@@ -53,4 +59,4 @@ case只能启动一次，launch.lock不删。Ctrl+C、timeout或本轮STOP只终
 
 离线测试源码为`tools/test_bhe_runtime_session.py`，fixture临时根同样在仓库target内，覆盖输入保护、原Save、进程归属、晚installer、日志失败、路径、使用锁、临时目录、副本清理及外部写入拒绝。它们不等于实机验收。
 
-2026-10-31阶段只作AST、源码及格式静态检查。2026-11-03恢复后当前离线联合回归为78项通过（harness58、observer20），包括日志精确别名负例；旧46项结果不转记为当前通过。新包已整链构建并核对身份，实际运行范围见`resumed-validation-20261103.md`。Sou153项和追加54武装的命中/落空、跨武装连段、取消、中断及关卡推进仍需最终新包逐项验收。
+2026-10-31阶段只作AST、源码及格式静态检查。2026-11-04当前`test_bhe_*.py`联合回归为112项通过，包含harness、被动observer及私有种子工具；旧结果不转记为当前通过。新包已整链构建并核对身份，实际运行范围见`resumed-validation-20261103.md`。Sou153项和追加54武装的命中/落空、跨武装连段、取消、中断及关卡推进仍需最终新包逐项验收。

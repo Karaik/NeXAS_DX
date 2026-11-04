@@ -4,6 +4,7 @@ import sys
 sys.dont_write_bytecode = True
 
 import hashlib
+import inspect
 import json
 from pathlib import Path
 import shutil
@@ -36,6 +37,8 @@ def pe_fixture():
         data[offset:offset + 16] = b"\x90" * 16
     offset = 0x220A6C - 0x1000 + 0x200
     data[offset:offset + 6] = bytes.fromhex("89be38180000")
+    offset = 0x0C2600 - 0x1000 + 0x200
+    data[offset:offset + 10] = bytes.fromhex("568bf180be9d15000000")
     return bytes(data)
 
 
@@ -45,6 +48,8 @@ const vm = require('node:vm');
 const events = [], hooks = new Map(), memory = new Map(), signatures = new Map();
 const base = 0x400000, player = 0x10000000, enemy = 0x10010000;
 const preview = 0x10020000, descriptor = 0x10030000, unit = 0x10040000, stack = 0x10050000;
+const manager = 0x10060000, staleManager = 0x10070000, foreignActor = 0x10080000;
+const replay = 0x10090000, input = 0x100A0000, otherReplay = 0x100B0000;
 let unreadable = null, sendFails = false;
 class Pointer {
   constructor(value) { this.value = Number(value); }
@@ -77,6 +82,11 @@ function reset() {
   put(player + 0x158, unit); put(unit + 0x2C, 113);
   put(enemy + 0x158, unit); put(player + 0x18DC, 30); put(enemy + 0x18DC, -1);
   put(player + 0x1618, 2000); put(player + 0x161C, 2000);
+  put(enemy + 0x1618, 6000); put(enemy + 0x161C, 5900);
+  put(player + 0x154, manager); put(manager + 8, player); put(staleManager + 8, player);
+  put(manager + 0xCC, 2); put(manager + 0xD8, 3);
+  put(replay + 0x28, input); put(otherReplay + 0x28, input);
+  put(replay + 0x159D, 1); put(otherReplay + 0x159D, 1);
 }
 function context(registers) {
   return {context: Object.fromEntries(Object.entries(registers).map(([k,v]) => [k,ptr(v)]))};
@@ -104,16 +114,20 @@ class ObserverTests(unittest.TestCase):
             self.fail("The passive gameplay observer is missing")
         self.image = pe_fixture()
 
-    def profile(self, data=None):
+    def profile(self, data=None, *, combat=False):
         data = self.image if data is None else bytes(data)
+        if combat:
+            self.assertIn("observe_combat", inspect.signature(observer.profile_for_exe).parameters,
+                          "The opt-in combat profile is not implemented")
         with patch.object(Path, "read_bytes", return_value=data), patch.object(
                 observer, "KNOWN_EXE_SHA256", hashlib.sha256(data).hexdigest()):
-            return observer.profile_for_exe(Path("synthetic-in-memory.exe"))
+            options = {"observe_combat": True} if combat else {}
+            return observer.profile_for_exe(Path("synthetic-in-memory.exe"), **options)
 
-    def run_node(self, body, *, before=""):
+    def run_node(self, body, *, before="", combat=False):
         executable = shutil.which("node")
         self.assertIsNotNone(executable, "Node is required for the offline memory model")
-        profile = self.profile()
+        profile = self.profile(combat=combat)
         source = "const PROFILE=" + json.dumps(profile) + ";\n" + NODE_MODEL + before
         source += "\nconst SOURCE=" + json.dumps(observer._render(profile)) + ";\n"
         source += body
@@ -237,6 +251,173 @@ class ObserverTests(unittest.TestCase):
         self.run_node("vm.runInNewContext(SOURCE+\"\\nsend({type:'hook_ready'});\",runtime); assert.deepEqual(events.map(e=>e.type),['gameplay_observer_ready','hook_ready']);")
         self.run_node("assert.throws(()=>vm.runInNewContext(SOURCE+\"\\nsend({type:'hook_ready'});\",runtime)); assert.equal(ofType('hook_ready').length,0);",
                       before="signatures.get(base+0x1FE030)[0]^=1;\n")
+
+    def test_combat_adds_only_the_seven_explicit_hooks_when_enabled(self):
+        self.assertEqual(len(self.profile()["hooks"]), 4)
+        profile = self.profile(combat=True)
+        self.assertEqual([hook["rva"] for hook in profile["hooks"]][4:],
+                         [0x223308, 0x209090, 0x2097D0, 0x0C2600, 0x22389C, 0x21E760, 0x21B540])
+        self.assertTrue(all(len(hook["expected"]) == 32 for hook in profile["hooks"]))
+        self.run_node("vm.runInNewContext(SOURCE,runtime); assert.equal(hooks.size,11); assert.equal(ofType('gameplay_observer_ready').length,1);",
+                      combat=True)
+
+    def test_each_added_signature_is_checked_before_any_install_or_isolation_ready(self):
+        for rva in (0x223308, 0x209090, 0x2097D0, 0x0C2600, 0x22389C, 0x21E760, 0x21B540):
+            with self.subTest(rva=hex(rva)):
+                self.run_node("assert.throws(()=>vm.runInNewContext(SOURCE+\"\\nsend({type:'hook_ready'});\",runtime),/signature/); assert.equal(hooks.size,0); assert.equal(ofType('hook_ready').length,0);",
+                              before=f"signatures.get(base+{rva})[0]^=1;\n", combat=True)
+
+    def test_damage_records_register_damage_and_raw_state_only_for_current_actors(self):
+        self.run_node("""
+vm.runInNewContext(SOURCE,runtime);
+put(enemy+0x18EC,17); put(enemy+0x188C,8); put(enemy+0x1890,10);
+put(enemy+0x18F0,0); put(enemy+0x18F4,2);
+put(enemy+0x1910,12345); put(enemy+0x1900,2); put(enemy+0x1904,1); put(enemy+0x1928,0);
+fire(0x223308,{esi:foreignActor,ecx:999});
+fire(0x223308,{esi:enemy,ecx:100}); fire(0x223308,{esi:player,ecx:7});
+const e=ofType('combat_damage'); assert.equal(e.length,2);
+assert.equal(e[0].actor,ptr(enemy).toString()); assert.equal(e[0].role,'enemy');
+assert.equal(e[0].damage,100); assert.equal(e[0].hpAfter,5900); assert.equal(e[0].maxHp,6000);
+assert.equal(e[0].controlBeforeReaction,17); assert.equal(e[0].state,8); assert.equal(e[0].nextState,10);
+assert.equal(e[0].pendingReaction,0); assert.equal(e[0].reaction,2);
+assert.equal(e[0].heatRaw,12345); assert.equal(e[0].normalGate,2); assert.equal(e[0].sdGate,1); assert.equal(e[0].sdBudgetRaw,0);
+assert.equal('frame' in e[0],false); assert.equal(e[0].lastReplayFrame,null); assert.equal(e[0].lastReplayConsumer,null); assert.equal(e[0].tick,100);
+assert.equal(e[1].role,'player'); assert.equal('sdAvailable' in e[0],false);
+""", combat=True)
+
+    def test_combat_manager_must_match_both_owner_and_actor_current_manager(self):
+        self.run_node("""
+vm.runInNewContext(SOURCE,runtime); put(stack+4,7);
+fire(0x209090,{ecx:staleManager,esp:stack});
+put(staleManager+8,foreignActor); fire(0x2097D0,{ecx:staleManager});
+fire(0x209090,{ecx:manager,esp:stack}); fire(0x2097D0,{ecx:manager});
+put(manager+0xCC,0); fire(0x2097D0,{ecx:manager});
+assert.equal(ofType('combat_use').length,1); assert.equal(ofType('combat_reset').length,1);
+const use=ofType('combat_use')[0]; assert.equal(use.manager,ptr(manager).toString());
+assert.equal(use.actor,ptr(player).toString()); assert.equal(use.usedBefore,2); assert.equal(use.chainBefore,3); assert.equal(use.slotRaw,7);
+assert.equal(ofType('combat_recovery_entry').length,0); assert.equal(ofType('sou_menu_ready').length,0);
+""", combat=True)
+
+    def test_replay_frame_comes_only_from_consumer_and_unchanged_input_does_not_accumulate(self):
+        self.run_node("""
+vm.runInNewContext(SOURCE,runtime);
+global(0x46F700,foreignActor); put(foreignActor+0x15A0,999);
+for(let frame=0;frame<60;frame++){put(replay+0x15A0,frame); fire(0x0C2600,{ecx:replay});}
+assert.equal(ofType('combat_replay_input').length,1);
+fire(0x223308,{esi:enemy,ecx:100}); let hit=ofType('combat_damage').at(-1);
+assert.equal('frame' in hit,false); assert.equal(hit.lastReplayFrame,59); assert.equal(hit.lastReplayConsumer,ptr(replay).toString());
+put(input,0x100); put(input+4,0x100); put(replay+0x15A0,60); fire(0x0C2600,{ecx:replay});
+put(input,0); put(replay+0x15A0,61); fire(0x0C2600,{ecx:replay});
+put(replay+0x15A0,62); fire(0x0C2600,{ecx:replay});
+assert.equal(ofType('combat_replay_input').length,3);
+put(otherReplay+0x15A0,4); fire(0x0C2600,{ecx:otherReplay}); fire(0x223308,{esi:enemy,ecx:20});
+assert.equal(ofType('combat_replay_input').length,4); hit=ofType('combat_damage').at(-1);
+assert.equal('frame' in hit,false); assert.equal(hit.lastReplayFrame,4); assert.equal(hit.lastReplayConsumer,ptr(otherReplay).toString());
+assert.equal(ofType('combat_replay_input')[1].edge,0x100); assert.equal(ofType('combat_replay_input')[2].held,0x100);
+""", combat=True)
+
+    def test_reaction_recovery_and_motion_keep_the_native_actor_and_entry_semantics(self):
+        self.run_node("""
+vm.runInNewContext(SOURCE,runtime); put(enemy+0x188C,8); put(enemy+0x18EC,0);
+fire(0x22389C,{esi:enemy}); fire(0x22389C,{esi:foreignActor});
+fire(0x2097D0,{ecx:manager});
+assert.equal(ofType('combat_recovery_entry').length,0);
+fire(0x21E760,{ecx:foreignActor}); fire(0x21E760,{ecx:enemy});
+put(stack+4,8); fire(0x21B540,{ecx:enemy,esp:stack});
+put(stack+4,11); fire(0x21B540,{ecx:enemy,esp:stack}); fire(0x21B540,{ecx:foreignActor,esp:stack});
+assert.equal(ofType('combat_reaction_applied').length,1); assert.equal(ofType('combat_recovery_entry').length,1);
+assert.equal(ofType('combat_recovery_entry')[0].actor,ptr(enemy).toString());
+const transition=ofType('combat_motion_transition'); assert.equal(transition.length,1);
+assert.equal(transition[0].fromState,8); assert.equal(transition[0].toState,11);
+assert.equal(ofType('sou_menu_ready').length,0); assert.equal(ofType('combat_damage').length,0);
+""", combat=True)
+
+    def test_replay_without_an_input_pointer_does_not_emit_per_frame_errors_or_break_sou(self):
+        self.run_node("""
+vm.runInNewContext(SOURCE,runtime); request(); start(); put(replay+0x28,0);
+for(let frame=0;frame<60;frame++){put(replay+0x15A0,frame); fire(0x0C2600,{ecx:replay});}
+assert.equal(ofType('combat_replay_input').length,0); assert.equal(ofType('gameplay_observer_error').length,0);
+fire(0x223308,{esi:enemy,ecx:100}); assert.equal(ofType('combat_damage').at(-1).lastReplayFrame,null);
+ready(); assert.equal(ofType('sou_menu_ready').length,1);
+""", combat=True)
+
+    def test_combat_memory_gap_invalidates_pending_sou_and_cached_frame_without_escaping(self):
+        self.run_node("""
+vm.runInNewContext(SOURCE,runtime); request(); start();
+put(replay+0x15A0,77); fire(0x0C2600,{ecx:replay});
+unreadable=enemy+0x161C; assert.doesNotThrow(()=>fire(0x223308,{esi:enemy,ecx:100}));
+unreadable=null; ready(); fire(0x223308,{esi:enemy,ecx:20});
+assert.equal(ofType('sou_menu_ready').length,0);
+assert.equal(ofType('gameplay_observer_error').at(-1).invalidatedRequestSeq,1);
+assert.equal(ofType('combat_damage').at(-1).lastReplayFrame,null);
+sendFails=true; unreadable=enemy+0x161C; assert.doesNotThrow(()=>fire(0x223308,{esi:enemy,ecx:100}));
+""", combat=True)
+
+    def test_combat_source_remains_passive_and_never_declares_combo_acceptance(self):
+        source = observer._render(self.profile(combat=True))
+        for forbidden in ("NativeFunction", "NativeCallback", "Memory.", ".write", "replace(",
+                          "setExceptionHandler", "setInterval", "setTimeout", "retval", "combo_passed"):
+            self.assertNotIn(forbidden, source)
+
+    def test_stopped_replay_cache_is_explicitly_historical_on_subsequent_menu_and_hit(self):
+        self.run_node("""
+vm.runInNewContext(SOURCE,runtime); put(replay+0x15A0,539); fire(0x0C2600,{ecx:replay});
+const consumed=ofType('combat_replay_input')[0]; assert.equal(consumed.frame,539);
+global(0x479A5C,900); request(); fire(0x223308,{esi:enemy,ecx:10});
+for(const e of [ofType('sou_menu_request').at(-1),ofType('combat_damage').at(-1)]) {
+  assert.equal('frame' in e,false); assert.equal('replayConsumer' in e,false);
+  assert.equal(e.lastReplayFrame,539); assert.equal(e.lastReplayConsumer,ptr(replay).toString());
+  assert.equal(e.replayReadTick,100); assert.equal(e.tick,900);
+}
+""", combat=True)
+
+    def test_inactive_replay_cannot_refresh_cache_even_with_a_nonempty_input_pointer(self):
+        self.run_node("""
+vm.runInNewContext(SOURCE,runtime); request(); start();
+put(replay+0x15A0,4); fire(0x0C2600,{ecx:replay});
+put(replay+0x159D,0); put(input,0x100); put(input+4,0x100);
+for(let frame=5;frame<65;frame++){put(replay+0x15A0,frame); fire(0x0C2600,{ecx:replay});}
+assert.equal(ofType('combat_replay_input').length,1); assert.equal(ofType('gameplay_observer_error').length,0);
+fire(0x223308,{esi:enemy,ecx:10}); const hit=ofType('combat_damage').at(-1);
+assert.equal(hit.lastReplayFrame,null); assert.equal(hit.lastReplayConsumer,null); assert.equal(hit.replayReadTick,null);
+ready(); assert.equal(ofType('sou_menu_ready').length,1);
+put(replay+0x159D,1); put(replay+0x15A0,0); fire(0x0C2600,{ecx:replay});
+assert.equal(ofType('combat_replay_input').length,2); assert.equal(ofType('combat_replay_input').at(-1).frame,0);
+""", combat=True)
+
+    def test_replay_active_byte_instruction_is_part_of_the_pinned_profile(self):
+        data = bytearray(self.image)
+        offset = 0x0C2600 - 0x1000 + 0x200
+        data[offset + 5] = 0x9E
+        with self.assertRaisesRegex(ValueError, "Replay active"):
+            self.profile(data, combat=True)
+
+    def test_combat_launch_requires_gameplay_and_explicitly_forwards_both_options(self):
+        self.assertIn("observe_combat", inspect.signature(harness.launch_case).parameters)
+        with patch.object(harness, "launch_case", return_value=0) as launch:
+            self.assertEqual(harness.main(["launch", "--case", "offline", "--observe-gameplay", "--observe-combat"]), 0)
+            self.assertTrue(launch.call_args.kwargs["observe_gameplay"])
+            self.assertTrue(launch.call_args.kwargs["observe_combat"])
+        with patch.object(harness, "launch_case", return_value=0) as launch:
+            self.assertEqual(harness.main(["launch", "--case", "offline", "--observe-combat"]), 1)
+            launch.assert_not_called()
+        case = Path(__file__).resolve().parents[1] / "target/bhe-observer-checks/not-created"
+        with self.assertRaisesRegex(ValueError, "gameplay"):
+            harness.launch_case(case, observe_combat=True)
+        with self.assertRaisesRegex(ValueError, "gameplay"):
+            harness._launch_case(case, prepared_manifest={}, observe_combat=True)
+
+    def test_combat_profile_generation_precedes_process_creation_and_lock_file(self):
+        self.assertIn("observe_combat", inspect.signature(harness._launch_case).parameters)
+        case = Path(__file__).resolve().parents[1] / "target/bhe-observer-checks/not-created"
+        with patch.object(observer, "observer_script", side_effect=ValueError("combat profile checked")) as source, \
+                patch.object(harness, "OwnedProcess") as native:
+            with self.assertRaisesRegex(ValueError, "combat profile checked"):
+                harness._launch_case(case, prepared_manifest={"exe_name": "known.exe"},
+                                     observe_gameplay=True, observe_combat=True)
+            source.assert_called_once_with(case / "game/known.exe", observe_combat=True)
+            native.assert_not_called()
+        self.assertFalse(case.exists())
 
 
 if __name__ == "__main__":

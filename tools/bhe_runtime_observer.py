@@ -14,11 +14,16 @@ KNOWN_EXE_SHA256 = "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856
 IMAGE_BASE = 0x400000
 HOOKS = (("request", 0x1FE030), ("start", 0x220A6C),
          ("ready", 0x1FF58F), ("release", 0x21CC30))
+COMBAT_HOOKS = (("damage", 0x223308), ("use", 0x209090), ("reset", 0x2097D0),
+                ("replay", 0x0C2600), ("reaction", 0x22389C),
+                ("recovery", 0x21E760), ("motion", 0x21B540))
+# Combat sources: combo-yuri-follow-20261029-04, decoded log lines 154..159;
+# motion: motoki-flight-suffix-20261029-02, decoded line 266.
 # Source: preserved case09 runtime.cdb.log.json, decoded text lines 176..179.
 # START bytes also appear in input-resume combo.cdb.log.json, text line 179.
 
 
-def profile_for_exe(exe_path):
+def profile_for_exe(exe_path, *, observe_combat=False):
     """Read the exact known image and map hook RVAs through its PE sections."""
     data = Path(exe_path).read_bytes()
     digest = hashlib.sha256(data).hexdigest()
@@ -46,7 +51,7 @@ def profile_for_exe(exe_path):
     if table + sections * 40 > len(data):
         raise ValueError("Truncated gameplay observer PE sections")
     hooks = []
-    for name, rva in HOOKS:
+    for name, rva in HOOKS + (COMBAT_HOOKS if observe_combat else ()):
         candidates = []
         for index in range(sections):
             entry = table + index * 40
@@ -61,13 +66,16 @@ def profile_for_exe(exe_path):
         expected = data[candidates[0]:candidates[0] + 16]
         if name == "start" and expected[:6] != bytes.fromhex("89be38180000"):
             raise ValueError("Historical START instruction signature mismatch")
+        if name == "replay" and expected[:10] != bytes.fromhex("568bf180be9d15000000"):
+            raise ValueError("Replay active-byte instruction signature mismatch")
         hooks.append({"name": name, "rva": rva, "expected": expected.hex()})
-    return {"exeSha256": digest, "imageBase": IMAGE_BASE, "hooks": hooks}
+    return {"exeSha256": digest, "imageBase": IMAGE_BASE, "hooks": hooks,
+            "observeCombat": bool(observe_combat)}
 
 
-def observer_script(exe_path):
+def observer_script(exe_path, *, observe_combat=False):
     """Validate before creating a process, then emit its passive Frida script."""
-    return _render(profile_for_exe(exe_path))
+    return _render(profile_for_exe(exe_path, observe_combat=observe_combat))
 
 
 def _render(profile):
@@ -77,6 +85,7 @@ if (Process.arch !== 'ia32' || Process.pointerSize !== 4)
 const base = Process.mainModule.base;
 const installed = [];
 let sequence = 0, startSequence = 0, request = null;
+let replayFrame = null, replayConsumer = null, replayReadTick = null, previousInput = null;
 function globalPointer(rva) { return base.add(rva).readPointer(); }
 function mode() { return base.add(0x46cd23).readU8(); }
 function tick() { return base.add(0x479a5c).readU32(); }
@@ -94,20 +103,33 @@ function requireReadable(address, size) {
 function actor(address) {
   requireReadable(address, 0x1940);
   const unit = requireReadable(address.add(0x158).readPointer(), 0x30);
-  return {actor: address.toString(), meka: unit.add(0x2c).readU32(),
+  const result = {actor: address.toString(), meka: unit.add(0x2c).readU32(),
     active: address.add(0x18dc).readS32(), group: address.add(0x15b8).readU32(),
     skill: address.add(0x15bc).readU32(), entry: address.add(0x15c0).readU32(),
     block: address.add(0x15c4).readU32(), slot71Clock: address.add(0x1480).readU32(),
     state: address.add(0x188c).readU32(), zRaw: address.add(0xa8).readS32(),
     hp: address.add(0x161c).readS32(), maxHp: address.add(0x1618).readS32()};
+  if (profile.observeCombat) Object.assign(result, {
+    control: address.add(0x18ec).readS32(), nextState: address.add(0x1890).readS32(),
+    pendingReaction: address.add(0x18f0).readS32(), reaction: address.add(0x18f4).readS32(),
+    heatRaw: address.add(0x1910).readS32(), normalGate: address.add(0x1900).readS32(),
+    sdGate: address.add(0x1904).readS32(), sdBudgetRaw: address.add(0x1928).readS32()
+  }); // Raw gates/budget are observations, not an assertion that SD is available.
+  return result;
 }
-function emit(type, fields) { send(Object.assign({type: type, tick: tick()}, fields)); }
+function emit(type, fields) {
+  const metadata = {type: type, tick: tick()};
+  if (profile.observeCombat) Object.assign(metadata, {lastReplayFrame: replayFrame,
+    lastReplayConsumer: replayConsumer, replayReadTick: replayReadTick});
+  send(Object.assign(metadata, fields));
+}
 function observe(name, callback) {
   return {onEnter: function () {
     try { callback(this.context); }
     catch (error) {
       const invalidated = request === null ? null : request.sequence;
       request = null; // An observation gap must never close a stale request later.
+      replayFrame = null; replayConsumer = null; replayReadTick = null; previousInput = null;
       try { send({type: 'gameplay_observer_error', hook: name,
         invalidatedRequestSeq: invalidated, error: String(error)}); }
       catch (_) { /* Diagnostics must not escape into the observed game. */ }
@@ -183,7 +205,70 @@ function weaponRelease(context) {
   emit('gameplay_release_or_cancel', Object.assign({previewMode: mode(),
     requestSeq: request === null ? null : request.sequence}, current, counts()));
 }
-const callbacks = {request: menuRequest, start: weaponStart, ready: menuReady, release: weaponRelease};
+function combatActor(address) {
+  if (address.equals(globalPointer(0x46cf88)))
+    return Object.assign({role: 'player'}, actor(address));
+  const preview = globalPointer(0x46ce14);
+  if (preview.isNull()) return null;
+  const enemy = requireReadable(preview, 0x148).add(0x144).readPointer();
+  if (!address.equals(enemy)) return null;
+  return Object.assign({role: 'enemy'}, actor(address));
+}
+function combatDamage(context) {
+  const current = combatActor(context.esi);
+  if (current === null) return;
+  emit('combat_damage', Object.assign({damage: context.ecx.toInt32(), hpAfter: current.hp,
+    controlBeforeReaction: current.control}, current));
+}
+function combatManager(context, resetting) {
+  const manager = requireReadable(context.ecx, 0xdc);
+  const owner = manager.add(8).readPointer(), current = combatActor(owner);
+  if (current === null || !owner.add(0x154).readPointer().equals(manager)) return;
+  const used = manager.add(0xcc).readU32(), chain = manager.add(0xd8).readU32();
+  if (resetting && used === 0) return; // The native check also runs on empty chains.
+  const fields = Object.assign({manager: manager.toString(), usedBefore: used, chainBefore: chain}, current);
+  if (!resetting) fields.slotRaw = requireReadable(context.esp, 8).add(4).readU32();
+  emit(resetting ? 'combat_reset' : 'combat_use', fields);
+}
+function combatReplay(context) {
+  const consumer = requireReadable(context.ecx, 0x15a8);
+  if (consumer.add(0x159d).readU8() === 0) {
+    replayFrame = null; replayConsumer = null; replayReadTick = null; previousInput = null;
+    return; // 4C2600 consumes input only under this exact native active-byte guard.
+  }
+  const inputAddress = consumer.add(0x28).readPointer();
+  if (inputAddress.isNull()) {
+    replayFrame = null; replayConsumer = null; replayReadTick = null; previousInput = null;
+    return; // The preserved CDB observer also skipped an absent input pointer.
+  }
+  const input = requireReadable(inputAddress, 8);
+  const frame = consumer.add(0x15a0).readU32(), identity = consumer.toString();
+  const edge = input.readU32(), held = input.add(4).readU32();
+  replayFrame = frame; replayConsumer = identity; replayReadTick = tick();
+  if (previousInput !== null && previousInput.consumer === identity &&
+      previousInput.edge === edge && previousInput.held === held) return;
+  previousInput = {consumer: identity, edge: edge, held: held};
+  emit('combat_replay_input', {frame: frame, edge: edge, held: held});
+}
+function combatReaction(context) {
+  const current = combatActor(context.esi);
+  if (current !== null) emit('combat_reaction_applied', current);
+}
+function combatRecovery(context) {
+  const current = combatActor(context.ecx);
+  if (current !== null) emit('combat_recovery_entry', current);
+}
+function combatMotion(context) {
+  const current = combatActor(context.ecx);
+  if (current === null) return;
+  const next = requireReadable(context.esp, 8).add(4).readS32();
+  if (current.state !== next)
+    emit('combat_motion_transition', Object.assign({fromState: current.state, toState: next}, current));
+}
+const callbacks = {request: menuRequest, start: weaponStart, ready: menuReady, release: weaponRelease,
+  damage: combatDamage, use: context => combatManager(context, false),
+  reset: context => combatManager(context, true), replay: combatReplay,
+  reaction: combatReaction, recovery: combatRecovery, motion: combatMotion};
 // Check every original instruction span before attaching the first hook.
 for (const hook of profile.hooks) {
   const bytes = new Uint8Array(base.add(hook.rva).readByteArray(hook.expected.length / 2));

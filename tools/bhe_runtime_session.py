@@ -30,6 +30,9 @@ NVIDIA_DRS_SOURCE = Path(os.environ.get("ProgramData", r"C:\ProgramData")) / "NV
 NVIDIA_DRS_COPY = Path("driver-cache/Drs")
 NVIDIA_CAPTURE_LOG_SOURCE = Path(r"C:\ProgramData\NVIDIA Corporation\ShadowPlay\CaptureCore.log")
 NVIDIA_CAPTURE_LOG_COPY = Path("driver-cache/ShadowPlay/CaptureCore.log")
+CRYPTNET_CACHE_SOURCE = Path(r"C:\Users\30250\AppData\LocalLow\Microsoft\CryptnetUrlCache")
+CRYPTNET_CACHE_COPY = Path("driver-cache/CryptnetUrlCache")
+CRYPTNET_METADATA_FILE = "329B6147266C1E26CD774EA22B79EC2E"
 
 
 def utc_now():
@@ -357,6 +360,10 @@ def _prepare_case(*, base_dir, exe_path, pac_paths, save_dir, case_name, runtime
         capture_log.parent.mkdir(parents=True, exist_ok=True)
         with capture_log.open("xb"):
             pass
+        # Cryptnet's observed metadata request is redirected to fresh private storage.
+        # No original cache content is read or copied.
+        for directory in ("MetaData", "Content"):
+            (case / CRYPTNET_CACHE_COPY / directory).mkdir(parents=True, exist_ok=False)
         require_unchanged(game, expected_game, "Copied game")
         require_unchanged(documents / SAVE_SUFFIX, source_seed, "Private save seed")
         require_unchanged(base, source_base, "Original base")
@@ -378,6 +385,9 @@ def _prepare_case(*, base_dir, exe_path, pac_paths, save_dir, case_name, runtime
                     "source_files": source_files, "game_files": expected_game, "crt_bytes": "8bff",
                     "capture_log": {"source": str(NVIDIA_CAPTURE_LOG_SOURCE),
                                     "relative_path": NVIDIA_CAPTURE_LOG_COPY.as_posix()},
+                    "cryptnet_cache": {"source": str(CRYPTNET_CACHE_SOURCE),
+                                       "relative_path": CRYPTNET_CACHE_COPY.as_posix(),
+                                       "metadata_file": CRYPTNET_METADATA_FILE},
                     "driver_state": {"source": str(driver_source), "mode": driver_mode,
                                      "relative_path": None if native_driver_state else NVIDIA_DRS_COPY.as_posix(),
                                      "files": driver_before, "file_count": len(driver_before),
@@ -427,13 +437,30 @@ def verify_prepared(case_dir, runtime_root=RUNTIME_ROOT):
     if driver_mode != "private":
         raise ValueError("Only private driver-state cases may be launched")
     if driver_mode == "private":
-        require_unchanged(driver["source"], driver["files"], "Original driver state tree")
         require_unchanged(case / NVIDIA_DRS_COPY, driver["files"], "Copied driver state tree")
+        observed = tree_manifest(driver["source"])
+        # The OS owns this source tree and may update it independently. Audit its
+        # drift without rewriting the preparation baseline or replacing the copy.
+        manifest["driver_state_preflight"] = {
+            "preparation_baseline": driver["files"], "observed": observed,
+            "difference": manifest_difference(observed, driver["files"]),
+            "attribution": "not_determined_external_writers_possible"}
     if manifest.get("capture_log") != {"source": str(NVIDIA_CAPTURE_LOG_SOURCE),
                                        "relative_path": NVIDIA_CAPTURE_LOG_COPY.as_posix()}:
         raise ValueError("Unexpected CaptureCore.log alias; prepare a fresh case")
     if file_record(case / NVIDIA_CAPTURE_LOG_COPY) != {"size": 0, "sha256": hashlib.sha256(b"").hexdigest()}:
         raise ValueError("Private CaptureCore.log changed before launch")
+    if manifest.get("cryptnet_cache") != {"source": str(CRYPTNET_CACHE_SOURCE),
+                                          "relative_path": CRYPTNET_CACHE_COPY.as_posix(),
+                                          "metadata_file": CRYPTNET_METADATA_FILE}:
+        raise ValueError("Unexpected Cryptnet cache alias; prepare a fresh case")
+    cache = check_no_links(case / CRYPTNET_CACHE_COPY)
+    if not cache.is_dir() or {item.name for item in cache.iterdir()} != {"MetaData", "Content"}:
+        raise ValueError("Private Cryptnet cache must contain only its two empty directories")
+    for directory in ("MetaData", "Content"):
+        target = check_no_links(cache / directory)
+        if not target.is_dir() or any(target.iterdir()):
+            raise ValueError("Private Cryptnet cache is missing or nonempty before launch")
     check_crt(case / "game" / manifest["exe_name"])
     for source, expected in manifest["source_files"].items():
         if file_record(source) != expected:
@@ -731,6 +758,17 @@ function aliasCaptureLog(path) {
     if (name === normalize(source)) return config.captureLogTarget;
   return null;
 }
+function aliasCryptnetCache(path) {
+  if (typeof path !== 'string' || path.includes('\0')) return null;
+  let raw = path.replace(/\//g, '\\');
+  if (raw.startsWith('\\\\?\\') || raw.startsWith('\\??\\')) raw = raw.slice(4);
+  if (raw.split('\\').some(part => part === '.' || part === '..')) return null;
+  const suffix = '\\MetaData\\' + config.cryptnetMetadataFile;
+  for (const source of config.cryptnetCacheSources || [])
+    if (raw.toLowerCase() === normalize(source) + suffix.toLowerCase())
+      return config.cryptnetCacheTarget + suffix;
+  return null;
+}
 function redirectDocuments(pidls, pidl, succeeded, gameCall, readPath, writePath) {
   if (!succeeded || !gameCall || !pidls.has(pidl)) return false;
   const actual = readPath();
@@ -819,7 +857,8 @@ def protected_input_paths(manifest):
     driver = manifest["driver_state"]
     paths = [manifest["original_save"], manifest["base_dir"],
              *([driver["source"]] if driver.get("mode", "private") == "private" else []),
-              manifest["exe_source"], *manifest["pac_sources"], str(NVIDIA_CAPTURE_LOG_SOURCE)]
+              manifest["exe_source"], *manifest["pac_sources"], str(NVIDIA_CAPTURE_LOG_SOURCE),
+              str(CRYPTNET_CACHE_SOURCE)]
     paths.extend(path for path in (manifest.get("seed_source"), manifest.get("app_manifest_source")) if path is not None)
     return list(dict.fromkeys(paths))
 
@@ -844,7 +883,10 @@ def isolation_script(case, manifest):
               "driverStateSources": [] if native_driver else [driver_source, native_path(driver_source)],
               "driverStateTarget": None if native_driver else "\\??\\" + str(case / NVIDIA_DRS_COPY),
               "captureLogSources": [str(NVIDIA_CAPTURE_LOG_SOURCE), native_path(NVIDIA_CAPTURE_LOG_SOURCE)],
-              "captureLogTarget": "\\??\\" + str(case / NVIDIA_CAPTURE_LOG_COPY)}
+              "captureLogTarget": "\\??\\" + str(case / NVIDIA_CAPTURE_LOG_COPY),
+              "cryptnetCacheSources": [str(CRYPTNET_CACHE_SOURCE), native_path(CRYPTNET_CACHE_SOURCE)],
+              "cryptnetCacheTarget": "\\??\\" + str(case / CRYPTNET_CACHE_COPY),
+              "cryptnetMetadataFile": CRYPTNET_METADATA_FILE}
     return isolation_policy(config) + isolation_structures() + exception_observer() + r'''
 const hooks = [];
 const pidls = new Set();
@@ -900,15 +942,19 @@ function saveObjectRoute(attributes) {
   const from = objectPath(attributes);
   const saveTarget = aliasSavePath(from);
   const driverTarget = saveTarget === null ? aliasDriverState(from) : null;
-  const to = saveTarget !== null ? saveTarget : (driverTarget !== null ? driverTarget : aliasCaptureLog(from));
+  const captureTarget = saveTarget === null && driverTarget === null ? aliasCaptureLog(from) : null;
+  const to = saveTarget !== null ? saveTarget : (driverTarget !== null ? driverTarget :
+    (captureTarget !== null ? captureTarget : aliasCryptnetCache(from)));
   if (to === null) return {attributes: attributes, path: from, from: from, to: null, keepalive: []};
   const copy = cloneObjectAttributes(attributes, to, ps);
   return {attributes: copy.pointer, path: to, from: from, to: to, keepalive: copy.keepalive,
-    kind: saveTarget !== null ? 'save' : (driverTarget !== null ? 'driver' : 'capture_log')};
+    kind: saveTarget !== null ? 'save' : (driverTarget !== null ? 'driver' :
+      (captureTarget !== null ? 'capture_log' : 'cryptnet_cache'))};
 }
 function reportSaveRoute(api, route, result) {
   if (route.to !== null) announce(route.kind === 'driver' ? 'driver_state_redirected' :
-    (route.kind === 'capture_log' ? 'capture_log_redirected' : 'save_path_redirected'),
+    (route.kind === 'capture_log' ? 'capture_log_redirected' :
+      (route.kind === 'cryptnet_cache' ? 'cryptnet_cache_redirected' : 'save_path_redirected')),
     {api: api, from: route.from, to: route.to,
     status: '0x' + (result >>> 0).toString(16), succeeded: result >= 0});
   // Keep all nested native allocations reachable until the original call returns.
@@ -1111,11 +1157,16 @@ announce('hook_ready', {hooks: hooks, module: main.path, base: main.base.toStrin
   documentsPathReturn: pathReturn.toString(), saveAliasSources: config.saveAliasSources, saveAliasTarget: config.saveAliasTarget,
   driverStateSources: config.driverStateSources, driverStateTarget: config.driverStateTarget,
    captureLogSources: config.captureLogSources, captureLogTarget: config.captureLogTarget,
+   cryptnetCacheSources: config.cryptnetCacheSources, cryptnetCacheTarget: config.cryptnetCacheTarget,
+   cryptnetMetadataFile: config.cryptnetMetadataFile,
   policy: 'repository-only case writes; external disk writes and original inputs protected; exceptions never handled'});
 '''
 
 
-def launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_ROOT, observe_gameplay=False):
+def launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_ROOT,
+                observe_gameplay=False, observe_combat=False):
+    if observe_combat and not observe_gameplay:
+        raise ValueError("Combat observation requires gameplay observation")
     case = check_no_links(case_dir)
     if case != case_path(runtime_root, case.name):
         raise ValueError("Launch case is outside the managed runtime root")
@@ -1127,11 +1178,13 @@ def launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_R
         with case_temp_environment(case):
             return _launch_case(case, timeout=timeout, ready_timeout=ready_timeout,
                                 runtime_root=runtime_root, prepared_manifest=verified,
-                                observe_gameplay=observe_gameplay)
+                                observe_gameplay=observe_gameplay, observe_combat=observe_combat)
 
 
 def _launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_ROOT,
-                 prepared_manifest, observe_gameplay=False):
+                 prepared_manifest, observe_gameplay=False, observe_combat=False):
+    if observe_combat and not observe_gameplay:
+        raise ValueError("Combat observation requires gameplay observation")
     if os.name != "nt":
         raise RuntimeError("Launching is supported only on Windows")
     case = check_no_links(case_dir)
@@ -1141,7 +1194,7 @@ def _launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_
     script_source = None
     if observe_gameplay:
         from bhe_runtime_observer import observer_script
-        script_source = (observer_script(case / "game" / manifest["exe_name"]) + "\n" +
+        script_source = (observer_script(case / "game" / manifest["exe_name"], observe_combat=observe_combat) + "\n" +
                          isolation_script(case, manifest))
     import frida
     driver_mode = manifest["driver_state"].get("mode", "private")
@@ -1247,8 +1300,14 @@ def _launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_
     try:
         # Recheck immediately before creating a process; no shared source is copied at launch.
         require_unchanged(manifest["original_save"], manifest["original_save_files"], "Original save")
-        if driver_mode == "native":
-            state["original_driver_state_before"] = tree_manifest(manifest["driver_state"]["source"])
+        state["original_driver_state_preparation_baseline"] = manifest["driver_state"]["files"]
+        state["original_driver_state_before"] = tree_manifest(manifest["driver_state"]["source"])
+        state["original_driver_state_prelaunch_check"] = manifest_difference(
+            state["original_driver_state_before"], state["original_driver_state_preparation_baseline"])
+        state["original_driver_state_prelaunch_check"]["attribution"] = "not_determined_external_writers_possible"
+        record({"event": "original_driver_state_prelaunch_audit",
+                "difference": state["original_driver_state_prelaunch_check"]})
+        write_json(case / "state.json", state)
         child = OwnedProcess(case / "game" / manifest["exe_name"], case / "game")
         state["process"] = child.identity
         state["status"] = "suspended_installing_hooks"
@@ -1387,15 +1446,22 @@ def _launch_case(case_dir, *, timeout=0, ready_timeout=30, runtime_root=RUNTIME_
         try:
             driver = manifest["driver_state"]
             try:
-                if driver_mode == "native":
-                    state["original_driver_state_after"] = tree_manifest(driver["source"])
-                    state["original_driver_state_check"] = manifest_difference(
-                        state["original_driver_state_after"], state.get("original_driver_state_before", driver["files"]))
-                else:
-                    state["original_driver_state_check"] = compare_manifest(driver["source"], driver["files"])
+                state["original_driver_state_after"] = tree_manifest(driver["source"])
+                state["original_driver_state_check"] = manifest_difference(
+                    state["original_driver_state_after"], driver["files"])
                 state["original_driver_state_check"]["attribution"] = "not_determined_external_writers_possible"
+                if "original_driver_state_before" in state:
+                    state["original_driver_state_runtime_check"] = manifest_difference(
+                        state["original_driver_state_after"], state["original_driver_state_before"])
+                    state["original_driver_state_runtime_check"]["attribution"] = "not_determined_external_writers_possible"
+                else:
+                    state["original_driver_state_runtime_check"] = {"unchanged": None,
+                        "error": "run-before snapshot unavailable; process creation may not have started",
+                        "attribution": "not_determined_external_writers_possible"}
             except Exception as exc:
                 state["original_driver_state_check"] = {"unchanged": None, "error": repr(exc),
+                    "attribution": "not_determined_external_writers_possible"}
+                state["original_driver_state_runtime_check"] = {"unchanged": None, "error": repr(exc),
                     "attribution": "not_determined_external_writers_possible"}
             if driver_mode == "private":
                 try:
@@ -1472,6 +1538,8 @@ def main(argv=None):
     launch.add_argument("--ready-timeout", type=float, default=30)
     launch.add_argument("--observe-gameplay", action="store_true",
                         help="Passively observe native requests/START/READY for the exact known EXE")
+    launch.add_argument("--observe-combat", action="store_true",
+                        help="Add passive combat/input observations; requires --observe-gameplay")
     args = parser.parse_args(argv)
     try:
         if args.command == "prepare":
@@ -1483,8 +1551,11 @@ def main(argv=None):
             return 0
         if args.timeout < 0 or args.ready_timeout <= 0 or args.ready_timeout > 60:
             raise ValueError("timeout must be >= 0; ready-timeout must be in (0, 60]")
+        if args.observe_combat and not args.observe_gameplay:
+            raise ValueError("Combat observation requires gameplay observation")
         return launch_case(case_path(RUNTIME_ROOT, args.case), timeout=args.timeout,
-                           ready_timeout=args.ready_timeout, observe_gameplay=args.observe_gameplay)
+                           ready_timeout=args.ready_timeout, observe_gameplay=args.observe_gameplay,
+                           observe_combat=args.observe_combat)
     except Exception as exc:
         print(json.dumps({"status": "refused", "error": repr(exc)}), file=sys.stderr)
         return 1
