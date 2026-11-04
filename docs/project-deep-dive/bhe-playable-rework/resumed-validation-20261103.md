@@ -49,3 +49,13 @@ case `sou-finite-20261103-01`使用本轮EXE/PAC及空私有Save。4个观察挂
 首次守卫停止后，为准确CaptureCore.log路径补4个测试方法，先真实取得6个断言失败、错误0的RED，再实现私有空日志及精确别名；未读取或复制原日志。当前58项harness与20项observer联合回归共78项，失败0、错误0、跳过0，退出码0，11.241秒。`capture-log-all-green.log`及小体积RED日志位于`target/bhe-observer-checks`。
 
 该补丁只影响试跑隔离工具，游戏成品EXE/PAC没有再次构建或修改。新case `sou-finite-20261103-02`使用上一轮已退出case的私有Config作为独立种子，不覆盖真实Save；后续结果另记，不能由78项离线通过推导实机已通过。
+
+## 第二次启动与兼容种子恢复
+
+case02实际显示正常主菜单、进入模式选择及竞技场菜单，退出后进程码0、failure=null、guard违规0、cleanup_pending=false；28份game输入副本再次由工具核验后清理，共5805648253字节。观测到32次原生异常通知，不将“正常退出”写成“无异常”；这些通知没有被工具吞掉或作为武装通过证据。CaptureCore.log别名确实命中私有路径，但该次底层打开返回C0000022；主菜单及竞技场仍正常工作，不能把该事件写成驱动日志成功写入。
+
+空Save中的地狱模式未解锁，不能用改actor或强制调用入口绕过。原target兼容种子生成器已丢，按`vanilla-encoding-forensics.md`恢复为正式`tools/bhe_private_save_seed.py`，只接受此前批准的六种中文标题与相应日文标签，未知拒绝；首块后2006块、原始group-count及每组1003块均按原生结构校验至EOF。
+
+12项合成测试真实RED→GREEN，失败0、错误0、跳过0。实际单次生成`target/bhe-private-save-seeds/cp932-20261103-01`：78文件共4226277字节，26个标题映射；其余52文件和所有游戏进度尾部字节保全，原Save前后完整SHA清单相同。Save002生成哈希`7dfd7b4088c0bbbea40ebee6c4823dd85df1472ac52e4b815ce717026c173d3e`与历史批准种子一致。审计44687字节，不含存档正文；该私人种子不提交、不随mod分享。
+
+2026-11-04恢复时case03仍为prepared、无进程/launch.lock；其原驱动状态已由系统更新，preflight在创建进程前拒绝。一次原位快照更新仅处理6份Drs副本，没有重拷game；但随后nvAppTimestamps再次由外部变化，证明继续快照更新不能解决可变系统状态约束。正在收紧此处审计语义：私有Drs副本仍必须符合准备清单，外部原Drs的变化保留前/后差异，不修改原件或放开外部写权限。游戏/源EXE/PAC/真实Save/独立种子的哈希保护继续硬失败。
