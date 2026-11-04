@@ -17,6 +17,8 @@ C:\Python313\python.exe -B tools\bhe_runtime_session.py launch --case checked-01
 
 同时加`--observe-combat`可记录七处已有原生战斗/录像观测点；它要求`--observe-gameplay`，默认仍只有四挂点。记录真实扣血、反应应用、恢复入口、状态切换、武装消耗与清链，不能把RESET当目标恢复。录像消费者的active字节`+159D`由固定EXE指令确认，inactive不读取输入。普通事件的`lastReplayFrame/lastReplayConsumer/replayReadTick`仅为最后读取快照；只有录像输入事件本身携带`frame`，避免把停止后的旧帧拼入新预览。普通/SD门与SD预算只记原始字段，不据单个标志判定取消可用或连段通过。
 
+START/READY/DAMAGE/REACTION位于原生函数中间，必须使用Frida的直接函数InstructionProbe回调；其它入口使用`{onEnter}`。旧函数对象形式在中间挂点会触发原生leave返回槽处理，已通过同包READY单挂点对照复现访问违例；修正后case06多轮闭环。不得恢复旧形式，也不能把离线Node模型通过当成实际inline hook无影响的证明。
+
 `--pac`与`--vanilla`二选一，PAC只允许明确选择的Update3–7；未选择的旧overlay阻断准备。原版对照明确使用只读`ida-reverse/BaldrSky.exe`，基底目录的旧宽屏EXE不作为参考。
 
 准备把基底和本轮EXE/PAC复制到新game。真实`--save-dir`始终只读并受写保护；默认复制到私有`docs/GIGA/BALDRSKY_DIVEX/Save`。`--fresh-save`与`--save-seed-dir`互斥，分别建立空私有Save或复制明确独立seed。显式`--app-manifest`只复制用户提供文件，不生成locale设置。输入、种子、原Save及副本独立记录长度和SHA256，不回写原件。
@@ -59,4 +61,4 @@ case只能启动一次，launch.lock不删。Ctrl+C、timeout或本轮STOP只终
 
 离线测试源码为`tools/test_bhe_runtime_session.py`，fixture临时根同样在仓库target内，覆盖输入保护、原Save、进程归属、晚installer、日志失败、路径、使用锁、临时目录、副本清理及外部写入拒绝。它们不等于实机验收。
 
-2026-10-31阶段只作AST、源码及格式静态检查。2026-11-04当前`test_bhe_*.py`联合回归为112项通过，包含harness、被动observer及私有种子工具；旧结果不转记为当前通过。新包已整链构建并核对身份，实际运行范围见`resumed-validation-20261103.md`。Sou153项和追加54武装的命中/落空、跨武装连段、取消、中断及关卡推进仍需最终新包逐项验收。
+2026-10-31阶段只作AST、源码及格式静态检查。2026-11-04当前`test_bhe_*.py`联合回归为113项通过，包含harness、被动observer及私有种子工具；旧结果不转记为当前通过。新包已整链构建并核对身份，实际运行范围见`resumed-validation-20261103.md`。Sou153项和追加54武装的命中/落空、跨武装连段、取消、中断及关卡推进仍需最终新包逐项验收。

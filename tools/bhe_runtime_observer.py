@@ -124,7 +124,7 @@ function emit(type, fields) {
   send(Object.assign(metadata, fields));
 }
 function observe(name, callback) {
-  return {onEnter: function () {
+  const onHit = function () {
     try { callback(this.context); }
     catch (error) {
       const invalidated = request === null ? null : request.sequence;
@@ -134,7 +134,10 @@ function observe(name, callback) {
         invalidatedRequestSeq: invalidated, error: String(error)}); }
       catch (_) { /* Diagnostics must not escape into the observed game. */ }
     }
-  }};
+  };
+  // Frida's instruction-probe form avoids function return-address/leave handling
+  // at these four sites, where the native prologue has already changed the stack.
+  return ['start', 'ready', 'damage', 'reaction'].includes(name) ? onHit : {onEnter: onHit};
 }
 function descriptorMatches(current) {
   requireReadable(current, 8);

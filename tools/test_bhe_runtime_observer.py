@@ -91,7 +91,10 @@ function reset() {
 function context(registers) {
   return {context: Object.fromEntries(Object.entries(registers).map(([k,v]) => [k,ptr(v)]))};
 }
-function fire(rva, registers) { hooks.get(base + rva).onEnter.call(context(registers)); }
+function fire(rva, registers) {
+  const listener = hooks.get(base + rva);
+  (typeof listener === 'function' ? listener : listener.onEnter).call(context(registers));
+}
 function request() { fire(0x1FE030, {ecx:preview, esp:stack}); }
 function start(actor=player, weapon=30) { fire(0x220A6C, {esi:actor, ebx:weapon}); }
 function ready() { put(player + 0x18DC, -1); fire(0x1FF58F, {esi:preview}); }
@@ -99,7 +102,13 @@ const ofType = type => events.filter(e => e.type === type);
 const runtime = {
   Process: {arch:'ia32', pointerSize:4, mainModule:{base:ptr(base), path:'fixture.exe'},
     findRangeByAddress:p => p.isNull() ? null : {base:ptr(p.value & 0xffff0000), size:0x10000, protection:'rw-'}},
-  Interceptor: {attach:(address, callbacks) => { hooks.set(address.value, callbacks); return {detach:()=>hooks.delete(address.value)}; }},
+  Interceptor: {attach:(address, callbacks) => {
+    const instruction = [0x220A6C,0x1FF58F,0x223308,0x22389C].includes(address.value-base);
+    assert.equal(typeof callbacks, instruction ? 'function' : 'object',
+      instruction ? 'Mid-instruction hooks require a direct instruction probe' : 'Function entry keeps its call-listener ABI');
+    if (!instruction) assert.equal(typeof callbacks.onEnter,'function');
+    hooks.set(address.value, callbacks); return {detach:()=>hooks.delete(address.value)};
+  }},
   send:e => { if(sendFails) throw Error('simulated send failure'); events.push(e); },
   ptr, Uint8Array, ArrayBuffer
 };
@@ -260,6 +269,19 @@ class ObserverTests(unittest.TestCase):
         self.assertTrue(all(len(hook["expected"]) == 32 for hook in profile["hooks"]))
         self.run_node("vm.runInNewContext(SOURCE,runtime); assert.equal(hooks.size,11); assert.equal(ofType('gameplay_observer_ready').length,1);",
                       combat=True)
+
+    def test_mid_instruction_probes_are_functions_and_true_entries_keep_on_enter_objects(self):
+        self.run_node("""
+vm.runInNewContext(SOURCE,runtime);
+for(const rva of [0x220A6C,0x1FF58F,0x223308,0x22389C])
+  assert.equal(typeof hooks.get(base+rva),'function');
+for(const rva of [0x1FE030,0x21CC30,0x209090,0x2097D0,0x0C2600,0x21E760,0x21B540]) {
+  const callback=hooks.get(base+rva);
+  assert.equal(typeof callback,'object'); assert.equal(typeof callback.onEnter,'function');
+}
+request(); start(); ready(); assert.equal(ofType('sou_menu_ready').length,1);
+fire(0x223308,{esi:enemy,ecx:17}); assert.equal(ofType('combat_damage')[0].damage,17);
+""", combat=True)
 
     def test_each_added_signature_is_checked_before_any_install_or_isolation_ready(self):
         for rva in (0x223308, 0x209090, 0x2097D0, 0x0C2600, 0x22389C, 0x21E760, 0x21B540):

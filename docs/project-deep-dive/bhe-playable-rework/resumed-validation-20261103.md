@@ -71,3 +71,23 @@ case03其后实际安装11处签名匹配的观察挂点，但系统组件尝试
 Astra6 Ultra另只读补齐静态继承链：130704-v2报告的9角色54个唯一DX身份、126条默认槽记录，其九角色18份MEK/WAZ及MekaGroup.grp、WeaponEquip.dat、Sou.mek共21个输入哈希均与180550相同；再由本轮3881未变文件将身份、配置热耗、直接索引及默认14槽保全延续至新包。Sou.mek相同结合当前回归合同证明菜单0..152、保留211武装/Material与隐藏高编号的静态内容。新Sou WAZ/宿主及GRP不继承旧图通过，仍以本轮专项回归和后续实机为准。
 
 证书缓存最小补丁只对上述完整MetaData文件别名，不开放其它32位名字或Content文件；case仅新建两空目录，原缓存没有读取或复制。新增4方法先真实7个断言失败、错误0，再最小实现；全部`test_bhe_*.py`联合112项通过，失败0、错误0、跳过0，退出码0，14.799秒。新case `sou-finite-20261104-04`继续用同一已封存EXE/PAC及同一独立兼容种子；没有再次构建。
+
+## 中间指令观测故障与修正
+
+case04实际进入地狱、Sou装备页并预览30；REQ1/START1于tick15051，READY15149，随后EXE78A869访问违例，进程C0000005。无guard违规，不能记为人工停止或验收通过。
+
+case05同EXE/PAC、同独立种子、仅隔离保护，重复人間砲弾数分钟仍运行；再仅安装一个READY中间挂点便复现78A869访问违例。CDB捕获指令`mov eax,[edi+6C]`，EAX/EDI=-5读67，栈中有Frida leave trampoline；case04为-7读65。没有跳过异常、修改寄存器或补游戏EXE；两次失败与case05文本调试日志保留。
+
+根因是恢复的观察器把中间指令也使用函数调用回调对象`{onEnter}`。Frida官方API明确任意指令应直接传入函数；官方实现的CallListener即使没有JS onLeave仍有原生leave处理，会改函数返回槽，ProbeListener则无此处理。只将START/READY/DAMAGE/REACTION四处中间挂点改为直接函数探针，其余七个真实函数入口保留原形式，地址、签名、this.context读取及严格请求关联不变。API契约先真实RED，修后全部`test_bhe_*.py`113项通过，失败0、错误0、跳过0，16.574秒。游戏成品没有改变或再次构建。
+
+官方依据：`https://frida.re/docs/javascript-api/#interceptor`，以及frida-gum的gumquickinterceptor.c中ProbeListener/CallListener与guminterceptor.c的will_trap_on_leave实现。不能把“JS没有显式Memory.write”当成函数式inline hook无行为影响。
+
+## 本次暂停点（2026-11-04）
+
+修后case `sou-probe-fixed-20261104-06`安装11处签名匹配的观测点，已实际连续预览并独立核对12个不同武装：30、37、63、134～141、152，均为variant0。每项都有同请求START/MATCH/CANDIDATE/READY、同身份、双方active=-1和TAMA/SCRIPT=0；自动重复不增加不同武装覆盖数。63首轮伤害45、134为75、135为165；152为205条伤害合计1229，最终敌HP4771。30/37没有伤害事件，不能据闭环宣称有命中。
+
+首六项的257个完整原事件（含152全部205条伤害）以166950字节纯JSON固定在`src/test/resources/bhe-runtime-evidence-20261104/sou-finite-first-preview.json`；另外六项核心链、完整前缀长度/SHA和暂停收尾在同目录`pause-preview-coverage.json`，24513字节。没有复制EXE/PAC、存档、dump、截图或录像。
+
+尝试142前Computer Use检测到用户输入而拒绝该动作，142不计覆盖。随后用户明确要求暂停并关闭游戏。root通过当前case的STOP机制停止精确自有进程715424；最终status=stopped、failure=null、stop_reason=STOP_file、终止码E0000001，进程退出与guard释放均已确认、cleanup_pending=false、原Save未变。28份5805648253字节game输入副本经程序核验后自动清理，错误0。没有仍在运行的BALDR SKY或CDB；这是按用户要求停止，不能写成游戏自然退出。
+
+下次恢复使用同一封存构建，先准备新的隔离case，不复用旧launch.lock。剩余141个菜单武装及其它variant、实际装备/训练、命中与落空、中断、普通/SD取消、再次起手、九角色54新增的连段、重载和关卡推进仍未完成。整包`runtimeValidated=false`，目标按用户要求暂停，不宣称完成。
