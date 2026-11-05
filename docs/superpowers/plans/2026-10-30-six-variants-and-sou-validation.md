@@ -2,7 +2,7 @@
 
 > **For agentic workers:** 复用既有SDD和角色定制流程；root把控设计、编辑权、串行Maven／整链／UI／CDB及中文提交。直接develop，不建分支／工作树，不push。
 
-> **2026-11-05当前约束与状态：** 用户已恢复目标，当前继续执行，允许仓库内构建、测试和实机验收；构建、运行及临时产物只写本仓库`target`，仓库外不写删，不上传或重复保留二进制。正式源码、工具、文档和固定文本证据仍放既定`src`／`tools`／`docs`位置。2026-11-03封存包已完成构建，但当前两项源码修复尚未重新封包，旧包130个variant0菜单闭环不能替代新版实机验证。进度以[Sou菜单验收记录](../../project-deep-dive/bhe-playable-rework/sou-menu-validation-20261105.md)及[恢复记录末尾](../../project-deep-dive/bhe-playable-rework/resumed-validation-20261103.md)为准。
+> **2026-11-05当前约束与状态：** 用户已恢复目标，当前继续执行，允许仓库内构建、测试和实机验收；构建、运行及临时产物只写本仓库`target`，仓库外不写删，不上传或重复保留二进制。正式源码、工具、文档和固定文本证据仍放既定`src`／`tools`／`docs`位置。11/05两项修复已封包，原full-build进程仍保留退役阶段exit1/1error事实，28项Managed回归及受控retry恢复后新包身份不变；case09独立20个variant0菜单闭环、133未通过，旧包130项不跨包累加，训练验收继续。进度以[Sou菜单验收记录](../../project-deep-dive/bhe-playable-rework/sou-menu-validation-20261105.md)及[恢复记录末尾](../../project-deep-dive/bhe-playable-rework/resumed-validation-20261103.md)为准。
 >
 > 下列032001／131244／原7项计数及未勾选清单保留2026-10-30的计划起点，不表示当前只有7项追加、仍使用那些运行包或目标仍暂停；54招设计与验收条件保持原计划。
 

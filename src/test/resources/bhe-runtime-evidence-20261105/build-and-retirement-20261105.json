@@ -1,0 +1,660 @@
+{
+  "schema": "nexas.bhe-build-recovery-text-evidence/v1",
+  "capturedAt": "2026-11-05T04:17:02.873032+00:00",
+  "runtimeValidated": false,
+  "scope": "package identity, exact static asset comparison and guarded retirement recovery; runtime acceptance references remain separate and incomplete",
+  "sourceTextFiles": {
+    "buildReceipt": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_123342_656_c9e63039\\build.json",
+      "bytes": 1170,
+      "sha256": "3555bbf01ad727ba5cb40c3d86ac941ba1faa4e4555437adc39ac5d439dbf3b5"
+    },
+    "buildOwner": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_123342_656_c9e63039\\.bhe-playable-owned.json",
+      "bytes": 645,
+      "sha256": "aa6b72307ba9d91345e117039e45662773af80c8e5703fa9203bc157573e70ea"
+    },
+    "assetDiff": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-combined-fixes-20261105\\asset-diff.json",
+      "bytes": 2650,
+      "sha256": "5a7972bbe9b4927d6577ee295192e942ca907c5a9c9b94c83d98b8656fa4a912"
+    },
+    "newActionAudit": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-combined-fixes-20261105\\new-action-waza-audit.json",
+      "bytes": 14326,
+      "sha256": "b205201d6c1f144aa4bbec9b14f4525279ffaf35fbc5d9b59ef32e36619d3b77"
+    },
+    "retirementRecovery": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-combined-fixes-20261105\\retirement-recovery.json",
+      "bytes": 2477,
+      "sha256": "ffebd3ce1ec6b29a42ecc6fd97bbb6d65fdf916ca1e10a843df5266691ce7744"
+    },
+    "originalFullBuildXml": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-combined-fixes-20261105\\full-build-error.xml",
+      "bytes": 31427,
+      "sha256": "4c7c46bcd491021a3a2cc630ffdf7c760ea66286af5deb40ca0a343489b4553b"
+    },
+    "originalFullBuildLog": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-combined-fixes-20261105\\full-build.log",
+      "bytes": 17776,
+      "sha256": "56db0dcb68b6318e8df84fd470e5114e175a32c2c00ae9812cb025c35f707be1"
+    },
+    "directoryMtimeRedXml": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-combined-fixes-20261105\\directory-mtime-red.xml",
+      "bytes": 25754,
+      "sha256": "c2fff028e4579b34515fd4e666942fd67c5e55c871ecb66a0fc748a351a6b962"
+    },
+    "directoryMtimeGreenXml": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-combined-fixes-20261105\\directory-mtime-green.xml",
+      "bytes": 19385,
+      "sha256": "2c7d700d2f6e5de04c7f4935719191ad99a809ddf92bd91ec67c0f86d9cdbf31"
+    },
+    "oldActionSnapshot": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-combined-fixes-20261105\\old-action-waza-snapshot.json",
+      "bytes": 19099,
+      "sha256": "57287bfc65cf997bb6b644b338f53bcc39c4169d7b89d21b49825fb1fc0ed356"
+    },
+    "oldAssetHashSummary": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-combined-fixes-20261105\\old-build-assets.json",
+      "bytes": 567335,
+      "sha256": "417a9ee784c6e42726062b60a81ef8d2d0644ed3ffc85618bdbe5e6d6bc6d228"
+    }
+  },
+  "publishedBuildReceipt": {
+    "buildRoot": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_123342_656_c9e63039",
+    "sourceExe": "D:\\Code\\NeXAS_DX\\src\\main\\resources\\ida-reverse\\BaldrSky.exe",
+    "sourceExeSha256": "713cf605360a55a863f87bfbdea5453aaeeb2a33983ad4a005c9297e3a86e757",
+    "assetRoot": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_123342_656_c9e63039\\sou\\sou_assets_20261105_123537_024",
+    "exe": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_123342_656_c9e63039\\sou\\BaldrSky_20261105_123604_544.exe",
+    "pac": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_123342_656_c9e63039\\sou\\Update3.pac",
+    "exeSha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae",
+    "pacSha256": "959f3627189039b23686e2306f2b38b50c6c87fb9599b0d5a1548100e2ae42bf",
+    "includeSou": true,
+    "reworkedCharacters": [
+      "tsukuyomi",
+      "yuri",
+      "freja",
+      "nagi",
+      "misaki",
+      "naoto",
+      "katou",
+      "wilhelm",
+      "motoki"
+    ],
+    "preservedCharacters": [
+      "sou"
+    ],
+    "runtimeValidated": false,
+    "characters": [
+      "tsukuyomi",
+      "yuri",
+      "freja",
+      "nagi",
+      "misaki",
+      "naoto",
+      "katou",
+      "wilhelm",
+      "motoki",
+      "sou"
+    ]
+  },
+  "publishedOwnerSummary": {
+    "state": "COMPLETE",
+    "runName": "run_20261105_123342_656_c9e63039",
+    "runId": "c9e63039-0518-4b27-9b90-a320c16dd1f6",
+    "receiptSha256": "3555bbf01ad727ba5cb40c3d86ac941ba1faa4e4555437adc39ac5d439dbf3b5",
+    "inventorySha256": "7c6cdd3b925f966720d8edd44759752a1eb59f799f81115c78f33537c8a1cf2d",
+    "endedAt": "2026-11-05T03:37:56.356963700Z"
+  },
+  "originalFullBuildResult": {
+    "observedProcessExitCode": 1,
+    "processExitCodeSource": "root observed the original Maven full-build process; preserved XML/log confirm its cleanup error",
+    "junit": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 1,
+      "skipped": 0,
+      "suite": "com.giga.nexas.bhe2bsdx.byJinki.TestBheByJinkiRunner",
+      "seconds": "343.55",
+      "failureRecords": [
+        {
+          "test": "testRunNineCharacterRework",
+          "type": "com.giga.nexas.bhe2bsdx.byJinki.ManagedPlayableBuild$CleanupFailure",
+          "message": "Managed cleanup blocked at D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261103_154924_549_070a8f21: Uninventoried or changed output retained: D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261103_154924_549_070a8f21"
+        }
+      ]
+    },
+    "packageAndReceiptPublishedBeforeError": true,
+    "errorStage": "old managed-run retirement after new receipt/latest publication",
+    "originalResultNotBackfilled": true,
+    "fullRunnerRerunAfterComparatorFix": false
+  },
+  "assetDiff": {
+    "oldCount": 3884,
+    "newCount": 3889,
+    "added": {
+      "bhe_tama_072_0002.png": {
+        "size": 312,
+        "sha256": "1fdce266cb88f1b8bd364104403ff84674bf9ee6354515c9df642b765fb712e4",
+        "donorPath": "D:\\BDY\\NeXAS_Resources\\bhe_resources\\tama_072_0002.png",
+        "donorMatches": true
+      },
+      "bhe_tama_bit021_0002.png": {
+        "size": 3395,
+        "sha256": "d2229f08482cf210ba05ca70bee2daec6e2bbc93ecd29d4580464fb6b2458fab",
+        "donorPath": "D:\\BDY\\NeXAS_Resources\\bhe_resources\\tama_bit021_0002.png",
+        "donorMatches": true
+      },
+      "bhe_tama_bit039_0001.png": {
+        "size": 20726,
+        "sha256": "76913d03865d8d5ecfac780f95c543ada93c0a9e64758d3e84045d52e767a6eb",
+        "donorPath": "D:\\BDY\\NeXAS_Resources\\bhe_resources\\tama_bit039_0001.png",
+        "donorMatches": true
+      },
+      "bhe_tama_bit040_0001.png": {
+        "size": 20805,
+        "sha256": "b8cefcb952c903f0282f4f50fa96929d3b296c528b097824d334eee02691da92",
+        "donorPath": "D:\\BDY\\NeXAS_Resources\\bhe_resources\\tama_bit040_0001.png",
+        "donorMatches": true
+      },
+      "bhe_tama_bit041_0001.png": {
+        "size": 21077,
+        "sha256": "fd9bd82d98a5030a277870336dcd56d92ec40f4bb9b34b39b380faa558ca1b14",
+        "donorPath": "D:\\BDY\\NeXAS_Resources\\bhe_resources\\tama_bit041_0001.png",
+        "donorMatches": true
+      }
+    },
+    "removed": [],
+    "changed": {
+      "bomb.waz": {
+        "old": {
+          "size": 1276100,
+          "sha256": "997f72088c6b77b7a4e04b1e347a8df3a5071f6386edccafaf57dd522ee16c39"
+        },
+        "new": {
+          "size": 1276100,
+          "sha256": "a798664650e170370439a07258fe6f4a01bbbdca88c49fbe04ec9258409d413e"
+        }
+      },
+      "tama01.waz": {
+        "old": {
+          "size": 857696,
+          "sha256": "748df4c618f0805efbe76c0cf8bccef45571aca6bf4d8377ee2a859a1e467cf4"
+        },
+        "new": {
+          "size": 857696,
+          "sha256": "1c55c6df76bfd5df75a7e0382bc42c8f87aa63dfdc2ce6eeb9c4fc519e8b9171"
+        }
+      },
+      "tama03.waz": {
+        "old": {
+          "size": 1103499,
+          "sha256": "e6c5cd147802a95bcfb126537b86030bf2fb4560ac5dc3f82b39477f9ffe1cbf"
+        },
+        "new": {
+          "size": 1103499,
+          "sha256": "3893a9f5ccc7ae62163ff1686a0ab70594d6e6cba61fc5f3048d5c49a17d3dbe"
+        }
+      },
+      "tama05.waz": {
+        "old": {
+          "size": 2775820,
+          "sha256": "ea27457eb687065b0abc0bea9c2135c7f1ae465a0eb93197aa00e0db1ad1214d"
+        },
+        "new": {
+          "size": 2775820,
+          "sha256": "ab0481aadb99970e35b0b31afc316e8311bde359dce415a04e8062c4852a322d"
+        }
+      }
+    },
+    "unchangedCount": 3880
+  },
+  "addedPngTotalBytes": 66315,
+  "publicWazSemanticAudit": {
+    "conditionCount": 10,
+    "groupChanges": {
+      "9->120": 9,
+      "14->114": 1
+    },
+    "normalizedFiles": [
+      {
+        "file": "tama01.waz",
+        "size": 857696,
+        "sha256": "1c55c6df76bfd5df75a7e0382bc42c8f87aa63dfdc2ce6eeb9c4fc519e8b9171",
+        "oldSha256": "748df4c618f0805efbe76c0cf8bccef45571aca6bf4d8377ee2a859a1e467cf4",
+        "conditionCount": 3,
+        "onlyRecordedParamsDiffer": true,
+        "normalizedSemanticSha256": "5edc99f72d5ae3704c07b96ec5580d6dfd3c5007c2f870463262cbd06cf0cc2a",
+        "expectedNormalizedSemanticSha256": "5edc99f72d5ae3704c07b96ec5580d6dfd3c5007c2f870463262cbd06cf0cc2a",
+        "exactParamPairs": [
+          {
+            "jsonPointer": "/skillList/204/phasesInfo/0/skillUnitCollection/13/skillInfoObjectList/0/bsdxInfoCollectionList1/0/paramList",
+            "oldParams": [
+              9,
+              625
+            ],
+            "newParams": [
+              120,
+              625
+            ],
+            "paramsAndSkillIdentityAndOtherFieldsMatch": true
+          },
+          {
+            "jsonPointer": "/skillList/204/phasesInfo/1/skillUnitCollection/9/skillInfoObjectList/0/bsdxInfoCollectionList1/0/paramList",
+            "oldParams": [
+              9,
+              625
+            ],
+            "newParams": [
+              120,
+              625
+            ],
+            "paramsAndSkillIdentityAndOtherFieldsMatch": true
+          },
+          {
+            "jsonPointer": "/skillList/204/phasesInfo/2/skillUnitCollection/8/skillInfoObjectList/0/bsdxInfoCollectionList1/0/paramList",
+            "oldParams": [
+              9,
+              625
+            ],
+            "newParams": [
+              120,
+              625
+            ],
+            "paramsAndSkillIdentityAndOtherFieldsMatch": true
+          }
+        ]
+      },
+      {
+        "file": "tama03.waz",
+        "size": 1103499,
+        "sha256": "3893a9f5ccc7ae62163ff1686a0ab70594d6e6cba61fc5f3048d5c49a17d3dbe",
+        "oldSha256": "e6c5cd147802a95bcfb126537b86030bf2fb4560ac5dc3f82b39477f9ffe1cbf",
+        "conditionCount": 4,
+        "onlyRecordedParamsDiffer": true,
+        "normalizedSemanticSha256": "2f96b51c1bde2f42cf18ca6f0426d56b2f30793a369f43bd124b8bd979950780",
+        "expectedNormalizedSemanticSha256": "2f96b51c1bde2f42cf18ca6f0426d56b2f30793a369f43bd124b8bd979950780",
+        "exactParamPairs": [
+          {
+            "jsonPointer": "/skillList/105/phasesInfo/0/skillUnitCollection/10/skillInfoObjectList/1/bsdxInfoCollectionList1/1/paramList",
+            "oldParams": [
+              9,
+              411
+            ],
+            "newParams": [
+              120,
+              411
+            ],
+            "paramsAndSkillIdentityAndOtherFieldsMatch": true
+          },
+          {
+            "jsonPointer": "/skillList/106/phasesInfo/0/skillUnitCollection/10/skillInfoObjectList/1/bsdxInfoCollectionList1/1/paramList",
+            "oldParams": [
+              9,
+              412
+            ],
+            "newParams": [
+              120,
+              412
+            ],
+            "paramsAndSkillIdentityAndOtherFieldsMatch": true
+          },
+          {
+            "jsonPointer": "/skillList/107/phasesInfo/0/skillUnitCollection/10/skillInfoObjectList/1/bsdxInfoCollectionList1/1/paramList",
+            "oldParams": [
+              9,
+              413
+            ],
+            "newParams": [
+              120,
+              413
+            ],
+            "paramsAndSkillIdentityAndOtherFieldsMatch": true
+          },
+          {
+            "jsonPointer": "/skillList/135/phasesInfo/0/skillUnitCollection/10/skillInfoObjectList/1/bsdxInfoCollectionList1/1/paramList",
+            "oldParams": [
+              14,
+              15
+            ],
+            "newParams": [
+              114,
+              15
+            ],
+            "paramsAndSkillIdentityAndOtherFieldsMatch": true
+          }
+        ]
+      },
+      {
+        "file": "tama05.waz",
+        "size": 2775820,
+        "sha256": "ab0481aadb99970e35b0b31afc316e8311bde359dce415a04e8062c4852a322d",
+        "oldSha256": "ea27457eb687065b0abc0bea9c2135c7f1ae465a0eb93197aa00e0db1ad1214d",
+        "conditionCount": 1,
+        "onlyRecordedParamsDiffer": true,
+        "normalizedSemanticSha256": "ffef57dcfa561bd0132bb7cb82b1b74d1d61ec51f82c9254d08aba4d7d89e1a4",
+        "expectedNormalizedSemanticSha256": "ffef57dcfa561bd0132bb7cb82b1b74d1d61ec51f82c9254d08aba4d7d89e1a4",
+        "exactParamPairs": [
+          {
+            "jsonPointer": "/skillList/415/phasesInfo/1/skillUnitCollection/1/skillInfoObjectList/0/bsdxInfoCollectionList1/1/paramList",
+            "oldParams": [
+              9,
+              634
+            ],
+            "newParams": [
+              120,
+              634
+            ],
+            "paramsAndSkillIdentityAndOtherFieldsMatch": true
+          }
+        ]
+      },
+      {
+        "file": "bomb.waz",
+        "size": 1276100,
+        "sha256": "a798664650e170370439a07258fe6f4a01bbbdca88c49fbe04ec9258409d413e",
+        "oldSha256": "997f72088c6b77b7a4e04b1e347a8df3a5071f6386edccafaf57dd522ee16c39",
+        "conditionCount": 2,
+        "onlyRecordedParamsDiffer": true,
+        "normalizedSemanticSha256": "5576723b289721ca4de48819c0589d6c8372307edb7f88393cf06fe729042429",
+        "expectedNormalizedSemanticSha256": "5576723b289721ca4de48819c0589d6c8372307edb7f88393cf06fe729042429",
+        "exactParamPairs": [
+          {
+            "jsonPointer": "/skillList/292/phasesInfo/0/skillUnitCollection/10/skillInfoObjectList/0/bsdxInfoCollectionList1/1/paramList",
+            "oldParams": [
+              9,
+              117
+            ],
+            "newParams": [
+              120,
+              117
+            ],
+            "paramsAndSkillIdentityAndOtherFieldsMatch": true
+          },
+          {
+            "jsonPointer": "/skillList/293/phasesInfo/0/skillUnitCollection/12/skillInfoObjectList/0/bsdxInfoCollectionList1/1/paramList",
+            "oldParams": [
+              9,
+              118
+            ],
+            "newParams": [
+              120,
+              118
+            ],
+            "paramsAndSkillIdentityAndOtherFieldsMatch": true
+          }
+        ]
+      }
+    ],
+    "allOtherPublicWazSemanticsUnchanged": true,
+    "mainWazFilesUnchanged": [
+      {
+        "file": "tsukuyomi.waz",
+        "size": 138577,
+        "sha256": "69141f1b1801673351a7ac649106f3ff4e62256e57edd038b1ddde21235f5925",
+        "oldSha256": "69141f1b1801673351a7ac649106f3ff4e62256e57edd038b1ddde21235f5925",
+        "unchanged": true
+      },
+      {
+        "file": "yuri.waz",
+        "size": 129897,
+        "sha256": "f596061e18ede107b7b4c527a01d11fd53e45553c87c3d873de265136d0e5b59",
+        "oldSha256": "f596061e18ede107b7b4c527a01d11fd53e45553c87c3d873de265136d0e5b59",
+        "unchanged": true
+      },
+      {
+        "file": "freja.waz",
+        "size": 171622,
+        "sha256": "c96c50c0c86f475b0f2ebbff56073b0204cb26bf4bd14995ebf47a6f727b50d9",
+        "oldSha256": "c96c50c0c86f475b0f2ebbff56073b0204cb26bf4bd14995ebf47a6f727b50d9",
+        "unchanged": true
+      },
+      {
+        "file": "nagi.waz",
+        "size": 163105,
+        "sha256": "bbdc7d2f1f63791cf1c30142234ceaa37ccbc3082c6f2c39dc5bd72fe8129532",
+        "oldSha256": "bbdc7d2f1f63791cf1c30142234ceaa37ccbc3082c6f2c39dc5bd72fe8129532",
+        "unchanged": true
+      },
+      {
+        "file": "misaki.waz",
+        "size": 184716,
+        "sha256": "82ac40040b405a13d76bc6094be81c68d32191de716b4b8b6698b4976c5d5cd3",
+        "oldSha256": "82ac40040b405a13d76bc6094be81c68d32191de716b4b8b6698b4976c5d5cd3",
+        "unchanged": true
+      },
+      {
+        "file": "naoto.waz",
+        "size": 178117,
+        "sha256": "5f874345756fa6bf172aae7a950ff1ed873715acc70efa64f7b5c157126779d5",
+        "oldSha256": "5f874345756fa6bf172aae7a950ff1ed873715acc70efa64f7b5c157126779d5",
+        "unchanged": true
+      },
+      {
+        "file": "katou.waz",
+        "size": 227023,
+        "sha256": "d80311491abad7c32a79448760a4900ee2acf348d03c5c99fd20887bdc83b947",
+        "oldSha256": "d80311491abad7c32a79448760a4900ee2acf348d03c5c99fd20887bdc83b947",
+        "unchanged": true
+      },
+      {
+        "file": "wilhelm.waz",
+        "size": 155027,
+        "sha256": "9e264c9420b7d3f38a59ec953db4dc9bf13545141d01fde494bcc5ec14a801c3",
+        "oldSha256": "9e264c9420b7d3f38a59ec953db4dc9bf13545141d01fde494bcc5ec14a801c3",
+        "unchanged": true
+      },
+      {
+        "file": "motoki.waz",
+        "size": 195227,
+        "sha256": "fdc9920d45e5e1ac4d4e80fd6b83dbedc478866e04576a7eb0465d70f4f12dee",
+        "oldSha256": "fdc9920d45e5e1ac4d4e80fd6b83dbedc478866e04576a7eb0465d70f4f12dee",
+        "unchanged": true
+      },
+      {
+        "file": "sou.waz",
+        "size": 4094691,
+        "sha256": "5a32409bf7aa4ad8a0882d7dd67ef03106b84815e78bce8a5b62fcc4c9103c16",
+        "oldSha256": "5a32409bf7aa4ad8a0882d7dd67ef03106b84815e78bce8a5b62fcc4c9103c16",
+        "unchanged": true
+      }
+    ],
+    "mainWazCount": 10,
+    "stableReadFiles": 17
+  },
+  "heatProctorDirectionDelivery": {
+    "file": "Tama.spm",
+    "size": 437205,
+    "sha256": "cc773e8d6983537b9d71deb8024f818df1997725fb0a42805d1e59d7ad3a95ca",
+    "image249": "bhe_tama_bit041_0001.png",
+    "animation": 472,
+    "rotation": 5,
+    "mirror": 1,
+    "pages": [
+      2077,
+      2078,
+      2079,
+      2080,
+      2081,
+      2082,
+      2083,
+      2084,
+      2085,
+      2086,
+      2087,
+      2088,
+      2089
+    ],
+    "referencedImages": [
+      "bhe_tama_bit041_0001.png",
+      "bhe_tama_bit041_0002.png"
+    ],
+    "closureMatches": true
+  },
+  "directoryMtimeRegression": {
+    "red": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "suite": "com.giga.nexas.bhe2bsdx.byJinki.ManagedPlayableBuildTest",
+      "seconds": "0.884",
+      "failureRecords": [
+        {
+          "test": "directoryMtimeOnlyDriftDoesNotPreventRetiringUnchangedPayloads",
+          "type": "org.opentest4j.AssertionFailedError",
+          "message": "Unexpected exception thrown: com.giga.nexas.bhe2bsdx.byJinki.ManagedPlayableBuild$CleanupFailure: Managed cleanup blocked at D:\\Code\\NeXAS_DX\\target\\managed-build-policy-5181501333425881295\\repo\\target\\bhe-playable-builds\\run_20261105_124927_518_26bfe11b: Uninventoried or changed output retained: D:\\Code\\NeXAS_DX\\target\\managed-build-policy-5181501333425881295\\repo\\target\\bhe-playable-builds\\run_20261105_124927_518_26bfe11b"
+        }
+      ]
+    },
+    "green": {
+      "tests": 28,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "suite": "com.giga.nexas.bhe2bsdx.byJinki.ManagedPlayableBuildTest",
+      "seconds": "22.268",
+      "failureRecords": []
+    },
+    "comparisonChange": "only directory modified fields ignored on comparison copies; file mtime/size/SHA/path/type/fileKey/reparse/ownership/lease/consumer protections retained"
+  },
+  "retirementRecovery": {
+    "schema": 1,
+    "startedAt": "2026-11-05T04:06:23.508830700Z",
+    "oldRun": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261103_154924_549_070a8f21",
+    "currentRun": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_123342_656_c9e63039",
+    "compiledManagedClassSha256": "20a58da6b3a3d24ab3582d8d9f85ff9d01be8c2935df10242a27b4882fdb4eb4",
+    "entry": "private constructor + finishPendingRetirement only; never start/createRun/build",
+    "originalSourceInputsDeleted": false,
+    "case09Pid": 811768,
+    "case09UsesOnlyCurrentRun": true,
+    "oldContainsGitTrackedFiles": false,
+    "runDirectoriesBefore": [
+      "run_20261103_154924_549_070a8f21",
+      "run_20261105_123342_656_c9e63039"
+    ],
+    "newIdentityBefore": {
+      ".bhe-playable-owned.json": "aa6b72307ba9d91345e117039e45662773af80c8e5703fa9203bc157573e70ea",
+      ".bhe-playable-files.json": "7c6cdd3b925f966720d8edd44759752a1eb59f799f81115c78f33537c8a1cf2d",
+      "build.json": "3555bbf01ad727ba5cb40c3d86ac941ba1faa4e4555437adc39ac5d439dbf3b5",
+      "exePath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_123342_656_c9e63039\\sou\\BaldrSky_20261105_123604_544.exe",
+      "exeSha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae",
+      "pacPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_123342_656_c9e63039\\sou\\Update3.pac",
+      "pacSha256": "959f3627189039b23686e2306f2b38b50c6c87fb9599b0d5a1548100e2ae42bf",
+      "latestSha256": "3555bbf01ad727ba5cb40c3d86ac941ba1faa4e4555437adc39ac5d439dbf3b5"
+    },
+    "oldInventorySha256": "b42633ebca1a6fbd0f938f802a3525d3734cdb6ddf551c85b0aee4939b69487f",
+    "verifiedPayloadFiles": 25169,
+    "directoryModifiedOnlyDifferences": [
+      "akao",
+      "freja",
+      "katou",
+      "misaki",
+      "motoki",
+      "nagi",
+      "naoto",
+      "sou\\.nexas-tools",
+      "tsukuyomi",
+      "wilhelm",
+      "yuri"
+    ],
+    "oldTotalLogicalBytes": 4653803188,
+    "usableSpaceBefore": 263140257792,
+    "status": "complete",
+    "finishedAt": "2026-11-05T04:08:57.478757800Z",
+    "oldDirectoryRemoved": true,
+    "pendingRemoved": true,
+    "newIdentityUnchanged": true,
+    "case09ManifestUnchanged": true,
+    "newRunCreated": false,
+    "runDirectoriesAfter": [
+      "run_20261105_123342_656_c9e63039"
+    ],
+    "removedLogicalBytes": 4653803188,
+    "spaceAccounting": "logical bytes of removed owned files; observed free-space change is not attributed solely to this operation",
+    "usableSpaceAfter": 267849687040,
+    "warnings": []
+  },
+  "packageAtCapture": {
+    "exeBytes": 4793856,
+    "pacBytes": 1460557257,
+    "actualExeSha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae",
+    "actualPacSha256": "959f3627189039b23686e2306f2b38b50c6c87fb9599b0d5a1548100e2ae42bf",
+    "newPackageIdentityRehashed": true
+  },
+  "runtimeEvidenceReferences": [
+    {
+      "path": "D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261105\\sou-direction-fix-123-133.json",
+      "bytes": 845980,
+      "sha256": "b4c4008634fb733c030c45daa6a3975097d6eaa5f3ae2ec725f9ee5bb1146d91",
+      "closedWeapons": [
+        123,
+        124,
+        125,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132
+      ],
+      "closedCount": 10,
+      "enemyDamageEventCount": 237,
+      "playerDamageEventCount": 0,
+      "noHitWeapons": [],
+      "pendingWeaponRequests": {
+        "133": 87
+      },
+      "runtimeValidated": false
+    },
+    {
+      "path": "D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261105\\sou-direction-fix-142-151.json",
+      "bytes": 188954,
+      "sha256": "362de9a14b3b1f931402f6d55329ad9376371d90997af4279a38cdf2565ed4af",
+      "closedWeapons": [
+        142,
+        143,
+        144,
+        145,
+        146,
+        147,
+        148,
+        149,
+        150,
+        151
+      ],
+      "closedCount": 10,
+      "enemyDamageEventCount": 80,
+      "playerDamageEventCount": 0,
+      "noHitWeapons": [
+        150,
+        151
+      ],
+      "pendingWeaponRequests": {},
+      "runtimeValidated": false
+    }
+  ],
+  "currentRuntimeBoundary": {
+    "newPacClosedDistinctWeapons": 20,
+    "oldPac130ClosuresNotTransferred": true,
+    "weapon133NotPassed": true,
+    "case09WasRunningInSavedArtifacts": true,
+    "trainingAndComboAcceptance": false
+  },
+  "evidenceBoundaries": [
+    "The original full-build Maven exit remains 1 with one test error; successful package publication and subsequent recovery are independent facts.",
+    "The 28-test GREEN run is ManagedPlayableBuildTest only, not a rerun of the full game builder.",
+    "The retired old tree had 25,169 matching file hashes and eleven directory timestamp differences; no inventory or source input was rewritten to make it match.",
+    "Five added PNG records contain only lengths/hashes and donor-match evidence; no image bytes, PAC/EXE, full inventory, Save data or large raw log is retained here.",
+    "Only exact recorded ACTION_WAZA param pairs are normalized for the static comparison. This is not permission to ignore unrelated WAZ semantics.",
+    "New-PAC twenty preview closures are not full153, training, combo or repaired weapon133 acceptance."
+  ],
+  "artifact": {
+    "bytes": 25636,
+    "binaryFilesCopied": 0,
+    "fullInventoryCopied": false,
+    "largeRawLogsCopied": false,
+    "encoding": "UTF-8 without BOM; CRLF"
+  }
+}

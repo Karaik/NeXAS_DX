@@ -4,7 +4,7 @@
 
 Sou121设施的根对象ACTION_WAZA条件仍保存BHE源组9，最终DX组9却属于KOU，Sou实际分配组为120。公共源共10处条件：Tama01三处、Tama03四处、Tama05一处、Bomb两处；其中9处Sou、1处Nagi。修复使用真实分配映射，不能硬编码120，也不添加超时或强制END。121/122设施驻留与交互必须另作实机验证。
 
-Sou123在旧包case07、未装gameplay/combat探针的case08均于767A15读取空CSurface指针崩溃。图像表第249项为bhe_tama_bit041_0001.png；SPM动画472基础页2077只用_0002，方向页还会用_0001。旧包缺_0001，真实供体存在且SHA256为fd9bd82d98a5030a277870336dcd56d92ec40f4bb9b34b39b380faa558ca1b14。崩溃现场见sou-menu-validation-20261105.md及对应小型文本证据。修复后实际运行仍须验证，不能用静态收集通过代替。
+Sou123在旧包case07、未装gameplay/combat探针的case08均于767A15读取空CSurface指针崩溃。图像表第249项为bhe_tama_bit041_0001.png；SPM动画472基础页2077只用_0002，方向页还会用_0001。旧包缺_0001，真实供体存在且SHA256为fd9bd82d98a5030a277870336dcd56d92ec40f4bb9b34b39b380faa558ca1b14。崩溃现场见sou-menu-validation-20261105.md及对应小型文本证据。修复封入11/05新PAC后，123已取得本包一次菜单自然READY；训练、取消/中断等范围仍须验证，不能用静态收集或单次预览代替。
 
 ## 实现与范围
 
@@ -22,4 +22,20 @@ root串行实际执行：
 - 随后新增负base测试，SpmDirectionalImageDeliveryTest共10项中2项真实失败、0错误；失败准确为collector和validator漏image0。
 - 最小修正后运行SpmDirectionalImageDeliveryTest、OutputBheCommonProjectileResourcesStepTest、LayeredAssetDeliveryTest、ImportStaticAssetsStepBheOutputTest、ActionWazaReferenceRebindTest，5类49项全部通过，退出0。未重复声称263项在最后改动后重新全跑。
 
-XML、命令选择器及日志保存在仓库target/bhe-combined-fixes-20261105，旧产物3884文件的哈希/大小摘要约554KiB，不包含资源正文。定向GREEN、源码审查及格式检查通过仅允许进入新封包与实机验证；完整目标尚未通过，runtimeValidated保持false。
+XML、命令选择器及日志保存在仓库target/bhe-combined-fixes-20261105，旧产物3884文件的哈希/大小摘要约554KiB，不包含资源正文。这些定向GREEN和静态结果是随后封包的前提，不替代下述逐请求实机证据；完整目标尚未通过，runtimeValidated保持false。
+
+## 新封包差异及原构建错误
+
+新目录为`run_20261105_123342_656_c9e63039`。EXE SHA256仍为`1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae`，新PAC SHA256为`959f3627189039b23686e2306f2b38b50c6c87fb9599b0d5a1548100e2ae42bf`，1460557257字节。原full-build进程在封包和COMPLETE receipt发布后因旧目录mtime清单比较被拒而退出1，JUnit保留1项1错误；没有把它改写为全流程成功。
+
+最终3889资产较旧3884资产仅新增5张真实供体图片，合计66315字节：`bhe_tama_072_0002.png`、`bhe_tama_bit021_0002.png`、`bhe_tama_bit039_0001.png`、`bhe_tama_bit040_0001.png`、`bhe_tama_bit041_0001.png`，无删除。`tama01.waz`三处、`tama03.waz`四处、`tama05.waz`一处及`bomb.waz`两处共10组参数按实分配映射变化（9组9→120、1组14→114）；精确归一这些参数后，各文件其它语义哈希与预期相同。3880文件及10份角色主WAZ原字节未变，没有借修复修改武装数值或路线。
+
+目录mtime专用RED为1项1失败；只忽略目录`modified`比较后，全Managed回归28项通过，原文件哈希/mtime、路径类型、重解析、拥有权、消费者及锁保护保留。随后只重试pending旧run清理，受控退役成功且新包不变；没有新建run、重打包或重跑full runner。精简receipt/差异/10参数归一/退役证据见`src/test/resources/bhe-runtime-evidence-20261105/build-and-retirement-20261105.json`，25636字节，SHA256 `900322e90f90b4bbbba9bca3aac40ec0205c463807cd293226a64427cb35ddc7`。
+
+## 新包实机范围
+
+case09已独立记录123～132、142～151共20个variant0菜单自然闭环；150/151无命中，不能说全部20招的效果或初始化已通过。123的REQ22在17714起手、18004 READY，14条敌机伤害合计85；它支持方向图片交付修复后的这个预览路径，不能推广到所有操作路径。旧包130项不跨PAC计入这20项。
+
+`sou-direction-fix-123-133.json`当前归因修正版为845980字节，SHA256 `b4c4008634fb733c030c45daa6a3975097d6eaa5f3ae2ec725f9ee5bb1146d91`；`sou-direction-fix-142-151.json`为188954字节，SHA256 `362de9a14b3b1f931402f6d55329ad9376371d90997af4279a38cdf2565ed4af`。两份文件仅保必要原事件与严格来源边界，不包含游戏二进制。
+
+133仍未通过：REQ87首次期限失败及后续superseded保持未闭环，切换触发者未知；另外REQ89的只读对象快照确认14个碎片parent=NULL，当前调查/修正其等待收尾。不能将REQ89的对象状态回填到87，也不能把release/reset、截图残留或UI响应当自然READY。case09仍运行，训练与连段验收继续，`runtimeValidated=false`。
