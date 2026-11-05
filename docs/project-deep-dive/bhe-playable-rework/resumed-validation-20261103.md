@@ -110,6 +110,14 @@ case05同EXE/PAC、同独立种子、仅隔离保护，重复人間砲弾数分�
 
 ## 新包case09当前验收边界
 
-`sou-direction-fix-20261105-09`仍运行，PID811768，目标保持active，继续训练验收。已独立固定123～132十条与142～151十条variant0菜单自然闭环，分别有237条/80条敌机伤害事件，玩家伤害均0；150/151为no-hit闭环。两份证据为`sou-direction-fix-123-133.json`（845980字节，归因修正版SHA256 `b4c4008634fb733c030c45daa6a3975097d6eaa5f3ae2ec725f9ee5bb1146d91`）与`sou-direction-fix-142-151.json`（188954字节，SHA256 `362de9a14b3b1f931402f6d55329ad9376371d90997af4279a38cdf2565ed4af`），均位于上述测试资源目录。只纳明确指定的请求，不计自动重复、未知输入区间或旧PAC结果。
+`sou-direction-fix-20261105-09`在以下预览/训练记录捕获时运行，原PID811768；当前已正常退出，目标仍active，收尾见本节末。已独立固定123～132十条与142～151十条variant0菜单自然闭环，分别有237条/80条敌机伤害事件，玩家伤害均0；150/151为no-hit闭环。两份证据为`sou-direction-fix-123-133.json`（845980字节，归因修正版SHA256 `b4c4008634fb733c030c45daa6a3975097d6eaa5f3ae2ec725f9ee5bb1146d91`）与`sou-direction-fix-142-151.json`（188954字节，SHA256 `362de9a14b3b1f931402f6d55329ad9376371d90997af4279a38cdf2565ed4af`），均位于上述测试资源目录。只纳明确指定的请求，不计自动重复、未知输入区间或旧PAC结果。
 
-133的REQ87首个30秒helper失败保持`closed=false`，原请求随后在tick58649被superseded，触发者/原因未知；不能归因为root手动UI，也不能由之后REQ88/89补成功。REQ87的独立RPM快照只有当时TAMA14/双方空闲等事实。另一个REQ89的对象快照在tick68688看到14个Tama05/528、block5、scalar0、parent=NULL碎片，当前正修其父关系和等待退出；这份快照不跨请求归给87，更不等同READY。全部153项和九角色54新增武装的实际训练/连段验收仍未完成。
+133的REQ87首个30秒helper失败保持`closed=false`，原请求随后在tick58649被superseded，触发者/原因未知；不能归因为root手动UI，也不能由之后REQ88/89补成功。REQ87的独立RPM快照只有当时TAMA14/双方空闲等事实。另一个REQ89的对象快照在tick68688看到14个Tama05/528、block5、scalar0、parent=NULL碎片，随后源码已修其父关系/等待退出，但尚未新封包/实机；这份快照不跨请求归给87，更不等同READY。全部153项和九角色54新增武装的实际训练/连段验收仍未完成。
+
+## case09正常退出，目标保持active
+
+本会话以普通Replay输入另核121部署/重复部署交互、122过早退场机制失败及123装备/热状态/攻击回收。121两轮实际伤害330/540，第二轮缺失的直拳120不补算，RESET/恢复使它不能算真连；122没有观察到4/257、伤害0，不能按STOP或对象归零记功能通过；123这个流程有35条伤害403、末HP5597及后续对象/热状态回收，但不推广全部方向/中断/连段。三份原JSON分别为84344字节/`33012c0f…`、19498字节/`56cdb20f…`、97754字节/`bb3c9b7f…`，完整身份和采样边界见[菜单/训练收尾记录](sou-menu-validation-20261105.md)。
+
+case09已`exited`、exit0、failure和stop_reason均null，自有进程退出与guard清理确认、cleanup_pending=false、无guard违例；自动核验清理28个输入副本5805714742字节，清理错误0。原Save/base/源EXE-PAC退出checks未变，独立target seed在本次后置78文件hash复核也未变；state本身没有明确终态seed检查，二者时点分开。Drs三文件的运行前/后漂移归因未知；131条system异常通知不因最终exit0而抹去。私有Replay006的后续覆盖保留为新旧身份差异，历史录制证据不修改。
+
+独立收尾证据`src/test/resources/bhe-runtime-evidence-20261105/sou-direction-fix-session-end.json`为12153字节，SHA256 `935cf64f52db1fa06994956b2872ed1536102432b6b9bd0383ad99cde1ae2c7a`。用户已要求继续完善为止，目标并未暂停。当前122专项8项GREEN，相关52项在本文收尾时仍由root验证，不预记通过；133专项8项、相关44项和snapshot保护8项成果已提交。两项后续修复尚未新封包/实机，旧130/当前20菜单项及上述有限训练记录均不替代它们的修后验收或全部原目标。

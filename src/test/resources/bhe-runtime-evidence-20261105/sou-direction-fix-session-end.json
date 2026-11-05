@@ -1,0 +1,334 @@
+{
+  "schema": "nexas.bhe-runtime-text-evidence/v1",
+  "capturedAt": "2026-11-05T07:10:48.009694+00:00",
+  "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-direction-fix-20261105-09",
+  "scope": "normal exit and guarded cleanup of the completed case09 session; original preview/training snapshots stay immutable",
+  "terminal": true,
+  "runtimeValidated": false,
+  "goalStateBoundary": "user resumed and requested continued completion; normal closure of this game process is not a goal pause or completion",
+  "sourceTextFiles": {
+    "state": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-direction-fix-20261105-09\\state.json",
+      "bytes": 19626,
+      "sha256": "c2de3d5990ff966519de612d7620e83647eaddf463f74db742add62070241014"
+    },
+    "manifest": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-direction-fix-20261105-09\\manifest.json",
+      "bytes": 32365,
+      "sha256": "806341c7babd100d1b52741420c4ad576dc941504bddbf750e6a75c0854dfa95"
+    },
+    "events": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-direction-fix-20261105-09\\events.jsonl",
+      "bytes": 5704068,
+      "sha256": "5617debdd4e25607142644fa5b0fe79d9b04587ca998115131d552df84c14237"
+    }
+  },
+  "buildIdentity": {
+    "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_123342_656_c9e63039\\build.json",
+    "receiptSha256": "3555bbf01ad727ba5cb40c3d86ac941ba1faa4e4555437adc39ac5d439dbf3b5",
+    "exeSha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae",
+    "pacSha256": "959f3627189039b23686e2306f2b38b50c6c87fb9599b0d5a1548100e2ae42bf",
+    "runtimeValidated": false,
+    "caseGameCopiesDeletedByHarness": true
+  },
+  "terminalStateRelevantFields": {
+    "status": "exited",
+    "failure": null,
+    "stop_reason": null,
+    "exit_code": 0,
+    "started_at": "2026-11-05T03:41:14.629197+00:00",
+    "finished_at": "2026-11-05T07:02:28.060299+00:00",
+    "process": {
+      "pid": 811768,
+      "thread_id": 819652,
+      "creation_filetime": 134383236752109730,
+      "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-direction-fix-20261105-09\\game\\BaldrSky.exe"
+    },
+    "launcher_pid": 805156,
+    "runtime_seconds": 12044.613,
+    "runtime_acceptance": "not_evaluated",
+    "hook_ready": true,
+    "exception_count": 131,
+    "last_exception": {
+      "type": "exception",
+      "classification": "unclassified_observed_exception",
+      "diagnostic_errors": [],
+      "backtrace": {
+        "status": "unavailable",
+        "reason": "no_symbol_resolution"
+      },
+      "exceptionType": "system",
+      "address": "0x7556bae4",
+      "memory": null,
+      "context": {
+        "pc": "0x7556bae4",
+        "sp": "0x1be5c630",
+        "eax": "0x1be5c630",
+        "ecx": "0x3",
+        "edx": "0x0",
+        "ebx": "0x19930520",
+        "esp": "0x1be5c630",
+        "ebp": "0x1be5c68c",
+        "esi": "0x1be5c828",
+        "edi": "0x0",
+        "eip": "0x7556bae4"
+      },
+      "location": {
+        "address": "0x7556bae4",
+        "module": {
+          "name": "KERNELBASE.dll",
+          "path": "C:\\WINDOWS\\System32\\KERNELBASE.dll",
+          "base": "0x75400000",
+          "offset": "0x16bae4"
+        }
+      }
+    },
+    "guard_violations": [],
+    "cleanup_pending": false,
+    "owned_process_exit_confirmed": true,
+    "guard_cleanup_complete": true,
+    "guard_session_retained": false,
+    "frida_detached": true,
+    "detach_reason": "process-terminated",
+    "closed_handles": [
+      "thread_handle",
+      "process_handle"
+    ],
+    "input_copy_cleanup": {
+      "removed": [
+        "AutoUpdate.exe",
+        "BaldrSky.exe",
+        "BaldrSky.ico",
+        "Bgm.pac",
+        "Bmp.pac",
+        "Config.pac",
+        "Dat.pac",
+        "Face.pac",
+        "Filechk.exe",
+        "Launcher.dat",
+        "Launcher.exe",
+        "Script.pac",
+        "Se.pac",
+        "Setup.exe",
+        "Setupinf.dat",
+        "Stand.pac",
+        "StartUpTool.exe",
+        "System.pac",
+        "Thumbnail.pac",
+        "Uninstall.exe",
+        "Update.exe",
+        "Update.pac",
+        "Update2.pac",
+        "UpdateInf.dat",
+        "Visual.pac",
+        "Voice.pac",
+        "autorun.inf",
+        "Update3.pac"
+      ],
+      "removed_bytes": 5805714742,
+      "retained_changed_or_unique": [],
+      "errors": []
+    },
+    "original_save_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "original_base_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "source_files_check": {
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_123342_656_c9e63039\\sou\\BaldrSky_20261105_123604_544.exe": true,
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_123342_656_c9e63039\\sou\\Update3.pac": true
+    },
+    "original_driver_state_prelaunch_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": [],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "original_driver_state_check": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "nvAppTimestamps",
+        "nvdrsdb0.bin",
+        "nvdrsdb1.bin"
+      ],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "original_driver_state_runtime_check": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "nvAppTimestamps",
+        "nvdrsdb0.bin",
+        "nvdrsdb1.bin"
+      ],
+      "attribution": "not_determined_external_writers_possible"
+    }
+  },
+  "terminalSourceEventObjectsByLine": {
+    "10358": {
+      "byte_offset": 5703848,
+      "source_bytes": 118,
+      "event": {
+        "at": "2026-11-05T07:02:01.545274+00:00",
+        "event": "frida_detached",
+        "reason": "process-terminated",
+        "crash": null
+      }
+    },
+    "10359": {
+      "byte_offset": 5703966,
+      "source_bytes": 102,
+      "event": {
+        "at": "2026-11-05T07:02:28.060332+00:00",
+        "event": "finished",
+        "status": "exited",
+        "failure": null
+      }
+    }
+  },
+  "checks": {
+    "normalExitCodeZero": true,
+    "failureNull": true,
+    "guardViolationsEmpty": true,
+    "ownedExitConfirmed": true,
+    "guardCleanupComplete": true,
+    "cleanupPendingFalse": true,
+    "gameDirectoryEmptyAtAudit": true,
+    "removedGameCopyCount": 28,
+    "removedGameCopyLogicalBytes": 5805714742,
+    "cleanupErrorCount": 0,
+    "originalSaveUnchangedFromHarness": true,
+    "originalBaseUnchangedFromHarness": true,
+    "sourceExePacChecksAllTrue": true,
+    "harnessTerminalSeedCheckPresent": false,
+    "independentSeedAudit": {
+      "sourcePath": "D:\\Code\\NeXAS_DX\\target\\bhe-private-save-seeds\\cp932-20261103-01\\GIGA\\BALDRSKY_DIVEX\\Save",
+      "at": "2026-11-05T07:10:47.986267+00:00",
+      "comparedToManifestField": "save_seed_files",
+      "expectedFileCount": 78,
+      "actualFileCount": 78,
+      "difference": {
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "unchanged": true
+      },
+      "readOnlyHashCheck": true,
+      "originalUserSaveRead": false,
+      "timeBoundary": "independent audit after session exit, not a harness-recorded exact exit-time seed check"
+    }
+  },
+  "driverDriftBoundary": {
+    "prelaunchCheck": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": [],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "prepareToAfterCheck": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "nvAppTimestamps",
+        "nvdrsdb0.bin",
+        "nvdrsdb1.bin"
+      ],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "runBeforeToAfterCheck": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "nvAppTimestamps",
+        "nvdrsdb0.bin",
+        "nvdrsdb1.bin"
+      ],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "attribution": "unknown; external writers possible; not assigned to game"
+  },
+  "wholeSessionExceptionBoundary": {
+    "count": 131,
+    "typeCounts": {
+      "system": 131
+    },
+    "normalExitDoesNotMeanNoExceptions": true
+  },
+  "priorEvidenceReferences": [
+    {
+      "path": "D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261105\\sou-direction-fix-123-133.json",
+      "bytes": 845980,
+      "sha256": "b4c4008634fb733c030c45daa6a3975097d6eaa5f3ae2ec725f9ee5bb1146d91",
+      "historicalSnapshotNotRewritten": true
+    },
+    {
+      "path": "D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261105\\sou-direction-fix-142-151.json",
+      "bytes": 188954,
+      "sha256": "362de9a14b3b1f931402f6d55329ad9376371d90997af4279a38cdf2565ed4af",
+      "historicalSnapshotNotRewritten": true
+    },
+    {
+      "path": "D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261105\\sou-attack-procter-training.json",
+      "bytes": 84344,
+      "sha256": "33012c0f2e48ecbadf8fa43ffa7ab07f218f020be15810490adc9be92e3be188",
+      "historicalSnapshotNotRewritten": true
+    },
+    {
+      "path": "D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261105\\sou-boost-procter-premature-end.json",
+      "bytes": 19498,
+      "sha256": "56cdb20f8de089ab76a22ed48205513845f3ac5fe1016dbe41c60546475adc65",
+      "historicalSnapshotNotRewritten": true
+    },
+    {
+      "path": "D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261105\\sou-heat-procter-training.json",
+      "bytes": 97754,
+      "sha256": "bb3c9b7f66d40fa17d859c0589b665166f52cac765d200482d428184e6743b45",
+      "historicalSnapshotNotRewritten": true
+    }
+  ],
+  "trainingScopeSummary": {
+    "sou121": "two normal replay interaction/redeployment trials,330 and540 damage; reset/recovery gaps, not a true-combo acceptance",
+    "sou122": "observed premature phase exit and no4/257 in sampled states; mechanism failure, not functionality passing",
+    "sou123": "one actual-equipped deployment/damage/heat/reclamation flow,35 hits403 damage; not all directions/interruption/combo acceptance"
+  },
+  "privateReplayIdentityBoundary": {
+    "sourceEvidencePath": "D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261105\\sou-heat-procter-training.json",
+    "earlierReplay006": {
+      "bytes": 862,
+      "sha256": "05001af5d6e03250b79e3a01c5759d221c58a4b61f8bd26d1756a6848d83004a"
+    },
+    "laterObservedReplay006": {
+      "bytes": 814,
+      "sha256": "146aeb436dceb81aa6621be0617e53640d448a28342a7796faaacdc1ca9075b4"
+    },
+    "previousIdentityNotBackfilled": true,
+    "scope": "private case file changed later during interaction; no original user Save identity change inferred"
+  },
+  "evidenceBoundaries": [
+    "The harness records original Save/base/source EXE-PAC unchanged; it has no explicit terminal seed-source check field. The separate78-file target-seed hash audit is timestamped after exit.",
+    "Prepare-to-after and run-before-to-after NVIDIA Drs differences are retained with unknown attribution, not blamed on game logic.",
+    "The session exits0 despite131 observed exception notifications; neither zero-exception operation nor all-skills acceptance is claimed.",
+    "Previously saved menu and Sou121/122/123 artifacts are referenced by their exact historical sizes/hashes; they are not rewritten to terminal state.",
+    "This new lifecycle receipt does not accept any untested source fixes, change runtimeValidated, pause the active goal, or copy binary/replay/Save data."
+  ],
+  "artifact": {
+    "bytes": 12153,
+    "binaryFilesCopied": 0,
+    "fullLogCopied": false,
+    "encoding": "UTF-8 without BOM; CRLF"
+  }
+}

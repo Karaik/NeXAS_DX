@@ -2,7 +2,7 @@
 
 本记录前半是`run_20261103_154924_549_070a8f21`旧包的历史验收，EXE SHA256为`1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae`，PAC SHA256为`10a6d5f50cd528e9206744c53a0dfaac5836f204d384ab3219d07085f5ab1996`。11/05新封包及case09结果见末节，不跨包合并覆盖。
 
-旧包累计130个不同武装、variant0菜单自然闭环：0～120、134～141、152，包含下文no-hit和99异常边界；121/122驻留未READY，123在case07/08崩溃。新PAC已独立固定123～132、142～151共20项variant0菜单闭环，150/151无命中；133未通过，当前正修后续碎片父关系/等待收尾。case09仍运行，目标active并继续训练验收；旧130项不能与新20项合算成当前包全部通过，`runtimeValidated=false`。
+旧包累计130个不同武装、variant0菜单自然闭环：0～120、134～141、152，包含下文no-hit和99异常边界；121/122驻留未READY，123在case07/08崩溃。新PAC已独立固定123～132、142～151共20项variant0菜单闭环，150/151无命中；133未通过。case09现已正常退出并完成清理，目标仍active；121/122/123训练记录及后续源码修复状态见末尾。旧130项不能与新20项合算成当前包全部通过，`runtimeValidated=false`。
 
 旧包这一轮case为`target/bhe-playable-runtime/sou-menu-20261105-07`，以已批准的独立CP932种子运行，启用已修正的四处指令探针和其余函数入口观测。原存档及源游戏只读，目标仍是全部Sou153项安全及九角色54新增武装的实际效果和连段，当前不宣称最终完成。
 
@@ -89,7 +89,7 @@ case08最终同样为`failed / abnormal_exit_3221225477`，退出码`C0000005`�
 
 ## 11/05新包：独立20项闭环与133未通过
 
-当前运行`run_20261105_123342_656_c9e63039`的新PAC，SHA256 `959f3627189039b23686e2306f2b38b50c6c87fb9599b0d5a1548100e2ae42bf`，EXE仍为`1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae`。新3889资产、5张新增供体PNG及4个公共WAZ的10参数变化已独立核验；原full-build进程实际退出1，错误发生在封包/receipt之后的旧run退役。只修比较并经过28项Managed回归与受控retry恢复，不把原错误回填为exit0或声称重跑full runner通过；静态与恢复证据见`build-and-retirement-20261105.json`（25636字节，SHA256 `900322e90f90b4bbbba9bca3aac40ec0205c463807cd293226a64427cb35ddc7`）。
+case09使用`run_20261105_123342_656_c9e63039`的新PAC，SHA256 `959f3627189039b23686e2306f2b38b50c6c87fb9599b0d5a1548100e2ae42bf`，EXE仍为`1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae`。新3889资产、5张新增供体PNG及4个公共WAZ的10参数变化已独立核验；原full-build进程实际退出1，错误发生在封包/receipt之后的旧run退役。只修比较并经过28项Managed回归与受控retry恢复，不把原错误回填为exit0或声称重跑full runner通过；静态与恢复证据见`build-and-retirement-20261105.json`（25636字节，SHA256 `900322e90f90b4bbbba9bca3aac40ec0205c463807cd293226a64427cb35ddc7`）。
 
 case `sou-direction-fix-20261105-09`的123～132十项已按指定请求独立核5链、角色/武装/variant、两独立序号及READY对象归零；十个闭环有237条敌机伤害、0玩家伤害。123的REQ22/START22从17714到18004自然READY，14条敌机伤害合计85；同请求经历主图WAZ419释放后再READY，不能将单条预览推广为全部操作路径修复。证据`sou-direction-fix-123-133.json`归因修正版为845980字节、726个完整原事件对象，SHA256 `b4c4008634fb733c030c45daa6a3975097d6eaa5f3ae2ec725f9ee5bb1146d91`。
 
@@ -97,4 +97,18 @@ case `sou-direction-fix-20261105-09`的123～132十项已按指定请求独立�
 
 133的REQ87/START87在36229起手，首次30秒helper失败仍为`closed=false`；36308的release只记录TAMA14，不能当作后来现场查询或READY。原请求到58649被superseded，后续REQ88/132、REQ89/133的触发者/原因未知，不能写成root主动UI替换或用后轮补前轮成功。REQ87开放窗口的10条伤害合计28及tick53381的独立RPM快照均单列，不加入十个闭环的237条伤害。
 
-后续REQ89的`sou133-tama-snapshot.json`是另一个只读RPM对象快照：tick68688，14个Tama05/528碎片处于block5、scalar0、parent=NULL。它不是REQ87的状态，也不是native READY；当前正据此修父关系/等待退出，未有修后版本通过。case09、PID811768仍运行，训练及跨武装连段验收继续；全部153项安全、其它variant、驻留交互、取消/中断、再起、重载和关卡推进仍未完成。
+后续REQ89的`sou133-tama-snapshot.json`是另一个只读RPM对象快照：tick68688，14个Tama05/528碎片处于block5、scalar0、parent=NULL。它不是REQ87的状态，也不是native READY；之后的133源码修复已有提交，但尚无重新封包后的实机结果，不能将此快照或REQ87改记通过。case09的终态及训练结果见下节；全部153项安全、其它variant、驻留交互、取消/中断、再起、重载和关卡推进仍未完成。
+
+## case09训练与正常收尾：目标继续active
+
+121实际装备的两次普通输入Replay已保存为`sou-attack-procter-training.json`，84344字节，SHA256 `33012c0f2e48ecbadf8fa43ffa7ab07f218f020be15810490adc9be92e3be188`。首轮3次START及4次伤害合计330、末HP5670；第二轮6次START及7次伤害合计540、末HP5460，第二次直拳未命中的120伤害没有补算。第二次部署时TAMA4，release时10，后续B/C启动时6/5，不能宣称从不瞬时超过6。RESET/恢复使本记录仅接受部署/交互/再次部署机制，不是真连验收；STOP15/20秒是正常UI观察，独立工具快照仅记录inactive、counter1200、TAMA4，不是native READY或完全回收。
+
+122失败证据`sou-boost-procter-premature-end.json`为19498字节，SHA256 `56cdb20f8de089ab76a22ed48205513845f3ac5fe1016dbe41c60546475adc65`。正常A122后按D，body3/110在root仍state3时由P1过早进入P2，未观察到4/257且伤害0，属于机制失败而非崩溃，不记功能通过。601个成功consumer counter摘要、8个变化行及5次空错误串的验证拒绝均保留；counter不冒充原生输入帧，不能说所有读取无错或五次均为torn。相关源码8项已GREEN，扩展52项在本次文档收尾时仍由root执行，未在本文预记通过。
+
+123实际装备训练的`sou-heat-procter-training.json`为97754字节，SHA256 `bb3c9b7f66d40fa17d859c0589b665166f52cac765d200482d428184e6743b45`。A30/B90/C140的3次真实START后，35条敌机伤害合计403、末HP5597，与正常UI的35HIT/403DAM对应；其中120、150之外的33条合133。25条独立非原子变化行及599个成功counter摘要、15次有原因的读取拒绝、两次FFFFFFFF初始化/混合时序瞬态完整保留；FFFFFFFF不当合法skill。counter481见heatState3和对象0，486见heat0/state0，600见inactive/TAMA0/SCRIPT0。这里只接受这一流程的装备、效果和回收，不泛化全部方向、热档、中断或连段。
+
+原case09现为`exited / exit_code=0 / failure=null / stop_reason=null`；已确认自有进程退出、guard清理完成，`cleanup_pending=false`、guard违例为空。程序核验后自动移除28份game副本共5805714742字节，无保留变更文件或清理错误。全会话仍有131条system异常通知，正常退出不等于无异常。原Save、原base及源EXE/PAC的harness退出检查明确未变；state没有终态seed-source检查字段，本次另对仓库target中的78文件独立seed做当前SHA清单复核，结果未变，不能冒称这是harness精确退出时点检查。Drs运行前/后有nvAppTimestamps、nvdrsdb0.bin、nvdrsdb1.bin漂移，归因未知，不归游戏。
+
+收尾新证据`sou-direction-fix-session-end.json`为12153字节，SHA256 `935cf64f52db1fa06994956b2872ed1536102432b6b9bd0383ad99cde1ae2c7a`；上述菜单和训练JSON保留各自原始捕获时点、未改终态或源hash。私有Replay006后来从早期122记录的862字节/`05001a…`变成814字节/`146aeb…`，仅是后续私有文件身份变化，不回填旧记录，也不涉及原Save。
+
+用户要求继续完善，目标保持active，关闭这一个测试会话不表示暂停。133源码专项8项、相关44项及快照保护8项的成果已提交；122/133的这些后续修复尚未进入新封包/新实机。下一验证包仍须完成相应机制复测和全部原目标，`runtimeValidated=false`。
