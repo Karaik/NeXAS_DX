@@ -32,10 +32,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-/** Sou Cool Gain keeps charge in the scalar and uses parent phase changes for the private return protocol. */
+/** Sou Cool Gain preserves charge/return and gives each private cooling entity one raw-heat pulse. */
 final class SouCoolGainReturnProtocolFixer {
     private static final String BODY_JP = "★蒼：クールゲイン：本体・回収", BODY_EN = "DX_SOU_COOL_GAIN_BODY";
     private static final String ICE_JP = "★蒼：クールゲイン：氷・回収", ICE_EN = "DX_SOU_COOL_GAIN_ICE";
+    private static final String COOLING_JP = "★蒼：クールゲイン：熱冷却・専用", COOLING_EN = "DX_SOU_COOL_GAIN_COOLING";
     // Complete original flag1/name/83-slot/phase/suffix records from the real BHE binary boundaries.
     private static final List<SourceSignature> MAIN = List.of(
             new SourceSignature("クールゲインLv1", "C_GAIN01", 2, 2749, "ffcbfed245bdcfceb3ea465a5ca6cec567259fa29a39a9f0f69169706e677c90"),
@@ -68,17 +69,25 @@ final class SouCoolGainReturnProtocolFixer {
             publicSkills.add(actual);
         }
         LocatedSkill body = findPrivate(location, BODY_JP, BODY_EN), ice = findPrivate(location, ICE_JP, ICE_EN);
-        if ((body == null) != (ice == null)) throw invalid("Partial private body/ice installation");
+        LocatedSkill cooling = findPrivate(location, COOLING_JP, COOLING_EN);
+        boolean anyInstalled = body != null || ice != null || cooling != null;
+        if (anyInstalled && (body == null || ice == null || cooling == null))
+            throw invalid("Incomplete private body/ice/cooling installation; legacy two-member families are not migrated");
         int bodyIndex = body == null ? location.host().getSkillList().size() : body.index();
-        int iceIndex = Math.addExact(bodyIndex, 1);
-        if (ice != null && ice.index() != iceIndex) throw invalid("Private body/ice order changed");
-        Waz.Skill expectedBody = buildBody(publicSkills.get(0).skill(), publicSkills.get(1).index(), iceIndex, location.hostGroup());
+        int iceIndex = Math.addExact(bodyIndex, 1), coolingIndex = Math.addExact(bodyIndex, 2);
+        if (anyInstalled && (ice.index() != iceIndex || cooling.index() != coolingIndex))
+            throw invalid("Private body/ice/cooling order changed");
+        Waz.Skill expectedBody = buildBody(publicSkills.get(0).skill(), publicSkills.get(1).index(), iceIndex,
+                publicSkills.get(2).index(), coolingIndex, location.hostGroup());
         Waz.Skill expectedIce = buildIce(publicSkills.get(1).skill());
+        Waz.Skill expectedCooling = buildCooling(publicSkills.get(2).skill());
         if (body != null) {
             validateTargetShape(body.skill(), new SourceSignature(BODY_JP, BODY_EN, 3, 0, ""));
             validateTargetShape(ice.skill(), new SourceSignature(ICE_JP, ICE_EN, 8, 0, ""));
+            validateTargetShape(cooling.skill(), new SourceSignature(COOLING_JP, COOLING_EN, 1, 0, ""));
             equalPayload(expectedBody, body.skill(), "installed private body");
             equalPayload(expectedIce, ice.skill(), "installed private ice");
+            equalPayload(expectedCooling, cooling.skill(), "installed private cooling");
         }
         List<LocatedSkill> callers = new ArrayList<>();
         List<Waz.Skill> candidates = new ArrayList<>();
@@ -99,9 +108,9 @@ final class SouCoolGainReturnProtocolFixer {
         List<Waz.Skill> newMain = new ArrayList<>(location.main().getSkillList());
         for (int i = 0; i < callers.size(); i++) newMain.set(callers.get(i).index(), candidates.get(i));
         List<Waz.Skill> newHost = new ArrayList<>(location.host().getSkillList());
-        newHost.add(expectedBody); newHost.add(expectedIce);
-        int count = Math.addExact(location.host().getSkillList().size(), 2);
-        if (newHost.size() != count || bodyIndex != count - 2 || iceIndex != count - 1)
+        newHost.add(expectedBody); newHost.add(expectedIce); newHost.add(expectedCooling);
+        int count = Math.addExact(location.host().getSkillList().size(), 3);
+        if (newHost.size() != count || bodyIndex != count - 3 || iceIndex != count - 2 || coolingIndex != count - 1)
             throw invalid("Private append positions do not match the candidate host");
         // All validation and candidate construction finish before publishing the three shared views.
         location.main().setSkillList(newMain);
@@ -297,7 +306,8 @@ final class SouCoolGainReturnProtocolFixer {
         }
     }
 
-    private static Waz.Skill buildBody(Waz.Skill prototype, int publicIceIndex, int privateIceIndex, int hostGroup) {
+    private static Waz.Skill buildBody(Waz.Skill prototype, int publicIceIndex, int privateIceIndex,
+                                       int publicCoolingIndex, int privateCoolingIndex, int hostGroup) {
         Waz.Skill body = copy(prototype, Waz.Skill.class);
         body.setSkillNameJapanese(BODY_JP); body.setSkillNameEnglish(BODY_EN);
         var values = slot(body, 1, 35).getSkillInfoObjectList();
@@ -315,8 +325,32 @@ final class SouCoolGainReturnProtocolFixer {
                 throw invalid("Body no longer emits the original public ice");
             reference.setWazSequenceNo(privateIceIndex);
         }
-        // Phase0 +7, phase1 -1, phase2 scalar0 and its 20f exit remain the original payload.
+        if (slot(body, 1, 48).getSkillInfoObjectList().size() != 1) throw invalid("Body cooling emission graph changed");
+        CEventWazaSelect cooling = reference(effect(body, 1, 0));
+        if (!Integer.valueOf(hostGroup).equals(cooling.getWazFileNo()) || !Integer.valueOf(publicCoolingIndex).equals(cooling.getWazSequenceNo()))
+            throw invalid("Body no longer emits the original public cooling entity");
+        cooling.setWazSequenceNo(privateCoolingIndex);
+        // Keep the original cooling packet/interval, phase0 +7, phase1 -1, phase2 scalar0 and 20f exit.
         return body;
+    }
+
+    private static Waz.Skill buildCooling(Waz.Skill prototype) {
+        Waz.Skill cooling = copy(prototype, Waz.Skill.class);
+        cooling.setSkillNameJapanese(COOLING_JP); cooling.setSkillNameEnglish(COOLING_EN);
+        var units = cooling.getPhasesInfo().get(0).getSkillUnitCollection();
+        if (units.stream().anyMatch(unit -> Integer.valueOf(40).equals(unit.getUnitQuantity())))
+            throw invalid("Public cooling unexpectedly has a heat slot");
+        CEventVal heat = new CEventVal(0);
+        heat.setStartFrame(0); heat.setEndFrame(0);
+        heat.setInt1(0); heat.setInt2(0); heat.setInt3(0); heat.setInt4(-100);
+        SkillUnit heatUnit = new SkillUnit(40, "Cool Gain raw heat pulse");
+        heatUnit.getSkillInfoObjectList().add(heat);
+        units.add(heatUnit);
+        units.sort(java.util.Comparator.comparingInt(SkillUnit::getUnitQuantity));
+        // DX slot40 routes a projectile's current-minus-previous heat contribution to its root before the 0f exit.
+        // BHE int10=-100 acts after a confirmed self Hit; this local adaptation instead acts on entity activation.
+        // Preserve the original Hit, effects and exit, and do not add a repeating heat FF.
+        return cooling;
     }
 
     private static Waz.Skill buildIce(Waz.Skill prototype) {

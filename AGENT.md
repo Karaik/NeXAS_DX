@@ -113,7 +113,7 @@ set MAVEN_OPTS=-Xmx4g
 
 ### Sou Cool Gain回收适配（2026-11-05）
 
-- `SouCoolGainReturnProtocolFixer`仅在Tama05动态尾部添加本体／冰片两个深复制私有图，三等级caller改指私有本体，公共源图不改。本体保留channel0预算和原减耗／退场；冰片先判direct parent NULL，再比较父阶段变化／预算耗尽，沿原P7收尾。PARENT_TURN比较当前与自身换块时保存的父entry，不能把非零entry当变化。完整依据与实机边界见`cool-gain-return-20261105.md`，测试通过不代表133已完成实机修复。
+- `SouCoolGainReturnProtocolFixer`在Tama05动态尾部添加本体／冰片／冷却三个深复制私有图，三等级caller改指私有本体，公共源图不改。本体保留channel0预算和原减耗／退场，P1原冷却发射边改指私有冷却体；冷却体以原生slot40单次0f事件向root减100 raw，金额和3f发射频率保留，触发为实体生效而非BHE自机命中确认。三体必须完整安装，旧两体不静默迁移。冰片先判direct parent NULL，再比较父阶段快照／预算耗尽，沿原P7收尾。完整依据与实机边界见`docs/project-deep-dive/bhe-playable-rework/cool-gain-return-20261105.md`及`cool-gain-heat-20261105.md`；源码测试不代替实际热量验收。
 
 ### BHE条件引用与方向图片交付（2026-11-05）
 

@@ -101,7 +101,7 @@
 
 ## Sou Cool Gain回收定向回归（2026-11-05）
 
-- `SouCoolGainReturnProtocolTest`使用真实源输入，覆盖预算保全、父阶段快照及父NULL优先、公共／私有节点身份隔离、动态尾部／三caller、幂等与漂移拒绝、两次二进制回环；仅写仓库内JUnit临时目录。与既有Human／CursedBlade／Snow／Flare／SouCustomizer套件串行执行，保留其整图保全断言。验证范围见`docs/project-deep-dive/bhe-playable-rework/cool-gain-return-20261105.md`。
+- `SouCoolGainReturnProtocolTest`使用真实源输入，覆盖三体完整安装、预算保全、父阶段快照及父NULL优先、公共／私有节点身份隔离、动态尾部／三caller、旧两体／漂移拒绝与两次二进制回环；另核原版Bomb23的slot40字节语法、源冷却量-100 raw和原3f发射频率。只写仓库内JUnit临时目录；与Boost／Human／CursedBlade／Snow／Flare／SouCustomizer串行回归并保留其整图断言。触发差异及实际热量验收边界见`docs/project-deep-dive/bhe-playable-rework/cool-gain-heat-20261105.md`。
 
 ## BHE条件与方向图片定向回归（2026-11-05）
 

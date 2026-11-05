@@ -10,6 +10,7 @@ import com.giga.nexas.dto.bsdx.mek.Mek;
 import com.giga.nexas.dto.bsdx.waz.Waz;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.SkillUnit;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.*;
+import com.giga.nexas.io.BinaryWriter;
 import com.giga.nexas.service.BheBinService;
 import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.BheCommonProjectilePrepareStep;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -44,8 +46,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @Execution(ExecutionMode.SAME_THREAD)
 class SouCoolGainReturnProtocolTest {
     private static final ObjectMapper JSON = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    private static final String BODY = "DX_SOU_COOL_GAIN_BODY", ICE = "DX_SOU_COOL_GAIN_ICE";
-    private static final String BODY_JP = "★蒼：クールゲイン：本体・回収", ICE_JP = "★蒼：クールゲイン：氷・回収";
+    private static final String BODY = "DX_SOU_COOL_GAIN_BODY", ICE = "DX_SOU_COOL_GAIN_ICE", COOLING = "DX_SOU_COOL_GAIN_COOLING";
+    private static final String BODY_JP = "★蒼：クールゲイン：本体・回収", ICE_JP = "★蒼：クールゲイン：氷・回収", COOLING_JP = "★蒼：クールゲイン：熱冷却・専用";
     private static final Path BHE = Path.of("src/main/resources/game/bhe"), DX = Path.of("src/main/resources/game/bsdx");
     private static final String CHARSET = "windows-31j";
     @TempDir Path output;
@@ -55,7 +57,8 @@ class SouCoolGainReturnProtocolTest {
         Map<String,String> preserved = preserved(f);
         for (int level = 1; level <= 3; level++) reference(effect(skill(expected, "C_GAIN0" + level), 0, 0)).setWazSequenceNo(tail);
         SouCustomizer.INSTANCE.customizeBeforeWrite(f.context());
-        assertEquals(tail, index(f.host(), BODY)); assertEquals(tail + 1, index(f.host(), ICE));
+        assertEquals(tail, index(f.host(), BODY)); assertEquals(tail + 1, index(f.host(), ICE)); assertEquals(tail + 2, index(f.host(), COOLING));
+        assertEquals(tail + 3, f.host().getSkillList().size());
         assertEquals(payload(expected), payload(f.main()), "only three main carrier sequence numbers change");
         for (int level = 1; level <= 3; level++) {
             CEventEffect caller = effect(skill(f.main(), "C_GAIN0" + level), 0, 0);
@@ -112,18 +115,19 @@ class SouCoolGainReturnProtocolTest {
 
     @Test void completePrivateGraphsHaveOnlyApprovedDeltasAndEntirePublicPrefixIsPreserved() throws Exception {
         Fixture f = fixture(); int count = f.host().getSkillList().size(); JsonNode prefix = payload(f.host().getSkillList());
-        Waz.Skill body = copy(skill(f.host(), "0344"), Waz.Skill.class), ice = copy(skill(f.host(), "0345"), Waz.Skill.class);
+        Waz.Skill body = copy(skill(f.host(), "0344"), Waz.Skill.class), ice = copy(skill(f.host(), "0345"), Waz.Skill.class), cooling = copy(skill(f.host(), "0346"), Waz.Skill.class);
         JsonNode groups = payload(f.context().getBaseline().getWazaGroupGrp()); Map<String,String> before = preserved(f);
         byte[] prefixBytes = binary(f.host(), output.resolve("prefix-before.waz"));
         SouCustomizer.INSTANCE.customizeBeforeWrite(f.context());
-        assertEquals(count + 2, f.host().getSkillList().size());
+        assertEquals(count + 3, f.host().getSkillList().size());
         assertEquals(prefix, payload(f.host().getSkillList().subList(0, count)));
         assertArrayEquals(prefixBytes, Arrays.copyOf(binary(f.host(), output.resolve("prefix-after.waz")), prefixBytes.length));
-        assertEquals(payload(expectedBody(body, index(f.host(), ICE))), payload(skill(f.host(), BODY)));
+        assertEquals(payload(expectedBody(body, index(f.host(), ICE), index(f.host(), COOLING))), payload(skill(f.host(), BODY)));
         assertEquals(payload(expectedIce(ice)), payload(skill(f.host(), ICE)));
-        assertIndependentMutableGraphs(List.of(skill(f.host(), "0344"), skill(f.host(), "0345")),
-                List.of(skill(f.host(), BODY), skill(f.host(), ICE)));
-        ((ObjectNode) groups.path("wazaList").get(f.hostGroup())).put("param", count + 2);
+        assertEquals(payload(expectedCooling(cooling, f.heatGrammarDonor())), payload(skill(f.host(), COOLING)));
+        assertIndependentMutableGraphs(List.of(skill(f.host(), "0344"), skill(f.host(), "0345"), skill(f.host(), "0346"), f.heatGrammarDonor()),
+                List.of(skill(f.host(), BODY), skill(f.host(), ICE), skill(f.host(), COOLING)));
+        ((ObjectNode) groups.path("wazaList").get(f.hostGroup())).put("param", count + 3);
         assertEquals(groups, payload(f.context().getBaseline().getWazaGroupGrp()));
         assertEquals(before, preserved(f)); assertSourceFiles(f);
     }
@@ -131,13 +135,14 @@ class SouCoolGainReturnProtocolTest {
     @Test void dynamicTailAndVerifiedRepeatPreserveInstalledObjectsAndLaterPrivateAppends() throws Exception {
         Fixture f = fixture(); appendUnrelated(f, "BEFORE_COOL_GAIN"); int tail = f.host().getSkillList().size();
         SouCustomizer.INSTANCE.customizeBeforeWrite(f.context());
-        assertEquals(tail, index(f.host(), BODY)); assertEquals(tail + 1, index(f.host(), ICE));
+        assertEquals(tail, index(f.host(), BODY)); assertEquals(tail + 1, index(f.host(), ICE)); assertEquals(tail + 2, index(f.host(), COOLING));
+        assertEquals(tail + 3, f.host().getSkillList().size());
         appendUnrelated(f, "AFTER_COOL_GAIN");
         List<Waz.Skill> main = f.main().getSkillList(), host = f.host().getSkillList();
-        Waz.Skill body = skill(f.host(), BODY), ice = skill(f.host(), ICE); String before = snapshot(f);
+        Waz.Skill body = skill(f.host(), BODY), ice = skill(f.host(), ICE), cooling = skill(f.host(), COOLING); String before = snapshot(f);
         SouCustomizer.INSTANCE.customizeBeforeWrite(f.context());
         assertSame(main, f.main().getSkillList()); assertSame(host, f.host().getSkillList());
-        assertSame(body, skill(f.host(), BODY)); assertSame(ice, skill(f.host(), ICE)); assertEquals(before, snapshot(f));
+        assertSame(body, skill(f.host(), BODY)); assertSame(ice, skill(f.host(), ICE)); assertSame(cooling, skill(f.host(), COOLING)); assertEquals(before, snapshot(f));
     }
 
     @Test void rawSourceAndPublicTargetDriftRejectBeforeAnyCoolGainPublication() throws Exception {
@@ -148,7 +153,8 @@ class SouCoolGainReturnProtocolTest {
                 f -> val(skill(f.host(), "0344"), 1, 0).setInt4(1),
                 f -> change(skill(f.host(), "0345"), 5, 0).getBsdxInfoCollectionList1().get(0).setParamList(new ArrayList<>(List.of(2))),
                 f -> change(skill(f.host(), "0345"), 7, 0).setStartFrame(14),
-                f -> change(skill(f.host(), "0346"), 0, 0).setStartFrame(1))) {
+                f -> change(skill(f.host(), "0346"), 0, 0).setStartFrame(1),
+                f -> sourceCoolingHit(f).setInt10(-99))) {
             Fixture f = fixture(); corruption.accept(f); assertRejected(f);
         }
     }
@@ -167,6 +173,7 @@ class SouCoolGainReturnProtocolTest {
     @Test void mainHostAndGroupSurviveTwoBinaryPassesAndParsedIdempotence() throws Exception {
         Fixture f = fixture(); SouCustomizer.INSTANCE.customizeBeforeWrite(f.context());
         assertEquals(BODY_JP, skill(f.host(), BODY).getSkillNameJapanese()); assertEquals(ICE_JP, skill(f.host(), ICE).getSkillNameJapanese());
+        assertEquals(COOLING_JP, skill(f.host(), COOLING).getSkillNameJapanese());
         BsdxBinService service = new BsdxBinService(); Waz[] parsed = new Waz[2];
         Waz[] originals = {f.main(),f.host()};
         for (int i = 0; i < 2; i++) {
@@ -185,12 +192,95 @@ class SouCoolGainReturnProtocolTest {
         String before = snapshot(f); SouCustomizer.INSTANCE.customizeBeforeWrite(f.context()); assertEquals(before, snapshot(f)); assertSourceFiles(f);
     }
 
-    private static Waz.Skill expectedBody(Waz.Skill prototype, int iceIndex) {
+    @Test void privateCoolingUsesOriginalBsdxHeatGrammarAndTheOriginalHundredRawAmountAndCadence() throws Exception {
+        Fixture f = fixture(); Waz.Skill donor = f.heatGrammarDonor();
+        assertEquals("発光爆風（小）", donor.getSkillNameJapanese()); assertEquals("0004", donor.getSkillNameEnglish());
+        CEventVal vanilla = heat(donor);
+        assertEquals(0, vanilla.getTypeId()); assertEquals(List.of(0,0), frames(vanilla)); assertEquals(List.of(0,0,0,-30), four(vanilla));
+        assertEquals(1, unit(donor, 0, 40).getSkillInfoObjectList().size()); assertTrue(unit(donor, 0, 40).getSkillInfoUnknownList().isEmpty());
+        byte[] bombBytes = f.sourceFiles().get(resolve(DX.resolve("waz"), "Bomb.waz"));
+        byte[] originalHeatRecord = Arrays.copyOfRange(bombBytes, 76993, 77017);
+        assertArrayEquals(ByteBuffer.allocate(24).order(ByteOrder.LITTLE_ENDIAN).putInt(0).putInt(0).putInt(0).putInt(0).putInt(0).putInt(-30).array(), originalHeatRecord);
+        assertArrayEquals(originalHeatRecord, eventBytes(vanilla), "real vanilla Bomb23 slot40 record proves the 0f absolute-value grammar");
+        assertEquals(-100, sourceCoolingHit(f).getInt10(), "original BHE hit transfers minus 100 raw heat to its victim");
+        assertEquals(6, sourceCoolingHit(f).getShort1().intValue());
+        Waz.Skill publicCooling = skill(f.host(), "0346");
+        assertFalse(hasHeat(publicCooling));
+        SouCustomizer.INSTANCE.customizeBeforeWrite(f.context());
+        Waz.Skill body = skill(f.host(), BODY), cooling = skill(f.host(), COOLING);
+        CEventVal actual = heat(cooling), expected = copy(vanilla, CEventVal.class); expected.setInt4(sourceCoolingHit(f).getInt10());
+        assertEquals(payload(expected), payload(actual)); assertEquals(1, unit(cooling, 0, 40).getSkillInfoObjectList().size());
+        assertTrue(unit(cooling, 0, 40).getSkillInfoUnknownList().isEmpty(), "one pulse per cooling entity, no repeating heat FF");
+        assertEquals(payload(unit(publicCooling, 0, 41)), payload(unit(cooling, 0, 41)), "the existing self zero-damage Hit remains intact");
+        assertEquals(payload(unit(publicCooling, 0, 71)), payload(unit(cooling, 0, 71)), "the original 0f exit remains intact");
+        CEventEffect pulse = effect(body, 1, 0), publicPulse = effect(skill(f.host(), "0344"), 1, 0);
+        CEventEffect onlyRebound = copy(publicPulse, CEventEffect.class); reference(onlyRebound).setWazSequenceNo(index(f.host(), COOLING));
+        assertEquals(payload(onlyRebound), payload(pulse), "only the P1 cooling reference changes; original spawn packet remains");
+        assertEquals(f.hostGroup(), reference(pulse).getWazFileNo()); assertEquals(index(f.host(), COOLING), reference(pulse).getWazSequenceNo());
+        assertEquals(List.of(0,107), frames(pulse)); assertEquals(List.of(List.of(0,107,-1,1,-2)), loops(unit(body, 1, 48)));
+        CEventValRandom amount = inner(pulse, 4), interval = inner(pulse, 6);
+        assertEquals(List.of(0,1,0,0,1,0), six(amount)); assertEquals(List.of(0,3,0,0,3,0), six(interval));
+        assertFalse(hasHeat(body)); assertFalse(hasHeat(skill(f.host(), ICE))); assertFalse(hasHeat(publicCooling));
+        for (int rawHeat : List.of(0,1,50,99,100,101,900,1000,1080,8000)) {
+            int once = applyNativeHeatDelta(rawHeat, actual.getInt4(), 0);
+            assertEquals(Math.max(0, rawHeat - 100), once);
+            assertEquals(once, applyNativeHeatDelta(once, actual.getInt4(), actual.getInt4()), "unchanged cumulative slot40 value must not deduct a second time");
+            int accumulated = rawHeat;
+            for (int entity = 0; entity < 10; entity++) accumulated = applyNativeHeatDelta(accumulated, actual.getInt4(), 0);
+            assertEquals(Math.max(0, rawHeat - 1000), accumulated, "each new entity has an independent zero previous contribution");
+        }
+        // 610300/621780 apply current minus previous raw contribution with floor0; 611820 handles heat before the 0f exit.
+        // This adaptation deducts on cooling-entity activation, whereas BHE deducts after its self Hit is confirmed.
+        // The amount/cadence checks and arithmetic model do not claim per-hit equivalence or game/runtime validation.
+        assertSourceFiles(f);
+    }
+
+    @Test void oldTwoMemberFamilyAndMissingOrTamperedCoolingRejectWithoutMigration() throws Exception {
+        Fixture oldPair = fixture(); int first = oldPair.host().getSkillList().size();
+        oldPair.host().getSkillList().add(expectedBody(skill(oldPair.host(), "0344"), first + 1, index(oldPair.host(), "0346")));
+        oldPair.host().getSkillList().add(expectedIce(skill(oldPair.host(), "0345")));
+        for (int level = 1; level <= 3; level++) reference(effect(skill(oldPair.main(), "C_GAIN0" + level), 0, 0)).setWazSequenceNo(first);
+        oldPair.context().getBaseline().getWazaGroupGrp().getWazaList().get(oldPair.hostGroup()).setParam(first + 2);
+        assertRejected(oldPair);
+        Fixture missing = fixture(); SouCustomizer.INSTANCE.customizeBeforeWrite(missing.context());
+        skill(missing.host(), COOLING).setSkillNameEnglish("INCOMPLETE_COOLING"); assertRejected(missing);
+        Fixture alteredAmount = fixture(); SouCustomizer.INSTANCE.customizeBeforeWrite(alteredAmount.context());
+        heat(skill(alteredAmount.host(), COOLING)).setInt4(-1000); assertRejected(alteredAmount);
+        Fixture shiftedEvent = fixture(); SouCustomizer.INSTANCE.customizeBeforeWrite(shiftedEvent.context());
+        heat(skill(shiftedEvent.host(), COOLING)).setStartFrame(1); assertRejected(shiftedEvent);
+        Fixture oldReference = fixture(); SouCustomizer.INSTANCE.customizeBeforeWrite(oldReference.context());
+        reference(effect(skill(oldReference.host(), BODY), 1, 0)).setWazSequenceNo(index(oldReference.host(), "0346")); assertRejected(oldReference);
+    }
+
+    private static Waz.Skill expectedBody(Waz.Skill prototype, int iceIndex, int coolingIndex) {
         Waz.Skill expected = copy(prototype, Waz.Skill.class); expected.setSkillNameJapanese(BODY_JP); expected.setSkillNameEnglish(BODY);
         unit(expected, 1, 35).getSkillInfoObjectList().remove(0);
         assertEquals(4, unit(expected, 0, 48).getSkillInfoObjectList().size());
         for (int i = 0; i < 4; i++) reference(effect(expected, 0, i)).setWazSequenceNo(iceIndex);
+        reference(effect(expected, 1, 0)).setWazSequenceNo(coolingIndex);
         return expected;
+    }
+
+    private static Waz.Skill expectedCooling(Waz.Skill prototype, Waz.Skill vanillaDonor) {
+        Waz.Skill expected = copy(prototype, Waz.Skill.class); expected.setSkillNameJapanese(COOLING_JP); expected.setSkillNameEnglish(COOLING);
+        assertTrue(expected.getPhasesInfo().get(0).getSkillUnitCollection().stream().noneMatch(u -> Integer.valueOf(40).equals(u.getUnitQuantity())));
+        SkillUnit heat = copy(unit(vanillaDonor, 0, 40), SkillUnit.class);
+        assertInstanceOf(CEventVal.class, heat.getSkillInfoObjectList().get(0)).setInt4(-100);
+        expected.getPhasesInfo().get(0).getSkillUnitCollection().add(heat);
+        expected.getPhasesInfo().get(0).getSkillUnitCollection().sort(Comparator.comparingInt(SkillUnit::getUnitQuantity));
+        return expected;
+    }
+
+    private static CEventVal heat(Waz.Skill skill) { return assertInstanceOf(CEventVal.class, unit(skill, 0, 40).getSkillInfoObjectList().get(0)); }
+    private static boolean hasHeat(Waz.Skill skill) { return skill.getPhasesInfo().stream().flatMap(p -> p.getSkillUnitCollection().stream()).anyMatch(u -> Integer.valueOf(40).equals(u.getUnitQuantity()) && (!u.getSkillInfoObjectList().isEmpty() || !u.getSkillInfoUnknownList().isEmpty())); }
+    private static CEventValRandom inner(CEventEffect event, int slot) { return event.getCeventEffectUnitList().stream().filter(u -> Integer.valueOf(slot).equals(u.getUnitSlotNum())).map(u -> assertInstanceOf(CEventValRandom.class, u.getData())).findFirst().orElseThrow(); }
+    private static List<Integer> six(CEventValRandom value) { return List.of(value.getInt1(),value.getInt2(),value.getInt3(),value.getInt4(),value.getInt5(),value.getInt6()); }
+    private static byte[] eventBytes(CEventVal event) throws Exception { ByteArrayOutputStream out = new ByteArrayOutputStream(); try (BinaryWriter writer = new BinaryWriter(out, CHARSET)) { event.writeInfo(writer); } return out.toByteArray(); }
+    private static int applyNativeHeatDelta(int rootHeat, int currentContribution, int previousContribution) { return Math.max(0, Math.addExact(rootHeat, Math.subtractExact(currentContribution, previousContribution))); }
+    private static com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventHit sourceCoolingHit(Fixture f) {
+        var unit = f.raw().getCommonProjectileWazByFileName().get("tama05.waz").getSkillList().get(377).getPhasesInfo().get(0).getSkillUnitCollection().stream().filter(u -> Integer.valueOf(46).equals(u.getUnitQuantity())).findFirst().orElseThrow();
+        assertEquals(1, unit.getSkillInfoObjectList().size());
+        return assertInstanceOf(com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventHit.class, unit.getSkillInfoObjectList().get(0));
     }
 
     private static Waz.Skill expectedIce(Waz.Skill prototype) {
@@ -288,7 +378,7 @@ class SouCoolGainReturnProtocolTest {
             }
     }
 
-    private record Fixture(FollowupMekaContext context, TsukuyomiRawSourceBundle raw, String hostName, int hostGroup, Map<Path,byte[]> sourceFiles) {
+    private record Fixture(FollowupMekaContext context, TsukuyomiRawSourceBundle raw, String hostName, int hostGroup, Waz.Skill heatGrammarDonor, Map<Path,byte[]> sourceFiles) {
         Waz main() { return context.getReboundWaz(); }
         Waz host() { return context.getBaseline().getWazByFileName().entrySet().stream().filter(e -> hostName.equalsIgnoreCase(e.getKey())).findFirst().orElseThrow().getValue(); }
     }
@@ -297,13 +387,15 @@ class SouCoolGainReturnProtocolTest {
         BheBinService bhe = new BheBinService();
         Path mekPath = BHE.resolve("mek/sou/sou.mek"), mainPath = BHE.resolve("waz/sou/sou.waz");
         Map<Path, byte[]> sourceFiles = new LinkedHashMap<>();
-        for (Path p : List.of(mekPath, mainPath, resolve(BHE.resolve("waz"), "tama05.waz"), resolve(DX.resolve("waz"), "Tama05.waz")))
+        for (Path p : List.of(mekPath, mainPath, resolve(BHE.resolve("waz"), "tama05.waz"), resolve(DX.resolve("waz"), "Tama05.waz"), resolve(DX.resolve("waz"), "Bomb.waz")))
             sourceFiles.put(p, Files.readAllBytes(p));
         var rawMek = (com.giga.nexas.dto.bhe.mek.Mek) bhe.parse(mekPath.toString(), CHARSET).getData();
         var rawMain = (com.giga.nexas.dto.bhe.waz.Waz) bhe.parse(mainPath.toString(), CHARSET).getData();
         TsukuyomiRawSourceBundle raw = loadCommonSource(bhe);
         raw.setTsukuyomiMek(rawMek); raw.getWazByFileName().put("sou.waz", rawMain);
         TsukuyomiBsdxBaselineBundle baseline = loadBaseline();
+        Waz vanillaBomb = baseline.getWazByFileName().entrySet().stream().filter(e -> e.getKey().equalsIgnoreCase("Bomb.waz")).findFirst().orElseThrow().getValue();
+        Waz.Skill heatGrammarDonor = copy(vanillaBomb.getSkillList().get(23), Waz.Skill.class);
         TsukuyomiConvertedBundle prepared = new TsukuyomiConvertedBundle();
         new BheCommonProjectilePrepareStep().prepare(new TsukuyomiGraftRequest(), raw, baseline, prepared);
         var plan = prepared.getCommonProjectileAppendPlan();
@@ -345,7 +437,7 @@ class SouCoolGainReturnProtocolTest {
         int sourceGroup = BheCommonProjectileResources.commonProjectileWazFiles().indexOf("tama05.waz");
         String hostName = plan.getSourceWazIndexToTargetFileName().get(sourceGroup);
         int hostGroup = plan.getSourceWazIndexToTargetIndex().get(sourceGroup);
-        Fixture f = new Fixture(context, raw, hostName, hostGroup, sourceFiles);
+        Fixture f = new Fixture(context, raw, hostName, hostGroup, heatGrammarDonor, sourceFiles);
         assertEquals("C_GAIN01", rawMain.getSkillList().get(447).getSkillNameEnglish());
         assertEquals("C_GAIN02", rawMain.getSkillList().get(448).getSkillNameEnglish());
         assertEquals("C_GAIN03", rawMain.getSkillList().get(449).getSkillNameEnglish());
