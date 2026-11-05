@@ -322,7 +322,8 @@ final class ManagedPlayableBuild implements AutoCloseable {
                 Path inventory = directory.resolve(INVENTORY);
                 if (!sha256(inventory).equals(marker.path("inventorySha256").asText())) throw new IOException("Inventory identity changed");
                 Tree tree = snapshot(directory);
-                if (!JSON.valueToTree(tree.rows).equals(JSON.readTree(inventory.toFile())))
+                if (!inventoryForComparison(JSON.valueToTree(tree.rows))
+                        .equals(inventoryForComparison(JSON.readTree(inventory.toFile()))))
                     throw new IOException("Uninventoried or changed output retained: " + directory);
                 if (marker.path("state").asText().equals("COMPLETE")) {
                     if (!sha256(directory.resolve("build.json")).equals(marker.path("receiptSha256").asText())) throw new IOException("Receipt changed");
@@ -348,6 +349,18 @@ final class ManagedPlayableBuild implements AutoCloseable {
         Tree tree = snapshot(directory);
         writeJson(directory.resolve(INVENTORY), JSON.valueToTree(tree.rows));
         marker.put("inventorySha256", sha256(directory.resolve(INVENTORY)));
+    }
+
+    private static JsonNode inventoryForComparison(JsonNode inventory) {
+        if (inventory == null) return null;
+        JsonNode comparable = inventory.deepCopy();
+        if (comparable.isArray()) {
+            for (JsonNode row : comparable) {
+                if (row.isObject() && "directory".equals(row.path("kind").asText()))
+                    ((ObjectNode) row).remove("modified");
+            }
+        }
+        return comparable;
     }
 
     private Tree snapshot(Path directory) throws IOException {

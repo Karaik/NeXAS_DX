@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -257,6 +258,96 @@ class ManagedPlayableBuildTest {
     }
 
     @Test
+    void directoryMtimeOnlyDriftDoesNotPreventRetiringUnchangedPayloads() throws Exception {
+        Path old = completedWithEmptyDirectory("old");
+        String inventoryHash = ManagedPlayableBuild.sha256(old.resolve(".bhe-playable-files.json"));
+        String payloadHash = ManagedPlayableBuild.sha256(old.resolve("sou/intermediate.txt"));
+        FileTime payloadTime = Files.getLastModifiedTime(old.resolve("sou/intermediate.txt"));
+        for (Path directory : List.of(old.resolve("sou"), old.resolve("sou/.nexas-tools"),
+                old.resolve("sou/.nexas-tools/owned-empty"))) {
+            FileTime before = Files.getLastModifiedTime(directory);
+            Files.setLastModifiedTime(directory, FileTime.fromMillis(before.toMillis() + 86_400_000));
+            assertNotEquals(before, Files.getLastModifiedTime(directory));
+        }
+        assertEquals(inventoryHash, ManagedPlayableBuild.sha256(old.resolve(".bhe-playable-files.json")));
+        assertEquals(payloadHash, ManagedPlayableBuild.sha256(old.resolve("sou/intermediate.txt")));
+        assertEquals(payloadTime, Files.getLastModifiedTime(old.resolve("sou/intermediate.txt")));
+
+        Path fresh = assertDoesNotThrow(() -> completed(null, "new"));
+
+        assertFalse(Files.exists(old), "directory timestamps alone do not change the owned payload tree");
+        assertEquals("new pac", Files.readString(fresh.resolve("sou/Update3.pac")));
+    }
+
+    @Test
+    void newlyAddedEmptyDirectoryStillPreventsAnyPayloadRetirement() throws Exception {
+        Path old = completed(null, "old");
+        Path unknown = Files.createDirectory(old.resolve("sou/uninventoried-empty"));
+        try (ManagedPlayableBuild fresh = open(null)) {
+            assertThrows(IOException.class, () -> fresh.complete(receipt(fresh.runRoot(), "new")));
+        }
+        assertTrue(Files.isDirectory(unknown));
+        assertEquals("old exe", Files.readString(old.resolve("sou/game.exe")));
+        assertEquals("old pac", Files.readString(old.resolve("sou/Update3.pac")));
+    }
+
+    @Test
+    void missingInventoriedEmptyDirectoryStillPreventsAnyPayloadRetirement() throws Exception {
+        Path old = completedWithEmptyDirectory("old");
+        Files.delete(old.resolve("sou/.nexas-tools/owned-empty"));
+        try (ManagedPlayableBuild fresh = open(null)) {
+            assertThrows(IOException.class, () -> fresh.complete(receipt(fresh.runRoot(), "new")));
+        }
+        assertEquals("old exe", Files.readString(old.resolve("sou/game.exe")));
+        assertEquals("old pac", Files.readString(old.resolve("sou/Update3.pac")));
+    }
+
+    @Test
+    void inventoriedDirectoryReplacedByARegularFileRemainsProtected() throws Exception {
+        Path old = completedWithEmptyDirectory("old");
+        Path replaced = old.resolve("sou/.nexas-tools/owned-empty");
+        Files.delete(replaced);
+        text(replaced, "replacement user text");
+        try (ManagedPlayableBuild fresh = open(null)) {
+            assertThrows(IOException.class, () -> fresh.complete(receipt(fresh.runRoot(), "new")));
+        }
+        assertEquals("replacement user text", Files.readString(replaced));
+        assertEquals("old exe", Files.readString(old.resolve("sou/game.exe")));
+    }
+
+    @Test
+    void inventoriedDirectoryReplacedByALinkCannotRedirectRetirement() throws Exception {
+        Path old = completedWithEmptyDirectory("old");
+        Path foreign = Files.createDirectory(sandbox.resolve("foreign-owned-directory"));
+        Path sentinel = text(foreign.resolve("keep.txt"), "not a managed output");
+        Path replaced = old.resolve("sou/.nexas-tools/owned-empty");
+        Files.delete(replaced);
+        Files.createSymbolicLink(replaced, foreign);
+        links.add(replaced);
+        try (ManagedPlayableBuild fresh = open(null)) {
+            assertThrows(IOException.class, () -> fresh.complete(receipt(fresh.runRoot(), "new")));
+        }
+        assertEquals("not a managed output", Files.readString(sentinel));
+        assertEquals("old exe", Files.readString(old.resolve("sou/game.exe")));
+    }
+
+    @Test
+    void fileMtimeOnlyDriftStillPreventsRetiringIdenticalBytes() throws Exception {
+        Path old = completed(null, "old");
+        Path file = old.resolve("sou/intermediate.txt");
+        String hash = ManagedPlayableBuild.sha256(file);
+        FileTime before = Files.getLastModifiedTime(file);
+        Files.setLastModifiedTime(file, FileTime.fromMillis(before.toMillis() + 86_400_000));
+        assertNotEquals(before, Files.getLastModifiedTime(file));
+        assertEquals(hash, ManagedPlayableBuild.sha256(file));
+        try (ManagedPlayableBuild fresh = open(null)) {
+            assertThrows(IOException.class, () -> fresh.complete(receipt(fresh.runRoot(), "new")));
+        }
+        assertEquals("old intermediate", Files.readString(file));
+        assertEquals("old exe", Files.readString(old.resolve("sou/game.exe")));
+    }
+
+    @Test
     void missingConsumerStateDoesNotPermitDeletingItsPreparedSource() throws Exception {
         Path old = completed(null, "old");
         Path consumer = Files.createDirectories(project.resolve("target/bhe-playable-runtime/missing-state"));
@@ -363,6 +454,15 @@ class ManagedPlayableBuildTest {
     private Path completed(String root, String label) throws Exception {
         try (ManagedPlayableBuild run = open(root)) {
             Path path = run.runRoot(); run.complete(receipt(path, label)); return path;
+        }
+    }
+
+    private Path completedWithEmptyDirectory(String label) throws Exception {
+        try (ManagedPlayableBuild run = open(null)) {
+            Path path = run.runRoot();
+            Files.createDirectories(path.resolve("sou/.nexas-tools/owned-empty"));
+            run.complete(receipt(path, label));
+            return path;
         }
     }
 
