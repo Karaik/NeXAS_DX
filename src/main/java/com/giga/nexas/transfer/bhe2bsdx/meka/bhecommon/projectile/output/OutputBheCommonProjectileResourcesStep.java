@@ -8,6 +8,7 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.service.BsdxBinService;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.LayeredAssetResolver;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.term.BheActionWazaReferenceRebinder;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBundle;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiImportedAssetSet;
@@ -91,6 +92,7 @@ public class OutputBheCommonProjectileResourcesStep {
              * 落盘前只复制输出对象并重写 CEventVoice group，避免把共享基线里的 BHE 源 group 改没。
              */
             Waz outputWaz = voiceRebinder.copyForOutput(waz, cumulativeSourceBatVoiceGroupIndexToTargetIndex);
+            BheActionWazaReferenceRebinder.rebindAppendedOutputCopy(outputWaz, fileName, appendPlan);
             outputWaz.setExtensionName("waz");
             Path output = outputRoot.resolve(fileName);
             bsdxBinService.generate(output.toString(), outputWaz, CHARSET);
@@ -278,13 +280,8 @@ public class OutputBheCommonProjectileResourcesStep {
         if (animData == null || animData.getPatData() == null) {
             return;
         }
-        for (Spm.SPMPatData patData : animData.getPatData()) {
-            if (patData == null || patData.getPageNo() == null) {
-                continue;
-            }
-            for (Integer pageNo : patData.getPageNo()) {
-                collectImageNamesFromPage(spm, pageNo, imageNames);
-            }
+        for (Integer pageNo : com.giga.nexas.transfer.bhe2bsdx.meka.shared.SpmAnimationPages.reachablePages(spm, animData)) {
+            collectImageNamesFromPage(spm, pageNo, imageNames);
         }
     }
 

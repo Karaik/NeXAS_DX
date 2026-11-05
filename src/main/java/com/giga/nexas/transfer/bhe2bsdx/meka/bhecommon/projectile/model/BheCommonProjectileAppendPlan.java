@@ -53,6 +53,10 @@ public class BheCommonProjectileAppendPlan {
     private Map<Integer, Integer> sourceWazIndexToTargetSkillBase = new LinkedHashMap<>();
     private Map<Integer, Integer> sourceWazIndexToTargetSkillCount = new LinkedHashMap<>();
 
+    /** 已实际分配的私有WAZ身份，供公共源ACTION_WAZA条件在输出副本中晚绑定。 */
+    private Map<Integer, Integer> sourcePrivateWazIndexToTargetIndex = new LinkedHashMap<>();
+    private Map<Integer, Map<Integer, Integer>> sourcePrivateWazSkillIndexToTargetIndexByGroup = new LinkedHashMap<>();
+
     /**
      * BHE 源 SpriteGroup index -> preparedBaseline 中的目标 SpriteGroup index。
      *

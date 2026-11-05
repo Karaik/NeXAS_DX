@@ -2,6 +2,10 @@
 
 > **For agentic workers:** 复用既有SDD和角色定制流程；root把控设计、编辑权、串行Maven／整链／UI／CDB及中文提交。直接develop，不建分支／工作树，不push。
 
+> **2026-11-05当前约束与状态：** 用户已恢复目标，当前继续执行，允许仓库内构建、测试和实机验收；构建、运行及临时产物只写本仓库`target`，仓库外不写删，不上传或重复保留二进制。正式源码、工具、文档和固定文本证据仍放既定`src`／`tools`／`docs`位置。2026-11-03封存包已完成构建，但当前两项源码修复尚未重新封包，旧包130个variant0菜单闭环不能替代新版实机验证。进度以[Sou菜单验收记录](../../project-deep-dive/bhe-playable-rework/sou-menu-validation-20261105.md)及[恢复记录末尾](../../project-deep-dive/bhe-playable-rework/resumed-validation-20261103.md)为准。
+>
+> 下列032001／131244／原7项计数及未勾选清单保留2026-10-30的计划起点，不表示当前只有7项追加、仍使用那些运行包或目标仍暂停；54招设计与验收条件保持原计划。
+
 **Goal:** 按用户2026-10-30新增第8至10项，在原七项目标之上完成九角色每人至少六个有独立用途、可装备且能连段的追加武装，并验证Sou已列菜单技能不因选装／使用而闪退；每批成果提交、记录并固定独立产物。
 
 **Architecture:** 保持JINKI V2→Tsukuyomi→Followup、既有DTO、Customizer、CharacterWeaponVariants.append、Import／Pack。新增内容在角色专属扩展点与私有WAZ执行图内，不建立新脚本语言或重写流水线。
@@ -24,7 +28,7 @@
 - [ ] Nagi／Wilhelm／Motoki：围绕防反／盾、四足／履带炮击、离陆／空袭／落地设计；普通、取消和受击中断都要收尾。
 - [ ] root逐组审设计，确认供体签名／Material并集、独立副本与0..152边界后分配实现；子代理不得自行提交、运行Maven或控制游戏。
 - [ ] 每批真实失败回归与必要既有回归由root串行执行；结构或编码通过不替代游戏。无行为变动的小文案不写镜像测试。
-- [ ] 完整构建到C盘独立目录，核源不变、最终MEK／WAZ／Material／GRP引用及PAC解包一致，固定receipt和SHA；不覆盖旧包或删除失败证据。
+- [ ] 通过受控入口完整构建到本仓库`target/bhe-playable-builds`，试跑仅在`target/bhe-playable-runtime`；核源不变、最终MEK／WAZ／Material／GRP引用及PAC解包一致，固定receipt和SHA。旧受管副本仅按所有权、哈希和活动消费者规则清理，保留必要失败文本证据，不向C盘另建构建目录。
 
 ## 实际运行与Sou
 

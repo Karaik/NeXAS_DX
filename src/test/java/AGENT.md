@@ -95,6 +95,12 @@
 - 训练Replay输入夹具为`python tools/bhe_replay_input_fixture.py inspect --template <录像>`及`create --template <录像> --out <新录像> --input-json <时序JSON>`；模板须由当前角色正常UI保存，输出不得已存在。该工具不直接出招；通过游戏正常载入／播放并读取真实取消／受击链后，才能记录跨武装连段，见`replay-validation-20261029.md`。
 - `MekaPreloadBudgetTest,ImportStaticAssetsStepBheOutputTest`验证103／104／114行费用输出、继承前缀保全及坏表拒绝；`MekaLoaderCapacityTest,MekaLoaderPatchApplicationTest,NativeErrorHandlerPreservationTest`使用与runner相同的`ida-reverse/BaldrSky.exe`基线。静态费用权重验证不能代替原生调度实测。
 
+## BHE条件与方向图片定向回归（2026-11-05）
+
+- `ActionWazaReferenceRebindTest`覆盖真实Sou／Nagi条件、非identity映射、私有组晚分配、源隔离、原DX前缀／尾段边界及两次真实二进制回环。`rebindSourceCopy`只接受新建源副本，重复输出必须从共享未改基线重新复制。
+- `SpmDirectionalImageDeliveryTest`覆盖原生旋转／镜像方向页、负基址的最终页过滤、三处collector与validator、Heat Procter真实供体交付；缺图片仍为nonfatal审计，缺必需SE的独立失败合同不变。通过`tools/Invoke-BheChecks.ps1 -Test "ActionWazaReferenceRebindTest,SpmDirectionalImageDeliveryTest,OutputBheCommonProjectileResourcesStepTest,LayeredAssetDeliveryTest"`串行运行，产物只在仓库target。
+- 这些测试不代表Sou123已实机修复；case07/08崩溃、旧包130项菜单闭环和剩余验收范围见`docs/project-deep-dive/bhe-playable-rework/sou-menu-validation-20261105.md`。
+
 ## BHE流水线定向回归（2026-10-08）
 
 - `mvn -q "-Dtest=SouCustomizerTest" test`验证等级Material切片、过滤/AI索引、幂等、真实Sou二进制回环及其余九角色单条布局。生成文件仅写`@TempDir`。

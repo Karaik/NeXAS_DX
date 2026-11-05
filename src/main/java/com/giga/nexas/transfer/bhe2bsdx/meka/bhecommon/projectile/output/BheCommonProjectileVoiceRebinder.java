@@ -7,6 +7,7 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventSe;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.CEventVoice;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoUnknown;
+import com.giga.nexas.util.InfoCollectionMapper;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -177,6 +178,7 @@ public class BheCommonProjectileVoiceRebinder {
 
         SkillInfoObject target = instantiateLike(source);
         BeanUtil.copyProperties(source, target);
+        InfoCollectionMapper.copyBsdxToBsdx(source, target);
 
         if (source instanceof CEventVoice sourceVoice && target instanceof CEventVoice targetVoice) {
             targetVoice.setByteDataList(copyVoiceByteData(sourceVoice.getByteDataList(), voiceGroupMap));

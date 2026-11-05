@@ -1,0 +1,25 @@
+# ACTION_WAZA条件与方向图片交付修复
+
+## 确证问题
+
+Sou121设施的根对象ACTION_WAZA条件仍保存BHE源组9，最终DX组9却属于KOU，Sou实际分配组为120。公共源共10处条件：Tama01三处、Tama03四处、Tama05一处、Bomb两处；其中9处Sou、1处Nagi。修复使用真实分配映射，不能硬编码120，也不添加超时或强制END。121/122设施驻留与交互必须另作实机验证。
+
+Sou123在旧包case07、未装gameplay/combat探针的case08均于767A15读取空CSurface指针崩溃。图像表第249项为bhe_tama_bit041_0001.png；SPM动画472基础页2077只用_0002，方向页还会用_0001。旧包缺_0001，真实供体存在且SHA256为fd9bd82d98a5030a277870336dcd56d92ec40f4bb9b34b39b380faa558ca1b14。崩溃现场见sou-menu-validation-20261105.md及对应小型文本证据。修复后实际运行仍须验证，不能用静态收集通过代替。
+
+## 实现与范围
+
+BheActionWazaReferenceRebinder只识别CEventChange条件与CEventTerm类型6中的OBJECT3/ACTION_WAZA，保持其它参数、对象选择和否定标志。私有新建图消费本次与累计映射；公共输出先深拷贝BsdxInfoCollection，再对登记的BHE追加切片晚绑定，保持原DX前缀、未登记尾部和共享源不变。每次输出从未修改基线重建，避免累计偏移。
+
+SpmAnimationPages由7655A0及867B58原生方向表确定所有方向和镜像可达页，三个collector和AssetDeliveryValidator共用。保留整数除法：16方向的22度间隔可能到达偏移16，即17页。先加方向偏移，再过滤最终负页；raw=-1不代表所有方向都不绘图。结构范围错误独立拒绝，已有缺图只记unresolvedImageReferences的规则不变，不造占位图；有真实供体的方向图片才复制。
+
+## 审查与测试
+
+两名代理交叉只读审查；条件binder未发现确定阻断项。方向审查发现raw=-1提前跳过的通用遗漏，原生60C450保存计算后的page，60EA60才依最终值判断绘图；本轮已修正。固定12个源公共SPM未发现负base，最终188个精确EOF读取的SPM也无负base，另3个小SPM因独立读取器EOF限制未计入覆盖；不把此边界当作另一个已实测崩溃原因。
+
+root串行实际执行：
+
+- 两项修复的联合范围35类263项，失败0、错误0、跳过0，进程退出0。包含九角色追加武装、Sou、源隔离及缺图兼容。
+- 随后新增负base测试，SpmDirectionalImageDeliveryTest共10项中2项真实失败、0错误；失败准确为collector和validator漏image0。
+- 最小修正后运行SpmDirectionalImageDeliveryTest、OutputBheCommonProjectileResourcesStepTest、LayeredAssetDeliveryTest、ImportStaticAssetsStepBheOutputTest、ActionWazaReferenceRebindTest，5类49项全部通过，退出0。未重复声称263项在最后改动后重新全跑。
+
+XML、命令选择器及日志保存在仓库target/bhe-combined-fixes-20261105，旧产物3884文件的哈希/大小摘要约554KiB，不包含资源正文。定向GREEN、源码审查及格式检查通过仅允许进入新封包与实机验证；完整目标尚未通过，runtimeValidated保持false。

@@ -82,7 +82,7 @@ case05同EXE/PAC、同独立种子、仅隔离保护，重复人間砲弾数分�
 
 官方依据：`https://frida.re/docs/javascript-api/#interceptor`，以及frida-gum的gumquickinterceptor.c中ProbeListener/CallListener与guminterceptor.c的will_trap_on_leave实现。不能把“JS没有显式Memory.write”当成函数式inline hook无行为影响。
 
-## 本次暂停点（2026-11-04）
+## 历史暂停点（2026-11-04，已于11-05恢复）
 
 修后case `sou-probe-fixed-20261104-06`安装11处签名匹配的观测点，已实际连续预览并独立核对12个不同武装：30、37、63、134～141、152，均为variant0。每项都有同请求START/MATCH/CANDIDATE/READY、同身份、双方active=-1和TAMA/SCRIPT=0；自动重复不增加不同武装覆盖数。63首轮伤害45、134为75、135为165；152为205条伤害合计1229，最终敌HP4771。30/37没有伤害事件，不能据闭环宣称有命中。
 
@@ -90,4 +90,12 @@ case05同EXE/PAC、同独立种子、仅隔离保护，重复人間砲弾数分�
 
 尝试142前Computer Use检测到用户输入而拒绝该动作，142不计覆盖。随后用户明确要求暂停并关闭游戏。root通过当前case的STOP机制停止精确自有进程715424；最终status=stopped、failure=null、stop_reason=STOP_file、终止码E0000001，进程退出与guard释放均已确认、cleanup_pending=false、原Save未变。28份5805648253字节game输入副本经程序核验后自动清理，错误0。没有仍在运行的BALDR SKY或CDB；这是按用户要求停止，不能写成游戏自然退出。
 
-下次恢复使用同一封存构建，先准备新的隔离case，不复用旧launch.lock。剩余141个菜单武装及其它variant、实际装备/训练、命中与落空、中断、普通/SD取消、再次起手、九角色54新增的连段、重载和关卡推进仍未完成。整包`runtimeValidated=false`，目标按用户要求暂停，不宣称完成。
+该暂停点原定下次恢复使用同一封存构建、新准备隔离case，不复用旧launch.lock；当时剩余141个菜单武装及其它玩法范围未验。这些数字和暂停状态仅描述2026-11-04现场，不代表当前状态。
+
+## 当前状态（2026-11-05恢复）
+
+用户已恢复目标，当前继续执行。仓库内构建、测试、实机验收已获许可；构建、运行及临时产物仅限仓库`target`，仓库外不写删。直接在`develop`工作，不新建分支或worktree，不push，不上传或重复保留二进制。
+
+2026-11-03封存的`run_20261103_154924_549_070a8f21`已构建；其后case07/08仍使用这个旧EXE/PAC，现均已终止并完成清理。旧包累计130个不同武装取得variant0菜单自然闭环，带有明确no-hit及99系统异常边界；121/122驻留未READY，123在不安装gameplay/combat探针的case08再次读空surface并以`C0000005`退出。详细请求、证据和剩余范围以[2026-11-05 Sou菜单验收记录](sou-menu-validation-20261105.md)为准，不把本记录早期“尚无实机结果”或历史暂停点当作当前结论。
+
+当前两项源码修复尚未重新封包，123没有新版实机验证结果；旧包130项不跨包继承为修复通过。全部Sou153项安全、九角色54新增武装的实际效果与跨武装连段，以及取消、中断、再次起手、重载、关卡推进等目标仍未完成。构建receipt保持`runtimeValidated=false`。

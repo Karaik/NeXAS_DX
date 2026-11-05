@@ -13,6 +13,7 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoUnknown;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.term.BheInfoCollectionObjectGraphRewriter;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.term.BheActionWazaReferenceRebinder;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.resolve.BheResolvedSeRef;
 import com.giga.nexas.transfer.bhe2bsdx.meka.tsukuyomi.graft.resolve.BheResourceIndexResolver;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
@@ -86,6 +87,7 @@ public class RebindWazStep {
 
         // Step 7-5: WAZ 结构重建完成后统一重编译 term，避免嵌套 CEvent 残留 BHE term 索引空间。
         termRewriter.rewrite(targetWaz, "tsukuyomi main WAZ " + request.getWazFileName());
+        BheActionWazaReferenceRebinder.rebindSourceCopy(targetWaz, commonProjectileAppendPlan, grpAppendPlan);
         rewriteCEventChangeWazaSelectParams(targetWaz, resolver);
 
         // Step 7-6: 对这一步已经明确会改的外部引用做结果校验。
@@ -115,6 +117,7 @@ public class RebindWazStep {
         // 因此 wazSequenceNo 保持源文件内部 skill index，AppendGrpEntriesStep 只提供 identity skill 映射。
         targetWaz.setSkillList(rebuildSkillList(context, resolver));
         termRewriter.rewrite(targetWaz, "tsukuyomi auxiliary WAZ " + targetWaz.getFileName());
+        BheActionWazaReferenceRebinder.rebindSourceCopy(targetWaz, commonProjectileAppendPlan, grpAppendPlan);
         rewriteCEventChangeWazaSelectParams(targetWaz, resolver);
         validateRebindResult(targetWaz, context);
         return targetWaz;

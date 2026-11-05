@@ -107,6 +107,11 @@ set MAVEN_OPTS=-Xmx4g
 - 连段输入可用游戏原生训练Replay验收；`tools/bhe_replay_input_fixture.py`仅从当前角色正常UI保存的模板生成新录像，保留前两块，只替换普通按钮输入块，不覆盖旧文件。先经正常载入／播放，再核不同武装START、同一目标控制、热量与收尾；格式通过不能代替玩法通过，操作证据见`replay-validation-20261029.md`。
 - 两个BHE静态输出器通过`MekaPreloadBudget`补齐`BQMekaMemory.dat`至最终MekaGroup行数；优先保留继承表的schema及全部行，只在本轮目录追加新ID。100M是显式调度权重，不是精确内存；原生force/release/queue与关卡推进仍须实机验收。
 
+### BHE条件引用与方向图片交付（2026-11-05）
+
+- `BheActionWazaReferenceRebinder`只消费重编译后条件里的`OBJECT3/ACTION_WAZA`组／技能参数；私有图使用实际分配映射，公共图在独立输出副本中只处理登记的BHE追加区间。累计私有映射不得反写共享源，不改原DX前缀或未登记尾段，也不以强制计时结束代替原驻留条件。
+- 四处图片收集／验收入口统一使用`SpmAnimationPages`枚举原生方向和镜像实际可达页；保留整数除法行为（16方向可达17页）。原始负页须先参与方向计算，最终负页才不收图；结构越界独立拒绝，图片缺失继续仅审计，有真实供体才交付。
+
 ### BHE多角色流水线修复（2026-10-08）
 
 - 实施计划与逐项笔记位于`docs/project-deep-dive/pipeline-fixes/`及`docs/superpowers/plans/2026-10-07-bhe-pipeline-fixes.md`。

@@ -13,6 +13,7 @@ import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoObject;
 import com.giga.nexas.dto.bsdx.waz.wazfactory.wazinfoclass.obj.SkillInfoUnknown;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.term.BheInfoCollectionObjectGraphRewriter;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.term.BheActionWazaReferenceRebinder;
 import com.giga.nexas.transfer.bhe2bsdx.meka.followup.graft.resolve.BheResolvedSeRef;
 import com.giga.nexas.transfer.bhe2bsdx.meka.followup.graft.resolve.BheResourceIndexResolver;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
@@ -56,6 +57,7 @@ public class RebindWazStep {
         Waz targetWaz = createTargetWazShell(context);
         targetWaz.setSkillList(rebuildSkillList(context, resolver));
         termRewriter.rewrite(targetWaz, "followup main WAZ " + request.getWazFileName());
+        BheActionWazaReferenceRebinder.rebindSourceCopy(targetWaz, commonProjectileAppendPlan, grpAppendPlan);
         rewriteCEventChangeWazaSelectParams(targetWaz, resolver);
         validateRebindResult(targetWaz, context);
         return targetWaz;
@@ -80,6 +82,7 @@ public class RebindWazStep {
         targetWaz.setExtensionName(sourceWaz.getExtensionName());
         targetWaz.setSkillList(rebuildSkillList(context, resolver));
         termRewriter.rewrite(targetWaz, "followup auxiliary WAZ " + targetWaz.getFileName());
+        BheActionWazaReferenceRebinder.rebindSourceCopy(targetWaz, commonProjectileAppendPlan, grpAppendPlan);
         rewriteCEventChangeWazaSelectParams(targetWaz, resolver);
         validateRebindResult(targetWaz, context);
         return targetWaz;

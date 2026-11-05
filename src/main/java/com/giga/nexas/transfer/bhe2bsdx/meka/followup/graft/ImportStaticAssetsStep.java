@@ -21,6 +21,7 @@ import com.giga.nexas.transfer.bhe2bsdx.meka.shared.MekaPreloadBudget;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.AssetDeliveryValidationContext;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.BaselineAssetComparison;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.term.BheActionWazaReferenceRebinder;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.output.OutputBheCommonProjectileResourcesStep;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBundle;
@@ -103,6 +104,7 @@ public class ImportStaticAssetsStep {
             writePatchedGrpOutputs(bsdxBaseline, syncedProgramMaterial, outputRoot, importedAssetSet);
             MekaPreloadBudget.writeIfExpanded(request, bsdxBaseline, outputRoot, importedAssetSet);
             writePatchedConfigDatOutputs(reboundTsukuyomiMek, bsdxBaseline, outputRoot, importedAssetSet);
+            BheActionWazaReferenceRebinder.rememberPrivateTargets(commonProjectileAppendPlan, grpAppendPlan);
             outputCommonProjectileResourcesStep.output(
                     request,
                     bsdxBaseline,
@@ -721,13 +723,8 @@ public class ImportStaticAssetsStep {
         if (animData == null || animData.getPatData() == null) {
             return;
         }
-        for (Spm.SPMPatData patData : animData.getPatData()) {
-            if (patData == null || patData.getPageNo() == null) {
-                continue;
-            }
-            for (Integer pageNo : patData.getPageNo()) {
-                collectImageNamesFromPage(spm, pageNo, imageNames);
-            }
+        for (Integer pageNo : com.giga.nexas.transfer.bhe2bsdx.meka.shared.SpmAnimationPages.reachablePages(spm, animData)) {
+            collectImageNamesFromPage(spm, pageNo, imageNames);
         }
     }
 

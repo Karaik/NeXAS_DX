@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class OutputBheCommonProjectileResourcesStepTest {
 
@@ -86,12 +87,15 @@ class OutputBheCommonProjectileResourcesStepTest {
         plan.getSourceWazIndexToTargetFileName().put(0, "bhe_Effect.waz");
         plan.getSourceWazIndexToTargetSkillBase().put(0, 0);
         plan.getSourceWazIndexToTargetSkillCount().put(0, 1);
-        plan.getSourceSePairToTargetFileName().put(BheCommonProjectileAppendPlan.sePairKey(1, 124), "bhe_MissingAudio");
-
         step.output(request, baseline, plan, java.util.Map.of(), outputRoot, assetSet);
 
-        assertTrue(assetSet.getMissingAssets().stream().anyMatch(item -> item.contains("bhe_Missing.png")));
-        assertTrue(assetSet.getMissingAssets().stream().anyMatch(item -> item.contains("bhe_MissingAudio")));
+        assertTrue(assetSet.getUnresolvedImageReferences().containsKey("bhe_missing.png"));
+        assertTrue(assetSet.getMissingAssets().isEmpty());
+        plan.getSourceSePairToTargetFileName().put(BheCommonProjectileAppendPlan.sePairKey(1, 124), "bhe_MissingAudio");
+        IllegalStateException failure = assertThrows(IllegalStateException.class,
+                () -> step.output(request, baseline, plan, java.util.Map.of(), outputRoot, assetSet));
+        assertTrue(failure.getMessage().contains("bhe_MissingAudio"));
+        assertTrue(assetSet.getUnresolvedImageReferences().containsKey("bhe_missing.png"));
     }
 
     private Waz minimalWaz() {

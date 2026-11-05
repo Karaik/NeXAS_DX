@@ -352,8 +352,7 @@ public final class AssetDeliveryValidator {
         var data = spm.getAnimData().get(animation);
         require(pattern == null || pattern == -1 || validIndex(pattern, data.getPatData().size()), chain + " -> action[" + pattern + "] 越界, size=" + data.getPatData().size());
         // 动画会自行播放后续 patterns，因此验收整组真正使用的 page/chip 媒体。
-        for (var pat : data.getPatData()) for (Integer page : pat.getPageNo()) {
-            if (page != null && page == -1) continue;
+        for (Integer page : SpmAnimationPages.reachablePages(spm, data)) {
             require(validIndex(page, spm.getPageData().size()), chain + " -> page[" + page + "] 越界");
             for (var chip : spm.getPageData().get(page).getChipData()) {
                 require(validIndex(chip.getImageNo(), spm.getImageData().size()), chain + " -> imageNo[" + chip.getImageNo() + "] 越界");

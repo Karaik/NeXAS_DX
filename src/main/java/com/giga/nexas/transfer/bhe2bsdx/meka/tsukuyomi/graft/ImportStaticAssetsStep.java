@@ -21,6 +21,7 @@ import com.giga.nexas.transfer.bhe2bsdx.meka.shared.MekaPreloadBudget;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.AssetDeliveryValidationContext;
 import com.giga.nexas.transfer.bhe2bsdx.meka.shared.BaselineAssetComparison;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.model.BheCommonProjectileAppendPlan;
+import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.term.BheActionWazaReferenceRebinder;
 import com.giga.nexas.transfer.bhe2bsdx.meka.bhecommon.projectile.output.OutputBheCommonProjectileResourcesStep;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiGraftRequest;
 import com.giga.nexas.transfer.bhe2bsdx.model.tsukuyomi.TsukuyomiBsdxBaselineBundle;
@@ -133,6 +134,7 @@ public class ImportStaticAssetsStep {
             writePatchedConfigDatOutputs(reboundTsukuyomiMek, bsdxBaseline, outputRoot, importedAssetSet);
 
             // 公共资源已经是 preparedBaseline 的一部分，必须在 selected 主线资源前落盘。
+            BheActionWazaReferenceRebinder.rememberPrivateTargets(commonProjectileAppendPlan, grpAppendPlan);
             outputCommonProjectileResourcesStep.output(
                     request,
                     bsdxBaseline,
@@ -758,13 +760,8 @@ public class ImportStaticAssetsStep {
 
         // 按 actionGroup 收该动画实际 page/chip 用图；
         // 这里不再整份复制 SPM.imageData，避免 bomb/mark/tama 这类大图集被过量带入。
-        for (Spm.SPMPatData patData : animData.getPatData()) {
-            if (patData == null || patData.getPageNo() == null) {
-                continue;
-            }
-            for (Integer pageNo : patData.getPageNo()) {
-                collectImageNamesFromPage(spm, pageNo, imageNames);
-            }
+        for (Integer pageNo : com.giga.nexas.transfer.bhe2bsdx.meka.shared.SpmAnimationPages.reachablePages(spm, animData)) {
+            collectImageNamesFromPage(spm, pageNo, imageNames);
         }
     }
 
