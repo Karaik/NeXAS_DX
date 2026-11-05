@@ -1,0 +1,387 @@
+{
+  "scope": "Build, static audit and user-requested pause; no new heat runtime acceptance",
+  "runtimeValidated": false,
+  "build": {
+    "buildRoot": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139",
+    "sourceExe": "D:\\Code\\NeXAS_DX\\src\\main\\resources\\ida-reverse\\BaldrSky.exe",
+    "sourceExeSha256": "713cf605360a55a863f87bfbdea5453aaeeb2a33983ad4a005c9297e3a86e757",
+    "assetRoot": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\sou_assets_20261105_193550_582",
+    "exe": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\BaldrSky_20261105_193620_157.exe",
+    "pac": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\Update3.pac",
+    "exeSha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae",
+    "pacSha256": "8efe934e14fda0d7f9c429f9b8d703a710d3213d15bbfc5ec6fb9f41e40b4641",
+    "includeSou": true,
+    "reworkedCharacters": [
+      "tsukuyomi",
+      "yuri",
+      "freja",
+      "nagi",
+      "misaki",
+      "naoto",
+      "katou",
+      "wilhelm",
+      "motoki"
+    ],
+    "preservedCharacters": [
+      "sou"
+    ],
+    "runtimeValidated": false,
+    "characters": [
+      "tsukuyomi",
+      "yuri",
+      "freja",
+      "nagi",
+      "misaki",
+      "naoto",
+      "katou",
+      "wilhelm",
+      "motoki",
+      "sou"
+    ]
+  },
+  "buildTest": {
+    "path": "target\\bhe-combined-fixes-20261105\\cooling-heat-build-green.xml",
+    "sha256": "e68aac0ab587bd74affa3a9ef0f7d2a32f41593f3a7e1d9153caeb0a8bb55f95",
+    "name": "com.giga.nexas.bhe2bsdx.byJinki.TestBheByJinkiRunner",
+    "tests": "1",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "382.495"
+  },
+  "dedicatedHeatTest": {
+    "path": "target\\bhe-combined-fixes-20261105\\cool-gain-heat-green.xml",
+    "sha256": "e8aeabadc49162110412c57f527ece3e49824f286bc7392c32333f87ecd403ed",
+    "name": "com.giga.nexas.transfer.bhe2bsdx.meka.sou.SouCoolGainReturnProtocolTest",
+    "tests": "10",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "98.752"
+  },
+  "relatedTests": {
+    "classes": 6,
+    "tests": 52,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "reports": [
+      {
+        "name": "com.giga.nexas.transfer.bhe2bsdx.meka.sou.SouBoostProcterDashContinuationTest",
+        "tests": "8",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "89.315"
+      },
+      {
+        "name": "com.giga.nexas.transfer.bhe2bsdx.meka.sou.SouHumanCannonCounterTest",
+        "tests": "9",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "65.323"
+      },
+      {
+        "name": "com.giga.nexas.transfer.bhe2bsdx.meka.sou.SouCursedBladeSingleTargetTest",
+        "tests": "7",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "77.775"
+      },
+      {
+        "name": "com.giga.nexas.transfer.bhe2bsdx.meka.sou.SouSnowMoonSingleTargetTest",
+        "tests": "9",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "81.671"
+      },
+      {
+        "name": "com.giga.nexas.transfer.bhe2bsdx.meka.sou.SouFlareSeekerSingleTargetTest",
+        "tests": "8",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "73.38"
+      },
+      {
+        "name": "com.giga.nexas.transfer.bhe2bsdx.meka.sou.SouCustomizerTest",
+        "tests": "11",
+        "failures": "0",
+        "errors": "0",
+        "skipped": "0",
+        "time": "0.139"
+      }
+    ]
+  },
+  "assetDiff": {
+    "receipt": {
+      "buildRoot": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139",
+      "sourceExe": "D:\\Code\\NeXAS_DX\\src\\main\\resources\\ida-reverse\\BaldrSky.exe",
+      "sourceExeSha256": "713cf605360a55a863f87bfbdea5453aaeeb2a33983ad4a005c9297e3a86e757",
+      "assetRoot": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\sou_assets_20261105_193550_582",
+      "exe": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\BaldrSky_20261105_193620_157.exe",
+      "pac": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\Update3.pac",
+      "exeSha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae",
+      "pacSha256": "8efe934e14fda0d7f9c429f9b8d703a710d3213d15bbfc5ec6fb9f41e40b4641",
+      "includeSou": true,
+      "reworkedCharacters": [
+        "tsukuyomi",
+        "yuri",
+        "freja",
+        "nagi",
+        "misaki",
+        "naoto",
+        "katou",
+        "wilhelm",
+        "motoki"
+      ],
+      "preservedCharacters": [
+        "sou"
+      ],
+      "runtimeValidated": false,
+      "characters": [
+        "tsukuyomi",
+        "yuri",
+        "freja",
+        "nagi",
+        "misaki",
+        "naoto",
+        "katou",
+        "wilhelm",
+        "motoki",
+        "sou"
+      ]
+    },
+    "oldCount": 3889,
+    "newCount": 3889,
+    "added": [],
+    "removed": [],
+    "changed": {
+      "WazaGroup.grp": {
+        "old": {
+          "size": 4224,
+          "sha256": "aaed7e62aca27134fbe723c28db90c1f917523cef012d2b4c766e7458423e9b0"
+        },
+        "new": {
+          "size": 4224,
+          "sha256": "d114d6269955f128468b6ad5caf706e1b5e9c7ab222aa6f38700e81a535022be"
+        }
+      },
+      "tama05.waz": {
+        "old": {
+          "size": 2798211,
+          "sha256": "2e1181c96c7eddca3c79ba693159b943c89177c3015dada7dced21cb40e4e37a"
+        },
+        "new": {
+          "size": 2799457,
+          "sha256": "adacc122d0e2761265f7a8513416121fcd8073c6d789742964212789255a8d65"
+        }
+      }
+    },
+    "unchangedCount": 3887
+  },
+  "artifactAudit": {
+    "schema": 1,
+    "createdUtc": "2026-11-05T10:48:55.563622+00:00",
+    "passed": true,
+    "runtimeValidated": false,
+    "assetRoot": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\sou_assets_20261105_193550_582",
+    "baselineSnapshot": "D:\\Code\\NeXAS_DX\\target\\bhe-combined-fixes-20261105\\pre-cooling-heat-semantic-snapshot.json",
+    "baselineSnapshotSha256": "f6f4fc21986dabc59a24677454d53f9517397617596051dec9f1d6e718447a89",
+    "parser": "Existing compiled BsdxBinService and Jackson; windows-31j; in-memory JNI; no compilation or binary output",
+    "hashContract": {
+      "metadataKeysRemovedRecursively": [
+        "description",
+        "extensionName",
+        "fileName",
+        "length",
+        "offset",
+        "slotNum",
+        "unitDescription"
+      ],
+      "canonicalJson": {
+        "encoding": "UTF-8",
+        "ensure_ascii": false,
+        "sort_keys": true,
+        "separators": [
+          ",",
+          ":"
+        ],
+        "allow_nan": false
+      },
+      "normalization": "For a new build, validate exactly one new tail skill at index544 named DX_SOU_COOL_GAIN_COOLING and remove only that tail; validate private542 P1 sole cooling reference group5/544 and restore only its recorded wazSequenceNo to529; validate WazaGroup row5 param545 and restore only that param to544. The complete normalized Tama05 and WazaGroup hashes must match this snapshot. All unrecorded fields and array order remain unchanged."
+    },
+    "files": [
+      {
+        "file": "tama05.waz",
+        "size": 2799457,
+        "sha256": "adacc122d0e2761265f7a8513416121fcd8073c6d789742964212789255a8d65",
+        "semanticSha256": "fce78e478b1621fff88f3fc731b93a7692eba0f96db77b781388b894660bb82a",
+        "oldCompleteSemanticSha256": "eee93b99c8f4347660f7261bc3ee078caf91c980a53a9fafac9230456164a214",
+        "parsed": true,
+        "totalSkills": 545,
+        "normalizedCompleteSemanticSha256": "eee93b99c8f4347660f7261bc3ee078caf91c980a53a9fafac9230456164a214",
+        "completePreChangeGraphPreserved": true
+      },
+      {
+        "file": "WazaGroup.grp",
+        "size": 4224,
+        "sha256": "d114d6269955f128468b6ad5caf706e1b5e9c7ab222aa6f38700e81a535022be",
+        "semanticSha256": "1c9acee6288027f772901dc41486f6f123c1339c969ae07165f8ec0f64a6699d",
+        "oldCompleteSemanticSha256": "67c51fb4b3e07ea98f7da274d4538f10d34ff0eb6961b9c214a280032c3f8a84",
+        "parsed": true,
+        "totalRows": 121,
+        "normalizedCompleteSemanticSha256": "67c51fb4b3e07ea98f7da274d4538f10d34ff0eb6961b9c214a280032c3f8a84",
+        "completePreChangeGraphPreserved": true
+      }
+    ],
+    "privateBodyCoolingPacket": {
+      "bodySkillIndex": 542,
+      "phaseIndex": 1,
+      "slot": 48,
+      "packetJsonPointer": "/skillList/542/phasesInfo/1/skillUnitCollection/7/skillInfoObjectList/0",
+      "referenceJsonPointer": "/skillList/542/phasesInfo/1/skillUnitCollection/7/skillInfoObjectList/0/ceventEffectUnitList/0/data",
+      "oldPair": [
+        5,
+        529
+      ],
+      "actualNewPair": [
+        5,
+        544
+      ],
+      "oldPacketCompleteSemanticSha256": "dd883759184d33e8b1ed630a61233bd91c3307b93a9e92aa57b6f0fa897231c3",
+      "actualPacketRestoredCompleteSemanticSha256": "dd883759184d33e8b1ed630a61233bd91c3307b93a9e92aa57b6f0fa897231c3",
+      "onlySequenceChanged": true,
+      "completeBodyRestoredSemanticMatch": true
+    },
+    "publicCooling": {
+      "skillIndex": 529,
+      "english": "0346",
+      "completeSemanticSha256": "0c445f4688e982a92cd70167b4eb4669e42dd35db8c58e9e02b76c19ec1b57bf",
+      "completePreChangePayloadPreserved": true
+    },
+    "newPrivateCooling": {
+      "skillIndex": 544,
+      "english": "DX_SOU_COOL_GAIN_COOLING",
+      "japanese": "★蒼：クールゲイン：熱冷却・専用",
+      "sourcePublicIndex": 529,
+      "expectedCompleteSemanticSha256": "80793d576aa1345791d7fbcbe80bbcd762769890cb24a896a4a1414970c69d81",
+      "actualCompleteSemanticSha256": "80793d576aa1345791d7fbcbe80bbcd762769890cb24a896a4a1414970c69d81",
+      "completeExpectedPayloadMatch": true,
+      "onlyApprovedDeltas": "rename and add P0 slot40 type0 event at0f [0,0,0,-100] with empty FF; all original Hit/effects/0f exit and other fields preserved",
+      "heatEvent": {
+        "typeId": 0,
+        "startFrame": 0,
+        "endFrame": 0,
+        "int1": 0,
+        "int2": 0,
+        "int3": 0,
+        "int4": -100
+      },
+      "heatEventCount": 1,
+      "heatLoopCount": 0,
+      "phaseCount": 1,
+      "suffixCount": 1,
+      "slotsUniqueAndInRange": true
+    },
+    "wazaGroupRow": {
+      "rowIndex": 5,
+      "paramJsonPointer": "/wazaList/5/param",
+      "oldParam": 544,
+      "newParam": 545,
+      "restoredCompleteRowSemanticMatch": true
+    },
+    "inputBytesUnchangedDuringAudit": true,
+    "limitations": [
+      "This is a binary-parsed static artifact audit, not proof of in-game heat changes.",
+      "The adaptation deducts on cooling-entity activation, while original BHE deducts after confirmed self Hit.",
+      "Other files and executable/PAC identities are audited separately by the parent task."
+    ]
+  },
+  "pause": {
+    "case": "target\\bhe-playable-runtime\\sou-cooling-heat-20261105-11",
+    "stateSha256": "2da9c3ac280b5c011941351bfa80dc9ebc18fc60ccb8cbefc0c8325400b74aad",
+    "process": {
+      "pid": 969268,
+      "thread_id": 969272,
+      "creation_filetime": 134383498943476472,
+      "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-cooling-heat-20261105-11\\game\\BaldrSky.exe"
+    },
+    "terminal": {
+      "status": "stopped",
+      "failure": null,
+      "exit_code": 3758096385,
+      "stop_reason": "STOP_file",
+      "owned_process_exit_confirmed": true,
+      "guard_cleanup_complete": true,
+      "cleanup_pending": false,
+      "frida_detached": true,
+      "closed_handles": [
+        "thread_handle",
+        "process_handle"
+      ],
+      "guard_violations": [],
+      "exception_count": 1,
+      "input_copy_cleanup": {
+        "removed": [
+          "AutoUpdate.exe",
+          "BaldrSky.exe",
+          "BaldrSky.ico",
+          "Bgm.pac",
+          "Bmp.pac",
+          "Config.pac",
+          "Dat.pac",
+          "Face.pac",
+          "Filechk.exe",
+          "Launcher.dat",
+          "Launcher.exe",
+          "Script.pac",
+          "Se.pac",
+          "Setup.exe",
+          "Setupinf.dat",
+          "Stand.pac",
+          "StartUpTool.exe",
+          "System.pac",
+          "Thumbnail.pac",
+          "Uninstall.exe",
+          "Update.exe",
+          "Update.pac",
+          "Update2.pac",
+          "UpdateInf.dat",
+          "Visual.pac",
+          "Voice.pac",
+          "autorun.inf",
+          "Update3.pac"
+        ],
+        "removed_bytes": 5805717300,
+        "retained_changed_or_unique": [],
+        "errors": []
+      },
+      "original_save_check": {
+        "unchanged": true,
+        "added": [],
+        "removed": [],
+        "changed": []
+      },
+      "original_driver_state_check": {
+        "unchanged": true,
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "attribution": "not_determined_external_writers_possible"
+      },
+      "original_driver_state_runtime_check": {
+        "unchanged": true,
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "attribution": "not_determined_external_writers_possible"
+      }
+    },
+    "note": "STOP requested after launch, before heat replay comparison; requested termination is not a gameplay crash or success"
+  },
+  "binaryCopiedIntoEvidence": false
+}

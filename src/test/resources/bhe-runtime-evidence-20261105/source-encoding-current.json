@@ -1,0 +1,150 @@
+{
+  "schema": "nexas.source-encoding-delta/v1",
+  "capturedAt": "2026-11-05T10:57:29.419424+00:00",
+  "baseline": {
+    "path": "target/bhe-combined-fixes-20261105/encoding-source-scan-20261105.json",
+    "sha256": "03d4bc6d67d97fe3d318bd32b4c92de3ac614cafe14c7390f5492a99ee1ec660",
+    "head": "979c31389740e9d618122f9df3ccafb1415cc935",
+    "fileCount": 986,
+    "fullManifestCopied": false
+  },
+  "current": {
+    "head": "335a128e67b74cad556ec84dd5ad6c8a9c47e80c",
+    "sourceHeatFixCommit": "fcdddea36de08ef2d1bead76b9b5dce864d3f188",
+    "scopeRule": "git tracked src/tools source extensions excluding resources, plus only the two original-plan FXML UI source files",
+    "fileCount": 986,
+    "extensionCounts": {
+      ".java": 974,
+      ".fxml": 2,
+      ".ps1": 2,
+      ".py": 8
+    },
+    "addedFiles": [],
+    "removedFiles": [],
+    "byteIdenticalFiles": 984,
+    "changedFiles": 2
+  },
+  "delta": [
+    {
+      "file": "src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/sou/SouCoolGainReturnProtocolFixer.java",
+      "baselineSha256": "e86a8bf4ff73ac922563bcaa8c0e7b1994f9274fc94439533c409a7a4cedd6a9",
+      "currentSha256": "ce65f122929969f3e0973ee608bc0572ea66d9af41f16e8eae19d7b453527ea5",
+      "baselineBytes": 29900,
+      "currentBytes": 32626,
+      "currentLines": 442,
+      "strictUtf8": true,
+      "bom": false,
+      "bareLf": false,
+      "bareCr": false,
+      "replacementPuaC1NulCount": 0,
+      "baselineGitBlobMatchesSnapshotAfterCrlfCheckout": true
+    },
+    {
+      "file": "src/test/java/com/giga/nexas/transfer/bhe2bsdx/meka/sou/SouCoolGainReturnProtocolTest.java",
+      "baselineSha256": "6e17b8853e4ac1c5f3db58256aa45a594562d93106ec156fec41133e78ebd175",
+      "currentSha256": "147025878ba09126d3b42e2aa02c25b6bf08c0af0a63842903e0018bbe4798c2",
+      "baselineBytes": 36626,
+      "currentBytes": 46651,
+      "currentLines": 532,
+      "strictUtf8": true,
+      "bom": false,
+      "bareLf": false,
+      "bareCr": false,
+      "replacementPuaC1NulCount": 0,
+      "baselineGitBlobMatchesSnapshotAfterCrlfCheckout": true
+    }
+  ],
+  "manualNonAsciiIncrementReview": {
+    "linesReviewed": 3,
+    "rows": [
+      {
+        "file": "src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/sou/SouCoolGainReturnProtocolFixer.java",
+        "line": 39,
+        "text": "private static final String COOLING_JP = \"★蒼：クールゲイン：熱冷却・専用\", COOLING_EN = \"DX_SOU_COOL_GAIN_COOLING\";",
+        "classification": "readable Japanese private-skill identity or vanilla donor name; not mojibake"
+      },
+      {
+        "file": "src/test/java/com/giga/nexas/transfer/bhe2bsdx/meka/sou/SouCoolGainReturnProtocolTest.java",
+        "line": 50,
+        "text": "private static final String BODY_JP = \"★蒼：クールゲイン：本体・回収\", ICE_JP = \"★蒼：クールゲイン：氷・回収\", COOLING_JP = \"★蒼：クールゲイン：熱冷却・専用\";",
+        "classification": "readable Japanese private-skill identity or vanilla donor name; not mojibake"
+      },
+      {
+        "file": "src/test/java/com/giga/nexas/transfer/bhe2bsdx/meka/sou/SouCoolGainReturnProtocolTest.java",
+        "line": 197,
+        "text": "assertEquals(\"発光爆風（小）\", donor.getSkillNameJapanese()); assertEquals(\"0004\", donor.getSkillNameEnglish());",
+        "classification": "readable Japanese private-skill identity or vanilla donor name; not mojibake"
+      }
+    ],
+    "confirmedNewMojibake": 0
+  },
+  "retainedNotes": {
+    "unknownPlaceholders": [
+      {
+        "file": "src/main/java/com/giga/nexas/dto/bhe/waz/wazfactory/SkillInfoFactory.java",
+        "line": 142,
+        "text": "// ???",
+        "introducedBy": "601909524b",
+        "meaning": "0xFFFFFFFF CEventTerm branch; original intended note is unproven"
+      },
+      {
+        "file": "src/main/java/com/giga/nexas/dto/bsdx/waz/wazfactory/SkillInfoFactory.java",
+        "line": 129,
+        "text": "// ????",
+        "introducedBy": "e3a979bd10",
+        "meaning": "0xFFFFFFFF CEventTerm branch; original intended note is unproven"
+      }
+    ],
+    "unknownPlaceholdersChanged": false,
+    "preExistingBareLfFileCount": 104,
+    "preExistingBareLfFilesChanged": 0,
+    "formatNormalizationPerformed": false,
+    "readableJapaneseHalfwidthAndExplicitNegativeTestsRetainBaselineClassification": true
+  },
+  "wipPreservation": {
+    "files": [
+      {
+        "file": "AGENT.md",
+        "sha256": "39f8ea60b41105fbff13a1bcf33b2e518a75b4d4367960ff91fdd834723e4f5d"
+      },
+      {
+        "file": "src/test/java/AGENT.md",
+        "sha256": "05045fe27d03d1c975e4fdc6a72da432df09d31db8c14755631248a682d05ba6"
+      },
+      {
+        "file": "src/main/java/com/giga/nexas/dto/clarias/README.md",
+        "sha256": "48b6f0d0dfa6d69aa0cc3a433d3e82be54c67ddfb825b9d371954fa98aefd3ad"
+      },
+      {
+        "file": "src/main/java/com/giga/nexas/dto/clarias/grp/generator/impl/MekaGroupGrpGenerator.java",
+        "sha256": "a21e34064b729ee916cc9f522830b13e5be250de0843924238f1b606309aec69"
+      },
+      {
+        "file": "src/main/java/com/giga/nexas/dto/clarias/grp/groupmap/MekaGroupGrp.java",
+        "sha256": "0080f9bb11f7402e8768c9a14dc76236c0efeaaeb6ebccea45868804b92ecb93"
+      },
+      {
+        "file": "src/main/java/com/giga/nexas/dto/clarias/grp/parser/impl/MekaGroupGrpParser.java",
+        "sha256": "68c52b41dad1d6331ac5e0763c464292b682417b6c75c10fbad63b972f0796d8"
+      }
+    ],
+    "currentAddedLines": 53,
+    "currentDeletedLines": 0,
+    "auditWrites": 0
+  },
+  "boundaries": [
+    "Only current tracked source list/hash differences and the two changed Java files were rechecked; unchanged files inherit the referenced baseline audit.",
+    "The three added non-ASCII lines were manually read in context; terminal CP932 display was not used to infer file corruption.",
+    "Resources, generated output, binaries, untracked drafts and private Save bodies were not rescanned. Only the original-plan two FXML source files remain in the hash scope.",
+    "This record confirms source-text encoding only. It does not claim heat-fix runtime success."
+  ],
+  "operations": {
+    "sourceOrTestJavaWrites": 0,
+    "mavenJvmOrUiRuns": 0,
+    "commits": 0,
+    "writtenFiles": [
+      "src/test/resources/bhe-runtime-evidence-20261105/source-encoding-current.json",
+      "docs/project-deep-dive/bhe-playable-rework/encoding-recovery.md"
+    ]
+  }
+}

@@ -1,0 +1,472 @@
+{
+  "schema": "nexas.bhe-runtime-session-end-text-evidence/v1",
+  "capturedAt": "2026-11-05T10:42:54.417296+00:00",
+  "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-procter-recovery-20261105-10",
+  "scope": "case10 process/guard terminal status, verified input-copy reclamation, protected-input checks and preserved exception limitations; separate from gameplay acceptance",
+  "terminal": true,
+  "runtimeValidated": false,
+  "goalContinues": true,
+  "newHeatPackageRuntimeAccepted": false,
+  "process": {
+    "pid": 923276,
+    "thread_id": 923292,
+    "creation_filetime": 134383376478515689,
+    "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-procter-recovery-20261105-10\\game\\BaldrSky.exe"
+  },
+  "sourceState": {
+    "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-procter-recovery-20261105-10\\state.json",
+    "bytes": 19598,
+    "sha256": "62f1509a9e495dcb2c6c05e38ff5b204e731bb42b18fad3aff2ea2f08deb0953"
+  },
+  "sourceManifest": {
+    "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-procter-recovery-20261105-10\\manifest.json",
+    "bytes": 33341,
+    "sha256": "8fab351ace1cf465066c065f8c7e9612b65371d58b2edb3ba4b2fc35e3b1baa0"
+  },
+  "sourceEvents": {
+    "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-procter-recovery-20261105-10\\events.jsonl",
+    "completePrefixBytes": 6387616,
+    "prefixSha256": "9bd7eefa3530b4b24bdcbfa7c5a8c2826fcf60d4245d0f9523dea0702f465882",
+    "firstLine": 1,
+    "lastLine": 11428,
+    "completeNewline": true,
+    "terminalLastEvent": "finished",
+    "eventTypes": {
+      "original_driver_state_prelaunch_audit": 1,
+      "created_suspended": 1,
+      "gameplay_observer_ready": 1,
+      "hook_ready": 1,
+      "hooks_loaded": 1,
+      "resumed": 1,
+      "documents_location_enter": 1,
+      "directory_create_collision": 14,
+      "documents_location_result": 1,
+      "save_path_redirected": 162,
+      "hid_device_open": 347,
+      "driver_state_redirected": 41,
+      "capture_log_redirected": 3,
+      "exception": 457,
+      "cryptnet_cache_redirected": 2,
+      "mmcss_device_open": 1,
+      "gameplay_observer_error": 1,
+      "sou_menu_request": 100,
+      "gameplay_start": 107,
+      "sou_menu_matched_start": 100,
+      "combat_use": 107,
+      "combat_damage": 1931,
+      "combat_reaction_applied": 7604,
+      "gameplay_release_or_cancel": 106,
+      "sou_ready_candidate": 97,
+      "sou_menu_ready": 97,
+      "sou_menu_superseded": 2,
+      "combat_reset": 26,
+      "combat_motion_transition": 54,
+      "combat_recovery_entry": 22,
+      "combat_replay_input": 37,
+      "frida_detached": 1,
+      "finished": 1
+    },
+    "fullLogCopied": false
+  },
+  "processTermination": {
+    "status": "exited",
+    "started_at": "2026-11-05T07:34:07.248521+00:00",
+    "resumed_at": "2026-11-05T07:34:09.600481+00:00",
+    "finished_at": "2026-11-05T10:25:42.477026+00:00",
+    "runtime_seconds": 10267.484,
+    "stop_reason": null,
+    "exit_code": 0,
+    "failure": null,
+    "detach_reason": "process-terminated",
+    "frida_detached": true,
+    "closed_handles": [
+      "thread_handle",
+      "process_handle"
+    ],
+    "installer_thread_alive": false,
+    "owned_process_exit_confirmed": true
+  },
+  "guardTermination": {
+    "external_write_count": 0,
+    "guard_violations": [],
+    "cleanup_pending": false,
+    "guard_cleanup_complete": true,
+    "guard_session_retained": false
+  },
+  "inputCopyCleanup": {
+    "removed": [
+      "AutoUpdate.exe",
+      "BaldrSky.exe",
+      "BaldrSky.ico",
+      "Bgm.pac",
+      "Bmp.pac",
+      "Config.pac",
+      "Dat.pac",
+      "Face.pac",
+      "Filechk.exe",
+      "Launcher.dat",
+      "Launcher.exe",
+      "Script.pac",
+      "Se.pac",
+      "Setup.exe",
+      "Setupinf.dat",
+      "Stand.pac",
+      "StartUpTool.exe",
+      "System.pac",
+      "Thumbnail.pac",
+      "Uninstall.exe",
+      "Update.exe",
+      "Update.pac",
+      "Update2.pac",
+      "UpdateInf.dat",
+      "Visual.pac",
+      "Voice.pac",
+      "autorun.inf",
+      "Update3.pac"
+    ],
+    "removed_bytes": 5805717209,
+    "retained_changed_or_unique": [],
+    "errors": [],
+    "removedFileCount": 28,
+    "removedBytesIndependentlySummedFromManifest": 5805717209,
+    "caseGameDirectoryEmptyAtRead": true,
+    "gameDirectory": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-procter-recovery-20261105-10\\game",
+    "mutationsByThisEvidenceTask": 0,
+    "boundary": "Removal was performed by the earlier owning runtime harness; this task only read its receipt and verified the resulting empty case game directory."
+  },
+  "protectedInputChecks": {
+    "source": "Owning harness terminal state checks, pinned by sourceState SHA; original C-drive Save and Drs binaries were not independently opened by this evidence task.",
+    "originalSave": {
+      "path": "C:\\Users\\30250\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save",
+      "fileCountAtLaunch": 78,
+      "terminalCheck": {
+        "unchanged": true,
+        "added": [],
+        "removed": [],
+        "changed": []
+      }
+    },
+    "originalBase": {
+      "path": "D:\\Code\\NeXAS_DX\\src\\main\\resources\\bsdx_game",
+      "fileCountAtLaunch": 27,
+      "terminalCheck": {
+        "unchanged": true,
+        "added": [],
+        "removed": [],
+        "changed": []
+      }
+    },
+    "sourceExeAndPac": {
+      "terminalChecks": {
+        "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_162002_445_28580c2f\\sou\\BaldrSky_20261105_162233_520.exe": true,
+        "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_162002_445_28580c2f\\sou\\Update3.pac": true
+      },
+      "launchMetadata": {
+        "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_162002_445_28580c2f\\sou\\BaldrSky_20261105_162233_520.exe": {
+          "size": 4793856,
+          "sha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae"
+        },
+        "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_162002_445_28580c2f\\sou\\Update3.pac": {
+          "size": 1460559724,
+          "sha256": "f8e520d0cc258a05b465d00d0fa8e9b17f314a09d2ab1d1a3e93503ca56fe2ef"
+        }
+      },
+      "sourcePacSha256": "f8e520d0cc258a05b465d00d0fa8e9b17f314a09d2ab1d1a3e93503ca56fe2ef",
+      "sourceExeSha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae",
+      "checkedByHarnessBeforeInputCopyRemoval": true,
+      "notAClaimThatOldBuildWillRemainOnDiskAfterLaterBuildRetirement": true
+    },
+    "previousPrivateSeed": {
+      "terminalStateHasExplicitSeedCheck": false,
+      "terminalStateSeedRelatedKeys": [
+        "seed_mode",
+        "seed_source"
+      ],
+      "independentPostcheck": {
+        "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-direction-fix-20261105-09\\docs\\GIGA\\BALDRSKY_DIVEX\\Save",
+        "checkedAt": "2026-11-05T10:41:32.252979+00:00",
+        "comparisonSource": "case10 manifest.save_seed_files captured before launch; independent current postcheck, not a terminal state field",
+        "fileCount": 85,
+        "totalBytes": 4232670,
+        "metadataSha256": "4011faaeb10b31ec594f3481c8e0d09b7d446eba27af4f554b93f917c0f6e73a",
+        "expectedMetadataSha256": "4011faaeb10b31ec594f3481c8e0d09b7d446eba27af4f554b93f917c0f6e73a",
+        "unchanged": true,
+        "added": [],
+        "removed": [],
+        "changed": [],
+        "directories": []
+      }
+    }
+  },
+  "driverStateDrift": {
+    "path": "C:\\ProgramData\\NVIDIA Corporation\\Drs",
+    "isolatedRuntimeMode": "private",
+    "terminalCheck": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "nvAppTimestamps"
+      ],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "runtimeBaselineCheck": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "nvAppTimestamps"
+      ],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "changedMetadata": {
+      "nvAppTimestamps": {
+        "before": {
+          "size": 236258,
+          "sha256": "de5d8a721a90e9a1dc724863d545870f04a90a495fbfee3ae2e990074b42a990"
+        },
+        "after": {
+          "size": 236258,
+          "sha256": "d8b520f3e4d04f7946e6365a4264665e6e75e095fb8ecd434d6d07095f96ef59"
+        }
+      }
+    },
+    "driverStateRedirectCount": 41,
+    "driverStateRedirectSuccessCount": 41,
+    "attribution": "not_determined_external_writers_possible",
+    "boundary": "Zero guarded external writes does not prove that the original Drs tree was globally unchanged. nvAppTimestamps drift is preserved separately; no process attribution or harmlessness is inferred."
+  },
+  "nativeExceptionSummary": {
+    "stateExceptionCount": 457,
+    "logExceptionCount": 457,
+    "groups": [
+      {
+        "exceptionType": "system",
+        "classification": "unclassified_observed_exception",
+        "address": "0x7556bae4",
+        "count": 457
+      }
+    ],
+    "initialObservedException": {
+      "line": 425,
+      "at": "2026-11-05T07:34:11.216034+00:00"
+    },
+    "afterHeatBaselineFixedPrefix": {
+      "baselinePrefixBytes": 6047880,
+      "exceptionCount": 456,
+      "firstLine": 10969,
+      "firstAt": "2026-11-05T10:23:40.013700+00:00",
+      "lastLine": 11426,
+      "lastAt": "2026-11-05T10:25:17.289172+00:00"
+    },
+    "observerErrorCount": 1,
+    "zeroExceptionClaimed": false,
+    "allSystemExceptionsAssumedHarmless": false,
+    "boundary": "exit_code0 and clean guard termination establish process and cleanup outcome only. The457 system exceptions remain unclassified; unavailable backtraces and their KERNELBASE address do not establish harmlessness or a gameplay root cause. The immutable earlier training-window evidence is not rewritten with later counts."
+  },
+  "selectedSourceEventObjects": [
+    {
+      "line": 425,
+      "byteOffset": 155590,
+      "byteLength": 732,
+      "object": {
+        "at": "2026-11-05T07:34:11.216034+00:00",
+        "event": "frida_message",
+        "message": {
+          "type": "send",
+          "payload": {
+            "type": "exception",
+            "classification": "unclassified_observed_exception",
+            "diagnostic_errors": [],
+            "backtrace": {
+              "status": "unavailable",
+              "reason": "no_symbol_resolution"
+            },
+            "exceptionType": "system",
+            "address": "0x7556bae4",
+            "memory": null,
+            "context": {
+              "pc": "0x7556bae4",
+              "sp": "0x1acd30",
+              "eax": "0x1acd30",
+              "ecx": "0x2",
+              "edx": "0x0",
+              "ebx": "0x0",
+              "esp": "0x1acd30",
+              "ebp": "0x1acd8c",
+              "esi": "0x1ad018",
+              "edi": "0x1ad0a7",
+              "eip": "0x7556bae4"
+            },
+            "location": {
+              "address": "0x7556bae4",
+              "module": {
+                "name": "KERNELBASE.dll",
+                "path": "C:\\WINDOWS\\System32\\KERNELBASE.dll",
+                "base": "0x75400000",
+                "offset": "0x16bae4"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "line": 10969,
+      "byteOffset": 6047880,
+      "byteLength": 744,
+      "object": {
+        "at": "2026-11-05T10:23:40.013700+00:00",
+        "event": "frida_message",
+        "message": {
+          "type": "send",
+          "payload": {
+            "type": "exception",
+            "classification": "unclassified_observed_exception",
+            "diagnostic_errors": [],
+            "backtrace": {
+              "status": "unavailable",
+              "reason": "no_symbol_resolution"
+            },
+            "exceptionType": "system",
+            "address": "0x7556bae4",
+            "memory": null,
+            "context": {
+              "pc": "0x7556bae4",
+              "sp": "0x1931d550",
+              "eax": "0x1931d550",
+              "ecx": "0x3",
+              "edx": "0x0",
+              "ebx": "0x19930520",
+              "esp": "0x1931d550",
+              "ebp": "0x1931d5a8",
+              "esi": "0x0",
+              "edi": "0x591a63ec",
+              "eip": "0x7556bae4"
+            },
+            "location": {
+              "address": "0x7556bae4",
+              "module": {
+                "name": "KERNELBASE.dll",
+                "path": "C:\\WINDOWS\\System32\\KERNELBASE.dll",
+                "base": "0x75400000",
+                "offset": "0x16bae4"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "line": 11426,
+      "byteOffset": 6386657,
+      "byteLength": 739,
+      "object": {
+        "at": "2026-11-05T10:25:17.289172+00:00",
+        "event": "frida_message",
+        "message": {
+          "type": "send",
+          "payload": {
+            "type": "exception",
+            "classification": "unclassified_observed_exception",
+            "diagnostic_errors": [],
+            "backtrace": {
+              "status": "unavailable",
+              "reason": "no_symbol_resolution"
+            },
+            "exceptionType": "system",
+            "address": "0x7556bae4",
+            "memory": null,
+            "context": {
+              "pc": "0x7556bae4",
+              "sp": "0x51cc630",
+              "eax": "0x51cc630",
+              "ecx": "0x3",
+              "edx": "0x0",
+              "ebx": "0x19930520",
+              "esp": "0x51cc630",
+              "ebp": "0x51cc68c",
+              "esi": "0x51cc828",
+              "edi": "0x0",
+              "eip": "0x7556bae4"
+            },
+            "location": {
+              "address": "0x7556bae4",
+              "module": {
+                "name": "KERNELBASE.dll",
+                "path": "C:\\WINDOWS\\System32\\KERNELBASE.dll",
+                "base": "0x75400000",
+                "offset": "0x16bae4"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "line": 448,
+      "byteOffset": 165774,
+      "byteLength": 250,
+      "object": {
+        "at": "2026-11-05T07:41:43.282728+00:00",
+        "event": "frida_message",
+        "message": {
+          "type": "send",
+          "payload": {
+            "type": "gameplay_observer_error",
+            "hook": "request",
+            "invalidatedRequestSeq": null,
+            "error": "Error: Null gameplay observation pointer"
+          }
+        }
+      }
+    },
+    {
+      "line": 11427,
+      "byteOffset": 6387396,
+      "byteLength": 118,
+      "object": {
+        "at": "2026-11-05T10:25:17.289193+00:00",
+        "event": "frida_detached",
+        "reason": "process-terminated",
+        "crash": null
+      }
+    },
+    {
+      "line": 11428,
+      "byteOffset": 6387514,
+      "byteLength": 102,
+      "object": {
+        "at": "2026-11-05T10:25:42.477048+00:00",
+        "event": "finished",
+        "status": "exited",
+        "failure": null
+      }
+    }
+  ],
+  "nextCaseSeed": {
+    "path": "D:\\Code\\NeXAS_DX\\target\\bhe-combined-fixes-20261105\\case10-save-seed-manifest.json",
+    "bytes": 19827,
+    "sha256": "04739545a4e951416e7d06e81eda91fe5619a8b0d9b85430337923b8d35cb565",
+    "pathToPassAsSaveSeedDir": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-procter-recovery-20261105-10\\docs\\GIGA\\BALDRSKY_DIVEX\\Save",
+    "fileCount": 90,
+    "totalBytes": 4237007,
+    "inventoryMetadataSha256": "e758ca98f62e85d752f219d2665d20cffb1f8dabca4f5b1916064a27866cc3c1",
+    "readyToPassAsSaveSeedDir": true,
+    "case11PreparedByThisTask": false
+  },
+  "acceptanceLimits": [
+    "The owning process ended normally and its guard released successfully; this is not whole-skill gameplay acceptance.",
+    "Case10 used the old f8e520d0 PAC and contains the missing Cool Gain heat-benefit baseline. No runtime result for the new heat-field source correction is recorded here.",
+    "Protected original Save/base and source EXE/PAC results are the terminal harness checks; this task does not reread original C-drive Save contents or large protected input binaries.",
+    "Case10 state has no explicit prior private-seed terminal-check field. The separately timestamped case09 postcheck in the seed manifest found85 files unchanged against the case10 launch snapshot.",
+    "Only this new text evidence and the companion target seed manifest were written; no binaries,whole logs,source code,UI,Maven output,commits or cleanup actions were performed."
+  ],
+  "artifact": {
+    "bytes": 17018,
+    "binaryFilesCopied": 0,
+    "replayOrDatFilesCopied": 0,
+    "fullLogCopied": false,
+    "encoding": "UTF-8 without BOM; CRLF"
+  }
+}

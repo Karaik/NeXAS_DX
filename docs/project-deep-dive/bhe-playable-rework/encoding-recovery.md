@@ -87,3 +87,18 @@
 第 161、166、171 行的 `push 103 ↙ push 104` 均改为 `push 103 → push 104`。这三行在 `5b274e4369` 首次加入时已是 `↙`，没有历史正确箭头可逐字取回；修正依据各自 EXPECTED=`0x67`、TARGET=`0x68` 和调用标签明确的 `push 103 -> push 104`，属于上下文确定的符号修正。
 
 实施仅替换上述 4 条注释，并追加本节说明；源码其余字节与修复前快照一致，未修改任何逻辑、常量或 patch 行为。两文件均核为严格 UTF-8、无 BOM、CRLF，`git diff --check` 通过。没有为注释新增测试，没有运行 Maven、UI、CDB 或游戏，没有提交。
+
+## 2026-11-05 热修后编码增量复核
+
+以`target/bhe-combined-fixes-20261105/encoding-source-scan-20261105.json`为基线，SHA256 `03d4bc6d67d97fe3d318bd32b4c92de3ac614cafe14c7390f5492a99ee1ec660`；该基线HEAD为`979c31389`。当前核对HEAD为`335a128e6`，热修源码提交为`fcdddea36`。跟踪源码范围仍为986文件（974 Java、8 Python、2 PowerShell及原计划两份FXML），没有新增／删除；984文件与基线逐字节相同，仅以下两份Java变化。其余resources、generated、binary及未跟踪草稿未扩入扫描。
+
+| 变化文件 | 当前SHA256 | 增量文字判断 |
+| --- | --- | --- |
+| `src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/sou/SouCoolGainReturnProtocolFixer.java` | `ce65f122929969f3e0973ee608bc0572ea66d9af41f16e8eae19d7b453527ea5` | 第39行新增私有冷却实体日文名，正常可读。 |
+| `src/test/java/com/giga/nexas/transfer/bhe2bsdx/meka/sou/SouCoolGainReturnProtocolTest.java` | `147025878ba09126d3b42e2aa02c25b6bf08c0af0a63842903e0018bbe4798c2` | 第50行同步名称、第197行原版`発光爆風（小）`供体断言，正常可读。 |
+
+这两文件均重新严格UTF-8解码成功，无BOM、裸LF／CR、U+FFFD、私用区、C1或NUL；全部3条新增非ASCII行已按上下文人工阅读，未发现新增确证乱码。Git基线blob按工作区CRLF还原后的hash与旧清单相同；没有把Git存储换行与工作区换行差异判成文字损坏。本轮是窄增量复核，不宣称重新逐句阅读全部历史注释。
+
+旧BHE `SkillInfoFactory.java:142`的`// ???`及BSDX同名文件第129行的`// ????`仍为未知语义占位，没有可恢复原文证据；104份既有LF文件hash均未变化，单列为换行风格，不作乱码恢复。原六份Clarias相关WIP仍为53行新增、0删除，本轮写入前后六文件hash相同；没有修改源码、格式化、运行Maven／JVM／UI或提交。
+
+小型摘要与两文件hash增量写入[source-encoding-current.json](../../../src/test/resources/bhe-runtime-evidence-20261105/source-encoding-current.json)，SHA256 `f5d717cce8a00693c55a70c7029bfc876db7c30265acb1bc04c3f695f754db59`；未复制271KB旧清单。此结论只覆盖源文本编码，当前热修仍未取得实机成功，不据此扩展游戏验收结论。
