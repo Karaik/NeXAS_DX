@@ -95,6 +95,10 @@
 - 训练Replay输入夹具为`python tools/bhe_replay_input_fixture.py inspect --template <录像>`及`create --template <录像> --out <新录像> --input-json <时序JSON>`；模板须由当前角色正常UI保存，输出不得已存在。该工具不直接出招；通过游戏正常载入／播放并读取真实取消／受击链后，才能记录跨武装连段，见`replay-validation-20261029.md`。
 - `MekaPreloadBudgetTest,ImportStaticAssetsStepBheOutputTest`验证103／104／114行费用输出、继承前缀保全及坏表拒绝；`MekaLoaderCapacityTest,MekaLoaderPatchApplicationTest,NativeErrorHandlerPreservationTest`使用与runner相同的`ida-reverse/BaldrSky.exe`基线。静态费用权重验证不能代替原生调度实测。
 
+## Sou Cool Gain回收定向回归（2026-11-05）
+
+- `SouCoolGainReturnProtocolTest`使用真实源输入，覆盖预算保全、父阶段快照及父NULL优先、公共／私有节点身份隔离、动态尾部／三caller、幂等与漂移拒绝、两次二进制回环；仅写仓库内JUnit临时目录。与既有Human／CursedBlade／Snow／Flare／SouCustomizer套件串行执行，保留其整图保全断言。验证范围见`docs/project-deep-dive/bhe-playable-rework/cool-gain-return-20261105.md`。
+
 ## BHE条件与方向图片定向回归（2026-11-05）
 
 - `ActionWazaReferenceRebindTest`覆盖真实Sou／Nagi条件、非identity映射、私有组晚分配、源隔离、原DX前缀／尾段边界及两次真实二进制回环。`rebindSourceCopy`只接受新建源副本，重复输出必须从共享未改基线重新复制。

@@ -322,11 +322,12 @@ class SouFlareSeekerSingleTargetTest {
         FollowupMekaContext context = new FollowupMekaContext();
         context.setRequest(request); context.setBaseline(baseline); context.setConvertedBundle(currentSou);
         context.setSelectedPackage(selected); context.setGrpAppendPlan(privatePlan); context.setReboundMek(mek); context.setReboundWaz(main);
-        // Isolate all four existing repairs; the future Flare Seeker adapter first runs through the public entry in each test.
+        // Isolate the other repairs; Flare Seeker first runs through the public entry in each test.
         SouSkillGlitchFixer.INSTANCE.fix(context);
         SouHumanCannonCounterFixer.fix(context);
         SouCursedBladeSingleTargetFixer.fix(context);
         SouSnowMoonSingleTargetFixer.fix(context);
+        SouCoolGainReturnProtocolFixer.fix(context);
         int sourceGroup = BheCommonProjectileResources.commonProjectileWazFiles().indexOf("tama05.waz");
         var rawTama = raw.getCommonProjectileWazByFileName().get("tama05.waz");
         String hostName = plan.getSourceWazIndexToTargetFileName().get(sourceGroup);

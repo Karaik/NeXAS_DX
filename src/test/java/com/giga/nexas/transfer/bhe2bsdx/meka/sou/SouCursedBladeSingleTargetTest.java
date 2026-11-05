@@ -296,6 +296,7 @@ class SouCursedBladeSingleTargetTest {
         SouHumanCannonCounterFixer.fix(context);
         SouSnowMoonSingleTargetFixer.fix(context);
         SouFlareSeekerSingleTargetFixer.fix(context);
+        SouCoolGainReturnProtocolFixer.fix(context);
         Fixture f = new Fixture(context, raw, mainGroup, sourceFiles);
         for (int i = 0; i < 3; i++) {
             assertEquals(SUFFIX, suffix(family(main, i)));
