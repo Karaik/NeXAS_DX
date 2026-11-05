@@ -107,6 +107,10 @@ set MAVEN_OPTS=-Xmx4g
 - 连段输入可用游戏原生训练Replay验收；`tools/bhe_replay_input_fixture.py`仅从当前角色正常UI保存的模板生成新录像，保留前两块，只替换普通按钮输入块，不覆盖旧文件。先经正常载入／播放，再核不同武装START、同一目标控制、热量与收尾；格式通过不能代替玩法通过，操作证据见`replay-validation-20261029.md`。
 - 两个BHE静态输出器通过`MekaPreloadBudget`补齐`BQMekaMemory.dat`至最终MekaGroup行数；优先保留继承表的schema及全部行，只在本轮目录追加新ID。100M是显式调度权重，不是精确内存；原生force/release/queue与关卡推进仍须实机验收。
 
+### Sou Boost Procter冲刺持续适配（2026-11-05）
+
+- `SouBoostProcterDashContinuationFixer`按actual common plan定位本体／子体宿主及原源slice，支持Tama03／Tama04继承与Tama05／Laser fallback。三个等级各追加自己的私有本体，仅去除P1误译的END-OR，保留正确NOT-AND、149f上限、P2 40f及各级发射数据；玩家武装数量不增加。源码／测试／实机边界见`docs/project-deep-dive/bhe-playable-rework/boost-procter-dash-20261105.md`。
+
 ### Sou Cool Gain回收适配（2026-11-05）
 
 - `SouCoolGainReturnProtocolFixer`仅在Tama05动态尾部添加本体／冰片两个深复制私有图，三等级caller改指私有本体，公共源图不改。本体保留channel0预算和原减耗／退场；冰片先判direct parent NULL，再比较父阶段变化／预算耗尽，沿原P7收尾。PARENT_TURN比较当前与自身换块时保存的父entry，不能把非零entry当变化。完整依据与实机边界见`cool-gain-return-20261105.md`，测试通过不代表133已完成实机修复。

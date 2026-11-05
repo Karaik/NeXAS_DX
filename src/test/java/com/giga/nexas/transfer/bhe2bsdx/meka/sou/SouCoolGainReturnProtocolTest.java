@@ -341,6 +341,7 @@ class SouCoolGainReturnProtocolTest {
         SouCursedBladeSingleTargetFixer.fix(context);
         SouSnowMoonSingleTargetFixer.fix(context);
         SouFlareSeekerSingleTargetFixer.fix(context);
+        SouBoostProcterDashContinuationFixer.fix(context);
         int sourceGroup = BheCommonProjectileResources.commonProjectileWazFiles().indexOf("tama05.waz");
         String hostName = plan.getSourceWazIndexToTargetFileName().get(sourceGroup);
         int hostGroup = plan.getSourceWazIndexToTargetIndex().get(sourceGroup);

@@ -357,6 +357,7 @@ class SouHumanCannonCounterTest {
         SouSnowMoonSingleTargetFixer.fix(context);
         SouFlareSeekerSingleTargetFixer.fix(context);
         SouCoolGainReturnProtocolFixer.fix(context);
+        SouBoostProcterDashContinuationFixer.fix(context);
         assertEquals(211, mek.getMekWeaponInfoMap().size());
         assertTrue(currentSou.getCommonProjectileResourceBundle().getWazByFileName().isEmpty(),
                 "Sou inherits prepared hosts; a fresh Sou converted common bundle is empty in the real pipeline");

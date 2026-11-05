@@ -328,6 +328,7 @@ class SouFlareSeekerSingleTargetTest {
         SouCursedBladeSingleTargetFixer.fix(context);
         SouSnowMoonSingleTargetFixer.fix(context);
         SouCoolGainReturnProtocolFixer.fix(context);
+        SouBoostProcterDashContinuationFixer.fix(context);
         int sourceGroup = BheCommonProjectileResources.commonProjectileWazFiles().indexOf("tama05.waz");
         var rawTama = raw.getCommonProjectileWazByFileName().get("tama05.waz");
         String hostName = plan.getSourceWazIndexToTargetFileName().get(sourceGroup);

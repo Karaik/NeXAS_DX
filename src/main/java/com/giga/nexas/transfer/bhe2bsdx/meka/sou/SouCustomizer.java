@@ -24,5 +24,6 @@ public final class SouCustomizer implements FollowupMekaCustomizer {
         SouSnowMoonSingleTargetFixer.fix(context);
         SouFlareSeekerSingleTargetFixer.fix(context);
         SouCoolGainReturnProtocolFixer.fix(context);
+        SouBoostProcterDashContinuationFixer.fix(context);
     }
 }

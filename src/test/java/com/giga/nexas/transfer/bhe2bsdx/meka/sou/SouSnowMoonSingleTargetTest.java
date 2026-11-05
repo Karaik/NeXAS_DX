@@ -357,6 +357,7 @@ class SouSnowMoonSingleTargetTest {
         SouCursedBladeSingleTargetFixer.fix(context);
         SouFlareSeekerSingleTargetFixer.fix(context);
         SouCoolGainReturnProtocolFixer.fix(context);
+        SouBoostProcterDashContinuationFixer.fix(context);
         int sourceGroup = BheCommonProjectileResources.commonProjectileWazFiles().indexOf("tama05.waz");
         assertTrue(sourceGroup >= 0);
         String hostName = plan.getSourceWazIndexToTargetFileName().get(sourceGroup);
