@@ -1,0 +1,364 @@
+{
+  "schema": "nexas.bhe-runtime-text-evidence/v1",
+  "capturedAt": "2026-11-05T03:20:38.959542+00:00",
+  "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-heat-diagnosis-20261105-08",
+  "scope": "terminal CDB diagnosis of old package Sou123; crash localization and cleanup only, no repaired-package runtime acceptance",
+  "terminal": true,
+  "runtimeValidated": false,
+  "sourceFiles": {
+    "state": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-heat-diagnosis-20261105-08\\state.json",
+      "bytes": 19491,
+      "sha256": "eca197df44d269d6530aaccbba938c15975bdfac4b98afa66c6846291790c789"
+    },
+    "manifest": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-heat-diagnosis-20261105-08\\manifest.json",
+      "bytes": 32367,
+      "sha256": "fc141348e8edfeca04f30c6985acbaf2147054646f721dd8537aba224d5c19d5"
+    },
+    "events": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-heat-diagnosis-20261105-08\\events.jsonl",
+      "bytes": 165079,
+      "sha256": "4675d63315e659c69468d7a110e68d5e3e51987b6b156f3ba6a99cfbe9b3b4d2"
+    },
+    "cdb": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-heat-diagnosis-20261105-08\\heat-first-av.cdb.log",
+      "bytes": 14158,
+      "sha256": "87714a1f3e21448dfe3ac6416f01ee1443a6ed26ac89f5f6f5f551cf8e64ff27"
+    }
+  },
+  "buildIdentity": {
+    "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261103_154924_549_070a8f21\\build.json",
+    "receiptSha256": "ea3187efb577f9a06ecb3b995bbbb7bd835f8aedaa44efb5f4ac7a62a1366efe",
+    "exeSha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae",
+    "pacSha256": "10a6d5f50cd528e9206744c53a0dfaac5836f204d384ab3219d07085f5ab1996",
+    "runtimeValidated": false,
+    "identityBasis": "case manifest and build receipt agree; terminal source_files_check is true; deleted game copies are not rehashed"
+  },
+  "observations": {
+    "exceptionAddress": "0x767A15",
+    "moduleOffset": "BaldrSky.exe+0x367A15",
+    "instructionBytes": "8B01",
+    "instruction": "mov eax,dword ptr [ecx]",
+    "ecx": "0x00000000",
+    "memoryOperation": "read",
+    "memoryAddress": "0x00000000",
+    "imageEntryIndex": 249,
+    "imageIndexEvidence": "ESI=0xF9 and debugger computes table entry base+40*ESI",
+    "imageEntryName": "bhe_tama_bit041_0001.png",
+    "firstChanceAV": true,
+    "secondChanceAV": true,
+    "exitCode": 3221225477,
+    "exitCodeHex": "0xC0000005",
+    "gameplayCombatObserversInstalled": false,
+    "isolationHooksStillInstalled": true,
+    "isolationHookCount": 11,
+    "guardViolationCount": 0,
+    "rootCauseBoundary": "CDB localizes the null surface access and image table entry; this record does not establish why the surface was null or validate a repair."
+  },
+  "cdbExcerpt": {
+    "sourceLineStart": 151,
+    "sourceLineEndInclusive": 203,
+    "byte_offset": 10098,
+    "source_bytes": 2779,
+    "sha256": "3b6332c7af48cf504ab11c0302d39ecc360ceebed6d868ae5f080d86c9685ed2",
+    "encoding": "utf-8",
+    "text": "0:024> sxe av; g\r\n(c3530.c306c): Access violation - code c0000005 (first chance)\r\nFirst chance exceptions are reported before any exception handling.\r\nThis exception may be expected and handled.\r\n*** WARNING: Unable to verify checksum for D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-heat-diagnosis-20261105-08\\game\\BaldrSky.exe\r\neax=000001d6 ebx=1267a718 ecx=00000000 edx=00000000 esi=000000f9 edi=10002000\r\neip=00767a15 esp=001af9e8 ebp=001afa38 iopl=0         nv up ei pl nz na pe nc\r\ncs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00010206\r\nBaldrSky+0x367a15:\r\n00767a15 8b01            mov     eax,dword ptr [ecx]  ds:002b:00000000=????????\r\n0:000> .exr -1\r\nExceptionAddress: 00767a15 (BaldrSky+0x00367a15)\r\n   ExceptionCode: c0000005 (Access violation)\r\n  ExceptionFlags: 00000000\r\nNumberParameters: 2\r\n   Parameter[0]: 00000000\r\n   Parameter[1]: 00000000\r\nAttempt to read from address 00000000\r\n0:000> kv 16\r\nChildEBP RetAddr      Args to Child              \r\nWARNING: Stack unwind information not available. Following frames may be wrong.\r\n001afa38 007688e9     05b03e80 00000823 000000e4 BaldrSky+0x367a15\r\n001afaac 0060eb5d     05b03e80 00000823 000000e4 BaldrSky+0x3688e9\r\n001afafc 00717965     00000000 fffff7ff fffff9d9 BaldrSky+0x20eb5d\r\n001afb5c 007191b4     04ae6a78 00000086 05b03e80 BaldrSky+0x317965\r\n001afbe8 77943b5e     00000000 00000000 00000000 BaldrSky+0x3191b4\r\n00000000 00000000     00000000 00000000 00000000 ntdll!RtlGetSystemTimeAndBias+0x1bbe\r\n0:000> r @$t0=poi(@ebx+0x48)+0n40*@esi\r\n0:000> dd @$t0 L0n10\r\n2101f6f8  00000000 2083bfb0 00000000 00000000\r\n2101f708  00000000 00000018 0000001f 00000000\r\n2101f718  00000000 00000002\r\n0:000> .if (dwo(@$t0+0x18)<0n16) { da @$t0+4 } .else { da poi(@$t0+4) }\r\n2083bfb0  \"bhe_tama_bit041_0001.png\"\r\n0:000> dd @ebx+0x48 L2\r\n1267a760  2101d010 21021980\r\n0:000> gn\r\n(c3530.c306c): Access violation - code c0000005 (!!! second chance !!!)\r\neax=000001d6 ebx=1267a718 ecx=00000000 edx=00000000 esi=000000f9 edi=10002000\r\neip=00767a15 esp=001af9e8 ebp=001afa38 iopl=0         nv up ei pl nz na pe nc\r\ncs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00010206\r\nBaldrSky+0x367a15:\r\n00767a15 8b01            mov     eax,dword ptr [ecx]  ds:002b:00000000=????????\r\n0:000> gn\r\neax=0067c163 ebx=124fc7c8 ecx=00000000 edx=00000000 esi=00000000 edi=00000000\r\neip=7792a6b0 esp=19abfff0 ebp=00000000 iopl=0         nv up ei pl nz na po nc\r\ncs=0023  ss=002b  ds=002b  es=002b  fs=0053  gs=002b             efl=00000202\r\nntdll!RtlUserThreadStart:\r\n7792a6b0 89442404        mov     dword ptr [esp+4],eax ss:002b:19abfff4=00000000\r\n0:017> .lastevent\r\nLast event: c3530.c2d60: Exit process 0:c3530, code c0000005\r\n  debugger time: Thu Nov  5 12:02:26.497 2026 (UTC + 9:00)\r\n0:017> q\r\n",
+    "stackBoundary": "CDB warns stack unwind information is unavailable and following frames may be wrong; warning preserved."
+  },
+  "eventTypeCounts": {
+    "capture_log_redirected": 3,
+    "created_suspended": 1,
+    "cryptnet_cache_redirected": 2,
+    "directory_create_collision": 14,
+    "documents_location_enter": 1,
+    "documents_location_result": 1,
+    "driver_state_redirected": 41,
+    "exception": 1,
+    "finished": 1,
+    "frida_detached": 1,
+    "hid_device_open": 347,
+    "hook_ready": 1,
+    "hooks_loaded": 1,
+    "mmcss_device_open": 1,
+    "original_driver_state_prelaunch_audit": 1,
+    "resumed": 1,
+    "save_path_redirected": 30
+  },
+  "sourceEventObjectsByLine": {
+    "3": {
+      "byte_offset": 508,
+      "source_bytes": 3558,
+      "event": {
+        "at": "2026-11-05T02:33:02.178159+00:00",
+        "event": "frida_message",
+        "message": {
+          "type": "send",
+          "payload": {
+            "type": "hook_ready",
+            "hooks": [
+              "NtCreateFile",
+              "NtOpenFile",
+              "NtDeleteFile",
+              "NtQueryAttributesFile",
+              "NtQueryFullAttributesFile",
+              "NtWriteFile",
+              "NtSetInformationFile",
+              "NtCreateUserProcess",
+              "SHGetSpecialFolderLocation",
+              "SHGetPathFromIDListA",
+              "SHGetPathFromIDListW"
+            ],
+            "module": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-heat-diagnosis-20261105-08\\game\\BaldrSky.exe",
+            "base": "0x400000",
+            "pointerSize": 4,
+            "repository": [
+              "D:\\Code\\NeXAS_DX",
+              "\\Device\\HarddiskVolume8\\Code\\NeXAS_DX"
+            ],
+            "protectedInputs": [
+              "C:\\Users\\30250\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save",
+              "D:\\Code\\NeXAS_DX\\src\\main\\resources\\bsdx_game",
+              "C:\\ProgramData\\NVIDIA Corporation\\Drs",
+              "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261103_154924_549_070a8f21\\sou\\BaldrSky_20261103_155143_736.exe",
+              "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261103_154924_549_070a8f21\\sou\\Update3.pac",
+              "C:\\ProgramData\\NVIDIA Corporation\\ShadowPlay\\CaptureCore.log",
+              "C:\\Users\\30250\\AppData\\LocalLow\\Microsoft\\CryptnetUrlCache",
+              "D:\\Code\\NeXAS_DX\\target\\bhe-private-save-seeds\\cp932-20261103-01\\GIGA\\BALDRSKY_DIVEX\\Save",
+              "\\Device\\HarddiskVolume3\\Users\\30250\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save",
+              "\\Device\\HarddiskVolume8\\Code\\NeXAS_DX\\src\\main\\resources\\bsdx_game",
+              "\\Device\\HarddiskVolume3\\ProgramData\\NVIDIA Corporation\\Drs",
+              "\\Device\\HarddiskVolume8\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261103_154924_549_070a8f21\\sou\\BaldrSky_20261103_155143_736.exe",
+              "\\Device\\HarddiskVolume8\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261103_154924_549_070a8f21\\sou\\Update3.pac",
+              "\\Device\\HarddiskVolume3\\ProgramData\\NVIDIA Corporation\\ShadowPlay\\CaptureCore.log",
+              "\\Device\\HarddiskVolume3\\Users\\30250\\AppData\\LocalLow\\Microsoft\\CryptnetUrlCache",
+              "\\Device\\HarddiskVolume8\\Code\\NeXAS_DX\\target\\bhe-private-save-seeds\\cp932-20261103-01\\GIGA\\BALDRSKY_DIVEX\\Save"
+            ],
+            "documentsLocationReturn": "0x764fbf",
+            "documentsPathReturn": "0x764fd3",
+            "saveAliasSources": [
+              "C:\\Users\\30250\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save",
+              "\\Device\\HarddiskVolume3\\Users\\30250\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save"
+            ],
+            "saveAliasTarget": "\\??\\D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-heat-diagnosis-20261105-08\\docs\\GIGA\\BALDRSKY_DIVEX\\Save",
+            "driverStateSources": [
+              "C:\\ProgramData\\NVIDIA Corporation\\Drs",
+              "\\Device\\HarddiskVolume3\\ProgramData\\NVIDIA Corporation\\Drs"
+            ],
+            "driverStateTarget": "\\??\\D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-heat-diagnosis-20261105-08\\driver-cache\\Drs",
+            "captureLogSources": [
+              "C:\\ProgramData\\NVIDIA Corporation\\ShadowPlay\\CaptureCore.log",
+              "\\Device\\HarddiskVolume3\\ProgramData\\NVIDIA Corporation\\ShadowPlay\\CaptureCore.log"
+            ],
+            "captureLogTarget": "\\??\\D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-heat-diagnosis-20261105-08\\driver-cache\\ShadowPlay\\CaptureCore.log",
+            "cryptnetCacheSources": [
+              "C:\\Users\\30250\\AppData\\LocalLow\\Microsoft\\CryptnetUrlCache",
+              "\\Device\\HarddiskVolume3\\Users\\30250\\AppData\\LocalLow\\Microsoft\\CryptnetUrlCache"
+            ],
+            "cryptnetCacheTarget": "\\??\\D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-heat-diagnosis-20261105-08\\driver-cache\\CryptnetUrlCache",
+            "cryptnetMetadataFile": "329B6147266C1E26CD774EA22B79EC2E",
+            "policy": "repository-only case writes; external disk writes and original inputs protected; exceptions never handled"
+          }
+        }
+      }
+    },
+    "424": {
+      "byte_offset": 154691,
+      "source_bytes": 732,
+      "event": {
+        "at": "2026-11-05T02:33:03.893705+00:00",
+        "event": "frida_message",
+        "message": {
+          "type": "send",
+          "payload": {
+            "type": "exception",
+            "classification": "unclassified_observed_exception",
+            "diagnostic_errors": [],
+            "backtrace": {
+              "status": "unavailable",
+              "reason": "no_symbol_resolution"
+            },
+            "exceptionType": "system",
+            "address": "0x7556bae4",
+            "memory": null,
+            "context": {
+              "pc": "0x7556bae4",
+              "sp": "0x1acd30",
+              "eax": "0x1acd30",
+              "ecx": "0x2",
+              "edx": "0x0",
+              "ebx": "0x0",
+              "esp": "0x1acd30",
+              "ebp": "0x1acd8c",
+              "esi": "0x1ad018",
+              "edi": "0x1ad0a7",
+              "eip": "0x7556bae4"
+            },
+            "location": {
+              "address": "0x7556bae4",
+              "module": {
+                "name": "KERNELBASE.dll",
+                "path": "C:\\WINDOWS\\System32\\KERNELBASE.dll",
+                "base": "0x75400000",
+                "offset": "0x16bae4"
+              }
+            }
+          }
+        }
+      }
+    },
+    "447": {
+      "byte_offset": 164837,
+      "source_bytes": 118,
+      "event": {
+        "at": "2026-11-05T03:02:26.575976+00:00",
+        "event": "frida_detached",
+        "reason": "process-terminated",
+        "crash": null
+      }
+    },
+    "448": {
+      "byte_offset": 164955,
+      "source_bytes": 124,
+      "event": {
+        "at": "2026-11-05T03:03:05.700424+00:00",
+        "event": "finished",
+        "status": "failed",
+        "failure": "abnormal_exit_3221225477"
+      }
+    }
+  },
+  "terminalStateRelevantFields": {
+    "status": "failed",
+    "failure": "abnormal_exit_3221225477",
+    "stop_reason": null,
+    "exit_code": 3221225477,
+    "started_at": "2026-11-05T02:33:00.461728+00:00",
+    "finished_at": "2026-11-05T03:03:05.700403+00:00",
+    "process": {
+      "pid": 800048,
+      "thread_id": 798828,
+      "creation_filetime": 134383195810642711,
+      "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-heat-diagnosis-20261105-08\\game\\BaldrSky.exe"
+    },
+    "launcher_pid": 800568,
+    "hook_ready": true,
+    "runtime_acceptance": "not_evaluated",
+    "exception_count": 1,
+    "last_exception": {
+      "type": "exception",
+      "classification": "unclassified_observed_exception",
+      "diagnostic_errors": [],
+      "backtrace": {
+        "status": "unavailable",
+        "reason": "no_symbol_resolution"
+      },
+      "exceptionType": "system",
+      "address": "0x7556bae4",
+      "memory": null,
+      "context": {
+        "pc": "0x7556bae4",
+        "sp": "0x1acd30",
+        "eax": "0x1acd30",
+        "ecx": "0x2",
+        "edx": "0x0",
+        "ebx": "0x0",
+        "esp": "0x1acd30",
+        "ebp": "0x1acd8c",
+        "esi": "0x1ad018",
+        "edi": "0x1ad0a7",
+        "eip": "0x7556bae4"
+      },
+      "location": {
+        "address": "0x7556bae4",
+        "module": {
+          "name": "KERNELBASE.dll",
+          "path": "C:\\WINDOWS\\System32\\KERNELBASE.dll",
+          "base": "0x75400000",
+          "offset": "0x16bae4"
+        }
+      }
+    },
+    "guard_violations": [],
+    "cleanup_pending": false,
+    "owned_process_exit_confirmed": true,
+    "guard_cleanup_complete": true,
+    "guard_session_retained": false,
+    "closed_handles": [
+      "thread_handle",
+      "process_handle"
+    ],
+    "frida_detached": true,
+    "detach_reason": "process-terminated",
+    "input_copy_cleanup": {
+      "removed": [
+        "AutoUpdate.exe",
+        "BaldrSky.exe",
+        "BaldrSky.ico",
+        "Bgm.pac",
+        "Bmp.pac",
+        "Config.pac",
+        "Dat.pac",
+        "Face.pac",
+        "Filechk.exe",
+        "Launcher.dat",
+        "Launcher.exe",
+        "Script.pac",
+        "Se.pac",
+        "Setup.exe",
+        "Setupinf.dat",
+        "Stand.pac",
+        "StartUpTool.exe",
+        "System.pac",
+        "Thumbnail.pac",
+        "Uninstall.exe",
+        "Update.exe",
+        "Update.pac",
+        "Update2.pac",
+        "UpdateInf.dat",
+        "Visual.pac",
+        "Voice.pac",
+        "autorun.inf",
+        "Update3.pac"
+      ],
+      "removed_bytes": 5805648253,
+      "retained_changed_or_unique": [],
+      "errors": []
+    },
+    "original_save_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "original_base_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "source_files_check": {
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261103_154924_549_070a8f21\\sou\\BaldrSky_20261103_155143_736.exe": true,
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261103_154924_549_070a8f21\\sou\\Update3.pac": true
+    }
+  },
+  "cleanupSummary": {
+    "gameCopiesRemovedCount": 28,
+    "removedBytes": 5805648253,
+    "gameDirectoryEmptyAtAudit": true,
+    "sourceFilesDeleted": false,
+    "originalSaveUnchanged": true
+  },
+  "evidenceBoundaries": [
+    "No gameplay/combat observer-ready or gameplay/combat event occurs in this complete terminal log; the 11 isolation hooks remained installed.",
+    "The state last_exception is an earlier KERNELBASE system exception. The 0x767A15 read-null AV comes from the separate CDB excerpt, not that state field.",
+    "First/second-chance CDB observations and final process exit are retained separately; no source-code repair or new runtime package is accepted here.",
+    "Only this small text excerpt and four event objects are retained; no full CDB/module log, full events log, binary, dump, image or Save contents are copied."
+  ],
+  "artifact": {
+    "bytes": 17574,
+    "binaryFilesCopied": 0,
+    "fullLogCopied": false,
+    "encoding": "UTF-8 without BOM; CRLF"
+  }
+}
