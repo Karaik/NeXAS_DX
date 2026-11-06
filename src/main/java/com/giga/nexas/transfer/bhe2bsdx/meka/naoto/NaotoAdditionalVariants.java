@@ -105,7 +105,7 @@ final class NaotoAdditionalVariants {
                 }, storageWeapon);
 
         appendOne(mek, waz, machinegun, "マシンガン", "0005", "マシンガン・三点射", "DX_MACHINEGUN_THREE_BURST", 12,
-                "マシンガンを三点射し、長押しせずに攻めを切り替える。撃ち終わりからフックやクローの間合いへ入りたい。", value -> {
+                "マシンガンを三発だけ連射する。射撃開始時に追加で発熱し、三発目の発射後は別の攻撃へ切り替えられる。", value -> {
                     requireNormalEnd(at(value, 0, 71, CEventChange.class, 35, 35)); requireNormalEnd(at(value, 2, 71, CEventChange.class, 33, 33));
                     var routes = changes(value, 1); if (routes.size() != 2 || routes.stream().anyMatch(c -> !frames(c, 3, 3))) throw invalid("MGの循環窓が変更された");
                     CEventChange loop = routes.get(0), exit = routes.get(1);

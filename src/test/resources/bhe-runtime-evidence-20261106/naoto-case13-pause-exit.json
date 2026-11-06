@@ -1,0 +1,129 @@
+{
+  "schema": "nexas.bhe-runtime-pause-exit/v1",
+  "capturedAt": "2026-11-06T10:26:08.526858+00:00",
+  "runtimeValidated": false,
+  "reason": "User explicitly requested pause. UI loading035 was cancelled; exit confirmation remained pending, then the existing managed STOP mechanism stopped this owned process. No035 playback or sampling.",
+  "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261106-13",
+  "process": {
+    "pid": 9552,
+    "thread_id": 49332,
+    "creation_filetime": 134383992159715102,
+    "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261106-13\\game\\BaldrSky.exe"
+  },
+  "launcherPid": 53136,
+  "terminal": {
+    "status": "stopped",
+    "failure": null,
+    "stop_reason": "STOP_file",
+    "exit_code": 3758096385,
+    "finished_at": "2026-11-06T10:24:56.370537+00:00",
+    "owned_process_exit_confirmed": true,
+    "guard_cleanup_complete": true,
+    "cleanup_pending": false,
+    "closed_handles": [
+      "thread_handle",
+      "process_handle"
+    ],
+    "frida_detached": true,
+    "guard_violations": [],
+    "external_write_count": 0,
+    "runtime_acceptance": "not_evaluated"
+  },
+  "stateIdentity": {
+    "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261106-13\\state.json",
+    "bytes": 19543,
+    "sha256": "8183ef515502d15a0448643bd151c1bc2c98c783addfe447fb684ec7262ddb4d"
+  },
+  "eventsIdentity": {
+    "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261106-13\\events.jsonl",
+    "bytes": 8438014,
+    "sha256": "eed2e21b98a74653f4b374728924b29ee3cac50b7fd54ca1a2e1e7ee99860af4",
+    "lines": 14486
+  },
+  "inputCopyCleanup": {
+    "removed": [
+      "AutoUpdate.exe",
+      "BaldrSky.exe",
+      "BaldrSky.ico",
+      "Bgm.pac",
+      "Bmp.pac",
+      "Config.pac",
+      "Dat.pac",
+      "Face.pac",
+      "Filechk.exe",
+      "Launcher.dat",
+      "Launcher.exe",
+      "Script.pac",
+      "Se.pac",
+      "Setup.exe",
+      "Setupinf.dat",
+      "Stand.pac",
+      "StartUpTool.exe",
+      "System.pac",
+      "Thumbnail.pac",
+      "Uninstall.exe",
+      "Update.exe",
+      "Update.pac",
+      "Update2.pac",
+      "UpdateInf.dat",
+      "Visual.pac",
+      "Voice.pac",
+      "autorun.inf",
+      "Update3.pac"
+    ],
+    "removed_bytes": 5805717300,
+    "retained_changed_or_unique": [],
+    "errors": []
+  },
+  "originalSaveCheck": {
+    "unchanged": true,
+    "added": [],
+    "removed": [],
+    "changed": []
+  },
+  "originalBaseCheck": {
+    "unchanged": true,
+    "added": [],
+    "removed": [],
+    "changed": []
+  },
+  "sourceFilesCheck": {
+    "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\BaldrSky_20261105_193620_157.exe": true,
+    "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\Update3.pac": true
+  },
+  "originalDriverStateRuntimeCheck": {
+    "unchanged": false,
+    "added": [],
+    "removed": [],
+    "changed": [
+      "nvAppTimestamps"
+    ],
+    "attribution": "not_determined_external_writers_possible"
+  },
+  "exceptions": {
+    "count": 345,
+    "classificationCounts": [
+      {
+        "type": "system",
+        "classification": "unclassified_observed_exception",
+        "count": 345
+      }
+    ],
+    "observerErrorMessages": 0,
+    "boundary": "Whole-session observed exceptions retained; not a zero-exception or harmlessness claim. Driver timestamp drift has unknown attribution."
+  },
+  "privateSeed": {
+    "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261106-13\\docs\\GIGA\\BALDRSKY_DIVEX\\Save",
+    "fileCount": 112,
+    "totalBytes": 4255910,
+    "recordsCanonicalSha256": "e71db177ded5e97fbd38997fbd954315d3198a0514a1565093fd3f812bf573c1",
+    "boundary": "Private seed remains in repository runtime case; no Save/Replay binaries copied into tracked evidence."
+  },
+  "pending035": {
+    "bytes": 843,
+    "sha256": "1e827650d74bd7998400e1a6564dea213ec146e01cee186a45d6c8e9c5bceec1",
+    "played": false,
+    "samplingOutputExists": false
+  },
+  "boundary": "Intentional managed stop exit E0000001; not a natural exit0, crash reproduction, or full runtime acceptance. Latest sealed build is unchanged."
+}
