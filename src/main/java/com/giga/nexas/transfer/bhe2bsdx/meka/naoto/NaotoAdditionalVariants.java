@@ -62,7 +62,7 @@ final class NaotoAdditionalVariants {
         if (!existing.isEmpty() && (!FOLLOWUP_JP.equals(existing.get(0).getSkillNameJapanese()) || !FOLLOWUP_EN.equals(existing.get(0).getSkillNameEnglish()))) throw invalid("私有追撃の双名が変更された");
 
         appendOne(mek, waz, hook, "ステップインフック", "0002", "フック・リターン", "DX_HOOK_RETURN", 22,
-                "踏み込んでフックを放ち、出し切ると後方へ下がる。命中後はジャブへ切り替えるか、間合いを取り直すかを選べる。", value -> {
+                "踏み込んでフックを放ち、出し切ると後方へ下がる。命中後はストレートパンチへ切り替えるか、間合いを取り直すかを選べる。", value -> {
                     hit(at(value, 0, 41, CEventHit.class, 34, 36), 34, 36, 100, 1);
                     requireNormalEnd(at(value, 0, 71, CEventChange.class, 70, 70));
                     val(at(value, 0, 27, CEventVal.class, 0, 0), 0, 0, 0, 20);

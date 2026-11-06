@@ -157,3 +157,74 @@ root的只读最终快照为`target/bhe-playable-runtime/nine-naoto-20261106-13/
 本窗口没有异常或观察器错误；此前完整前缀中的1条system／unclassified异常仍保留，不称整会话零异常。case在证据捕获时仍running、runtime_acceptance未评估，后续正常退出与源Save终态另行验收。此前首轮菜单JSON及其冻结前缀均再次核hash不变。
 
 本次新增认可仅限20在上述固定目标、模板和日程的实际两击、普通取消、真实0→20→1连接、同场两轮复用及所述收尾。20落空不派生、SD取消、受击中断、其它目标／距离／seed仍未验；另外五个新增武装的训练连接／取消／复用也没有由这次结果代替。上节六招菜单实效仍按其自身边界保留，九角色54招、Sou153项及整体目标继续未完成，`runtimeValidated=false`。
+
+## 2026-11-06 Naoto21：018自然动作、019失败后继、020单轮真连
+
+本节分别固定三次正常训练播放，均来自root由正常UI保存的017模板和同一8efe包／case13。018证明自然动作，019保留失败连接，020证明单轮21→Straight1真连；三者不互相填补缺失事件。021的同场复用另行记录，本节不提前记通过。
+
+证据[`naoto21-natural-and-links.json`](../../../src/test/resources/bhe-runtime-evidence-20261106/naoto21-natural-and-links.json)为110350字节，SHA256 `5588e2fffd4bd4e7c826f0c228dd3f5b4f96c1fbd1742a74ea2918ba33768e3b`。事件总前缀冻结至line7201、4135554字节，SHA256 `4611b9c84bffc17e8803112ee46c253ecda483dae601e0906d22c89af5ca1929`；三试验各自从首次实际发出的frame30输入到本轮RESET划窗，窗内完整原始对象全部保留，另保留对应Replay载入和前缀异常。日志随后仍可增长，不纳入后续021。
+
+017为865字节，SHA256 `2045e08183e8008de87a3b12ffb1c4ae439cc87c96ae5c7f8af74f235aa6db5c`，2911帧全零。三个Replay都独立解析header、三块zlib及EOF，并逐对核360帧edge／held与各自输入JSON一致，tail200；头部和前两编码块812字节均与017相同，SHA256 `bb7a49f451a1c7c307b41f3e07e169f08032d0247843490df676fa206887e202`。实际109／敌0／map68，14槽`[21,-1,-1,-1,-1,-1,-1,-1,-1,-1,0,1,-1,-1]`，即近A21、普通Dash B0／C1，其余空。
+
+| 播放 | 普通输入，左闭右开 | Replay字节／SHA256 | 实际范围 |
+| --- | --- | --- | --- |
+| 018 | A[30,34) | 854；`29b7a70b75fab04482d5db65fcb79d110dc5ce54599b3021a675865a55053c3b` | 21单招150及完整自然回撤／停止 |
+| 019 | A[30,34)、B[66,70)、C[82,86) | 864；`d67770252f879b78e2074a104b608bc7d069465e19959a72ecaa57a69d43b8d8` | 普通取消到Jab成立，Jab无伤害；C未启动1，候选真连失败 |
+| 020 | A[30,34)、C[66,70) | 858；`1550639a1268625a1ded4b686d57d5ac6e8ffcaabf65914bedaaaef7f2d9ab8a` | 固定目标单轮21→1，两击150+40=190真连 |
+
+三轮没有另行发出的native frame0输入事件；本节保留实际最早的frame30，不以RPM counter0补造原生frame0。RPM每轮均保留在原件的361个counter0～360，证据只复制关键变化行和全部拒读对象，并给出完整原件hash。counter是采样读数，不作为原生输入帧或同tick执行顺序的替代。
+
+| 播放 | 首START | 伤害 | 父释放／后继 | 目标恢复／RESET | RPM原件及拒读 |
+| --- | --- | --- | --- | --- | --- |
+| 018 | seq533，frame30／tick263139 | frame64／263173，150，HP5850 | 21在frame103／263212以W32 clock70释放，heat2200、TAMA0/SCRIPT0 | frame98／263207；RESET133／263242 | 295229字节，SHA`925a96505eead1213772c318bb84aa46572d7bb88f2b2083ee28daf621b2ae15`；22次=3未初始化+19一致性变化 |
+| 019 | seq534，frame30／tick299052 | 只有frame64／299086的150，HP5850 | B66后frame67／299089取消W32 clock34，START0 seq535；Jab W11 clock37在frame105／299127释放；未START1 | frame98／299120；RESET135／299157、heat2700 | 297199字节，SHA`521f2ccd1b24b9281852c1b2649815f6463e3f96626ea1a49e8e1d8776d1b583`；47次=7未初始化+40一致性变化 |
+| 020 | seq536，frame30／tick337902 | 150在frame64／337936；40在frame91／337963，末HP5810 | C66后frame67／337939取消W32 clock34，START1 seq537；W12 clock57在frame125／337997释放 | frame119／337991；RESET155／338027、heat2900 | 369667字节，SHA`9aa80f76dbf2b83e718fb4a84c8414694613a2a5ee4bcbba1522d1b0e242c0ba`；39次=6未初始化+33一致性变化 |
+
+“完整361个counter”不抹去22／47／39次拒读，也不使RPM变成原子快照。以上RESET热量按原生事件保留；各自counter360的稍后尾部才为inactive、active-1、热0、TAMA0/SCRIPT0、Z0/Vz0、Graw51200、jump/fall100、装甲贡献／保护0。三份尾部不能互换，也不等于游戏进程已经退出。
+
+### 018的实际回撤与单位
+
+actor的A0/A4/A8是整数地图XYZ；向量管理器指针在actor+14A4，其+1C/+20位置为raw/1024。actor+1758是技能速度分量raw/1024，+1744是方向度×1024；它们不是所有运动合成后的净速度。本次回撤结论主要取实际X变化，并同时核raw位置与技能字段。
+
+起始X2302；准备段前进至X2338。clock39／counter72／tick263181仍为X2338；clock40～47／counter73～80／tick263182～263189依次X2326、2314、2302、2290、2278、2266、2254、2242，每步-12，回撤段合-96。该段skillSpeedRaw=-12288、skillDirectionRaw=-92160。clock48／counter81／tick263190速度字段归0且X保持2242，后续到counter360保持此X。因此**回撤段96，但整招起终净X为-60**，不能混写为整招后退96。
+
+clock33样本fallModifier53；clock34在counter65～67均为100，之后该招样本保持100。命中停顿使几个不同counter对应同一clock，不能按counter差替代技能clock差。自然动作中SCRIPT2／4曾出现，clock48样本归0；没有全过程对象数为0的结论。
+
+### 019失败与020成功的区别
+
+019的B在frame66输入，实际frame67才正常取消21并启动Jab0，取消时W32 clock34、normalGate1、sdGate0。Jab未造成伤害；C82及后续held变化虽有原生输入事件，却没有装备1 START。RPM在counter82附近为Jab clock14、normalGate0，与“C没有成功接出”相符，但不据此补造未观察到的几何根因。原始失败输入、事件及采样都保留，不能以020成功将019重标为通过。
+
+020的后继Straight在frame91造成40，**同一敌actor`0x235da018`的原生命中前control6**，HP5850→5810；两次Hit之间没有敌恢复或玩家RESET，目标直到frame119才恢复，支持本固定条件的两武装真连190。该轮在21 clock34便取消，尚未到回撤clock40，不能用它独立证明完整后退；后退效果来自018。
+
+020采样的target读自player+14B8默认目标，保留实际actor／meka／XY／HP／control，不与其它actor或预览指针混用。同tick337963的RPM counter91仍见HP5850/control7，而原生伤害事件已为HP5810/precontrol6；下一RPM counter92才见HP5810/control25。这些是采样和本tick更新先后的真实差异，不用RPM覆盖原生伤害／控制值。换入Jab或Straight后出现各自原准备倍率，也不直接归为21恢复失败。
+
+三原生窗口无异常或观察器错误，冻结前缀中1条system／unclassified异常继续保留，不声称整会话零异常或自行归为无害。来源EXE/PAC仍使用启动manifest身份，本节没有重hash大型二进制、操作UI或修改游戏数据。21目前已证自然实效／回撤及020单轮普通取消真连；同场复用等021独立证据，落空、SD取消、受击中断、墙边／其它方向距离和目标仍未验。其它武装与整体目标不由这三项扩大，`runtimeValidated=false`保持。
+
+## 2026-11-06 Replay021：21→Straight的同场两轮复用
+
+本节单独追加021；018自然回撤、019失败后继及020单轮真连的JSON原件仍为110350字节／SHA256 `5588e2fffd4bd4e7c826f0c228dd3f5b4f96c1fbd1742a74ea2918ba33768e3b`，其冻结日志前缀也已复核不变。没有将021第二轮回填到前三个窗口。
+
+新增[`naoto21-straight-repeat.json`](../../../src/test/resources/bhe-runtime-evidence-20261106/naoto21-straight-repeat.json)为71100字节，SHA256 `313db40f7b5eea7d153a9e2378e374b270d74f86181f66ed263dd3c928894dd9`。021为870字节、SHA256 `14f620669843e10e5b6c86bd4ab444aac4eaf519e883339956336b7eb6d33dea`，900帧／tail300。独立核三块与EOF，头部及前两编码块812字节与017完全相同；全部900组edge／held匹配A[30,34)、C[66,70)、A[450,454)、C[486,490)。实际模板仍109／敌0／map68、近A21及普通Dash B0／C1，其余空，本轮未使用B。
+
+原生窗口line7234～7273，共40条完整原对象，从实际frame30输入开始，到第二轮RESET frame575／tick378655结束；没有另发frame0事件，不由RPM补造。完整前缀4169701字节、SHA256 `ee4cb848b1e0055a0144a00663a33daa100852bb9d8aaec5e2f49b8bda87077f`，后续运行不纳入本窗口。
+
+| 项目 | 第一轮 | 同一次播放第二轮 |
+| --- | --- | --- |
+| START21 | seq538，frame30／tick378110 | seq540，frame450／tick378530 |
+| Hook命中 | frame64／378144，150；HP5850 | frame484／378564，150；HP5660 |
+| C输入→实际取消／START1 | 输入66，实际67／378147，seq539 | 输入486，实际487／378567，seq541 |
+| 21取消状态 | W32 clock34、normalGate1/sdGate0、heat2200 | W32 clock34、normalGate1/sdGate0、heat2200 |
+| Straight命中 | frame91／378171，40；precontrol6，HP5810 | frame511／378591，40；precontrol6，HP5620 |
+| 目标恢复 | frame119／378199 | frame539／378619 |
+| Straight释放 | frame125／378205，W12 clock57 | frame545／378625，W12 clock57 |
+| RESET | frame155／378235，used2/chain2、heat2900 | frame575／378655，used2/chain2、heat2900 |
+
+四击均为同一目标`0x235da018`，玩家为`0x21bc6018`；每轮两击间无目标恢复或玩家RESET，后继命中前control6，支持两轮各190的真连。第二轮首START前used/chain重新0/0，heat0、TAMA0/SCRIPT0；同一普通Replay自然恢复后再次起手，补齐这一路线的同场复用。总380是两条190，不是一条不中断的长连，也不是两个独立seed。
+
+RPM原件`naoto21-straight-repeat-sampling.json`为921457字节，SHA256 `2f962c1f0c766c850b1cd2cda18381f23d6aadb57d8065fdf90daa6e7082da20`。独立核901个counter0～900完整且唯一；新证据只保存35个关键原行及全部94次拒读（6未初始化、88 tick/counter/player变化），没有复制全部901行。counter、技能clock和native输入frame继续分开；同tick目标HP/control更新先后的差异也不以RPM覆盖原生事件。target仍是player+14B8默认目标字段。
+
+counter900／tick378979尾部为inactive、active-1、热0／capacity8000、TAMA0/SCRIPT0、Z0/Vz0、Graw51200、jump/fall100、armorWaza0／contributionCache0／protection0，目标HP5620。它是原生RESET窗口之后的RPM观测，不能把RESET时heat2900改写为0，也不冒称精确录像结束或native READY。释放事件中的SCRIPT0不代表全程0，采样仍保留攻击期间非零SCRIPT。94次拒读及非原子读边界不因最终正常而消失。
+
+当前8efe成品Naoto.mek实际仍含推荐`ジャブ`的旧21说明；本轮已直接核旧CP932说明唯一出现，拟校正的`ストレートパンチ`版本尚未出现在该成品。截至本节取证，源码21说明已由root把后继推荐从Jab校准为Straight；这只是文案更正，不改动作。本次实机结果绑定现有8efe，不能据源码文字改动声称已经重建、当前进程已载入新说明或新包也已验收。
+
+021只扩大当前固定目标／模板／日程下21→1的普通取消真连和同场复用。两次都在21 clock34提前取消，完整回撤仍由018证明；落空、SD取消、受击中断、其它方向／距离／体型／seed仍未验。窗口无异常或观察器错误，但前缀1条system／unclassified异常继续保留；case在捕获时仍running，没有终态／原Save退出保全结论。整体`runtimeValidated=false`保持。
