@@ -1,0 +1,553 @@
+{
+  "schema": "nexas.bhe-runtime-text-evidence/v1",
+  "capturedAt": "2026-11-06T00:27:52.002796+00:00",
+  "scope": "Case12 independent terminal evidence after frozen Replay013 and Replay014 gameplay windows. No gameplay scope is expanded by successful process exit.",
+  "runtimeValidated": false,
+  "terminal": true,
+  "identities": {
+    "state": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-cooling-heat-20261106-12\\state.json",
+      "bytes": 19570,
+      "sha256": "f9f3bbbece90f45f2f3c253dd8b89794a33d0d8b56e1dbd0b0f34ea8b886dcad"
+    },
+    "manifest": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-cooling-heat-20261106-12\\manifest.json",
+      "bytes": 34016,
+      "sha256": "0733df26ac3a7bf8ab2d100852aad6acb2fc60ceb5812fd010f02ecaff88d774"
+    },
+    "priorGameplayEvidence": [
+      {"path":"D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261106\\sou-cool-gain-heat-runtime.json","bytes":73637,"sha256":"fa078fd019be2d51770aa7b4b8356d9376b23d3354f24b23a9d4167cf58075fe","sourcePrefixUnchangedInFinalLog":true},
+      {"path":"D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261106\\sou-cool-gain-heat-reuse.json","bytes":46795,"sha256":"4d4da4a371e20d6d32550ca7a7878ba078478986bbf7cccf4092c182b2e9042e","sourcePrefixUnchangedInFinalLog":true}
+    ]
+  },
+  "sourceEvents": {
+    "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-cooling-heat-20261106-12\\events.jsonl",
+    "bytes": 421337,
+    "sha256": "8848ea5f6cb297de0800a9c29c6955a34b734844a4158177528b6f091a0f13ba",
+    "completeLineCount": 913,
+    "lastEvent": "finished",
+    "lastAt": "2026-11-06T00:25:22.905151+00:00",
+    "postReplay014StartByteInclusive": 380139,
+    "postReplay014EndByteExclusive": 421337,
+    "postReplay014Bytes": 41198,
+    "postReplay014Sha256": "6ad4fce0b7a2494c663bd7eb2b91e3d650d64b4816050585707b18d8ee7413f9"
+  },
+  "terminalState": {
+    "status": "exited",
+    "started_at": "2026-11-06T00:09:22.955521+00:00",
+    "finished_at": "2026-11-06T00:25:22.905129+00:00",
+    "launcher_pid": 30420,
+    "process": {
+      "pid": 19232,
+      "thread_id": 22068,
+      "creation_filetime": 134383973635809045,
+      "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\sou-cooling-heat-20261106-12\\game\\BaldrSky.exe"
+    },
+    "failure": null,
+    "stop_reason": null,
+    "exit_code": 0,
+    "detach_reason": "process-terminated",
+    "closed_handles": [
+      "thread_handle",
+      "process_handle"
+    ],
+    "frida_detached": true,
+    "installer_thread_alive": false,
+    "cleanup_pending": false,
+    "owned_process_exit_confirmed": true,
+    "guard_cleanup_complete": true,
+    "guard_session_retained": false,
+    "exception_count": 55,
+    "external_write_count": 0,
+    "guard_violations": [
+
+    ],
+    "original_save_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "original_base_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "source_files_check": {
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\BaldrSky_20261105_193620_157.exe": true,
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\Update3.pac": true
+    },
+    "input_copy_cleanup": {
+      "removed": ["AutoUpdate.exe","BaldrSky.exe","BaldrSky.ico","Bgm.pac","Bmp.pac","Config.pac","Dat.pac","Face.pac","Filechk.exe","Launcher.dat","Launcher.exe","Script.pac","Se.pac","Setup.exe","Setupinf.dat","Stand.pac","StartUpTool.exe","System.pac","Thumbnail.pac","Uninstall.exe","Update.exe","Update.pac","Update2.pac","UpdateInf.dat","Visual.pac","Voice.pac","autorun.inf","Update3.pac"],
+      "removed_bytes": 5805717300,
+      "retained_changed_or_unique": [],
+      "errors": []
+    },
+    "original_driver_state_check": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": ["nvAppTimestamps"],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "original_driver_state_runtime_check": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": ["nvAppTimestamps"],
+      "attribution": "not_determined_external_writers_possible"
+    }
+  },
+  "cleanupIndependentReadOnlyCheck": {
+    "all28ListedGameCopiesNowAbsent": true,
+    "absentNames": [
+      "AutoUpdate.exe",
+      "BaldrSky.exe",
+      "BaldrSky.ico",
+      "Bgm.pac",
+      "Bmp.pac",
+      "Config.pac",
+      "Dat.pac",
+      "Face.pac",
+      "Filechk.exe",
+      "Launcher.dat",
+      "Launcher.exe",
+      "Script.pac",
+      "Se.pac",
+      "Setup.exe",
+      "Setupinf.dat",
+      "Stand.pac",
+      "StartUpTool.exe",
+      "System.pac",
+      "Thumbnail.pac",
+      "Uninstall.exe",
+      "Update.exe",
+      "Update.pac",
+      "Update2.pac",
+      "UpdateInf.dat",
+      "Visual.pac",
+      "Voice.pac",
+      "autorun.inf",
+      "Update3.pac"
+    ],
+    "removedBytesAgreeWithPreservedGameFilesAfterManifest": true,
+    "noFilesDeletedByEvidenceWriter": true,
+    "boundary": "Harness owns the cleanup. This evidence writer only reads the terminal state and checks absence of its exact28 listed case/game paths."
+  },
+  "wholeSessionExceptions": {
+    "count": 55,
+    "types": {
+      "system": 55
+    },
+    "classifications": {
+      "unclassified_observed_exception": 55
+    },
+    "lines": [
+      425,
+      856,
+      857,
+      859,
+      860,
+      861,
+      862,
+      863,
+      864,
+      865,
+      866,
+      867,
+      868,
+      869,
+      870,
+      871,
+      872,
+      874,
+      875,
+      876,
+      877,
+      878,
+      879,
+      880,
+      881,
+      882,
+      883,
+      884,
+      885,
+      886,
+      887,
+      888,
+      889,
+      890,
+      891,
+      892,
+      893,
+      894,
+      895,
+      896,
+      897,
+      898,
+      899,
+      900,
+      901,
+      902,
+      903,
+      904,
+      905,
+      906,
+      907,
+      908,
+      909,
+      910,
+      911
+    ],
+    "beforeFrozenGameplayEndLine855": 1,
+    "afterFrozenGameplayEndLine855": 54,
+    "boundary": "Observed system exceptions remain unclassified. Successful exit does not establish their harmlessness or a zero-exception run."
+  },
+  "driverState": {
+    "preparationBaseline": {
+      "nvAppTimestamps": {"size":237038,"sha256":"92f76356e75aa352e699dd5ee2d857c3580bc4dc201ff69f0a9369bc44a37dac"},
+      "nvdrsdb0.bin": {"size":2625600,"sha256":"25d186327a0afd502e0a2aed74c75e1cbdb6b3b8786a57232fb69ba5eab446cb"},
+      "nvdrsdb1.bin": {"size":2625600,"sha256":"e09065e80f380da9fd8232fd5e81ec83617740d7964ad8aa412b509deb856cc6"},
+      "nvdrssel.bin": {"size":1,"sha256":"4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"},
+      "nvdrswr.lk": {"size":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "update.bin": {"size":368,"sha256":"f72efc6b27a89d6cc220817fabcadc7512504c429fd7800967f94454be9b8c39"}
+    },
+    "before": {
+      "nvAppTimestamps": {"size":237038,"sha256":"92f76356e75aa352e699dd5ee2d857c3580bc4dc201ff69f0a9369bc44a37dac"},
+      "nvdrsdb0.bin": {"size":2625600,"sha256":"25d186327a0afd502e0a2aed74c75e1cbdb6b3b8786a57232fb69ba5eab446cb"},
+      "nvdrsdb1.bin": {"size":2625600,"sha256":"e09065e80f380da9fd8232fd5e81ec83617740d7964ad8aa412b509deb856cc6"},
+      "nvdrssel.bin": {"size":1,"sha256":"4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"},
+      "nvdrswr.lk": {"size":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "update.bin": {"size":368,"sha256":"f72efc6b27a89d6cc220817fabcadc7512504c429fd7800967f94454be9b8c39"}
+    },
+    "prelaunchCheck": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": [],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "after": {
+      "nvAppTimestamps": {"size":237326,"sha256":"2ce311ae60f6c67af08bf6d8a865f214be29c019dd92c8412b79b2429355da15"},
+      "nvdrsdb0.bin": {"size":2625600,"sha256":"25d186327a0afd502e0a2aed74c75e1cbdb6b3b8786a57232fb69ba5eab446cb"},
+      "nvdrsdb1.bin": {"size":2625600,"sha256":"e09065e80f380da9fd8232fd5e81ec83617740d7964ad8aa412b509deb856cc6"},
+      "nvdrssel.bin": {"size":1,"sha256":"4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"},
+      "nvdrswr.lk": {"size":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "update.bin": {"size":368,"sha256":"f72efc6b27a89d6cc220817fabcadc7512504c429fd7800967f94454be9b8c39"}
+    },
+    "check": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": ["nvAppTimestamps"],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "runtimeCheck": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": ["nvAppTimestamps"],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "privateCopyAfter": {
+      "nvAppTimestamps": {"size":237234,"sha256":"bb20c7500805fe909b33cef5dbacf921fcbd6a0f1ae14a81503bdd2e03d6facd"},
+      "nvdrsdb0.bin": {"size":2625600,"sha256":"25d186327a0afd502e0a2aed74c75e1cbdb6b3b8786a57232fb69ba5eab446cb"},
+      "nvdrsdb1.bin": {"size":2625600,"sha256":"e09065e80f380da9fd8232fd5e81ec83617740d7964ad8aa412b509deb856cc6"},
+      "nvdrssel.bin": {"size":1,"sha256":"4bf5122f344554c53bde2ebb8cd2b7e3d1600ad631c385a5d7cce23c7785459a"},
+      "nvdrswr.lk": {"size":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},
+      "update.bin": {"size":368,"sha256":"f72efc6b27a89d6cc220817fabcadc7512504c429fd7800967f94454be9b8c39"}
+    },
+    "boundary": "nvAppTimestamps changed in the original driver-state directory. Attribution remains not_determined_external_writers_possible; do not claim no C-drive changes or attribute this to the game."
+  },
+  "sourceConservationBoundary": "Original Save/base and source EXE/PAC conservation are terminal harness checks captured in state; no new read of external Save or independent large-binary rehash was performed by this evidence writer. No seed-source terminal check is invented.",
+  "sourceEventObjectsByLine": {
+    "425": {
+      "at": "2026-11-06T00:09:26.721499+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1acd30","eax":"0x1acd30","ecx":"0x2","edx":"0x0","ebx":"0x0","esp":"0x1acd30","ebp":"0x1acd8c","esi":"0x1ad018","edi":"0x1ad0a6","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "856": {
+      "at": "2026-11-06T00:25:00.055837+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27d550","eax":"0x1b27d550","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27d550","ebp":"0x1b27d5a8","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "857": {
+      "at": "2026-11-06T00:25:00.055945+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27b4f0","eax":"0x1b27b4f0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27b4f0","ebp":"0x1b27b54c","esi":"0x1b27b6e8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "859": {
+      "at": "2026-11-06T00:25:00.056016+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e708","eax":"0x1b27e708","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e708","ebp":"0x1b27e760","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "860": {
+      "at": "2026-11-06T00:25:00.056046+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6a8","eax":"0x1b27c6a8","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6a8","ebp":"0x1b27c704","esi":"0x1b27c8a0","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "861": {
+      "at": "2026-11-06T00:25:00.056073+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e740","eax":"0x1b27e740","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e740","ebp":"0x1b27e798","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "862": {
+      "at": "2026-11-06T00:25:00.056097+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6e0","eax":"0x1b27c6e0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6e0","ebp":"0x1b27c73c","esi":"0x1b27c8d8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "863": {
+      "at": "2026-11-06T00:25:00.056122+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27d550","eax":"0x1b27d550","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27d550","ebp":"0x1b27d5a8","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "864": {
+      "at": "2026-11-06T00:25:00.056145+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27b4f0","eax":"0x1b27b4f0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27b4f0","ebp":"0x1b27b54c","esi":"0x1b27b6e8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "865": {
+      "at": "2026-11-06T00:25:00.056166+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e708","eax":"0x1b27e708","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e708","ebp":"0x1b27e760","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "866": {
+      "at": "2026-11-06T00:25:00.056206+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6a8","eax":"0x1b27c6a8","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6a8","ebp":"0x1b27c704","esi":"0x1b27c8a0","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "867": {
+      "at": "2026-11-06T00:25:00.056234+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e740","eax":"0x1b27e740","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e740","ebp":"0x1b27e798","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "868": {
+      "at": "2026-11-06T00:25:00.056262+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6e0","eax":"0x1b27c6e0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6e0","ebp":"0x1b27c73c","esi":"0x1b27c8d8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "869": {
+      "at": "2026-11-06T00:25:00.056294+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x14ee5a8","eax":"0x14ee5a8","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x14ee5a8","ebp":"0x14ee600","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "870": {
+      "at": "2026-11-06T00:25:00.056313+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x14ec548","eax":"0x14ec548","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x14ec548","ebp":"0x14ec5a4","esi":"0x14ec740","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "871": {
+      "at": "2026-11-06T00:25:00.056327+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x14ee690","eax":"0x14ee690","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x14ee690","ebp":"0x14ee6e8","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "872": {
+      "at": "2026-11-06T00:25:00.056339+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x14ec630","eax":"0x14ec630","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x14ec630","ebp":"0x14ec68c","esi":"0x14ec828","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "874": {
+      "at": "2026-11-06T00:25:00.257065+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27d550","eax":"0x1b27d550","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27d550","ebp":"0x1b27d5a8","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "875": {
+      "at": "2026-11-06T00:25:00.257239+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27b4f0","eax":"0x1b27b4f0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27b4f0","ebp":"0x1b27b54c","esi":"0x1b27b6e8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "876": {
+      "at": "2026-11-06T00:25:00.257275+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e708","eax":"0x1b27e708","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e708","ebp":"0x1b27e760","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "877": {
+      "at": "2026-11-06T00:25:00.257300+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6a8","eax":"0x1b27c6a8","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6a8","ebp":"0x1b27c704","esi":"0x1b27c8a0","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "878": {
+      "at": "2026-11-06T00:25:00.257321+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e740","eax":"0x1b27e740","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e740","ebp":"0x1b27e798","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "879": {
+      "at": "2026-11-06T00:25:00.257342+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6e0","eax":"0x1b27c6e0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6e0","ebp":"0x1b27c73c","esi":"0x1b27c8d8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "880": {
+      "at": "2026-11-06T00:25:00.257378+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27d550","eax":"0x1b27d550","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27d550","ebp":"0x1b27d5a8","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "881": {
+      "at": "2026-11-06T00:25:00.257400+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27b4f0","eax":"0x1b27b4f0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27b4f0","ebp":"0x1b27b54c","esi":"0x1b27b6e8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "882": {
+      "at": "2026-11-06T00:25:00.257419+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e708","eax":"0x1b27e708","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e708","ebp":"0x1b27e760","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "883": {
+      "at": "2026-11-06T00:25:00.257439+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6a8","eax":"0x1b27c6a8","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6a8","ebp":"0x1b27c704","esi":"0x1b27c8a0","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "884": {
+      "at": "2026-11-06T00:25:00.257463+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e740","eax":"0x1b27e740","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e740","ebp":"0x1b27e798","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "885": {
+      "at": "2026-11-06T00:25:00.257485+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6e0","eax":"0x1b27c6e0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6e0","ebp":"0x1b27c73c","esi":"0x1b27c8d8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "886": {
+      "at": "2026-11-06T00:25:00.257520+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27d550","eax":"0x1b27d550","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27d550","ebp":"0x1b27d5a8","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "887": {
+      "at": "2026-11-06T00:25:00.257541+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27b4f0","eax":"0x1b27b4f0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27b4f0","ebp":"0x1b27b54c","esi":"0x1b27b6e8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "888": {
+      "at": "2026-11-06T00:25:00.257559+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e708","eax":"0x1b27e708","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e708","ebp":"0x1b27e760","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "889": {
+      "at": "2026-11-06T00:25:00.257577+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6a8","eax":"0x1b27c6a8","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6a8","ebp":"0x1b27c704","esi":"0x1b27c8a0","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "890": {
+      "at": "2026-11-06T00:25:00.257596+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e740","eax":"0x1b27e740","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e740","ebp":"0x1b27e798","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "891": {
+      "at": "2026-11-06T00:25:00.257623+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6e0","eax":"0x1b27c6e0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6e0","ebp":"0x1b27c73c","esi":"0x1b27c8d8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "892": {
+      "at": "2026-11-06T00:25:00.257635+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x14ee5a8","eax":"0x14ee5a8","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x14ee5a8","ebp":"0x14ee600","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "893": {
+      "at": "2026-11-06T00:25:00.257646+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x14ec548","eax":"0x14ec548","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x14ec548","ebp":"0x14ec5a4","esi":"0x14ec740","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "894": {
+      "at": "2026-11-06T00:25:00.257659+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x14ee690","eax":"0x14ee690","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x14ee690","ebp":"0x14ee6e8","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "895": {
+      "at": "2026-11-06T00:25:00.257672+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x14ec630","eax":"0x14ec630","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x14ec630","ebp":"0x14ec68c","esi":"0x14ec828","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "896": {
+      "at": "2026-11-06T00:25:00.560437+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27d550","eax":"0x1b27d550","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27d550","ebp":"0x1b27d5a8","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "897": {
+      "at": "2026-11-06T00:25:00.560558+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27b4f0","eax":"0x1b27b4f0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27b4f0","ebp":"0x1b27b54c","esi":"0x1b27b6e8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "898": {
+      "at": "2026-11-06T00:25:00.560588+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e708","eax":"0x1b27e708","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e708","ebp":"0x1b27e760","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "899": {
+      "at": "2026-11-06T00:25:00.560609+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6a8","eax":"0x1b27c6a8","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6a8","ebp":"0x1b27c704","esi":"0x1b27c8a0","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "900": {
+      "at": "2026-11-06T00:25:00.560627+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e740","eax":"0x1b27e740","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e740","ebp":"0x1b27e798","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "901": {
+      "at": "2026-11-06T00:25:00.560642+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6e0","eax":"0x1b27c6e0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6e0","ebp":"0x1b27c73c","esi":"0x1b27c8d8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "902": {
+      "at": "2026-11-06T00:25:00.560658+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27d550","eax":"0x1b27d550","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27d550","ebp":"0x1b27d5a8","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "903": {
+      "at": "2026-11-06T00:25:00.560689+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27b4f0","eax":"0x1b27b4f0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27b4f0","ebp":"0x1b27b54c","esi":"0x1b27b6e8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "904": {
+      "at": "2026-11-06T00:25:00.560707+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e708","eax":"0x1b27e708","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e708","ebp":"0x1b27e760","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "905": {
+      "at": "2026-11-06T00:25:00.560723+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6a8","eax":"0x1b27c6a8","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6a8","ebp":"0x1b27c704","esi":"0x1b27c8a0","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "906": {
+      "at": "2026-11-06T00:25:00.560736+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27e740","eax":"0x1b27e740","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27e740","ebp":"0x1b27e798","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "907": {
+      "at": "2026-11-06T00:25:00.560748+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x1b27c6e0","eax":"0x1b27c6e0","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x1b27c6e0","ebp":"0x1b27c73c","esi":"0x1b27c8d8","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "908": {
+      "at": "2026-11-06T00:25:00.560771+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x14ee5a8","eax":"0x14ee5a8","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x14ee5a8","ebp":"0x14ee600","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "909": {
+      "at": "2026-11-06T00:25:00.560786+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x14ec548","eax":"0x14ec548","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x14ec548","ebp":"0x14ec5a4","esi":"0x14ec740","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "910": {
+      "at": "2026-11-06T00:25:00.560799+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x14ee690","eax":"0x14ee690","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x14ee690","ebp":"0x14ee6e8","esi":"0x0","edi":"0x593a63ec","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "911": {
+      "at": "2026-11-06T00:25:00.560811+00:00",
+      "event": "frida_message",
+      "message": {"type":"send","payload":{"type":"exception","classification":"unclassified_observed_exception","diagnostic_errors":[],"backtrace":{"status":"unavailable","reason":"no_symbol_resolution"},"exceptionType":"system","address":"0x75dabae4","memory":null,"context":{"pc":"0x75dabae4","sp":"0x14ec630","eax":"0x14ec630","ecx":"0x3","edx":"0x0","ebx":"0x19930520","esp":"0x14ec630","ebp":"0x14ec68c","esi":"0x14ec828","edi":"0x0","eip":"0x75dabae4"},"location":{"address":"0x75dabae4","module":{"name":"KERNELBASE.dll","path":"C:\\WINDOWS\\System32\\KERNELBASE.dll","base":"0x75c40000","offset":"0x16bae4"}}}}
+    },
+    "912": {
+      "at": "2026-11-06T00:25:00.560822+00:00",
+      "event": "frida_detached",
+      "reason": "process-terminated",
+      "crash": null
+    },
+    "913": {
+      "at": "2026-11-06T00:25:22.905151+00:00",
+      "event": "finished",
+      "status": "exited",
+      "failure": null
+    }
+  }
+}

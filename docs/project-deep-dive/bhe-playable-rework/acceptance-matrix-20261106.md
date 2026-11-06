@@ -1,0 +1,150 @@
+# 2026-11-06 当前包验收矩阵与下一批实机顺序
+
+本记录固定2026-11-06的证据边界。目标保持active，尚未完成。九角色各六个、合计54个追加普通武装的静态入口和默认装备已保全到当前包；现有固定证据没有覆盖当前包中这54招的逐招实效、真连、落空、取消、受击中断及复用。旧包局部成功只作为后续输入设计依据，不转记为当前包实机通过。
+
+本轮仅只读核对记录、重新计算下列21个成品文件哈希，并写入本文；没有运行Maven、Java、构建、PAC解包、游戏、UI或调试器，没有修改源码、Save、Replay或其它文档，没有提交。旧审计的91,343 checks不是本轮执行数。
+
+## 当前固定产物
+
+身份读取自`target/bhe-playable-build-latest.json`，本轮没有重新计算大型EXE/PAC哈希。以下记录绑定固定run，不随未来latest变化而自动改归新包。
+
+| 项目 | 值 |
+| --- | --- |
+| buildRoot | `target/bhe-playable-builds/run_20261105_193350_342_bd794139` |
+| assetRoot | `target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582` |
+| EXE | `sou/BaldrSky_20261105_193620_157.exe` |
+| EXE SHA256 | `1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae` |
+| PAC | `sou/Update3.pac` |
+| PAC SHA256 | `8efe934e14fda0d7f9c429f9b8d703a710d3213d15bbfc5ec6fb9f41e40b4641` |
+| 只读源EXE | `src/main/resources/ida-reverse/BaldrSky.exe` |
+| 源EXE SHA256 | `713cf605360a55a863f87bfbdea5453aaeeb2a33983ad4a005c9297e3a86e757` |
+| runtimeValidated | `false` |
+
+当前说明见[使用说明](使用说明.md)；构建、恢复及历史包边界见[恢复验证](resumed-validation-20261103.md)、[11/05检查点](checkpoint-20261105-paused.md)。后者的暂停指令属于历史，不能覆盖当前active状态。
+
+## 54入口的静态依据及21文件直接比对
+
+旧130704-v2审计的原来源为`C:/NeXAS_DX_runs/audits/nine-six-variants-130704-v2/audit.json`；该历史路径只说明来源，不要求原C盘目录仍存在。当前仓库保全容器为[`src/test/resources/bhe-runtime-evidence-20261030/records/audits/nine-six-variants-130704-v2/audit.json.json`](../../../src/test/resources/bhe-runtime-evidence-20261030/records/audits/nine-six-variants-130704-v2/audit.json.json)，清单为同证据根的[`manifest.json`](../../../src/test/resources/bhe-runtime-evidence-20261030/manifest.json)。
+
+| 身份 | 字节数 | SHA256 |
+| --- | ---: | --- |
+| 原审计UTF-8字节，由容器`text`按`encoding`重建 | 137487 | `f38fb89eaa3a16873f372425c3bcf57f169182094dfe9faddf54593af1bedad5` |
+| 当前JSON文本容器 | 155723 | `4461278ba400d0e5df4238a8ef76d931acc15461a77a3b0b196a41383468c0f6` |
+
+本轮实际计算的两个哈希均与manifest记录相符。解析出的旧结果为`passed=true`、`checks=91343`、`failedChecks=0`、`ordinaryDxTotal=54`、`failures=[]`、`runtimeValidated=false`、`pacValidated=false`。91,343项属于2026-10-30旧语义／回环审计，不能写成本轮重新执行；其`pacValidated=false`也不改成true，旧PAC解包是另一份独立审计，详见[54武装构建检查点](54-weapon-build-checkpoint-20261030.md)。
+
+从旧审计`readOnlyInputFingerprints`只选择`newAssetRoot`下的固定文件名，拒绝同名旧基线项混入，再与本页当前assetRoot中的文件实际SHA256比较。九角色18份MEK/WAZ，加`MekaGroup.grp`、`WeaponEquip.dat`及`Sou.mek`，21/21完全相同。下表文件名均相对于本页当前assetRoot，哈希是本轮实读值；旧审计中对应值与其相同。
+
+| 相对文件名 | 当前SHA256 | 与130704-v2新产物指纹比较 |
+| --- | --- | --- |
+| Tsukuyomi.mek | `40569a57dbbbb3e2841fe151c25f18357775c515f604cdfd21209793055879df` | 相同 |
+| tsukuyomi.waz | `69141f1b1801673351a7ac649106f3ff4e62256e57edd038b1ddde21235f5925` | 相同 |
+| Yuri.mek | `f2b4aaaba1c8875d22873af2afafbfeab0005a24f337e732eeac9750be8c98e1` | 相同 |
+| yuri.waz | `f596061e18ede107b7b4c527a01d11fd53e45553c87c3d873de265136d0e5b59` | 相同 |
+| Freja.mek | `57f458e499f0cf2b160cd16bee7a711e7eb797d246bbfbaabb4d2988cadbebfb` | 相同 |
+| freja.waz | `c96c50c0c86f475b0f2ebbff56073b0204cb26bf4bd14995ebf47a6f727b50d9` | 相同 |
+| Nagi.mek | `825aad1650837df4b80fec7846efe68a68c6f8bb7b35349317cf2f993064c00a` | 相同 |
+| nagi.waz | `bbdc7d2f1f63791cf1c30142234ceaa37ccbc3082c6f2c39dc5bd72fe8129532` | 相同 |
+| Misaki.mek | `7cc27f9366fb4f07cbbd50a4ae65d6ca8f8e7c517115fe5a8649f784495fe7a0` | 相同 |
+| misaki.waz | `82ac40040b405a13d76bc6094be81c68d32191de716b4b8b6698b4976c5d5cd3` | 相同 |
+| Naoto.mek | `06fa2864fa3fb6d8cebd4f56d24de43abdebe93f5a30bf300c7ed2694f1c1624` | 相同 |
+| naoto.waz | `5f874345756fa6bf172aae7a950ff1ed873715acc70efa64f7b5c157126779d5` | 相同 |
+| Katou.mek | `d6d273678809d656089770d9d2d2f1b7d347af3f48ec90d8a8f678f588288fe3` | 相同 |
+| katou.waz | `d80311491abad7c32a79448760a4900ee2acf348d03c5c99fd20887bdc83b947` | 相同 |
+| Wilhelm.mek | `6eac145cc329f913819b0031b2ca8ce08f961180a771993276bea52d6096e4ac` | 相同 |
+| wilhelm.waz | `9e264c9420b7d3f38a59ec953db4dc9bf13545141d01fde494bcc5ec14a801c3` | 相同 |
+| Motoki.mek | `caf85dfb7a275c31a9ea04448ef0bb4d18930e768cd0783d0021387665546c3d` | 相同 |
+| motoki.waz | `fdc9920d45e5e1ac4d4e80fd6b83dbedc478866e04576a7eb0465d70f4f12dee` | 相同 |
+| MekaGroup.grp | `b76a7d074a364828cc3bfa4d5d82c261e5b91300ef5dadae84619e31cb11d5a4` | 相同 |
+| WeaponEquip.dat | `4ee484e5edcfb787d3cde4ddc59a43847b79f9432375398a0e23e6b671f32084` | 相同 |
+| Sou.mek | `f1b834990aeb26a47e9955d5272d2f714d23822207ca4e0645501c8fdd91eb30` | 相同 |
+
+该比对支持54个独立普通MEK入口、角色主WAZ、Meka身份和默认14槽的静态保全。它没有重验当前所有公共WAZ、图片或PAC内容，也不把公共资源变化后的实际效果视为继承通过。当前公共修复及整包构建应分别引用已有专项记录。
+
+## 当前8efe包的九角色矩阵
+
+下表`0/6`表示当前固定实机证据中尚无这六招的逐项验收通过记录，不表示六招已测且失败。静态`6/6`仅表示六个独立普通武装及其入口／默认配置已按上述字节证据保全。取消列须分别覆盖普通取消和SD取消；受击中断单列，不能用正常收势代替。
+
+| 角色（Meka ID） | 六个追加MEK号 | 静态 | 实际效果 | 跨武装真连／终结连入 | 落空 | 普通／SD取消 | 受击中断 | 同场复用 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Tsukuyomi（104） | 19、20、21、22、23、24 | 6/6 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 |
+| Yuri（105） | 15、16、17、18、19、20 | 6/6 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 |
+| Freja（106） | 17、18、19、20、21、22 | 6/6 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 |
+| Nagi（107） | 18、19、20、21、22、23 | 6/6 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 |
+| Misaki（108） | 21、22、23、24、25、26 | 6/6 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 |
+| Naoto（109） | 20、21、22、23、24、25 | 6/6 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 |
+| Katou（110） | 20、21、22、23、24、25 | 6/6 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 |
+| Wilhelm（111） | 17、18、19、20、21、22 | 6/6 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 |
+| Motoki（112） | 17、18、19、20、21、22 | 6/6 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 | 0/6待验 |
+
+逐招日文名、主WAZ号及默认14槽见[54武装检查点的六入口表与默认槽表](54-weapon-build-checkpoint-20261030.md)。Naoto主WAZ33的私有Rise及Motoki主WAZ32的私有投弹执行没有独立MEK行，不额外计数；Yuri与Freja在扩充前验证的是原武装，不能充当新增六招。
+
+## 旧包实际成果与不可外推范围
+
+下表的c266、196b、a94c分别对应PAC SHA256前缀；完整身份见对应原报告。c266为162851旧包，196b为095154包，a94c为131244包，均不是当前8efe。032001仅校正文案，也没有这批完整54追加入口。旧记录中的重复预览与同一Replay内第二轮是不同证据，不互相替代。
+
+| 角色 | 历史实际范围 | 关键未验或失败边界 | 来源 |
+| --- | --- | --- | --- |
+| Tsukuyomi | a94c的8→19→2三武装连续命中，两轮各151，后继命中前目标control56／49，正常收刀与对象归零 | 20～24未实测；较晚第三招虽START但零伤，落空的是原2，不证明新19落空分支；中断未验 | [月詠连段](tsukuyomi-combo-runtime-20261029.md) |
+| Yuri | a94c的原1→原0两轮各249；原3→原4连续229 | 都不是新增15～20；原1→原4后继仍未命中。不能把原招路线或普通移动再接近改记为新六招通过 | [连段](yuri-combo-runtime-20261029.md)、[039复用](yuri-repeat-runtime-20261030.md) |
+| Freja | a94c原FC12已有80／104／110／134／160预算与相应阶段、命中及结束记录 | 都不是新增17～22；110样本FC全空；134前缀不是连续受击链，160双FC也不证明新六招真连；受击中断未验 | [80／104](freja-fc-budget-runtime-20261030.md)、[110／134／160](freja-fc-high-runtime-20261030.md) |
+| Nagi | c266的18在木桩不攻击时防御解除、多轮自然结束 | 没有成功防反及反击伤害证明；19～23未验。130704另补成功分支清甲，旧空防不能验证该分支 | [预览矩阵](runtime-variants-20261028.md)、[54检查点](54-weapon-build-checkpoint-20261030.md) |
+| Misaki | c266的21可见转移手／爆点，四击600、回收及多轮预览结束 | 前后两拍精确归属、真实跨武装链、22～26、抓取失败与受击中断未验 | [预览矩阵](runtime-variants-20261028.md) |
+| Naoto | a94c的0→20内部两拳→原1，早接137、中接同场两轮各137，目标未恢复，最终热量／对象归零 | 21～25未验；20落空不派生、SD取消及受击中断未验。内部两拳仍只算一个武装 | [Naoto连段](naoto-combo-runtime-20261029.md) |
+| Katou | 196b的10→20→原6；早时序取消第二击后278，中时序完整两击、同场两轮各307 | 普通取消只证明该有限路线；21～25、落空、SD取消、受击中断未验 | [Katou连段](katou-combo-runtime-20261029.md) |
+| Wilhelm | c266的17伤害288，最终回四足、地面及对象归零 | 没有真连或受击中断证明；18～22未验。130704给17入口补G50／倍率100／清甲，旧结果不能验证这些新增恢复事件 | [预览矩阵](runtime-variants-20261028.md)、[54检查点](54-weapon-build-checkpoint-20261030.md) |
+| Motoki | a94c的17独立地面起手1125；11→17在同场两轮各1204、真实六弹、自然落地及回收 | 17→12虽有START但12零伤；18～22、取消／受击／移动靶等未验。旧c266随机落空和中间失败包不覆盖为成功 | [目标空投与连段](motoki-target-combo-runtime-20261029.md) |
+
+普通取消产生不同武装START仍须检查后继真实效果及同一目标的恢复边界；多Hit、内部自动派生、仅有READY、自然回收和结束时heat0均不能单独构成真连或中断通过。
+
+## 下一批顺序与验收记录口径
+
+1. Naoto→Katou→Tsukuyomi→Motoki：先用下节已证普通输入建立当前包对照，再在同角色内补其余五招，减少重复切角色和重建模板。
+2. Nagi→Wilhelm→Misaki：优先检查条件防反／反射、形态退出、召唤父子体回收。Nagi要有真实敌方来袭和合适弹种，木桩空防不能完成核心验收。
+3. Yuri→Freja：从各自新近距三招开始，再覆盖远距与普通冲刺新招。手册中的箭头只作为待实测候选，不预填固定伤害。
+4. 每个角色按六招独立命中／落空→真实跨武装连接→普通／SD取消→关键阶段受击中断→同场正常再起推进。记录方向、距离、目标体型／高度与seed；一条成功路线不代表所有变体和环境。
+5. 完成角色内覆盖后，另验重载、实际关卡推进和loader force／release／queue；Sou菜单与实际使用继续独立记账。不得仅因本页54入口静态成立而结束整个目标。
+
+每个运行条目至少固定：EXE/PAC身份、角色和实际14槽、正常UI模板及生成receipt、普通输入日程、不同MEK START／USE、伤害或状态效果、同一目标恢复边界、热量、child owner／target、收尾的active／装甲／重力／倍率及TAMA／SCRIPT。取消、受击、落空和同场第二轮分开列；未覆盖的字段明确留空或标未测，不沿用其它播放的最终快照。
+
+上述范围延续[六追加武装计划](../../superpowers/plans/2026-10-30-six-variants-and-sou-validation.md)的原要求，不减少每个新增武装至少一条真实连接及每角色中断／落空的硬门。
+
+## 可复用的普通输入日程与模板边界
+
+所有区间为`[start,end)`。下表是旧包已经实播的日程，只供当前包构造对照；当前模板、距离和seed变化后仍须重新观察实际START与命中。这里的配置也不同于新54版默认表，必须由正常UI实际装备并核对，不能只按A／B／C名称猜武装。
+
+| 历史对照 | 正常UI实际装备，其余槽空 | 已证普通输入 | 历史播放长度 |
+| --- | --- | --- | --- |
+| Naoto 075→079 | 近A0；普通Dash B20／C1 | A30..34、B44..48、C78..82；第二轮A450..454、B464..468、C498..502 | 900帧，tail240 |
+| Katou 050→054 | 近A10；普通Dash B20／C6 | A30..34、B64..68、C98..102；第二轮A450..454、B484..488、C518..522 | 840帧 |
+| Tsukuyomi 080→086 | 近A8；普通Dash B19／C2 | A30..32、B54..56、C66..70；第二轮A450..452、B474..476、C486..490 | 900帧，tail240 |
+| Motoki 025→032 | 近A17／C11；普通Dash B12 | C60..62、A92..100；D360..416、left430..475、up475..492；C550..554、A582..590。该日程不使用B12 | 具体总帧以原fixture身份核对，不由末次输入推算 |
+| Yuri 035→039，原招对照 | 近A1；普通Dash B4／C0 | A30..34、C136..140；left360..390、up390..403；A470..474、C576..580。该日程不使用B4 | 1080帧，tail240 |
+
+早期对照也可从[Naoto076](naoto-combo-runtime-20261029.md)的A30..34／B42..46／C74..78开始；它与079是两档已测时序。Katou053和月詠082～084等仅生成候选不计已实播，不从它们补当前覆盖。
+
+本轮只读枚举`target/bhe-playable-runtime/sou-cooling-heat-20261106-12/docs/GIGA/BALDRSKY_DIVEX/Save`：当前训练文件为`Replay001.dat`～`Replay014.dat`及`Replay091.dat`～`Replay098.dat`；没有表中历史`Replay025/032/035/039/050/054/075/079/080/086.dat`。同目录存在`HellReplay050/075/080`等数字相同的文件，但属于另一类录像，不能按相同数字替代训练Replay模板。这只描述本次枚举目录，不据此宣称磁盘其它位置不存在旧文件。
+
+2026-10-30的[文本证据说明](../../../src/test/resources/bhe-runtime-evidence-20261030/README.md)明确不保存Replay或Save二进制。因此目前可复用的是报告中的配置、输入和已知失败边界，不能把文本容器当作可直接重放的旧环境。
+
+下一轮应由正常UI选择当前角色、装备并保存新的本角色训练模板，再使用[`tools/bhe_replay_input_fixture.py`](../../../tools/bhe_replay_input_fixture.py)保留header及前两压缩块，只生成第三块普通edge／held输入；只写新录像，不覆盖旧模板。不得修改角色ID、actor、武装START或前两块来冒充正常UI模板。完整流程依据见[原生训练录像输入验收](replay-validation-20261029.md)。
+
+## 今日Sou133单列结果
+
+Sou不是九个重做角色之一，133也不属于本页54个追加武装。今日当前8efe包中的Replay013两次播放及Replay014同场两次使用，接受主动减热、133→2正常取消、采样对象回收及同场再起；原生敌方恢复发生在连接之间，不算真连。减热曲线中的100 raw步幅不等于已经证明每个冷却实体恰一次原生调用，热量到0也不等于已测不足100余热的运行夹零。
+
+详细结果与保留限制见[Cool Gain热量实测](cool-gain-heat-20261105.md)，固定文本分别为[Replay013两轮](../../../src/test/resources/bhe-runtime-evidence-20261106/sou-cool-gain-heat-runtime.json)、[Replay014复用](../../../src/test/resources/bhe-runtime-evidence-20261106/sou-cool-gain-heat-reuse.json)及[case12终态](../../../src/test/resources/bhe-runtime-evidence-20261106/sou-cool-gain-heat-session-end.json)。case12自然exit0及受管清理与玩法窗口分开记录；全会话55条system／unclassified异常保留，不能写成零异常。
+
+133仍缺受击中断、parent退出路径、每实体调用证明、低于100余热夹零及所需方向／距离／变体。旧包Sou130项、case09的20项、case10的122／133与今日结果均按各自包身份保留，不能跨包加成当前153项全过，也不增加九角色54项覆盖。
+
+## 乱码全修的剩余确认
+
+原要求是清理当前代码中的确证乱码，正常日文、半角片假名及终端显示错误不作乱码替换，见[原计划Task4及范围](../../superpowers/plans/2026-10-26-bhe-playable-rework.md)。已修记录见[encoding-recovery.md](encoding-recovery.md)，11/05小型编码证据为[source-encoding-current.json](../../../src/test/resources/bhe-runtime-evidence-20261105/source-encoding-current.json)。
+
+- 最新固定编码记录覆盖986份跟踪源码：974 Java、8 Python、2 PowerShell及原计划两份FXML。984文件继承基线hash，两份热修Java重新严格解码并人工读取3条新增非ASCII行。它不是逐句重读全部历史注释，也不包含resources、generated、二进制及未跟踪草稿。
+- 最终完成时仍需把当时实际源码清单与这份基线／增量闭合，复核之后新增或变化的文字；本轮没有再次执行986文件全扫描，不以旧日期结果冒充当前全量重扫。
+- 本轮实际读到BHE `src/main/java/com/giga/nexas/dto/bhe/waz/wazfactory/SkillInfoFactory.java:142`仍为`// ???`，BSDX同名路径`:129`仍为`// ????`。两处都在`0xFFFFFFFF -> CEventTerm`分支，既有历史结论是未知语义占位、没有可恢复原文证据；它们不能被悄悄计作确证乱码已恢复，也不能猜补协议语义。若改写，应只说明当前可证实行为并保留未知性质。
+- 104份既有裸LF记录属于格式风格，不是乱码；本页不把它们自动扩大为源码语义修复任务。已完成的Clarias文字恢复与原六文件53行功能WIP保全继续分别记录，不据“全修”要求改写未证实内容。
+- 当前[使用说明](使用说明.md)及[progress](progress.md)已由主代理更新到11/06。本页只提供补充验收矩阵，不再沿用早先对它们过期状态的描述。
+
+全部原目标仍以实际证据闭合为准，构建receipt继续`runtimeValidated=false`。

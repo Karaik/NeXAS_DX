@@ -1,6 +1,6 @@
 # Sou クールゲイン主动扣热恢复（2026-11-05）
 
-本轮在已完成冰片回收的Cool Gain修复器内恢复主动扣热。真实RED为10项／6失败／0错误／4通过；实现后10项及相关六类52项全部GREEN，独立review未发现阻断。新的三体热修包尚未构建或实机验证；case10当前运行的仍是未含本热修的两体旧包。
+本轮在已完成冰片回收的Cool Gain修复器内恢复主动扣热。真实RED为10项／6失败／0错误／4通过；实现后10项及相关六类52项全部GREEN，独立review未发现阻断。三体热修已于11/05完成构建及静态核对，11/06 case12的前两次Replay013已观察到自然冷却前的主动扣热；完整RPM证据来自第二次播放。case10为已经结束的两体旧包基线，不能与新包混证。每实体恰一次的原生调用、受击中断及其它玩法仍未完整验收，build receipt继续runtimeValidated=false。
 
 旧包基线case为`target/bhe-playable-runtime/sou-procter-recovery-20261105-10`，PID923276、创建FILETIME `134383376478515689`。manifest指向`run_20261105_162002_445_28580c2f`，EXE SHA256 `1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae`，PAC SHA256 `f8e520d0cc258a05b465d00d0fa8e9b17f314a09d2ab1d1a3e93503ca56fe2ef`。这份包已有private body542／ice543及Boost Procter修复，没有第三份私有cooling。
 
@@ -61,4 +61,57 @@ DX反编译目录`src/main/resources/ida-reverse/bsdx/export-for-ai/decompile`�
 | cool-gain-heat-green.xml | `e8aeabadc49162110412c57f527ece3e49824f286bc7392c32333f87ecd403ed` |
 | cool-gain-heat-related-result.json | `b3586e3a6541070d7096a19abb521b1dbf5c6cd4232d1b974793810923ce9148` |
 
-待验证：构建并静态核对新三体PAC身份；沿相同普通输入基线，实际观察P1期间的主动扣热及每实体金额，分别记录正常结束、parent退出／中断、重复使用和自然冷却。当前运行中的case10只能提供两体旧包对照，不能补作新热修验收。
+## 11/06 case12同输入主动减热证据
+
+新包为`run_20261105_193350_342_bd794139`：EXE SHA256 `1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae`，PAC SHA256 `8efe934e14fda0d7f9c429f9b8d703a710d3213d15bbfc5ec6fb9f41e40b4641`。身份来自case12启动manifest，与11/05构建交接一致；本次证据整理未重新运行构建或测试。case为`target/bhe-playable-runtime/sou-cooling-heat-20261106-12`，PID19232，创建FILETIME `134383973635809045`。
+
+小型证据为[`sou-cool-gain-heat-runtime.json`](../../../src/test/resources/bhe-runtime-evidence-20261106/sou-cool-gain-heat-runtime.json)，73637字节，SHA256 `fa078fd019be2d51770aa7b4b8356d9376b23d3354f24b23a9d4167cf58075fe`。原生日志固定到第二次播放的RESET，line660／tick34307，前缀276439字节、SHA256 `7912263b5800a80ab6db21e397a1e53695541acca075e1f4be334aab092c9ada`；独立RPM继续到counter600／tick34430。后续同场操作不纳入本记录。完整原生事件对象、各轮字节范围／hash、所选原始RPM行及128次拒读全部留在JSON，完整601行采样原件以hash固定。
+
+Replay013仍为869字节，SHA256 `e5593f9cc4a02205f6afeb3d657102927d5fa7af2bea269b8364406fbbe933ae`，与旧包基线一致。第一轮START tick24846／24906／24966，第二轮33861／33921／33981，均为0／133／2。实际输入frame30／90／150由同tick的`combat_replay_input.frame`证明；其它事件的`lastReplayFrame`只作上下文，不代替输入帧。两轮各有120／2／142伤害，均作用同一敌actor，HP6000→5880→5878→5736。两轮133的normalGate=1释放与weapon2 START同tick，释放heat1900、TAMA17。敌机在133起手前已有恢复，故不认定真连；伤害日志也没有逐Hit弹体归属。
+
+首轮采样`sou133-heat-fixed-sampling.json`为557字节，SHA256 `2d1f161d2219071d2af8c4efcec59477aa59e6a5a4c321d14c3ab89dbf77752f`，started=false、complete=false、lastCounter=-1、0行。root诊断为误把固定consumer地址0x86F700当作指针再解引用；这是采样失败，不能补写首轮曲线，也不是游戏崩溃。首轮仍有独立原生释放heat1900／1200及RESET0的记录。
+
+第二轮修正后的`sou133-heat-fixed-sampling-v2.json`为247330字节，SHA256 `a7261b64154dbe650f67be548cb4a6d39fcf1ae476efa7786c3cbf97ae224d6b`，started/complete=true，counter0..600共601行全部保留在原件。128次拒读为tick/counter/count changed109、ring not closed9、short ring5、player uninitialized4、ring changed1；没有将拒读默认为无错或全部归为同一原因。RPM不是原子快照，consumer counter不是原生输入帧。
+
+| 第二轮RPM counter | tick | heat／state | 原样观察 |
+| --- | --- | --- | --- |
+| 94 | 33925 | 2300／0 | 133起手加热后 |
+| 106 | 33937 | 2300／0 | body P0 clock0、scalar7 |
+| 135 | 33966 | 2300／0 | P0 clock29、scalar210 |
+| 136 | 33967 | 2200／0 | 首次减100；P1 clock0、scalar210，采到5/544 |
+| 140／144／148／152 | 33971／33975／33979／33983 | 2100／2000／1900／1800，state0 | P1 clock4／8／12／16 |
+| 154 | 33985 | 2500／0 | 普通C增加700；P1 clock18、scalar192 |
+| 284 | 34115 | 0／0 | 第30个减100变化点；P1循环后clock8、scalar94 |
+| 378／379 | 34209／34210 | 0／0 | P1 scalar0，随后P2 clock0 |
+| 399／400 | 34230／34231 | 0／0 | P2 clock20后本体消失，TAMA/SCRIPT0 |
+| 477／478 | 34308／34309 | 0／3，随后0／0 | 自然冷却状态出现时已无热可减 |
+| 600 | 34430 | 0／0 | Replay inactive，TAMA/SCRIPT0 |
+
+所有601样本capacity=8000；30个负变化均为-100 raw，合计3000，counter284后直到600均为0且未见负值。主动减热发生于P1及state0，早于477的自然冷却状态，与旧包本体回收后仍heat3000的曲线有明确区别。原packet interval字段3未改；实测负变化对应body clock0、4、8…104，循环后0、4、8，且counter168到204之间body clock只由32到36。不能写成实际每3 native帧扣热，也不能按counter简单推算发射频率。
+
+本轮接受该输入下的主动减热、正常取消和采样回收。RPM中的100步幅与冷却体共现不构成每实体恰一次的native调用验收；不足100余热的运行夹零也没有独立覆盖。on-activation与BHE self Hit确认的语义差异保留。所选两轮窗口没有异常事件，但冻结前缀line425有1条system／unclassified KERNELBASE异常，不称整会话零异常，不自行归为无害。该窗口捕获时case仍running，本记录不声称正常退出或退出时原Save保全。
+
+## 11/06 Replay014同次播放内复用
+
+另存[`sou-cool-gain-heat-reuse.json`](../../../src/test/resources/bhe-runtime-evidence-20261106/sou-cool-gain-heat-reuse.json)，46795字节，SHA256 `4d4da4a371e20d6d32550ca7a7878ba078478986bbf7cccf4092c182b2e9042e`；前述Replay013证据字节及hash不变。原生窗口为line683～855，独立前缀截至第二段RESET tick48148；完整前缀380139字节、SHA256 `ef0cf162c12182d7d4fc64edbb4eebf2bf3b4443e8631f2d64547bc4dffd4aed`。后续自然退出由终态证据另记，不混入本玩法窗口。
+
+Replay014为883字节，SHA256 `dc2b97746dcf2672393151bd9c3587aac3cc46c81c9be426ff750cd9d17dc9ec`。本次独立只读解压核对与正常UI模板010的头部、前两编码块一致；第三块1200组普通edge/held输入逐帧与`sou133-heat-reuse-input.json`一致。输入为B30～34、A90～135、C150～154以及B630～634、A690～735、C750～754（左闭右开），没有写actor或强制技能状态。
+
+六次START seq7～12对应tick47102／47162／47222／47702／47762／47822，均与原生`combat_replay_input.frame`30／90／150／630／690／750同tick，武装0／133／2重复两次。两次133→2均normalGate=1，取消时heat1900；两次C释放heat1200，两次RESET heat0。第二次普通B起手时TAMA/SCRIPT均0、heat0，说明前段后可再次正常起手；本窗口没有完整1200-counter热曲线，不能把Replay013曲线冒作该轮的逐帧结果。
+
+第一段伤害120／2／142合264，敌HP6000→5736。第二次B窗口未见伤害；133再次启动后、C启动前出现3+3+3+3+1=13，C启动后150，第二段合163，末HP5573；所有伤害为同一敌actor，HP算术一致。这里按启动时间划分伤害窗口，没有逐Hit弹体归属。不能为B补算120，不能把同输入称同伤害或真连。
+
+`sou133-heat-reuse-final-snapshot.json`为657字节，SHA256 `1e844b62c63f23e525868e053762fc71b1a07b85871c8cf65d6c6f98cf490eaa`；已核PID／创建FILETIME／image与本case一致，tick=endTick=51526、tickStable=true。该稍后只读快照中counter1200、replayActive0、heat0、capacity8000、activeWeapon-1、TAMA/SCRIPT0。它支持该观测时点已收尾，不是native READY，也不是恰好录像结束的tick。
+
+本次接受同次播放内的再次使用、两次正常取消及最终采样回收；受击中断仍未测试。待验证：每实体恰一次的原生调用、低于100余热的运行夹零、parent退出／受击中断，以及所需方向、距离和变体。全部原目标完成前runtimeValidated仍false。
+
+
+## case12自然退出与终态保全
+
+终态独立存为[`sou-cool-gain-heat-session-end.json`](../../../src/test/resources/bhe-runtime-evidence-20261106/sou-cool-gain-heat-session-end.json)，50885字节，SHA256 `37b54b56fed4e4f6f68499bfb863d3867a2398737d0a6831e6a91d1c3bff0ad6`。两个玩法证据的原hash及其冻结日志前缀均复核不变；没有把终态或退出异常回填进早先玩法窗口。
+
+state在2026-11-06T00:25:22.905129Z记录`exited / failure=null / exit_code=0 / stop_reason=null`，owned_process_exit_confirmed与guard_cleanup_complete为true，cleanup_pending=false。28份受管game输入副本共5,805,717,300字节由harness核验后清理，retained_changed_or_unique和errors均空；本次只读核对列出的28路径均已不存在，没有执行删除。原Save、原base及源EXE/PAC的终态harness检查均未变；这里不冒称重新读取外部Save或独立重hash大型二进制。
+
+全会话日志为421337字节／913行，SHA256 `8848ea5f6cb297de0800a9c29c6955a34b734844a4158177528b6f091a0f13ba`，保留55条system／unclassified异常的完整原始对象；1条位于早先前缀，54条出现在Replay014冻结窗口之后。正常exit0不表示零异常，也没有将这些异常自行归为无害。external_write_count=0、guard_violations=[]仅按监测范围报告。原驱动状态`nvAppTimestamps`前后有漂移，attribution=`not_determined_external_writers_possible`；不称C盘任何文件均未变化，不将漂移归因于游戏。
+
+本次关闭测试会话不等于完成整个目标。runtimeValidated继续false；受击中断、每实体调用以及前述剩余玩法验收仍保持未完成。
