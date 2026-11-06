@@ -83,7 +83,7 @@ final class NaotoAdditionalVariants {
         if (existing.isEmpty()) { helperIndex = waz.getSkillList().size(); waz.getSkillList().add(helper); }
         else { helperIndex = waz.getSkillList().indexOf(existing.get(0)); if (!payload(helper).equals(payload(existing.get(0)))) throw invalid("既有私有追撃の載荷が変更された"); }
         appendOne(mek, waz, deploy, "クロー展開", "0015", "クロー・起動突き", "DX_CLAW_DEPLOY_RISE", 26,
-                "クローを展開してライズネイルへつなぎ、出し切ると収納する。二段目の命中後は別の攻撃へ切り替えられる。", value -> {
+                "クローを展開してライズネイルへつなぎ、出し切ると収納する。展開中は排熱する。二段目の命中後は別の攻撃へ切り替えられる。", value -> {
                     CEventChange ground = at(value, 0, 71, CEventChange.class, 67, 67), airborne = at(value, 1, 71, CEventChange.class, 53, 53);
                     requireJump(ground, group, standIndex); requireJump(airborne, group, standIndex);
                     val(at(value, 0, 47, CEventVal.class, 44, 44), 0, 0, 0, 1); val(at(value, 1, 47, CEventVal.class, 30, 30), 0, 0, 0, 1);
