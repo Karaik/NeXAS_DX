@@ -278,3 +278,12 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 - case12自然UI退出，launcher返回0，status=exited/failure=null/cleanup_pending=false，自有进程与guard均确认收尾。受管清理28份输入副本5,805,717,300字节，原Save/base/source检查未变。全会话55条system/unclassified异常、外写拦截计数0、guard违例空；nvAppTimestamps漂移归因未知，不称所有系统状态不变。
 - 新证据只写src/test/resources/bhe-runtime-evidence-20261106的小型文本，冷却说明及中文使用手册同步当前身份与有限结论。Astra只读调查另确认Sou34的公共蝙蝠P2及主caller P1都丢了BHE slot23；这是三维方向速度，不能直接猜作XYZ三分量或全局23→18。首击524未命中与后续525运动缺失分开，调查见sou-bats-motion-review-20261106.md，尚未实施。
 - 下一步仍含133受击中断/档位、全部Sou153安全、九角色各六追加武装的实际效果与跨武装真连、重载/关卡推进，以及最终逐项审计。runtimeValidated=false；关闭本次测试会话不表示暂停目标。
+
+### 2026-11-06 Naoto六招菜单与20真连复测
+
+- 上一目标回合为progress：6aede1fb4固定133主动减热及复用证据。本轮转向九角色54项，最新包身份仍8efe…，无重建。新隔离case为nine-naoto-20261106-13，PID9552／创建FILETIME134383992159715102，launcher70253；从case12私有Save拷种子，真实Save只读保护。
+- 正常UI选择Naoto109，六个新增20..25首轮菜单分别有75／150／315／261／19／292伤害。25父释放仍TAMA3，释放后六击合112，下一周期对象归零；没有给它补RESET。Sou专用请求/READY跟踪不覆盖109，只固定通用START、伤害、释放及相邻周期边界，绝不称同请求五链完成。首轮22前一个21自动周期被切换，独立保留，没有拿更早周期的结束充数。
+- 正常UI装备近A0、普通Dash B20/C1，其余槽空，保存Naoto模板Replay015（858B、3ea35245…）；fixture仅替换第三普通输入块生成016（876B、c26b9ae6…），900帧、A30/B44/C78及第二轮整体+420。两轮START与普通输入逐tick对应，四击30/27/40/40各137，后继命中前control3/4/5，敌同actor末HP5726；目标恢复123/543，正常RESET166/586。20内部第二拳没有额外START，仍是一件武装。
+- root独立身份核实RPM最终快照在tick114655稳定，counter900/inactive、meka109、active-1、heat0、TAMA/SCRIPT0、Z/Vz0、Graw51200、jump/fall100、武装装甲贡献及缓存0、防护flags0。它是稍后读回，非native录像末帧。两次20→1时SCRIPT曾为4，未把最终归零写成全过程为零。
+- Astra另确认22展开快路径判的是目标ACTION_NOKEALL，不是变量名暗示的自身空中；最终二进制条件及入口已核，保持源码不变并纠正文档。Sou34蝙蝠P2的[3,19]已证是回root机体中央，转换后[3,0]丢CENTER；不能用追敌跳跃力代替其高度。只更新调查结论，尚未实施蝙蝠适配。
+- 当前新增训练范围只有Naoto20的一条固定目标真连及正常取消/复用，另五招仍只有菜单局部效果；全部受击中断/落空/SD条件、其它角色及Sou153目标继续active。case13仍运行，下一步在同一隔离会话中继续Naoto其它招，不能套用前轮退出记录。文本证据仍不含二进制。
