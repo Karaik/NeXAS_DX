@@ -329,3 +329,8 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 - 正常UI重新选择Naoto并保存R模板046，解析确认完整14槽/109/0/map68/行为0及2946全零输入。047移动校准后，048在远距真实START23、两Hit窗无命中并自然収納，hold不重启；049/050射击仍命中7/96，作为失败的miss候选保留而非凑通过。当前正常UI准备Jump2新模板051，后续先测高度周期；仍只一个case15。
 - 补164原入口候选清单及独立无崩覆盖，避免把54新副本代替原招。原样运行证据、菜单可见/可装备与静态候选严格分开；Sou153及重载/关卡/乱码/手册原目标不减。详细当前记录见resumed-validation-20261110.md、naoto-search-cancel-20261110.md和imported-original-weapon-coverage-20261110.md。
 - 后续051正常UI Jump2模板已读回，root亲自执行052无攻击基线及053/054两项高度对照。敌周期107/峰Z140；24三弹均自然到23、25两主体各走49/119/5，均无敌伤害/反应且最终回收，当前落空覆盖23/24/25三件。停止后NPC仍能跳跃，native窗口按实际tick截断。下一步M布局20/21/22停止靶模板055，之后真实AI来袭；case15保持运行，目标active。
+
+### 2026-11-10 用户再次暂停
+
+- 目标状态已由用户设paused。本轮仅正常UI保存M模板055并生成056/057/058，三份未播放；056停在LOAD确认未点Yes，等待采样在暂停边界启动后已随受管STOP结束，0行，不当技能崩溃。case15已stopped/failure=null、owned/guard完成、cleanup_pending=false，自动清理28份5,805,717,300字节副本，源和原Save未变。
+- 新交接checkpoint-20261110-paused.md与小型文本naoto-case15-pause-and-m-layout.json固定当前成果/未测项/新case恢复入口。用户恢复前不继续，目标未complete。

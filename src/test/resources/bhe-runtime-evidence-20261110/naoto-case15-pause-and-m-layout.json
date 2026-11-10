@@ -1,0 +1,438 @@
+{
+  "schema": "nexas.runtime-pause-checkpoint/v1",
+  "capturedAt": "2026-11-10T11:17:52.164978+00:00",
+  "runtimeValidated": false,
+  "userRequestedPause": true,
+  "case": "target/bhe-playable-runtime/nine-naoto-20261110-15",
+  "process": {
+    "pid": 152620,
+    "thread_id": 141104,
+    "creation_filetime": 134387632535477302,
+    "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261110-15\\game\\BaldrSky.exe"
+  },
+  "launcherPid": 149256,
+  "status": {
+    "status": "stopped",
+    "failure": null,
+    "stop_reason": "STOP_file",
+    "exit_code": 3758096385,
+    "owned_process_exit_confirmed": true,
+    "guard_cleanup_complete": true,
+    "cleanup_pending": false,
+    "finished_at": "2026-11-10T11:15:14.344754+00:00",
+    "external_write_count": 0,
+    "guard_violations": [],
+    "exception_count": 11,
+    "original_driver_state_runtime_check": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "nvAppTimestamps"
+      ],
+      "attribution": "not_determined_external_writers_possible"
+    }
+  },
+  "stateIdentity": {
+    "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/state.json",
+    "bytes": 19528,
+    "sha256": "d078bbe890e17d75aba167777e6c70f29ab6a00b434fc43c88723d5102cede54"
+  },
+  "eventsIdentity": {
+    "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/events.jsonl",
+    "bytes": 4053063,
+    "sha256": "9fe1d0ee58c6c37595cbc5bb2182c663cbda30450e602d274bea09563ccfcadc"
+  },
+  "selectedExitEvents": [
+    {
+      "line": 7149,
+      "object": {
+        "at": "2026-11-10T11:14:50.238587+00:00",
+        "event": "terminating_owned_process",
+        "process": {
+          "pid": 152620,
+          "thread_id": 141104,
+          "creation_filetime": 134387632535477302,
+          "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261110-15\\game\\BaldrSky.exe"
+        },
+        "reason": "STOP_file"
+      }
+    },
+    {
+      "line": 7150,
+      "object": {
+        "at": "2026-11-10T11:14:50.344262+00:00",
+        "event": "frida_detached",
+        "reason": "process-terminated",
+        "crash": null
+      }
+    },
+    {
+      "line": 7151,
+      "object": {
+        "at": "2026-11-10T11:15:14.344782+00:00",
+        "event": "finished",
+        "status": "stopped",
+        "failure": null
+      }
+    }
+  ],
+  "inputCopyCleanup": {
+    "removed": [
+      "AutoUpdate.exe",
+      "BaldrSky.exe",
+      "BaldrSky.ico",
+      "Bgm.pac",
+      "Bmp.pac",
+      "Config.pac",
+      "Dat.pac",
+      "Face.pac",
+      "Filechk.exe",
+      "Launcher.dat",
+      "Launcher.exe",
+      "Script.pac",
+      "Se.pac",
+      "Setup.exe",
+      "Setupinf.dat",
+      "Stand.pac",
+      "StartUpTool.exe",
+      "System.pac",
+      "Thumbnail.pac",
+      "Uninstall.exe",
+      "Update.exe",
+      "Update.pac",
+      "Update2.pac",
+      "UpdateInf.dat",
+      "Visual.pac",
+      "Voice.pac",
+      "autorun.inf",
+      "Update3.pac"
+    ],
+    "removed_bytes": 5805717300,
+    "retained_changed_or_unique": [],
+    "errors": []
+  },
+  "sourceChecks": {
+    "original_save_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "original_base_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "source_files_check": {
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\BaldrSky_20261105_193620_157.exe": true,
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\Update3.pac": true
+    }
+  },
+  "normalUiTemplate055": {
+    "identity": {
+      "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/docs/GIGA/BALDRSKY_DIVEX/Save/Replay055.dat",
+      "bytes": 855,
+      "sha256": "cad21998372b157c8dbe99c0cce086e7960e7e7b01c1c8f1bc5a9102877ebf42"
+    },
+    "frames": 1980,
+    "mekaEnemyMapMode": [
+      109,
+      0,
+      68,
+      0
+    ],
+    "equipment": [
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      20,
+      21,
+      22,
+      -1,
+      -1
+    ],
+    "prefixBytes": 809,
+    "prefixSha256": "5fb93d28fc8a857c10559e6f9233830a7b845e7decc83a9f8558002b39e4d8ca",
+    "decodedInputSha256": "b2de6f97cdf05687452d4270728cc92a7aede415603a6a2ce3cef6105096306b"
+  },
+  "templateAll1980InputsZero": true,
+  "preparedTrials": {
+    "56": {
+      "replay": {
+        "identity": {
+          "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/docs/GIGA/BALDRSKY_DIVEX/Save/Replay056.dat",
+          "bytes": 873,
+          "sha256": "1c6d913437ea2d3dbd0a0b4ab4cecac378872d4b23f9e32f999600d777ccf567"
+        },
+        "frames": 1200,
+        "mekaEnemyMapMode": [
+          109,
+          0,
+          68,
+          0
+        ],
+        "equipment": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          20,
+          21,
+          22,
+          -1,
+          -1
+        ],
+        "prefixBytes": 809,
+        "prefixSha256": "5fb93d28fc8a857c10559e6f9233830a7b845e7decc83a9f8558002b39e4d8ca",
+        "decodedInputSha256": "344b22a5886c4449863a0d84bcc4f33175fa40d49c75c1599ef4e1f9a31299c8"
+      },
+      "input": {
+        "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/naoto20-far-held-repeat-input.json",
+        "bytes": 351,
+        "sha256": "473ae5ede5522c7c8e50770740bab15bdf0eed5cca747c42a5368f00114afc5a"
+      },
+      "receipt": {
+        "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/naoto20-far-held-repeat-receipt.json",
+        "bytes": 7694,
+        "sha256": "f8f44e3a077394a867ae8593fa4e3307485c0949b752e88bfeccc58b22faa1ec"
+      },
+      "schedule": {
+        "frames": 1200,
+        "tail_frames": 500,
+        "ranges": [
+          {
+            "start": 30,
+            "end": 140,
+            "held": [
+              "left"
+            ]
+          },
+          {
+            "start": 200,
+            "end": 400,
+            "held": [
+              "A"
+            ]
+          },
+          {
+            "start": 650,
+            "end": 654,
+            "held": [
+              "A"
+            ]
+          }
+        ]
+      },
+      "allInputPairsVerified": 1200,
+      "prefixSameAs055": true,
+      "played": false
+    },
+    "57": {
+      "replay": {
+        "identity": {
+          "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/docs/GIGA/BALDRSKY_DIVEX/Save/Replay057.dat",
+          "bytes": 874,
+          "sha256": "c7bef201a17d500648fe6645216e76e047f3da5a22447a996ef481859f34bae9"
+        },
+        "frames": 1200,
+        "mekaEnemyMapMode": [
+          109,
+          0,
+          68,
+          0
+        ],
+        "equipment": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          20,
+          21,
+          22,
+          -1,
+          -1
+        ],
+        "prefixBytes": 809,
+        "prefixSha256": "5fb93d28fc8a857c10559e6f9233830a7b845e7decc83a9f8558002b39e4d8ca",
+        "decodedInputSha256": "6757fcbd3dc65a05506c73fe2915013b00687f8e9fdcffb734c2bd529d275a75"
+      },
+      "input": {
+        "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/naoto21-far-held-repeat-input.json",
+        "bytes": 351,
+        "sha256": "22a03fbcfa86b154c596de050b749d6d7014ebc4b0c6aed49b2e9d3121873b5b"
+      },
+      "receipt": {
+        "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/naoto21-far-held-repeat-receipt.json",
+        "bytes": 7694,
+        "sha256": "926894de34dd68682776b31e918f6568fc2e9fbf6c22ea985a34016d322afb52"
+      },
+      "schedule": {
+        "frames": 1200,
+        "tail_frames": 500,
+        "ranges": [
+          {
+            "start": 30,
+            "end": 140,
+            "held": [
+              "left"
+            ]
+          },
+          {
+            "start": 200,
+            "end": 400,
+            "held": [
+              "B"
+            ]
+          },
+          {
+            "start": 650,
+            "end": 654,
+            "held": [
+              "B"
+            ]
+          }
+        ]
+      },
+      "allInputPairsVerified": 1200,
+      "prefixSameAs055": true,
+      "played": false
+    },
+    "58": {
+      "replay": {
+        "identity": {
+          "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/docs/GIGA/BALDRSKY_DIVEX/Save/Replay058.dat",
+          "bytes": 874,
+          "sha256": "47d83bb6965378ea19575e6ab323c33d629f4f57ee7625ab7c22e25dc4bdba01"
+        },
+        "frames": 1200,
+        "mekaEnemyMapMode": [
+          109,
+          0,
+          68,
+          0
+        ],
+        "equipment": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          20,
+          21,
+          22,
+          -1,
+          -1
+        ],
+        "prefixBytes": 809,
+        "prefixSha256": "5fb93d28fc8a857c10559e6f9233830a7b845e7decc83a9f8558002b39e4d8ca",
+        "decodedInputSha256": "6901cd92fd22bcb517aa6c9d730d552675e7d272999292a2356f7dde6c8d2bbe"
+      },
+      "input": {
+        "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/naoto22-far-held-repeat-input.json",
+        "bytes": 351,
+        "sha256": "80c86c9bb9ea99a92207d8b482d11bd3c6f19e006b51d618603e4b4f7f34e151"
+      },
+      "receipt": {
+        "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/naoto22-far-held-repeat-receipt.json",
+        "bytes": 7694,
+        "sha256": "4f73f68899a989ccb5f4db35a329a3e1aaf22347cfef0a371fdc75599880c382"
+      },
+      "schedule": {
+        "frames": 1200,
+        "tail_frames": 500,
+        "ranges": [
+          {
+            "start": 30,
+            "end": 140,
+            "held": [
+              "left"
+            ]
+          },
+          {
+            "start": 200,
+            "end": 400,
+            "held": [
+              "C"
+            ]
+          },
+          {
+            "start": 650,
+            "end": 654,
+            "held": [
+              "C"
+            ]
+          }
+        ]
+      },
+      "allInputPairsVerified": 1200,
+      "prefixSameAs055": true,
+      "played": false
+    }
+  },
+  "unplayed056Sampler": {
+    "identity": {
+      "path": "target/bhe-playable-runtime/nine-naoto-20261110-15/naoto20-far-held-repeat-sampling.json",
+      "bytes": 1267,
+      "sha256": "3473d516a058d998164b47d0f2c8266a8b6f6ddaa06c82e2f5d980dfa6e07205"
+    },
+    "originalFailure": {
+      "schema": "nexas.bhe-rpm-sampler/v1",
+      "source": "identity-checked read-only RPM; latest accepted row per observed replay counter; non-atomic guarded reads",
+      "at": "2026-11-10T11:12:53.879307+00:00",
+      "started": false,
+      "complete": false,
+      "status": "process_error",
+      "lastCounter": null,
+      "acceptedRows": 0,
+      "rows": [],
+      "readErrors": [],
+      "units": {
+        "x_y_z": "integer map coordinates",
+        "positionXRaw_positionYRaw_vzRaw_gravityRaw": "fixed point /1024",
+        "skillSpeedRaw": "skill speed /1024; not whole actor velocity",
+        "skillDirectionRaw": "degrees times1024",
+        "modifiers": "integer percent",
+        "globalFlagsRaw": "uninterpreted raw bits"
+      },
+      "failure": "Process exited: 3758096385",
+      "process": {
+        "pid": 152620,
+        "thread_id": 141104,
+        "creation_filetime": 134387632535477302,
+        "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261110-15\\game\\BaldrSky.exe"
+      },
+      "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261110-15",
+      "expectedExeSha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae",
+      "requested": {
+        "meka": 109,
+        "endCounter": 1200,
+        "waitSeconds": 600.0,
+        "playSeconds": 60.0
+      }
+    },
+    "boundary": "Waiter was started at the pause boundary; no LOAD Yes/PLAY occurred. User-stop termination caused process_error with zero rows. This is not weapon crash or runtime evidence."
+  },
+  "boundary": "All binaries remain only in managed runtime/private Save and sealed build. No binary copied to this text checkpoint; no new gameplay performed after the pause was recognized."
+}
