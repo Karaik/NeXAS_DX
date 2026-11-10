@@ -139,3 +139,21 @@ Replay STOP仅表示输入播放结束；敌跳跃在其后仍可能继续产生
 ## 2026-11-10 用户再次暂停
 
 当前目标已paused，后续以[本日暂停交接](checkpoint-20261110-paused.md)为准。M布局055已正常UI保存，056～058已生成未播放；056载入确认处未点Yes。其采样等待因本次受管STOP结束，0行，不算技能失败。case15的游戏/launcher/guard均已收尾并清理约5.41GiB输入副本，源/原Save保全通过；完整精确状态和恢复入口已固定，不继续开发或测试直到用户重启目标。
+
+## 暂停交接后的新case16
+
+用户已重新active。旧case15终态和无残留进程均核实后，才从其私有Save准备case16。新游戏PID194168／creation FILETIME134387837381937292，launcher session45417／PID193976；旧case/lock不复用。EXE/PAC仍1ac677…/8efe…，manifest SHA2ff7a4affb3721c1ab20c9e507847e60b969f8bc55726bab1a724515c4124b56。055及056～058与暂停检查点保持逐字节身份一致，后续实测只登记新case16的日志与采样。root独占UI，审计代理只读复核；仍在develop、不push、不提交二进制。
+
+## 056～058：M布局的自然落空与同场复用
+
+本批在case16以正常UI LOAD后自动PLAY，三份均运行至STOP20.00／counter1200。独立审计重新核case15输入／receipt与case16录像逐字节一致；055完整前缀809字节、109／敌0／map68／行为0及M布局均保留。普通输入为left[30,140)、各自A/B/C[200,400)、同键[650,654)，不是写actor或修改seed。封存包仍1ac677…／8efe…，未构建、未修改逻辑。三份小型文本证据分别为`naoto20-far-held-repeat.json`、`naoto21-far-held-repeat.json`、`naoto22-far-held-repeat.json`，位于src/test/resources/bhe-runtime-evidence-20261110。
+
+056：20在native input200／650真实START seq1／2，USE均0/0，长按没有重发。两轮W31 clock0～37完整，各11～16攻击窗均实际经过；不进入内部W12，context238／688自然释放。同敌actor0x35bdcaa0始终HP6000、state/control/pending/reaction0，无native damage/reaction。起手距离870／790，各前移80，最终710。热204／654加到2000，RESET268／718仍2000，270～274／720～724逐步到0；TAMA全0，SCRIPT最多2、最后非零667。1201接受行无缺、72拒读；玩家Z/Vz0、G51200、jump100，fall准备20起逐步至W31 clock37恢复100，不写成全程100。
+
+057：21在input200／650真实START seq3／4，长按不重发；两轮W32 clock0～70完整，34～36攻击窗全覆盖且无命中。同敌actor0x23557018始终HP6000，state/control/pending/reaction0，无native damage/reaction。两轮clock40～47每步实际回撤12，共96，clock48停速并开normalGate1；准备段先前进344，因此整招净前进248，不能说整招后退96。context271／721在clock70自然释放，RESET301／751仍heat2200，303～308／753～758逐步归0。1201接受行无缺、87拒读；TAMA全0，SCRIPT最后非零698，最终地面物理、热及对象正常。
+
+058：22首轮从距离870开始，两次均选择慢W34 P0（clock0～67完整）并进入私有W33；首轮W33 clock0～71全部72行，两段Hit18～22／23～33全覆盖且敌无伤，随后W18 clock0～23自然收纳，context364释放。首轮前进555使第二次起手距离变为315；input650真实再次START seq6后实际命中45＋45＋90共180，敌HP6000→5820，三个native precontrol均0，不称真连。第二轮W33 clock25／26缺样，保留为空缺；其clock71→W18及23出口完整，context814释放。两次长按／再用行为成立，但只认可第一轮完整落空，不写两次落空。
+
+058共1198接受行，缺counter1／744／745，84拒读。所有接受样本玩家Z/Vz0、G51200、jump100；W33 clock23恢复fall100已观测，但Rise名称与敌被击飞不能代替玩家空中验证。热204／654到2600后，在W34展开过程中分次降到0（236／686），早于W33；不误归因于收招冷却或D取消。两次W18自然结束、最终active-1／热对象0／地面物理正常。完整原生窗口按采样tick界定，保留各自日志前缀hash和原样对象；不把STOP后的旧lastReplayFrame、case16启动前置的一条未分类异常或新UI事件混入本次攻击结论。
+
+至此Naoto六件新增武装均有至少一个完整落空条件（20～23地面远距，24／25跳跃靶），与各自受击中断、玩家空中分支、不同敌人及阶段推进分别记账。当前整包runtimeValidated仍false；其他八角、Sou153和164原武装候选的独立覆盖继续执行。下一步通过正常UI建立主动敌模板，先测无攻击来袭基线，再核技能真正被敌打断后的恢复与再用。
