@@ -1,0 +1,194 @@
+{
+  "schema": "nexas.runtime-integration-failure/v1",
+  "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261110-14",
+  "process": {
+    "pid": 141376,
+    "thread_id": 137804,
+    "creation_filetime": 134387618277972206,
+    "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261110-14\\game\\BaldrSky.exe"
+  },
+  "sourceEvents": {
+    "bytes": 178965,
+    "sha256": "fccc64bfa2adece5db8a8210d1ae0187964e0134cc23557eff4822e2fd4bd829"
+  },
+  "terminal": {
+    "status": "failed",
+    "failure": "PermissionError(13, 'アクセスが拒否されました。')",
+    "stop_reason": null,
+    "exit_code": 3758096385,
+    "owned_process_exit_confirmed": true,
+    "guard_cleanup_complete": true,
+    "cleanup_pending": false,
+    "guard_violations": [],
+    "external_write_count": 0
+  },
+  "inputCopyCleanup": {
+    "removed": [
+      "AutoUpdate.exe",
+      "BaldrSky.exe",
+      "BaldrSky.ico",
+      "Bgm.pac",
+      "Bmp.pac",
+      "Config.pac",
+      "Dat.pac",
+      "Face.pac",
+      "Filechk.exe",
+      "Launcher.dat",
+      "Launcher.exe",
+      "Script.pac",
+      "Se.pac",
+      "Setup.exe",
+      "Setupinf.dat",
+      "Stand.pac",
+      "StartUpTool.exe",
+      "System.pac",
+      "Thumbnail.pac",
+      "Uninstall.exe",
+      "Update.exe",
+      "Update.pac",
+      "Update2.pac",
+      "UpdateInf.dat",
+      "Visual.pac",
+      "Voice.pac",
+      "autorun.inf",
+      "Update3.pac"
+    ],
+    "removed_bytes": 5805717300,
+    "retained_changed_or_unique": [],
+    "errors": []
+  },
+  "sourceChecks": {
+    "original_save_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "original_base_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "source_files_check": {
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\BaldrSky_20261105_193620_157.exe": true,
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\Update3.pac": true
+    }
+  },
+  "eventTypes": {
+    "original_driver_state_prelaunch_audit": 1,
+    "created_suspended": 1,
+    "gameplay_observer_ready": 1,
+    "hook_ready": 1,
+    "hooks_loaded": 1,
+    "resumed": 1,
+    "documents_location_enter": 1,
+    "directory_create_collision": 14,
+    "documents_location_result": 1,
+    "save_path_redirected": 61,
+    "hid_device_open": 347,
+    "driver_state_redirected": 41,
+    "capture_log_redirected": 3,
+    "exception": 1,
+    "cryptnet_cache_redirected": 2,
+    "mmcss_device_open": 1,
+    "launcher_error": 1,
+    "terminating_owned_process": 1,
+    "frida_detached": 1,
+    "finished": 1
+  },
+  "selectedOriginalEvents": [
+    {
+      "line": 479,
+      "event": {
+        "at": "2026-11-10T05:37:27.864500+00:00",
+        "event": "launcher_error",
+        "error": "PermissionError(13, 'アクセスが拒否されました。')"
+      }
+    },
+    {
+      "line": 480,
+      "event": {
+        "at": "2026-11-10T05:37:27.864568+00:00",
+        "event": "terminating_owned_process",
+        "process": {
+          "pid": 141376,
+          "thread_id": 137804,
+          "creation_filetime": 134387618277972206,
+          "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261110-14\\game\\BaldrSky.exe"
+        },
+        "reason": "PermissionError(13, 'アクセスが拒否されました。')"
+      }
+    },
+    {
+      "line": 481,
+      "event": {
+        "at": "2026-11-10T05:37:27.965565+00:00",
+        "event": "frida_detached",
+        "reason": "process-terminated",
+        "crash": null
+      }
+    },
+    {
+      "line": 482,
+      "event": {
+        "at": "2026-11-10T05:37:51.881452+00:00",
+        "event": "finished",
+        "status": "failed",
+        "failure": "PermissionError(13, 'アクセスが拒否されました。')"
+      }
+    }
+  ],
+  "samplerFailure": {
+    "schema": "nexas.bhe-rpm-sampler/v1",
+    "source": "identity-checked read-only RPM; latest accepted row per observed replay counter; non-atomic guarded reads",
+    "at": "2026-11-10T05:37:24.616055+00:00",
+    "started": false,
+    "complete": false,
+    "status": "process_error",
+    "lastCounter": null,
+    "acceptedRows": 0,
+    "rows": [],
+    "readErrors": [],
+    "units": {
+      "x_y_z": "integer map coordinates",
+      "positionXRaw_positionYRaw_vzRaw_gravityRaw": "fixed point /1024",
+      "skillSpeedRaw": "skill speed /1024; not whole actor velocity",
+      "skillDirectionRaw": "degrees times1024",
+      "modifiers": "integer percent",
+      "globalFlagsRaw": "uninterpreted raw bits"
+    },
+    "failure": "Process exited: 3758096385",
+    "process": {
+      "pid": 141376,
+      "thread_id": 137804,
+      "creation_filetime": 134387618277972206,
+      "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261110-14\\game\\BaldrSky.exe"
+    },
+    "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261110-14",
+    "expectedExeSha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae",
+    "requested": {
+      "meka": 109,
+      "endCounter": 480,
+      "waitSeconds": 600.0,
+      "playSeconds": 60.0
+    }
+  },
+  "reproduction": {
+    "held_reader_replace": {
+      "type": "PermissionError",
+      "errno": 13,
+      "winerror": 5,
+      "filename": "D:\\Code\\NeXAS_DX\\target\\sampler-state-lock-probe-20261110\\state.json.new",
+      "filename2": "D:\\Code\\NeXAS_DX\\target\\sampler-state-lock-probe-20261110\\state.json",
+      "traceback": "Traceback (most recent call last):\n  File \"<stdin>\", line 10, in <module>\n  File \"D:\\Code\\NeXAS_DX\\tools\\bhe_runtime_session.py\", line 241, in write_json\n    temporary.replace(path)\n    ~~~~~~~~~~~~~~~~~^^^^^^\n  File \"C:\\Python313\\Lib\\pathlib\\_local.py\", line 780, in replace\n    os.replace(self, target)\n    ~~~~~~~~~~^^^^^^^^^^^^^^\nPermissionError: [WinError 5] アクセスが拒否されました。: 'D:\\\\Code\\\\NeXAS_DX\\\\target\\\\sampler-state-lock-probe-20261110\\\\state.json.new' -> 'D:\\\\Code\\\\NeXAS_DX\\\\target\\\\sampler-state-lock-probe-20261110\\\\state.json'\n"
+    },
+    "before_reader_release_content": {
+      "generation": 0
+    },
+    "after_reader_release_content": {
+      "generation": 2
+    }
+  },
+  "boundary": "035 not played. Launcher permission failure caused owned termination, not skill crash. Windows held-reader replace failure reproduced separately; original launcher did not retain traceback."
+}

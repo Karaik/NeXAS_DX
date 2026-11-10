@@ -238,7 +238,20 @@ def write_json(path, value):
     with temporary.open("w", encoding="utf-8", newline="\r\n") as stream:
         json.dump(value, stream, ensure_ascii=False, indent=2)
         stream.write("\n")
-    temporary.replace(path)
+    # Ordinary Windows readers may briefly deny delete-sharing on state.json.
+    # Reuse the fully written temp; retry only transient replacement errors.
+    deadline = time.monotonic() + 1.0
+    for attempt in range(41):
+        try:
+            temporary.replace(path)
+            return
+        except OSError as exc:
+            if getattr(exc, "winerror", None) not in (5, 32, 33) or attempt == 40:
+                raise
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise
+            time.sleep(min(0.025, remaining))
 
 
 def prepare_case(*, base_dir, exe_path, pac_paths, save_dir, case_name, runtime_root=RUNTIME_ROOT, vanilla=False,

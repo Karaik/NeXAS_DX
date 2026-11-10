@@ -1,6 +1,6 @@
 # Sou34蝙蝠运动缺失只读审查（2026-11-06）
 
-本记录只保存源码、原始资源及现成反编译的调查结论；未修改生产源码、构建、测试或操作游戏，未声称修复完成。缺图片继续nonfatal审计；无hit单独记效果未证，不据此认定安全失败。
+本记录只保存源码、原始资源及现成反编译的调查结论；未修改生产源码、构建、测试或操作游戏，未声称修复完成。缺图片继续nonfatal审计；无hit单独记效果未证，不据此认定安全失败。2026-11-10追加消费者核查并修正原LENGTH_Z说明；原字节记录、历史实测与未实施候选均保留。
 
 ## 首击落空与后续缺失分开
 
@@ -40,7 +40,7 @@ P2原源同时有方向slot15（term type[2]，位置选择[3,19]）、方向修
 
 ### 已确认P2朝root机体中央回返
 
-源slot15为root18／ANGLE、type[2]／OBJECTZ，aux1[0,0]是self位置，aux2[3,19]按OBJECTPOS与OBJECTPOS2字典解释；不能把第二个19误当OBJECT/多重锁定枚举。真实`grpBheJson/term.grp.json`内OBJECTPOS index3=PARENTMEKA（大元のメカ）、OBJECTPOS2 index19=CENTER（機体中央）。因此P2的方向是从蝙蝠自身到root机体中央，不是默认敌目标。P2的原LENGTH_Z<=25距离条件也使用相同aux2[3,19]，不能用到敌人距离代替其判定距离。
+源slot15为root18／ANGLE、type[2]／OBJECTZ，aux1[0,0]是self位置，aux2[3,19]按OBJECTPOS与OBJECTPOS2字典解释；不能把第二个19误当OBJECT/多重锁定枚举。真实`grpBheJson/term.grp.json`内OBJECTPOS index3=PARENTMEKA（大元のメカ）、OBJECTPOS2 index19=CENTER（機体中央）。因此P2的方向是从蝙蝠自身到root机体中央，不是默认敌目标。P2的原LENGTH_Z<=25条件虽然也保存aux2[3,19]，但它属于PARENT/OBJECT1条件消费者，不能沿用ANGLE的位置锚点解释。2026-11-10已确认该条件只用第一个3选择root，第二个19不参与计算；先前“距离出口共用CENTER锚点”的解释撤回。
 
 原生证据：BHE `73DE00.c:48～53`分别返回默认目标this[1205]、direct parent this[1203]和root this[1207]；`73D890.c:91～103`的CENTER分支把机体高度的1/2或条件分支下1/4加入Z。此处保留原生分支，不把CENTER简单写死为任何固定高度。
 
@@ -50,7 +50,17 @@ P2原源同时有方向slot15（term type[2]，位置选择[3,19]）、方向修
 
 DX `668FD0.c:74～82`的POSITION选择器把ROCK读自actor+5304、root读自actor+5316；`668A30.c:26～31`的对象选择器同样区分默认目标this[1326]、direct parent this[1323]与root this[1329]。DX `60FCE0.c:123～175`的slot20只按type选择默认目标或direct parent；默认目标与这里的root并不同义。不能为了补高度而追向敌人，也不能未经关系核对把direct parent当root。
 
-即使另行获得指向root的高度方案，slot18加垂直分量的总速也不自动等于BHE三维速度模；还需恢复root中央锚点、检查方向转动和原距离出口的一致性。
+即使另行获得指向root的高度方案，slot18加垂直分量的总速也不自动等于BHE三维速度模。准确复刻还要处理BHE方向所用CENTER及三维转向；若选择DX原生近似，则应明确采用双方中心对齐，保证水平目标、垂直目标和原距离条件都指向同一root对象，不能称为完全等价。
+
+### 2026-11-10：距离消费者与原生供体校正
+
+BHE `71BDE0.c:21～22`先经`73E1E0.c:10～18`选择两个OBJECT；DX `66EA50.c:22～25`对应`668D70.c:10～18`。两者只读取aux首整数。BHE `71C780.c:224～244`的LENGTH_Z（case8）及DX `66B9C0.c:109～125`的LENGTH_Z（case7）均计算：`round(horizontalDistance) + abs(selfZ + selfHeight/2 - rootZ - rootHeight/2)`。因此原距离条件一直是双方中心高度差与水平距离的组合，不是“self基点到root CENTER的三维欧氏距离”；aux第二整数19不产生CENTER加算。ANGLE方向的CENTER缺失仍成立，与此处是两个不同消费者。
+
+DX还有一个独立差异：`669CD0.c:64～87`的ANGLE/OBJECTZ通过`(x,y-z)`投影求单个方向角；`60A9C0.c:85`最终按平面速度／角度更新移动向量。仅把原三维速度塞到slot18并保留OBJECTZ，会把高度差混入平面转向，不能作为已完成适配。
+
+已读真实DX原版`Tama05.waz`的BLADE（59）、AXE_NAGE（60）及回旋镖0010（62）对应资源：它们在回返段使用ANGLE/OBJECT到parent、slot18、slot20 `int1=1`（direct parent）及LENGTH_Z到parent出口。BLADE的slot20文件offset390079，帧0～156、type1，内部最大增分事件为完整`[0,10,0,0,10,0]`；该事件与原二进制逐值一致。它证明DX存在原生中心高度追尾回返机制，不能证明借用后Sou速度、转向或攻击效果已通过。
+
+`60FCE0.c:131～175`的slot20以`targetZ+targetHeight/2-selfHeight/2-selfZ+heightCorrection`为高度误差，结合水平距离及slot18速度生成垂直速度，并施加增分／越界处理。无默认敌目标改绑的parent模式只有在私有蝙蝠direct parent确为root时才适用。该近似将蝙蝠自身中心对准root中心，与BHE方向从self基点到root CENTER不同；两引擎的LENGTH_Z条件仍可沿原公式保留。
 
 ## 历史候选与当前建议
 
@@ -58,10 +68,10 @@ DX `668FD0.c:74～82`的POSITION选择器把ROCK读自actor+5304、root读自act
 
 当前建议先按actual common plan定位source slice、双名及真实parent/root链，以完整源记录和重编译后公共图做守卫。若进入实现阶段，应深复制私有蝙蝠、只重绑三等级caller的相关发射边，并保留原数量、攻击、方向修正、循环、出口、公共525及动态WazaGroup计数；不改全局23→18，不加固定超时或强制命中掩盖原条件。
 
-运动适配需同时处理两个已证缺口：P2两条三维速度事件被丢弃，以及root位置CENTER锚点被降为NONE。先只读确认可用的DX原生root位置／高度表达或真实供体，保持水平、垂直和距离出口指向同一root参考点。slot18两段完整六整数至多是待比较的平面回返候选，不能单独称修复完成；slot20默认敌目标不适用。若只能做近似，需要明确其root锚点／高度／三维总速差异及实际可玩效果，不把近似写成等价。
+运动适配需处理P2两条三维速度事件丢失及方向CENTER退化；不能把方向问题误归到距离条件的锚点。2026-11-10找到的局部候选是：私有P2以ANGLE/OBJECT计算root平面方向，保存两段完整速度事件作为slot18曲线，另以slot20的parent模式处理双方中心高度差；三等级caller都直接发射蝙蝠，但仍须实机核实direct parent=root。原LENGTH_Z到root的出口按原比较式保留。该路线是DX原生回返近似，需通过高低差、运动root、原攻击与回收验收；slot20默认敌目标仍不适用，三维总速和转向不等价。
 
 主caller P1丢失的两个动作另立局部适配断言；先读三等级源动作和方向上下文，不能机械套蝙蝠的root回返转换。修公共525相关副本不等于主caller动作也完整。
 
-建议回归：三等级源签名、两段帧边界和完整六整数、root对象选择与CENTER锚点、原距离出口的同参考点、实际引用及动态尾部、公共／私有可变节点隔离、原公共图及无关技能保全、幂等／漂移／半安装拒绝、两次二进制回环。缺图保持nonfatal，不扩大到其它角色或全局转换器。
+建议回归：三等级源签名、两段帧边界和完整六整数、ANGLE/POS与PARENT条件的消费者区分、root对象选择、双方中心高度差和原距离公式、实际引用及动态尾部、公共／私有可变节点隔离、原公共图及无关技能保全、幂等／漂移／半安装拒绝、两次二进制回环。缺图保持nonfatal，不扩大到其它角色或全局转换器。
 
-建议实机：先证524命中和P1进入，再看525的P0→P1→P2、XYZ位移、相对root中央的三维距离、方向变化、期间攻击与原P3回收。让root静止、移动、与蝙蝠存在高低差，并覆盖正常取消、受击中断和再次使用；核direct parent与root是否始终是同一对象，不能用敌目标距离代替root回返距离。首击无命中、后续未生成、P2未向root回返、回返但未命中与最终回收失败分别记录。本审查没有宣称这些修复或实测已通过。
+建议实机：先证524命中和P1进入，再看525的P0→P1→P2、XYZ位移、相对root的水平距离与双方中心高度差、方向变化、期间攻击与原P3回收；另记真实XYZ欧氏距离作为诊断，不能把它等同于原LENGTH_Z。让root静止、移动、与蝙蝠存在高低差，并覆盖正常取消、受击中断和再次使用；核direct parent与root是否始终是同一对象，不能用敌目标距离代替root回返距离。首击无命中、后续未生成、P2未向root回返、回返但未命中与最终回收失败分别记录。本审查没有宣称这些修复或实测已通过。

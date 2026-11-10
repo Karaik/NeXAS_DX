@@ -315,3 +315,8 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 - 本轮源码只有24日文简介一处替换，明确射击开始额外发热；动作不改。此前21后继推荐、22排热文案及本次24说明尚未封入当前8efe包，不为暂停收尾重建。
 - Nagi六招静态风险与D搜索取消／专用SD区别一并保存，不冒称实机通过。最新状态、关闭结果、恢复首步和未完成目标集中于checkpoint-20261106-paused.md。只提交源码／文档／小型文本证据，不push，既有Clarias六文件53行及sou-menu-bank改动保留。
 - case13已由受管STOP关闭，status=stopped/failure=null，owned exit及guard完成，cleanup_pending=false；自动清理28份5,805,717,300字节副本。原Save/base/source保全通过，345条system/unclassified及驱动时间戳漂移保留边界。游戏与launcher进程已消失，目标待用户恢复。
+
+### 2026-11-10 用户恢复目标
+
+- 上次目标回合为progress：ff82058a2固定Naoto射击结果及暂停。现用户重新active，旧暂停不阻止继续。develop／既有WIP／latest与旧case终态已核；新唯一case14已启动至正常训练录像菜单。详细身份、035／036输入、工具与后续证据见resumed-validation-20261110.md。
+- case14在035确认前遇到启动器PermissionError，已有事件证明由launcher主动结束而非技能崩溃；受管副本已清理。真实Windows状态文件读锁冲突已复现并加有界replace重试，70项session及17项sampler离线回归通过，两轮独立复审通过。下一步新case15实测035，不用离线工具结果代替游戏。

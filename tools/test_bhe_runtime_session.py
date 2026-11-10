@@ -22,6 +22,120 @@ except ModuleNotFoundError:
     harness = None
 
 
+class AtomicJsonReplacementTests(unittest.TestCase):
+    """Only owned repository files; no launcher or live-process dependency."""
+    def setUp(self):
+        fixture_parent = Path(__file__).resolve().parents[1] / "target/bhe-runtime-test-fixtures"
+        fixture_parent.mkdir(parents=True, exist_ok=True)
+        self.temp = tempfile.TemporaryDirectory(prefix="atomic-json-", dir=fixture_parent)
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.environment = patch.dict(os.environ, {name: str(self.root) for name in ("TEMP", "TMP", "TMPDIR")})
+        self.environment.start()
+        self.addCleanup(self.environment.stop)
+        self.path = self.root / "state.json"
+        self.initial = b'{"generation": 0}\r\n'
+        self.path.write_bytes(self.initial)
+
+    @staticmethod
+    def blocked_error(code):
+        error = PermissionError(13, "owned fixture replacement blocked")
+        error.winerror = code
+        return error
+
+    @unittest.skipUnless(os.name == "nt", "requires Windows ordinary-read sharing semantics")
+    def test_real_windows_reader_release_allows_atomic_replacement(self):
+        reader = self.path.open("rb")
+        self.addCleanup(reader.close)
+        waits = []
+        def release_reader(seconds):
+            waits.append(seconds)
+            self.assertEqual(self.path.read_bytes(), self.initial)
+            self.assertEqual(reader.read(), self.initial)
+            pending = self.path.with_name("state.json.new").read_bytes()
+            self.assertEqual(json.loads(pending), {"generation": 1})
+            reader.close()
+        with patch.object(harness.time, "sleep", side_effect=release_reader):
+            harness.write_json(self.path, {"generation": 1})
+        self.assertEqual(len(waits), 1)
+        self.assertGreater(waits[0], 0)
+        self.assertLessEqual(waits[0], .05)
+        self.assertEqual(json.loads(self.path.read_bytes()), {"generation": 1})
+        self.assertFalse(self.path.with_name("state.json.new").exists())
+
+    def test_transient_windows_codes_retry_same_temp_without_changing_original(self):
+        real_replace = Path.replace
+        for code in (5, 32, 33):
+            with self.subTest(winerror=code):
+                self.path.write_bytes(self.initial)
+                state = types.SimpleNamespace(now=0.0, attempts=0, sleeps=[], pending=None)
+                def advance(seconds):
+                    self.assertGreater(seconds, 0)
+                    self.assertLessEqual(seconds, .05)
+                    state.sleeps.append(seconds)
+                    state.now += seconds
+                def replacement(source, target):
+                    state.attempts += 1
+                    self.assertEqual(Path(target).read_bytes(), self.initial)
+                    content = source.read_bytes()
+                    if state.pending is None:
+                        state.pending = content
+                    self.assertEqual(content, state.pending)
+                    self.assertFalse(content.startswith(b"\xef\xbb\xbf"))
+                    self.assertNotIn(b"\n", content.replace(b"\r\n", b""))
+                    if state.attempts <= 2:
+                        raise self.blocked_error(code)
+                    return real_replace(source, target)
+                with patch.object(Path, "replace", autospec=True, side_effect=replacement), \
+                        patch.object(harness.time, "monotonic", side_effect=lambda: state.now), \
+                        patch.object(harness.time, "sleep", side_effect=advance), \
+                        patch.object(harness.json, "dump", wraps=json.dump) as dump:
+                    harness.write_json(self.path, {"generation": 2, "text": "状态"})
+                self.assertEqual(state.attempts, 3)
+                self.assertEqual(len(state.sleeps), 2)
+                self.assertEqual(dump.call_count, 1)
+                self.assertEqual(json.loads(self.path.read_bytes()), {"generation": 2, "text": "状态"})
+
+    def test_permanent_sharing_failure_is_bounded_and_preserves_original_and_error(self):
+        failure = self.blocked_error(32)
+        clock = types.SimpleNamespace(now=0.0, sleeps=[])
+        def advance(seconds):
+            self.assertGreater(seconds, 0)
+            self.assertLessEqual(seconds, .05)
+            self.assertEqual(self.path.read_bytes(), self.initial)
+            clock.sleeps.append(seconds)
+            clock.now += seconds
+        with patch.object(Path, "replace", autospec=True, side_effect=failure) as replacement, \
+                patch.object(harness.time, "monotonic", side_effect=lambda: clock.now), \
+                patch.object(harness.time, "sleep", side_effect=advance), \
+                patch.object(harness.json, "dump", wraps=json.dump) as dump:
+            with self.assertRaises(PermissionError) as raised:
+                harness.write_json(self.path, {"generation": 3})
+        self.assertIs(raised.exception, failure)
+        self.assertEqual(raised.exception.winerror, 32)
+        self.assertGreater(len(clock.sleeps), 0)
+        self.assertLessEqual(len(clock.sleeps), 40)
+        self.assertLessEqual(sum(clock.sleeps), 1.000001)
+        self.assertLessEqual(replacement.call_count, 41)
+        self.assertEqual(dump.call_count, 1)
+        self.assertEqual(self.path.read_bytes(), self.initial)
+        self.assertEqual(json.loads(self.path.with_name("state.json.new").read_bytes()), {"generation": 3})
+
+    def test_unrelated_os_errors_fail_immediately_without_retry(self):
+        for code in (None, 2, 112):
+            with self.subTest(winerror=code):
+                failure = OSError(28, "unrelated filesystem failure")
+                if code is not None:
+                    failure.winerror = code
+                with patch.object(Path, "replace", autospec=True, side_effect=failure) as replacement, \
+                        patch.object(harness.time, "sleep") as sleep:
+                    with self.assertRaises(OSError) as raised:
+                        harness.write_json(self.path, {"generation": 4})
+                self.assertIs(raised.exception, failure)
+                self.assertEqual(replacement.call_count, 1)
+                sleep.assert_not_called()
+                self.assertEqual(self.path.read_bytes(), self.initial)
+
 class RuntimeSessionTests(unittest.TestCase):
     def setUp(self):
         if harness is None:
