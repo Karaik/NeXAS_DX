@@ -1,0 +1,942 @@
+{
+  "schema": "nexas-imported-original-weapon-inventory-v1",
+  "createdDate": "2026-11-10",
+  "scope": "Nine imported roles, preserved MEK entries excluding the explicitly listed 54 new DX variants. Static menu candidates, not confirmed menu passes.",
+  "runtimeValidated": false,
+  "binaryFilesCopied": 0,
+  "assetRoot": "target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582",
+  "binding": {
+    "buildRoot": "target/bhe-playable-builds/run_20261105_193350_342_bd794139",
+    "exeSha256FromExistingReceipt": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae",
+    "pacSha256FromExistingReceipt": "8efe934e14fda0d7f9c429f9b8d703a710d3213d15bbfc5ec6fb9f41e40b4641",
+    "exeOrPacRehashedInThisTask": false
+  },
+  "basis": {
+    "spec": "docs/superpowers/specs/2026-10-30-six-variants-misaki-naoto-katou.md:220",
+    "coverageReport": "docs/project-deep-dive/bhe-playable-rework/imported-original-weapon-coverage-20261110.md",
+    "variantExclusionAudit": "src/test/resources/bhe-runtime-evidence-20261030/records/audits/nine-six-variants-130704-v2/audit.json.json",
+    "mekSchema": "src/main/java/com/giga/nexas/dto/bsdx/mek/parser/MekParser.java",
+    "currentGroupSources": [
+      "target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582/MekaGroup.grp",
+      "target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582/WazaGroup.grp"
+    ]
+  },
+  "fieldSemantics": {
+    "japaneseName": "MEK weaponName read as CP932.",
+    "englishIdentifier": "MEK weaponSequence read as CP932; source English/code identifier, not an invented English translation.",
+    "category": {
+      "0": "ordinary",
+      "1": "force_crash",
+      "2": "initializer"
+    },
+    "identifier": "Raw MEK weaponIdentifier. Native menu excludes mask 2; value 1 is not a hide flag.",
+    "wazReference": "Actual group from this MEK basicInfo.wazFileSequence plus skill from this weapon.wazSequence. Group identity and declared skill-count bounds checked; no fresh full WAZ parse claimed.",
+    "unknown": "No observation is asserted for this field. This is not failed, not observed absent, and not a passed status.",
+    "limited_current_start": "Named current-package external original-weapon START evidence only; does not establish full menu/equipment acceptance or all gameplay conditions."
+  },
+  "visibilityLimits": [
+    "FC/initializer global configuration and currently selected slot/category can filter the menu.",
+    "All retained identifiers have mask 2 clear; this does not claim all entries were visible or equippable in the current UI.",
+    "SCRIPT and persistent-form entries remain in the inventory; names alone are not a hide rule.",
+    "Default slot 12 FC and slot 13 initializer are preset choices; native two FC-class slots accept nonordinary categories."
+  ],
+  "counts": {
+    "roles": 9,
+    "allWeaponSlots": 218,
+    "excludedNewWeapons": 54,
+    "originalWeapons": 164,
+    "originalOrdinary": 137,
+    "originalForceCrash": 18,
+    "originalInitializer": 9,
+    "originalScriptNamed": 7,
+    "unknownMenuObserved": 164,
+    "unknownEquipmentObserved": 164,
+    "limitedRuntimeEvidenceEntries": 2,
+    "unknownRuntimeEvidenceEntries": 162
+  },
+  "roles": [
+    {
+      "role": "Tsukuyomi",
+      "mekaId": 104,
+      "mainWazaGroup": 111,
+      "mekaGroupNames": [
+        "Tsukuyomi",
+        "TSUKUYOMI"
+      ],
+      "wazaGroupNames": [
+        "◆月詠",
+        "TSUKUYOMI",
+        "Tsukuyomi"
+      ],
+      "declaredMainWazSkills": 38,
+      "sourceMek": {
+        "path": "target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582/Tsukuyomi.mek",
+        "bytes": 68634,
+        "sha256": "40569a57dbbbb3e2841fe151c25f18357775c515f604cdfd21209793055879df",
+        "weaponBlockStart": 546,
+        "weaponBlockEndExclusive": 3813,
+        "weaponSlotCount": 25,
+        "allPresenceFlags": 1,
+        "parseEndedAtWeaponBlockBoundary": true,
+        "matchesArchivedRoundTripFingerprint": true
+      },
+      "originalWeaponCount": 19,
+      "originalCategoryCounts": {
+        "0": 16,
+        "1": 2,
+        "2": 1
+      },
+      "excludedNewWeapons": [
+        {
+          "weaponId": 19,
+          "japaneseName": "袈裟・一閃",
+          "newWazEnglishIdentity": "DX_KESA_ISSEN",
+          "mainWazSkill": 32
+        },
+        {
+          "weaponId": 20,
+          "japaneseName": "打突・留め",
+          "newWazEnglishIdentity": "DX_DATOTSU_HOLD",
+          "mainWazSkill": 33
+        },
+        {
+          "weaponId": 21,
+          "japaneseName": "一威・止刃",
+          "newWazEnglishIdentity": "DX_ICHII_BRAKE",
+          "mainWazSkill": 34
+        },
+        {
+          "weaponId": 22,
+          "japaneseName": "逆風・返し",
+          "newWazEnglishIdentity": "DX_GYAKUFU_RETURN",
+          "mainWazSkill": 35
+        },
+        {
+          "weaponId": 23,
+          "japaneseName": "銃撃・離脱",
+          "newWazEnglishIdentity": "DX_GUNSHOT_RETREAT",
+          "mainWazSkill": 36
+        },
+        {
+          "weaponId": 24,
+          "japaneseName": "切返・二連",
+          "newWazEnglishIdentity": "DX_KIRIKAESHI_DOUBLE",
+          "mainWazSkill": 37
+        }
+      ]
+    },
+    {
+      "role": "Yuri",
+      "mekaId": 105,
+      "mainWazaGroup": 112,
+      "mekaGroupNames": [
+        "Yuri",
+        "YURI"
+      ],
+      "wazaGroupNames": [
+        "◆ユーリ",
+        "YURI",
+        "Yuri"
+      ],
+      "declaredMainWazSkills": 33,
+      "sourceMek": {
+        "path": "target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582/Yuri.mek",
+        "bytes": 58498,
+        "sha256": "f2b4aaaba1c8875d22873af2afafbfeab0005a24f337e732eeac9750be8c98e1",
+        "weaponBlockStart": 464,
+        "weaponBlockEndExclusive": 3715,
+        "weaponSlotCount": 21,
+        "allPresenceFlags": 1,
+        "parseEndedAtWeaponBlockBoundary": true,
+        "matchesArchivedRoundTripFingerprint": true
+      },
+      "originalWeaponCount": 15,
+      "originalCategoryCounts": {
+        "0": 12,
+        "1": 2,
+        "2": 1
+      },
+      "excludedNewWeapons": [
+        {
+          "weaponId": 15,
+          "japaneseName": "ダガー・刻み",
+          "newWazEnglishIdentity": "DX_DAGGER_LINK",
+          "mainWazSkill": 27
+        },
+        {
+          "weaponId": 16,
+          "japaneseName": "アサシンダガー・速刺",
+          "newWazEnglishIdentity": "DX_ASSASSIN_QUICK",
+          "mainWazSkill": 28
+        },
+        {
+          "weaponId": 17,
+          "japaneseName": "サイドステップ・地走",
+          "newWazEnglishIdentity": "DX_SIDESTEP_GROUND",
+          "mainWazSkill": 29
+        },
+        {
+          "weaponId": 18,
+          "japaneseName": "パルス・三点射",
+          "newWazEnglishIdentity": "DX_PULSE_THREE",
+          "mainWazSkill": 30
+        },
+        {
+          "weaponId": 19,
+          "japaneseName": "狙撃・一射離脱",
+          "newWazEnglishIdentity": "DX_SNIPER_SINGLE",
+          "mainWazSkill": 31
+        },
+        {
+          "weaponId": 20,
+          "japaneseName": "マイン・置き逃げ",
+          "newWazEnglishIdentity": "DX_MINE_RETREAT",
+          "mainWazSkill": 32
+        }
+      ]
+    },
+    {
+      "role": "Freja",
+      "mekaId": 106,
+      "mainWazaGroup": 113,
+      "mekaGroupNames": [
+        "Freja",
+        "FREJA"
+      ],
+      "wazaGroupNames": [
+        "◆フレイア",
+        "FREJA",
+        "Freja"
+      ],
+      "declaredMainWazSkills": 38,
+      "sourceMek": {
+        "path": "target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582/Freja.mek",
+        "bytes": 59487,
+        "sha256": "57f458e499f0cf2b160cd16bee7a711e7eb797d246bbfbaabb4d2988cadbebfb",
+        "weaponBlockStart": 432,
+        "weaponBlockEndExclusive": 3841,
+        "weaponSlotCount": 23,
+        "allPresenceFlags": 1,
+        "parseEndedAtWeaponBlockBoundary": true,
+        "matchesArchivedRoundTripFingerprint": true
+      },
+      "originalWeaponCount": 17,
+      "originalCategoryCounts": {
+        "0": 14,
+        "1": 2,
+        "2": 1
+      },
+      "excludedNewWeapons": [
+        {
+          "weaponId": 17,
+          "japaneseName": "スピア・留め突き",
+          "newWazEnglishIdentity": "DX_SPEAR_ANCHOR",
+          "mainWazSkill": 32
+        },
+        {
+          "weaponId": 18,
+          "japaneseName": "斬り上げ・低空",
+          "newWazEnglishIdentity": "DX_UPPERCUT_LOW",
+          "mainWazSkill": 33
+        },
+        {
+          "weaponId": 19,
+          "japaneseName": "バックキック・退避",
+          "newWazEnglishIdentity": "DX_BACKKICK_RETREAT",
+          "mainWazSkill": 34
+        },
+        {
+          "weaponId": 20,
+          "japaneseName": "スイング・双薙ぎ",
+          "newWazEnglishIdentity": "DX_SWING_DOUBLE",
+          "mainWazSkill": 35
+        },
+        {
+          "weaponId": 21,
+          "japaneseName": "ジャベリン・二段投擲",
+          "newWazEnglishIdentity": "DX_JAVELIN_TWO",
+          "mainWazSkill": 36
+        },
+        {
+          "weaponId": 22,
+          "japaneseName": "火炎弾・扇射",
+          "newWazEnglishIdentity": "DX_FLAME_FAN",
+          "mainWazSkill": 37
+        }
+      ]
+    },
+    {
+      "role": "Nagi",
+      "mekaId": 107,
+      "mainWazaGroup": 114,
+      "mekaGroupNames": [
+        "Nagi",
+        "NAGI"
+      ],
+      "wazaGroupNames": [
+        "◆凪",
+        "NAGI",
+        "Nagi"
+      ],
+      "declaredMainWazSkills": 35,
+      "sourceMek": {
+        "path": "target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582/Nagi.mek",
+        "bytes": 67379,
+        "sha256": "825aad1650837df4b80fec7846efe68a68c6f8bb7b35349317cf2f993064c00a",
+        "weaponBlockStart": 507,
+        "weaponBlockEndExclusive": 3840,
+        "weaponSlotCount": 24,
+        "allPresenceFlags": 1,
+        "parseEndedAtWeaponBlockBoundary": true,
+        "matchesArchivedRoundTripFingerprint": true
+      },
+      "originalWeaponCount": 18,
+      "originalCategoryCounts": {
+        "0": 15,
+        "1": 2,
+        "2": 1
+      },
+      "excludedNewWeapons": [
+        {
+          "weaponId": 18,
+          "japaneseName": "瞬間ディフレクト",
+          "newWazEnglishIdentity": "DX_QUICK_DEFLECT",
+          "mainWazSkill": 29
+        },
+        {
+          "weaponId": 19,
+          "japaneseName": "斬上げ・接続",
+          "newWazEnglishIdentity": "DX_NAGI_CLOSE_LAUNCH",
+          "mainWazSkill": 30
+        },
+        {
+          "weaponId": 20,
+          "japaneseName": "乱れ突き・三連",
+          "newWazEnglishIdentity": "DX_NAGI_THREE_THRUST",
+          "mainWazSkill": 31
+        },
+        {
+          "weaponId": 21,
+          "japaneseName": "転移突き・追撃",
+          "newWazEnglishIdentity": "DX_NAGI_TRANSFER_LINK",
+          "mainWazSkill": 32
+        },
+        {
+          "weaponId": 22,
+          "japaneseName": "盾打ち・反攻",
+          "newWazEnglishIdentity": "DX_NAGI_BASH_CONFIRM",
+          "mainWazSkill": 33
+        },
+        {
+          "weaponId": 23,
+          "japaneseName": "単発リフレクト・解放",
+          "newWazEnglishIdentity": "DX_NAGI_SINGLE_REFLECT",
+          "mainWazSkill": 34
+        }
+      ]
+    },
+    {
+      "role": "Misaki",
+      "mekaId": 108,
+      "mainWazaGroup": 115,
+      "mekaGroupNames": [
+        "Misaki",
+        "MISAKI"
+      ],
+      "wazaGroupNames": [
+        "◆みさき",
+        "MISAKI",
+        "Misaki"
+      ],
+      "declaredMainWazSkills": 39,
+      "sourceMek": {
+        "path": "target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582/Misaki.mek",
+        "bytes": 81897,
+        "sha256": "7cc27f9366fb4f07cbbd50a4ae65d6ca8f8e7c517115fe5a8649f784495fe7a0",
+        "weaponBlockStart": 363,
+        "weaponBlockEndExclusive": 3981,
+        "weaponSlotCount": 27,
+        "allPresenceFlags": 1,
+        "parseEndedAtWeaponBlockBoundary": true,
+        "matchesArchivedRoundTripFingerprint": true
+      },
+      "originalWeaponCount": 21,
+      "originalCategoryCounts": {
+        "0": 18,
+        "1": 2,
+        "2": 1
+      },
+      "excludedNewWeapons": [
+        {
+          "weaponId": 21,
+          "japaneseName": "転移手・挟撃",
+          "newWazEnglishIdentity": "DX_PINCER_HANDS",
+          "mainWazSkill": 33
+        },
+        {
+          "weaponId": 22,
+          "japaneseName": "鉱石・二拍射",
+          "newWazEnglishIdentity": "DX_ORE_DOUBLE_TAP",
+          "mainWazSkill": 34
+        },
+        {
+          "weaponId": 23,
+          "japaneseName": "転移手・二度招き",
+          "newWazEnglishIdentity": "DX_HAND_TWO_REACH",
+          "mainWazSkill": 35
+        },
+        {
+          "weaponId": 24,
+          "japaneseName": "血晶槍・短束",
+          "newWazEnglishIdentity": "DX_CRYSTAL_SHORT_SPEAR",
+          "mainWazSkill": 36
+        },
+        {
+          "weaponId": 25,
+          "japaneseName": "血晶剣・帰着",
+          "newWazEnglishIdentity": "DX_CRYSTAL_SWORD_RETURN",
+          "mainWazSkill": 37
+        },
+        {
+          "weaponId": 26,
+          "japaneseName": "床召還・重ね置き",
+          "newWazEnglishIdentity": "DX_FLOOR_DOUBLE_MARK",
+          "mainWazSkill": 38
+        }
+      ]
+    },
+    {
+      "role": "Naoto",
+      "mekaId": 109,
+      "mainWazaGroup": 116,
+      "mekaGroupNames": [
+        "Naoto",
+        "NAOTO"
+      ],
+      "wazaGroupNames": [
+        "◆直翔",
+        "NAOTO",
+        "Naoto"
+      ],
+      "declaredMainWazSkills": 38,
+      "sourceMek": {
+        "path": "target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582/Naoto.mek",
+        "bytes": 70225,
+        "sha256": "06fa2864fa3fb6d8cebd4f56d24de43abdebe93f5a30bf300c7ed2694f1c1624",
+        "weaponBlockStart": 476,
+        "weaponBlockEndExclusive": 3953,
+        "weaponSlotCount": 26,
+        "allPresenceFlags": 1,
+        "parseEndedAtWeaponBlockBoundary": true,
+        "matchesArchivedRoundTripFingerprint": true
+      },
+      "originalWeaponCount": 20,
+      "originalCategoryCounts": {
+        "0": 17,
+        "1": 2,
+        "2": 1
+      },
+      "excludedNewWeapons": [
+        {
+          "weaponId": 20,
+          "japaneseName": "ワンツー・コンファーム",
+          "newWazEnglishIdentity": "DX_HIT_CONFIRM_ONE_TWO",
+          "mainWazSkill": 31
+        },
+        {
+          "weaponId": 21,
+          "japaneseName": "フック・リターン",
+          "newWazEnglishIdentity": "DX_HOOK_RETURN",
+          "mainWazSkill": 32
+        },
+        {
+          "weaponId": 22,
+          "japaneseName": "クロー・起動突き",
+          "newWazEnglishIdentity": "DX_CLAW_DEPLOY_RISE",
+          "mainWazSkill": 34
+        },
+        {
+          "weaponId": 23,
+          "japaneseName": "ダウンネイル・収納",
+          "newWazEnglishIdentity": "DX_DOWN_NAIL_RETRACT",
+          "mainWazSkill": 35
+        },
+        {
+          "weaponId": 24,
+          "japaneseName": "マシンガン・三点射",
+          "newWazEnglishIdentity": "DX_MACHINEGUN_THREE_BURST",
+          "mainWazSkill": 36
+        },
+        {
+          "weaponId": 25,
+          "japaneseName": "炸裂弾・交差連射",
+          "newWazEnglishIdentity": "DX_EXPLOSIVE_STAGGER",
+          "mainWazSkill": 37
+        }
+      ]
+    },
+    {
+      "role": "Katou",
+      "mekaId": 110,
+      "mainWazaGroup": 117,
+      "mekaGroupNames": [
+        "Katou",
+        "KATOU"
+      ],
+      "wazaGroupNames": [
+        "◆カトウ",
+        "KATOU",
+        "Katou"
+      ],
+      "declaredMainWazSkills": 37,
+      "sourceMek": {
+        "path": "target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582/Katou.mek",
+        "bytes": 72019,
+        "sha256": "d6d273678809d656089770d9d2d2f1b7d347af3f48ec90d8a8f678f588288fe3",
+        "weaponBlockStart": 482,
+        "weaponBlockEndExclusive": 4081,
+        "weaponSlotCount": 26,
+        "allPresenceFlags": 1,
+        "parseEndedAtWeaponBlockBoundary": true,
+        "matchesArchivedRoundTripFingerprint": true
+      },
+      "originalWeaponCount": 20,
+      "originalCategoryCounts": {
+        "0": 17,
+        "1": 2,
+        "2": 1
+      },
+      "excludedNewWeapons": [
+        {
+          "weaponId": 20,
+          "japaneseName": "トンファー・二連打",
+          "newWazEnglishIdentity": "DX_TONFA_TWO_HIT",
+          "mainWazSkill": 31
+        },
+        {
+          "weaponId": 21,
+          "japaneseName": "トンファー・踏込肘",
+          "newWazEnglishIdentity": "DX_TONFA_ENTRY_ELBOW",
+          "mainWazSkill": 32
+        },
+        {
+          "weaponId": 22,
+          "japaneseName": "トンファー・引き肘",
+          "newWazEnglishIdentity": "DX_TONFA_RECOIL_ELBOW",
+          "mainWazSkill": 33
+        },
+        {
+          "weaponId": 23,
+          "japaneseName": "蹴崩し・追い肘",
+          "newWazEnglishIdentity": "DX_KICK_CONFIRM_ELBOW",
+          "mainWazSkill": 34
+        },
+        {
+          "weaponId": 24,
+          "japaneseName": "トンファー・叩き納め",
+          "newWazEnglishIdentity": "DX_TONFA_SLAM_STOW",
+          "mainWazSkill": 35
+        },
+        {
+          "weaponId": 25,
+          "japaneseName": "ミサイル・二段牽制",
+          "newWazEnglishIdentity": "DX_MISSILE_TWO_BURST",
+          "mainWazSkill": 36
+        }
+      ]
+    },
+    {
+      "role": "Wilhelm",
+      "mekaId": 111,
+      "mainWazaGroup": 118,
+      "mekaGroupNames": [
+        "Wilhelm",
+        "WILHELM"
+      ],
+      "wazaGroupNames": [
+        "◆ヴィルヘルム",
+        "WILHELM",
+        "Wilhelm"
+      ],
+      "declaredMainWazSkills": 37,
+      "sourceMek": {
+        "path": "target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582/Wilhelm.mek",
+        "bytes": 66300,
+        "sha256": "6eac145cc329f913819b0031b2ca8ce08f961180a771993276bea52d6096e4ac",
+        "weaponBlockStart": 473,
+        "weaponBlockEndExclusive": 3593,
+        "weaponSlotCount": 23,
+        "allPresenceFlags": 1,
+        "parseEndedAtWeaponBlockBoundary": true,
+        "matchesArchivedRoundTripFingerprint": true
+      },
+      "originalWeaponCount": 17,
+      "originalCategoryCounts": {
+        "0": 14,
+        "1": 2,
+        "2": 1
+      },
+      "excludedNewWeapons": [
+        {
+          "weaponId": 17,
+          "japaneseName": "交互砲撃・離脱",
+          "newWazEnglishIdentity": "DX_ALTERNATE_CANNON_EXIT",
+          "mainWazSkill": 31
+        },
+        {
+          "weaponId": 18,
+          "japaneseName": "キック・導弾追撃",
+          "newWazEnglishIdentity": "DX_WILHELM_KICK_MISSILE",
+          "mainWazSkill": 32
+        },
+        {
+          "weaponId": 19,
+          "japaneseName": "サインミサイル・二拍",
+          "newWazEnglishIdentity": "DX_WILHELM_TWO_BEAT_MISSILE",
+          "mainWazSkill": 33
+        },
+        {
+          "weaponId": 20,
+          "japaneseName": "照準砲撃・制動",
+          "newWazEnglishIdentity": "DX_WILHELM_AIMED_CANNON_EXIT",
+          "mainWazSkill": 34
+        },
+        {
+          "weaponId": 21,
+          "japaneseName": "肩ミサイル・圧制",
+          "newWazEnglishIdentity": "DX_WILHELM_SHOULDER_PRESSURE",
+          "mainWazSkill": 35
+        },
+        {
+          "weaponId": 22,
+          "japaneseName": "対空砲火・収束",
+          "newWazEnglishIdentity": "DX_WILHELM_AA_FINISH",
+          "mainWazSkill": 36
+        }
+      ]
+    },
+    {
+      "role": "Motoki",
+      "mekaId": 112,
+      "mainWazaGroup": 119,
+      "mekaGroupNames": [
+        "Motoki",
+        "MOTOKI"
+      ],
+      "wazaGroupNames": [
+        "◆礎",
+        "MOTOKI",
+        "Motoki"
+      ],
+      "declaredMainWazSkills": 38,
+      "sourceMek": {
+        "path": "target/bhe-playable-builds/run_20261105_193350_342_bd794139/sou/sou_assets_20261105_193550_582/Motoki.mek",
+        "bytes": 64519,
+        "sha256": "caf85dfb7a275c31a9ea04448ef0bb4d18930e768cd0783d0021387665546c3d",
+        "weaponBlockStart": 536,
+        "weaponBlockEndExclusive": 3744,
+        "weaponSlotCount": 23,
+        "allPresenceFlags": 1,
+        "parseEndedAtWeaponBlockBoundary": true,
+        "matchesArchivedRoundTripFingerprint": true
+      },
+      "originalWeaponCount": 17,
+      "originalCategoryCounts": {
+        "0": 14,
+        "1": 2,
+        "2": 1
+      },
+      "excludedNewWeapons": [
+        {
+          "weaponId": 17,
+          "japaneseName": "集中爆撃・帰投",
+          "newWazEnglishIdentity": "DX_FOCUSED_BOMB_RETURN",
+          "mainWazSkill": 31
+        },
+        {
+          "weaponId": 18,
+          "japaneseName": "ワンツー・離脱",
+          "newWazEnglishIdentity": "DX_MOTOKI_ONE_TWO_EXIT",
+          "mainWazSkill": 33
+        },
+        {
+          "weaponId": 19,
+          "japaneseName": "ドリル・確定突き",
+          "newWazEnglishIdentity": "DX_MOTOKI_DRILL_CONFIRM",
+          "mainWazSkill": 34
+        },
+        {
+          "weaponId": 20,
+          "japaneseName": "排熱弾・即発",
+          "newWazEnglishIdentity": "DX_MOTOKI_QUICK_EXHAUST",
+          "mainWazSkill": 35
+        },
+        {
+          "weaponId": 21,
+          "japaneseName": "ガンポッド・三連点射",
+          "newWazEnglishIdentity": "DX_MOTOKI_THREE_SHOT_GUNPOD",
+          "mainWazSkill": 36
+        },
+        {
+          "weaponId": 22,
+          "japaneseName": "ビーム・短照射",
+          "newWazEnglishIdentity": "DX_MOTOKI_SHORT_BEAM",
+          "mainWazSkill": 37
+        }
+      ]
+    }
+  ],
+  "runtimeEvidenceReferences": [
+    {
+      "id": "naoto0-repeat",
+      "file": "src/test/resources/bhe-runtime-evidence-20261106/naoto20-combo-repeat.json",
+      "bytes": 57841,
+      "sha256": "e5ff61f354418c62d1d6552eb4c643e9bcb72b726d2bf16e36e976c4b56e2039",
+      "scope": "Independent original weapon 0 STARTs in the current package; not a standalone menu acceptance.",
+      "events": [
+        {
+          "jsonPointer": "/sourceEventObjectsByLine/4505/message/payload",
+          "tick": 111574,
+          "eventType": "gameplay_start",
+          "mekaId": 109,
+          "weaponId": 0
+        },
+        {
+          "jsonPointer": "/sourceEventObjectsByLine/4535/message/payload",
+          "tick": 111994,
+          "eventType": "gameplay_start",
+          "mekaId": 109,
+          "weaponId": 0
+        }
+      ]
+    },
+    {
+      "id": "naoto1-repeat",
+      "file": "src/test/resources/bhe-runtime-evidence-20261106/naoto20-combo-repeat.json",
+      "bytes": 57841,
+      "sha256": "e5ff61f354418c62d1d6552eb4c643e9bcb72b726d2bf16e36e976c4b56e2039",
+      "scope": "Independent original weapon 1 STARTs, separate from weapon 20 internal W12 execution; not a standalone menu acceptance.",
+      "events": [
+        {
+          "jsonPointer": "/sourceEventObjectsByLine/4524/message/payload",
+          "tick": 111622,
+          "eventType": "gameplay_start",
+          "mekaId": 109,
+          "weaponId": 1
+        },
+        {
+          "jsonPointer": "/sourceEventObjectsByLine/4554/message/payload",
+          "tick": 112042,
+          "eventType": "gameplay_start",
+          "mekaId": 109,
+          "weaponId": 1
+        }
+      ]
+    },
+    {
+      "id": "naoto1-hook-followup",
+      "file": "src/test/resources/bhe-runtime-evidence-20261106/naoto21-straight-repeat.json",
+      "bytes": 71100,
+      "sha256": "313db40f7b5eea7d153a9e2378e374b270d74f86181f66ed263dd3c928894dd9",
+      "scope": "Independent original weapon 1 STARTs after new weapon 21; finite training evidence only.",
+      "events": [
+        {
+          "jsonPointer": "/sourceEventObjectsByLine/7245/message/payload",
+          "tick": 378147,
+          "eventType": "gameplay_start",
+          "mekaId": 109,
+          "weaponId": 1
+        },
+        {
+          "jsonPointer": "/sourceEventObjectsByLine/7265/message/payload",
+          "tick": 378567,
+          "eventType": "gameplay_start",
+          "mekaId": 109,
+          "weaponId": 1
+        }
+      ]
+    },
+    {
+      "id": "naoto0-rise-followup",
+      "file": "src/test/resources/bhe-runtime-evidence-20261106/naoto23-22-cancel-and-repeat.json",
+      "bytes": 139491,
+      "sha256": "d0f33ae53922f497a48a8c56e6ffab3389537ed721f112a08d5dbe0d7162d4f4",
+      "scope": "Independent original weapon 0 START after new weapon 22; this followup had no recorded hit; not failed or full acceptance.",
+      "events": [
+        {
+          "jsonPointer": "/sourceEventObjectsByLine/11426/message/payload",
+          "tick": 771205,
+          "eventType": "gameplay_start",
+          "mekaId": 109,
+          "weaponId": 0
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {"mekaId":104,"weaponId":0,"japaneseName":"抜刀","englishIdentifier":"0001","category":0,"identifier":0,"wazReference":{"group":111,"skill":11},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":1,"japaneseName":"納刀","englishIdentifier":"0003","category":0,"identifier":0,"wazReference":{"group":111,"skill":13},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":2,"japaneseName":"袈裟","englishIdentifier":"PUNCH","category":0,"identifier":0,"wazReference":{"group":111,"skill":14},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":3,"japaneseName":"薙払","englishIdentifier":"KICK","category":0,"identifier":0,"wazReference":{"group":111,"skill":15},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":4,"japaneseName":"打突","englishIdentifier":"NAGE","category":0,"identifier":0,"wazReference":{"group":111,"skill":16},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":5,"japaneseName":"唐竹","englishIdentifier":"KARATAKE","category":0,"identifier":0,"wazReference":{"group":111,"skill":17},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":6,"japaneseName":"逆風","englishIdentifier":"SWORD_TATE","category":0,"identifier":0,"wazReference":{"group":111,"skill":18},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":7,"japaneseName":"切返","englishIdentifier":"KIRIKAESHI","category":0,"identifier":0,"wazReference":{"group":111,"skill":19},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":8,"japaneseName":"一威","englishIdentifier":"SWORD_KAITEN","category":0,"identifier":0,"wazReference":{"group":111,"skill":20},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":9,"japaneseName":"回避","englishIdentifier":"0004","category":0,"identifier":0,"wazReference":{"group":111,"skill":21},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":10,"japaneseName":"銃撃","englishIdentifier":"0008","category":0,"identifier":0,"wazReference":{"group":111,"skill":22},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":11,"japaneseName":"銀鈴","englishIdentifier":"0002","category":0,"identifier":0,"wazReference":{"group":111,"skill":23},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":12,"japaneseName":"疾風","englishIdentifier":"0005","category":0,"identifier":0,"wazReference":{"group":111,"skill":24},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":13,"japaneseName":"穿心","englishIdentifier":"0007","category":1,"identifier":0,"wazReference":{"group":111,"skill":25},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":14,"japaneseName":"煉撃","englishIdentifier":"0006","category":1,"identifier":1,"wazReference":{"group":111,"skill":26},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":15,"japaneseName":"SCRIPT:納刀","englishIdentifier":"SCR_0003","category":0,"identifier":0,"wazReference":{"group":111,"skill":28},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":16,"japaneseName":"SCRIPT:唐竹","englishIdentifier":"SCR_KARATAKE","category":0,"identifier":0,"wazReference":{"group":111,"skill":29},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":17,"japaneseName":"SCRIPT:切返","englishIdentifier":"SCR_KIRIKAESHI","category":0,"identifier":0,"wazReference":{"group":111,"skill":30},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":104,"weaponId":18,"japaneseName":"イニシャライザ","englishIdentifier":"INITIALIZER","category":2,"identifier":0,"wazReference":{"group":111,"skill":31},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":0,"japaneseName":"ダガー","englishIdentifier":"PUNCH","category":0,"identifier":0,"wazReference":{"group":112,"skill":11},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":1,"japaneseName":"アサシンダガー","englishIdentifier":"0004","category":0,"identifier":0,"wazReference":{"group":112,"skill":12},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":2,"japaneseName":"ネックハント","englishIdentifier":"0005","category":0,"identifier":0,"wazReference":{"group":112,"skill":13},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":3,"japaneseName":"サマーソルト","englishIdentifier":"KICK","category":0,"identifier":0,"wazReference":{"group":112,"skill":14},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":4,"japaneseName":"サイドステップキック","englishIdentifier":"NAGE","category":0,"identifier":0,"wazReference":{"group":112,"skill":15},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":5,"japaneseName":"パルスライフル","englishIdentifier":"0001","category":0,"identifier":0,"wazReference":{"group":112,"skill":16},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":6,"japaneseName":"スナイパーライフル","englishIdentifier":"0002","category":0,"identifier":0,"wazReference":{"group":112,"skill":17},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":7,"japaneseName":"バスターブリッジ","englishIdentifier":"0006","category":0,"identifier":0,"wazReference":{"group":112,"skill":18},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":8,"japaneseName":"マインスイーパ：攻","englishIdentifier":"0008","category":0,"identifier":0,"wazReference":{"group":112,"skill":19},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":9,"japaneseName":"マインスイーパ：避","englishIdentifier":"0009","category":0,"identifier":0,"wazReference":{"group":112,"skill":20},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":10,"japaneseName":"スモークディスチャージャー","englishIdentifier":"0007","category":0,"identifier":0,"wazReference":{"group":112,"skill":21},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":11,"japaneseName":"リベリオンホーク","englishIdentifier":"0010","category":1,"identifier":1,"wazReference":{"group":112,"skill":22},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":12,"japaneseName":"エクサマイン","englishIdentifier":"0011","category":1,"identifier":1,"wazReference":{"group":112,"skill":23},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":13,"japaneseName":"SCRIPT:バスターブリッジ","englishIdentifier":"SCR_0006","category":0,"identifier":0,"wazReference":{"group":112,"skill":25},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":105,"weaponId":14,"japaneseName":"イニシャライザ","englishIdentifier":"INITIALIZER","category":2,"identifier":0,"wazReference":{"group":112,"skill":26},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":0,"japaneseName":"踏み付け","englishIdentifier":"BLOW","category":0,"identifier":0,"wazReference":{"group":113,"skill":14},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":1,"japaneseName":"バックキック","englishIdentifier":"BLOW2","category":0,"identifier":0,"wazReference":{"group":113,"skill":15},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":2,"japaneseName":"叩き付け","englishIdentifier":"0001","category":0,"identifier":0,"wazReference":{"group":113,"skill":16},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":3,"japaneseName":"ラッシュ","englishIdentifier":"0002","category":0,"identifier":0,"wazReference":{"group":113,"skill":17},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":4,"japaneseName":"スピア","englishIdentifier":"0003","category":0,"identifier":0,"wazReference":{"group":113,"skill":18},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":5,"japaneseName":"スイング","englishIdentifier":"0004","category":0,"identifier":0,"wazReference":{"group":113,"skill":19},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":6,"japaneseName":"斬り上げ","englishIdentifier":"0005","category":0,"identifier":0,"wazReference":{"group":113,"skill":20},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":7,"japaneseName":"ジャベリン","englishIdentifier":"RIFLE","category":0,"identifier":0,"wazReference":{"group":113,"skill":21},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":8,"japaneseName":"必殺ジャベリン","englishIdentifier":"RIFLE2","category":0,"identifier":0,"wazReference":{"group":113,"skill":22},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":9,"japaneseName":"火炎弾","englishIdentifier":"SINMISSILE","category":0,"identifier":0,"wazReference":{"group":113,"skill":23},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":10,"japaneseName":"火炎放射ビット","englishIdentifier":"CANNON","category":0,"identifier":0,"wazReference":{"group":113,"skill":24},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":11,"japaneseName":"叛天轟瀑斧","englishIdentifier":"0006","category":1,"identifier":0,"wazReference":{"group":113,"skill":25},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":12,"japaneseName":"武幻剛乱舞","englishIdentifier":"0007","category":1,"identifier":1,"wazReference":{"group":113,"skill":26},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":13,"japaneseName":"SCRIPT:踏み付け","englishIdentifier":"SCR_BLOW","category":0,"identifier":0,"wazReference":{"group":113,"skill":28},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":14,"japaneseName":"SCRIPT:叩き付け","englishIdentifier":"SCR_0001","category":0,"identifier":0,"wazReference":{"group":113,"skill":29},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":15,"japaneseName":"SCRIPT:スイング","englishIdentifier":"SCR_0004","category":0,"identifier":0,"wazReference":{"group":113,"skill":30},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":106,"weaponId":16,"japaneseName":"イニシャライザ","englishIdentifier":"INITIALIZER","category":2,"identifier":0,"wazReference":{"group":113,"skill":31},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":0,"japaneseName":"斬り上げ","englishIdentifier":"0028","category":0,"identifier":0,"wazReference":{"group":114,"skill":11},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":1,"japaneseName":"乱れ突き","englishIdentifier":"0020","category":0,"identifier":0,"wazReference":{"group":114,"skill":12},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":2,"japaneseName":"転移突き","englishIdentifier":"0035","category":0,"identifier":0,"wazReference":{"group":114,"skill":13},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":3,"japaneseName":"転移ケイジブレイド","englishIdentifier":"0029","category":0,"identifier":0,"wazReference":{"group":114,"skill":14},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":4,"japaneseName":"防壁展開","englishIdentifier":"0030","category":0,"identifier":0,"wazReference":{"group":114,"skill":15},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":5,"japaneseName":"シールド：開始","englishIdentifier":"0001","category":0,"identifier":0,"wazReference":{"group":114,"skill":16},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":6,"japaneseName":"シールド：持続","englishIdentifier":"0015","category":0,"identifier":0,"wazReference":{"group":114,"skill":17},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":7,"japaneseName":"シールド：終了","englishIdentifier":"0016","category":0,"identifier":0,"wazReference":{"group":114,"skill":18},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":8,"japaneseName":"シールド：シールドバッシュ","englishIdentifier":"0004","category":0,"identifier":0,"wazReference":{"group":114,"skill":19},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":9,"japaneseName":"シールド：対打撃シールドタックル","englishIdentifier":"0017","category":0,"identifier":0,"wazReference":{"group":114,"skill":20},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":10,"japaneseName":"シールド：対射撃シールドタックル","englishIdentifier":"0031","category":0,"identifier":0,"wazReference":{"group":114,"skill":21},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":11,"japaneseName":"シールド：転移","englishIdentifier":"0019","category":0,"identifier":0,"wazReference":{"group":114,"skill":22},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":12,"japaneseName":"シールド：ディフレクト","englishIdentifier":"0018","category":0,"identifier":0,"wazReference":{"group":114,"skill":23},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":13,"japaneseName":"シールド：単発リフレクション","englishIdentifier":"0036","category":0,"identifier":0,"wazReference":{"group":114,"skill":24},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":14,"japaneseName":"シールド：多発リフレクション","englishIdentifier":"0021","category":0,"identifier":0,"wazReference":{"group":114,"skill":25},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":15,"japaneseName":"シールド：ＥＸディフレクト","englishIdentifier":"0022","category":1,"identifier":0,"wazReference":{"group":114,"skill":26},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":16,"japaneseName":"エクスカリバー","englishIdentifier":"0023","category":1,"identifier":0,"wazReference":{"group":114,"skill":27},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":107,"weaponId":17,"japaneseName":"イニシャライザ","englishIdentifier":"INITIALIZER","category":2,"identifier":0,"wazReference":{"group":114,"skill":28},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":0,"japaneseName":"掴む","englishIdentifier":"0016","category":0,"identifier":0,"wazReference":{"group":115,"skill":12},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":1,"japaneseName":"鉱石発射","englishIdentifier":"0017","category":0,"identifier":0,"wazReference":{"group":115,"skill":13},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":2,"japaneseName":"抱きしめる","englishIdentifier":"0018","category":0,"identifier":0,"wazReference":{"group":115,"skill":14},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":3,"japaneseName":"上昇体当たり","englishIdentifier":"0019","category":0,"identifier":0,"wazReference":{"group":115,"skill":15},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":4,"japaneseName":"転移手：掴み","englishIdentifier":"0025","category":0,"identifier":0,"wazReference":{"group":115,"skill":16},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":5,"japaneseName":"転移手：前方ビターン","englishIdentifier":"0037","category":0,"identifier":0,"wazReference":{"group":115,"skill":17},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":6,"japaneseName":"転移手：後方ビターン","englishIdentifier":"0033","category":0,"identifier":0,"wazReference":{"group":115,"skill":18},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":7,"japaneseName":"転移手：全方位ビターン","englishIdentifier":"0026","category":0,"identifier":0,"wazReference":{"group":115,"skill":19},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":8,"japaneseName":"転移手：サーチビターン","englishIdentifier":"0029","category":0,"identifier":0,"wazReference":{"group":115,"skill":20},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":9,"japaneseName":"転移手：床召還","englishIdentifier":"0034","category":0,"identifier":0,"wazReference":{"group":115,"skill":21},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":10,"japaneseName":"あたためる","englishIdentifier":"0030","category":0,"identifier":0,"wazReference":{"group":115,"skill":22},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":11,"japaneseName":"本気：血水晶のツルギ","englishIdentifier":"0022","category":0,"identifier":0,"wazReference":{"group":115,"skill":23},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":12,"japaneseName":"本気：血水晶のカンオケ","englishIdentifier":"0023","category":0,"identifier":0,"wazReference":{"group":115,"skill":24},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":13,"japaneseName":"本気：血水晶のオノ","englishIdentifier":"0028","category":0,"identifier":0,"wazReference":{"group":115,"skill":25},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":14,"japaneseName":"本気：血水晶のヤリ","englishIdentifier":"0024","category":0,"identifier":0,"wazReference":{"group":115,"skill":26},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":15,"japaneseName":"本気：呪い：距離","englishIdentifier":"0032","category":0,"identifier":0,"wazReference":{"group":115,"skill":27},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":16,"japaneseName":"本気：呪い：高度","englishIdentifier":"0036","category":0,"identifier":0,"wazReference":{"group":115,"skill":28},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":17,"japaneseName":"本気：呪い：走行","englishIdentifier":"0027","category":0,"identifier":0,"wazReference":{"group":115,"skill":29},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":18,"japaneseName":"運命の赤い糸","englishIdentifier":"0031","category":1,"identifier":0,"wazReference":{"group":115,"skill":30},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":19,"japaneseName":"永遠の愛の誓い","englishIdentifier":"0035","category":1,"identifier":0,"wazReference":{"group":115,"skill":31},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":108,"weaponId":20,"japaneseName":"イニシャライザ","englishIdentifier":"INITIALIZER","category":2,"identifier":0,"wazReference":{"group":115,"skill":32},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":0,"japaneseName":"ジャブ","englishIdentifier":"0001","category":0,"identifier":0,"wazReference":{"group":116,"skill":11},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":{"status":"limited_current_start","evidenceIds":["naoto0-repeat","naoto0-rise-followup"]}},
+    {"mekaId":109,"weaponId":1,"japaneseName":"ストレートパンチ","englishIdentifier":"0003","category":0,"identifier":0,"wazReference":{"group":116,"skill":12},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":{"status":"limited_current_start","evidenceIds":["naoto1-repeat","naoto1-hook-followup"]}},
+    {"mekaId":109,"weaponId":2,"japaneseName":"ステップインフック","englishIdentifier":"0002","category":0,"identifier":0,"wazReference":{"group":116,"skill":13},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":3,"japaneseName":"Ｗアームハンマー","englishIdentifier":"0004","category":0,"identifier":0,"wazReference":{"group":116,"skill":14},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":4,"japaneseName":"ストンプ","englishIdentifier":"0007","category":0,"identifier":0,"wazReference":{"group":116,"skill":15},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":5,"japaneseName":"クロー展開","englishIdentifier":"0015","category":0,"identifier":0,"wazReference":{"group":116,"skill":16},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":6,"japaneseName":"クロー中","englishIdentifier":"0019","category":0,"identifier":0,"wazReference":{"group":116,"skill":17},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":7,"japaneseName":"クロー収納","englishIdentifier":"0016","category":0,"identifier":0,"wazReference":{"group":116,"skill":18},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":8,"japaneseName":"ライズネイル","englishIdentifier":"0008","category":0,"identifier":0,"wazReference":{"group":116,"skill":19},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":9,"japaneseName":"ライズネイル対空","englishIdentifier":"0010","category":0,"identifier":0,"wazReference":{"group":116,"skill":20},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":10,"japaneseName":"ダウンネイル","englishIdentifier":"0014","category":0,"identifier":0,"wazReference":{"group":116,"skill":21},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":11,"japaneseName":"ダウンネイル追撃","englishIdentifier":"0018","category":0,"identifier":0,"wazReference":{"group":116,"skill":22},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":12,"japaneseName":"エクステンドネイル","englishIdentifier":"0020","category":0,"identifier":0,"wazReference":{"group":116,"skill":23},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":13,"japaneseName":"エクステンドネイル追撃","englishIdentifier":"0017","category":0,"identifier":0,"wazReference":{"group":116,"skill":24},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":14,"japaneseName":"マシンガン","englishIdentifier":"0005","category":0,"identifier":0,"wazReference":{"group":116,"skill":25},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":15,"japaneseName":"炸裂弾","englishIdentifier":"0013","category":0,"identifier":0,"wazReference":{"group":116,"skill":26},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":16,"japaneseName":"兆弾針","englishIdentifier":"0011","category":0,"identifier":0,"wazReference":{"group":116,"skill":27},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":17,"japaneseName":"グラウンドトリッカー","englishIdentifier":"0009","category":1,"identifier":0,"wazReference":{"group":116,"skill":28},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":18,"japaneseName":"ネイルバイティング","englishIdentifier":"0021","category":1,"identifier":0,"wazReference":{"group":116,"skill":29},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":109,"weaponId":19,"japaneseName":"イニシャライザ","englishIdentifier":"INITIALIZER","category":2,"identifier":0,"wazReference":{"group":116,"skill":30},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":0,"japaneseName":"サッカーボールキック","englishIdentifier":"PUNCH","category":0,"identifier":0,"wazReference":{"group":117,"skill":11},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":1,"japaneseName":"ワンハンドスラム","englishIdentifier":"0002","category":0,"identifier":0,"wazReference":{"group":117,"skill":12},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":2,"japaneseName":"トンファー構え","englishIdentifier":"0006","category":0,"identifier":0,"wazReference":{"group":117,"skill":13},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":3,"japaneseName":"トンファー構え中","englishIdentifier":"0007","category":0,"identifier":0,"wazReference":{"group":117,"skill":14},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":4,"japaneseName":"トンファー収納","englishIdentifier":"0008","category":0,"identifier":0,"wazReference":{"group":117,"skill":15},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":5,"japaneseName":"トンファー接近","englishIdentifier":"0009","category":0,"identifier":0,"wazReference":{"group":117,"skill":16},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":6,"japaneseName":"トンファーエルボー","englishIdentifier":"0001","category":0,"identifier":0,"wazReference":{"group":117,"skill":17},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":7,"japaneseName":"トンファー連打","englishIdentifier":"PUNCH2","category":0,"identifier":1,"wazReference":{"group":117,"skill":18},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":8,"japaneseName":"トンファー振り下ろし","englishIdentifier":"0011","category":0,"identifier":0,"wazReference":{"group":117,"skill":19},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":9,"japaneseName":"トンファーアサルト","englishIdentifier":"SHOTGUN_NAGURI","category":0,"identifier":0,"wazReference":{"group":117,"skill":20},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":10,"japaneseName":"トンファーアッパー","englishIdentifier":"HEATHORN","category":0,"identifier":1,"wazReference":{"group":117,"skill":21},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":11,"japaneseName":"トンファーシザース","englishIdentifier":"PILEBUNKER","category":0,"identifier":0,"wazReference":{"group":117,"skill":22},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":12,"japaneseName":"トンファーソニック","englishIdentifier":"BOOSTUPPER","category":0,"identifier":0,"wazReference":{"group":117,"skill":23},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":13,"japaneseName":"キャノン砲","englishIdentifier":"0005","category":0,"identifier":0,"wazReference":{"group":117,"skill":24},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":14,"japaneseName":"ミサイルランチャー","englishIdentifier":"MISSILE","category":0,"identifier":1,"wazReference":{"group":117,"skill":25},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":15,"japaneseName":"空中ミサイルランチャー","englishIdentifier":"0004","category":0,"identifier":0,"wazReference":{"group":117,"skill":26},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":16,"japaneseName":"手榴弾","englishIdentifier":"0003","category":0,"identifier":0,"wazReference":{"group":117,"skill":27},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":17,"japaneseName":"マッドハンドブレイク","englishIdentifier":"LASTSHOOTING","category":1,"identifier":0,"wazReference":{"group":117,"skill":28},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":18,"japaneseName":"グランドスラム","englishIdentifier":"0010","category":1,"identifier":0,"wazReference":{"group":117,"skill":29},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":110,"weaponId":19,"japaneseName":"イニシャライザ","englishIdentifier":"INITIALIZER","category":2,"identifier":0,"wazReference":{"group":117,"skill":30},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":0,"japaneseName":"キック","englishIdentifier":"0001","category":0,"identifier":0,"wazReference":{"group":118,"skill":14},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":1,"japaneseName":"ミサイルアサルト","englishIdentifier":"0002","category":0,"identifier":0,"wazReference":{"group":118,"skill":15},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":2,"japaneseName":"サインミサイル","englishIdentifier":"0026","category":0,"identifier":0,"wazReference":{"group":118,"skill":16},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":3,"japaneseName":"ロックオンミサイル","englishIdentifier":"0027","category":0,"identifier":0,"wazReference":{"group":118,"skill":17},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":4,"japaneseName":"肩ミサイル","englishIdentifier":"0028","category":0,"identifier":0,"wazReference":{"group":118,"skill":18},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":5,"japaneseName":"冷却ビット","englishIdentifier":"0030","category":0,"identifier":0,"wazReference":{"group":118,"skill":19},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":6,"japaneseName":"キャタピラ：開始","englishIdentifier":"0003","category":0,"identifier":0,"wazReference":{"group":118,"skill":20},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":7,"japaneseName":"キャタピラ：持続","englishIdentifier":"0017","category":0,"identifier":0,"wazReference":{"group":118,"skill":21},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":8,"japaneseName":"キャタピラ：終了","englishIdentifier":"0022","category":0,"identifier":0,"wazReference":{"group":118,"skill":22},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":9,"japaneseName":"キャタピラ：前進","englishIdentifier":"0023","category":0,"identifier":0,"wazReference":{"group":118,"skill":23},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":10,"japaneseName":"キャタピラ：後退","englishIdentifier":"0029","category":0,"identifier":0,"wazReference":{"group":118,"skill":24},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":11,"japaneseName":"主砲斉射","englishIdentifier":"0007","category":0,"identifier":0,"wazReference":{"group":118,"skill":25},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":12,"japaneseName":"砲撃","englishIdentifier":"0008","category":0,"identifier":1,"wazReference":{"group":118,"skill":26},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":13,"japaneseName":"対空砲火","englishIdentifier":"0010","category":0,"identifier":0,"wazReference":{"group":118,"skill":27},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":14,"japaneseName":"瀧本流導弾格闘術","englishIdentifier":"0011","category":1,"identifier":0,"wazReference":{"group":118,"skill":28},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":15,"japaneseName":"ミサイルサブマリン","englishIdentifier":"0019","category":1,"identifier":0,"wazReference":{"group":118,"skill":29},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":111,"weaponId":16,"japaneseName":"イニシャライザ","englishIdentifier":"INITIALIZER","category":2,"identifier":0,"wazReference":{"group":118,"skill":30},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":0,"japaneseName":"ワンツーブロー","englishIdentifier":"0001","category":0,"identifier":0,"wazReference":{"group":119,"skill":13},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":1,"japaneseName":"ドリル","englishIdentifier":"0003","category":0,"identifier":1,"wazReference":{"group":119,"skill":14},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":2,"japaneseName":"エグゾーストキャノン","englishIdentifier":"0005","category":0,"identifier":1,"wazReference":{"group":119,"skill":15},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":3,"japaneseName":"吸い落とし","englishIdentifier":"0007","category":0,"identifier":0,"wazReference":{"group":119,"skill":16},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":4,"japaneseName":"ガンポッド","englishIdentifier":"0006","category":0,"identifier":0,"wazReference":{"group":119,"skill":17},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":5,"japaneseName":"妨害ミサイル","englishIdentifier":"0008","category":0,"identifier":0,"wazReference":{"group":119,"skill":18},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":6,"japaneseName":"ビーム","englishIdentifier":"0010","category":0,"identifier":0,"wazReference":{"group":119,"skill":19},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":7,"japaneseName":"ハリケーン","englishIdentifier":"0012","category":0,"identifier":0,"wazReference":{"group":119,"skill":20},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":8,"japaneseName":"ＶＴＯＬ","englishIdentifier":"0013","category":0,"identifier":0,"wazReference":{"group":119,"skill":21},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":9,"japaneseName":"飛行形態：開始","englishIdentifier":"0014","category":0,"identifier":0,"wazReference":{"group":119,"skill":22},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":10,"japaneseName":"飛行形態：終了","englishIdentifier":"0015","category":0,"identifier":0,"wazReference":{"group":119,"skill":24},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":11,"japaneseName":"飛行形態：ソニックブーム","englishIdentifier":"0017","category":0,"identifier":0,"wazReference":{"group":119,"skill":25},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":12,"japaneseName":"飛行形態：対地機銃","englishIdentifier":"0009","category":0,"identifier":0,"wazReference":{"group":119,"skill":26},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":13,"japaneseName":"飛行形態：集中爆撃","englishIdentifier":"0020","category":0,"identifier":0,"wazReference":{"group":119,"skill":27},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":14,"japaneseName":"飛行形態：タイラントクラッシュ","englishIdentifier":"0022","category":1,"identifier":1,"wazReference":{"group":119,"skill":29},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":15,"japaneseName":"竜巻","englishIdentifier":"0021","category":1,"identifier":0,"wazReference":{"group":119,"skill":28},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"},
+    {"mekaId":112,"weaponId":16,"japaneseName":"イニシャライザ","englishIdentifier":"INITIALIZER","category":2,"identifier":0,"wazReference":{"group":119,"skill":30},"menuObserved":"unknown","equipmentObserved":"unknown","runtimeEvidence":"unknown"}
+  ]
+}
