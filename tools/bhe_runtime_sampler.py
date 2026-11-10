@@ -10,6 +10,7 @@ import argparse
 import ctypes
 from ctypes import wintypes
 import json
+import os
 from pathlib import Path
 import re
 import struct
@@ -33,6 +34,39 @@ WATCHED = {(1, 105), (1, 215), (1, 216), (1, 217), (7, 323)}
 class SampleRejected(RuntimeError):
     pass
 
+
+class CaseStateError(ValueError):
+    """State-file I/O/validation failure; does not imply process death."""
+
+
+def read_case_state(path):
+    """Short-lived, bounded state read; retry only Windows OPEN sharing denials."""
+    try:
+        path = check_no_links(path)
+        deadline = time.monotonic() + 1.0
+        for attempt in range(41):
+            try:
+                stream = path.open("rb")
+                break
+            except OSError as exc:
+                transient = (getattr(exc, "winerror", None) in (5, 32, 33) or
+                             isinstance(exc, PermissionError) and exc.errno == 13)
+                if os.name != "nt" or not transient or attempt == 40:
+                    raise
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise
+                time.sleep(min(.025, remaining))
+        with stream:
+            payload = stream.read(1024 * 1024 + 1)
+        if len(payload) > 1024 * 1024:
+            raise ValueError("Oversize case state")
+        state = json.loads(payload.decode("utf-8"))
+        if not isinstance(state, dict):
+            raise ValueError("Case state must be a JSON object")
+        return state
+    except (OSError, ValueError) as exc:
+        raise CaseStateError(f"Case state read failed: {exc}") from exc
 
 def pointer(value):
     if not isinstance(value, int) or not 0x10000 <= value <= 0xFFFFFFFC or value % 4:
@@ -66,7 +100,7 @@ def require_running_state(state, case):
     if (state.get("case") != str(case) or state.get("status") != "running" or
             state.get("terminal") is True or state.get("owned_process_exit_confirmed") is True or
             state.get("exit_code") is not None):
-        raise ValueError("Case identity mismatch or non-running/terminal case")
+        raise CaseStateError("Case identity mismatch or non-running/terminal case")
 
 
 def load_case(case_arg):
@@ -79,10 +113,7 @@ def load_case(case_arg):
             raise ValueError("Case must be a direct child of repository runtime root")
     if not case.is_dir():
         raise ValueError("Case directory does not exist")
-    state_path = check_no_links(case / "state.json")
-    if state_path.stat().st_size > 1024 * 1024:
-        raise ValueError("Oversize case state")
-    state = json.loads(state_path.read_text(encoding="utf-8"))
+    state = read_case_state(case / "state.json")
     require_running_state(state, case)
     identity = state.get("process", {})
     for key in ("pid", "creation_filetime"):
@@ -311,7 +342,8 @@ def sample(r, *, meka=109, end_counter=480, wait_seconds=600, play_seconds=60,
         try:
             guard()  # Failure is fatal, never merely a rejected memory sample.
         except Exception as exc:
-            result.update(status="process_error", failure=str(exc)[:1000])
+            result.update(status="case_state_error" if isinstance(exc, CaseStateError) else "process_error",
+                          failure=str(exc)[:1000])
             break
         try:
             _, counter, _, active = markers(r)
@@ -383,21 +415,21 @@ def main(argv=None):
         if path.exists():
             raise FileExistsError(path)
         with NativeProcess(identity) as process:
-            def guard():
-                process.require_live_identity()
-                state_path = check_no_links(case / "state.json")
-                if state_path.stat().st_size > 1024 * 1024:
-                    raise ValueError("Oversize case state")
-                state = json.loads(state_path.read_text(encoding="utf-8"))
-                require_running_state(state, case)
-                verify_identity(identity, state.get("process", {}))
             result = sample(Reader(process.read), meka=args.meka, end_counter=args.end_counter,
-                            wait_seconds=args.wait_seconds, play_seconds=args.play_seconds, guard=guard)
+                            wait_seconds=args.wait_seconds, play_seconds=args.play_seconds, guard=process.require_live_identity)
             # Completion requires the original process/case still to be verifiable.
             try:
-                guard()
+                process.require_live_identity()
+                state = read_case_state(case / "state.json")
+                require_running_state(state, case)
+                try:
+                    verify_identity(identity, state.get("process", {}))
+                except ValueError as exc:
+                    raise CaseStateError(f"Case state process identity mismatch: {exc}") from exc
+                process.require_live_identity()
             except Exception as exc:
-                result.update(status="process_error", complete=False, failure=str(exc)[:1000])
+                result.update(status="case_state_error" if isinstance(exc, CaseStateError) else "process_error",
+                              complete=False, failure=str(exc)[:1000])
         result.update(process=identity, case=str(case), expectedExeSha256=EXPECTED_SHA,
                       requested={"meka": args.meka, "endCounter": args.end_counter,
                                  "waitSeconds": args.wait_seconds, "playSeconds": args.play_seconds})
@@ -405,7 +437,8 @@ def main(argv=None):
         print(json.dumps({"status": result["status"], "complete": result["complete"], "output": str(path)}))
         return 0 if result["complete"] else 1
     except Exception as exc:
-        failure = {"schema": "nexas.bhe-rpm-sampler/v1", "at": utc_now(), "status": "error",
+        failure = {"schema": "nexas.bhe-rpm-sampler/v1", "at": utc_now(),
+                   "status": "case_state_error" if isinstance(exc, CaseStateError) else "error",
                    "complete": False, "failure": str(exc)[:1000]}
         if path is not None and not path.exists():
             write_exclusive(path, failure)

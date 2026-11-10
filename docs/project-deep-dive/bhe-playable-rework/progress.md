@@ -320,3 +320,5 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 
 - 上次目标回合为progress：ff82058a2固定Naoto射击结果及暂停。现用户重新active，旧暂停不阻止继续。develop／既有WIP／latest与旧case终态已核；新唯一case14已启动至正常训练录像菜单。详细身份、035／036输入、工具与后续证据见resumed-validation-20261110.md。
 - case14在035确认前遇到启动器PermissionError，已有事件证明由launcher主动结束而非技能崩溃；受管副本已清理。真实Windows状态文件读锁冲突已复现并加有界replace重试，70项session及17项sampler离线回归通过，两轮独立复审通过。下一步新case15实测035，不用离线工具结果代替游戏。
+- case15仍同封存8efe包，035第二轮完整采样确认长按三发/一次额外热/正常尾部；036揭示一次D接近不足、第二A未START的失败，040只补D510后两轮均23/25/24 START，累计821但仅302/294主段有连续控制，尾弹空窗保留。037/038/039证明闲置搜索冲刺、机枪第三发后D取消与早D拒绝；未计专用sdGate路径。五份精简JSON186178字节，不提交二进制。
+- 采样循环的状态文件高频读取已移除；每次仍核同一内核进程句柄的PID/path/FILETIME/exitstatus，初始/收尾case元数据有界读取并严格验证。23测试及独立复审通过，实际035第二轮至040成功采样。下一步041～045其余五招搜索取消，已生成正常输入但未播放；详见resumed-validation-20261110.md末节。

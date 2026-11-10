@@ -358,6 +358,156 @@ class CaseTests(unittest.TestCase):
                          (1, "process_error", False, 3))
         self.assertEqual(result["failure"], "final identity mismatch")
 
+    @unittest.skipUnless(os.name == "nt", "Windows-specific open-denial retry")
+    def test_transient_state_open_denial_retries_only_windows_permission_or_sharing(self):
+        original_open = Path.open
+        for code in (None, 5, 32, 33):
+            with self.subTest(winerror=code):
+                clock, attempts = FakeClock(), []
+                denied = PermissionError(13, "owned fixture state open denied")
+                if code is not None:
+                    denied.winerror = code
+                def open_state(path, *args, **kwargs):
+                    attempts.append(1)
+                    if len(attempts) <= 2:
+                        raise denied
+                    return original_open(path, *args, **kwargs)
+                with patch.object(Path, "open", autospec=True, side_effect=open_state), \
+                        patch.object(s.time, "monotonic", side_effect=clock.time), \
+                        patch.object(s.time, "sleep", side_effect=clock.sleep):
+                    self.assertEqual(s.read_case_state(self.case / "state.json"), self.state)
+                self.assertEqual((len(attempts), len(clock.sleeps)), (3, 2))
+                self.assertTrue(all(0 < delay <= .025 for delay in clock.sleeps))
+
+    @unittest.skipUnless(os.name == "nt", "Windows-specific open-denial retry")
+    def test_permanent_state_open_denial_is_bounded_and_other_errors_immediate(self):
+        for code in (5, 32, 33, 2, 112):
+            with self.subTest(winerror=code):
+                clock = FakeClock()
+                denied = PermissionError(13, "owned fixture state open denied") if code in (5, 32, 33) else OSError(5, "unrelated I/O")
+                denied.winerror = code
+                with patch.object(Path, "open", autospec=True, side_effect=denied) as opened, \
+                        patch.object(s.time, "monotonic", side_effect=clock.time), \
+                        patch.object(s.time, "sleep", side_effect=clock.sleep):
+                    with self.assertRaises(s.CaseStateError) as raised:
+                        s.read_case_state(self.case / "state.json")
+                self.assertIs(raised.exception.__cause__, denied)
+                if code in (5, 32, 33):
+                    self.assertGreater(len(clock.sleeps), 0)
+                    self.assertLessEqual(opened.call_count, 41)
+                    self.assertLessEqual(sum(clock.sleeps), 1.000001)
+                else:
+                    self.assertEqual((opened.call_count, len(clock.sleeps)), (1, 0))
+
+    @unittest.skipUnless(os.name == "nt", "requires native Windows sharing denial")
+    def test_real_exclusive_file_handle_causes_open_retry_then_recovers(self):
+        from ctypes import wintypes
+        kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
+                                      ctypes.c_void_p, wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+        kernel.CreateFileW.restype = wintypes.HANDLE
+        kernel.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel.CloseHandle.restype = wintypes.BOOL
+        path = self.case / "state.json"
+        held = kernel.CreateFileW(str(path), 0x40000000, 0, None, 3, 0x80, None)
+        self.assertNotEqual(held, ctypes.c_void_p(-1).value)
+        released = []
+        def release_fixture_handle(seconds):
+            self.assertGreater(seconds, 0)
+            self.assertLessEqual(seconds, .025)
+            kernel.CloseHandle(held)
+            released.append(1)
+        try:
+            with patch.object(s.time, "sleep", side_effect=release_fixture_handle):
+                self.assertEqual(s.read_case_state(path), self.state)
+            self.assertEqual(len(released), 1)
+        finally:
+            if not released:
+                kernel.CloseHandle(held)
+
+    def test_state_read_bounds_invalid_json_and_terminal_state_remain_failures(self):
+        path = self.case / "state.json"
+        for invalid in (b"x" * (1024 * 1024 + 1), b"{", b"[]", b"\xff"):
+            with self.subTest(size=len(invalid)):
+                path.write_bytes(invalid)
+                with patch.object(s.time, "sleep") as sleep:
+                    with self.assertRaises(s.CaseStateError):
+                        s.read_case_state(path)
+                    sleep.assert_not_called()
+        self.state["status"] = "stopped"
+        self.save()
+        with self.assertRaises(s.CaseStateError):
+            s.load_case(self.case)
+
+    def test_state_read_error_is_not_retried_and_closes_stream(self):
+        denied = PermissionError(13, "read failed after successful open")
+        class Stream:
+            def __init__(self):
+                self.closed = False
+            def __enter__(self):
+                return self
+            def read(self, size):
+                raise denied
+            def __exit__(self, *args):
+                self.closed = True
+        stream = Stream()
+        with patch.object(Path, "open", return_value=stream) as opened, patch.object(s.time, "sleep") as sleep:
+            with self.assertRaises(s.CaseStateError) as raised:
+                s.read_case_state(self.case / "state.json")
+        self.assertIs(raised.exception.__cause__, denied)
+        self.assertTrue(stream.closed)
+        self.assertEqual(opened.call_count, 1)
+        sleep.assert_not_called()
+
+    def test_cli_guards_pinned_process_every_loop_and_reads_state_only_at_boundaries(self):
+        from contextlib import redirect_stdout, redirect_stderr
+        import io
+        for final_state in ("complete", "terminal", "identity"):
+            with self.subTest(final_state=final_state):
+                m = fixture()
+                clock = FakeClock(m, [(1, 1), (2, 0)])
+                real_sample, reads = s.sample, []
+                class Process:
+                    def __init__(self):
+                        self.calls = 0
+                    def __enter__(self):
+                        return self
+                    def __exit__(self, *args):
+                        pass
+                    def read(self, address, size):
+                        return m.read(address, size)
+                    def require_live_identity(self):
+                        self.calls += 1
+                        if self.calls <= 3:
+                            self_test.assertEqual(len(reads), 1)
+                self_test = self
+                process = Process()
+                def state_read(path):
+                    reads.append(path)
+                    if len(reads) == 2 and final_state == "terminal":
+                        return dict(self.state, status="stopped")
+                    if len(reads) == 2 and final_state == "identity":
+                        return dict(self.state, process=dict(self.state["process"], creation_filetime=999))
+                    return self.state
+                def timed_sample(reader, **kwargs):
+                    return real_sample(reader, **kwargs, clock=clock.time, sleep=clock.sleep)
+                name = f"boundary-{final_state}.json"
+                with patch.object(s, "NativeProcess", return_value=process), \
+                        patch.object(s, "read_case_state", side_effect=state_read), \
+                        patch.object(s, "sample", side_effect=timed_sample):
+                    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                        code = s.main(["--case", str(self.case), "--output", name, "--end-counter", "2"])
+                result = json.loads((self.case / name).read_text(encoding="utf-8"))
+                self.assertEqual(len(reads), 2)
+                self.assertEqual(result["acceptedRows"], 3)
+                if final_state != "complete":
+                    self.assertEqual((code, result["status"], result["complete"]), (1, "case_state_error", False))
+                    self.assertIn("terminal case" if final_state == "terminal" else "identity mismatch", result["failure"])
+                    self.assertEqual(process.calls, 4)
+                else:
+                    self.assertEqual((code, result["status"], result["complete"]), (0, "complete", True))
+                    self.assertEqual(process.calls, 5)
+
     def test_reparse_case_is_refused(self):
         with patch.object(Path, "is_symlink", return_value=True), self.assertRaises(ValueError):
             s.load_case(self.case)
