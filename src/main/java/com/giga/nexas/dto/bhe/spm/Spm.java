@@ -76,6 +76,8 @@ public class Spm extends Bhe {
             @JsonSubTypes.Type(value = CSphere.class, name = "11")
     })
     @Data
+    // todo
+    // 20260331 6 hitbox转换，见 merge_hitrects_and_unk5.py
     public static class SPMHitArea {
         private Short id;         // u16
         private Short shapeType;  // u16

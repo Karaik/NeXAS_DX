@@ -128,8 +128,14 @@ public class CEventHeight extends SkillInfoObject {
             bsdxUnit.setUnitSlotNum(i);
             bsdxUnit.setBuffer(0);
 
-            if (bheUnits.size() > i) {
-                var bheUnit = bheUnits.get(i);
+            com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventHeight.CEventHeightUnit bheUnit = null;
+            for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventHeight.CEventHeightUnit unit : bheUnits) {
+                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                    bheUnit = unit;
+                    break;
+                }
+            }
+            if (bheUnit != null) {
                 Integer buffer = bheUnit.getBuffer();
                 if (buffer == null) {
                     buffer = (bheUnit.getData() != null ? 1 : 0);
@@ -139,12 +145,15 @@ public class CEventHeight extends SkillInfoObject {
                     SkillInfoObject inner = createCEventObjectByTypeBsdx(CEVENT_HEIGHT_TYPES[i].getType());
                     cn.hutool.core.bean.BeanUtil.copyProperties(bheUnit.getData(), inner);
                     inner.setSlotNum(CEVENT_HEIGHT_TYPES[i].getType());
+                    inner.typeId = CEVENT_HEIGHT_TYPES[i].getType(); // 修复：恢复正确的 BSDX typeId
                     bsdxUnit.setBuffer(1);
                     bsdxUnit.setData(inner);
                 }
             }
 
-            bsdx.getCeventHeightUnitList().add(bsdxUnit);
+            if (bsdxUnit.getBuffer() != null && bsdxUnit.getBuffer() != 0) {
+                bsdx.getCeventHeightUnitList().add(bsdxUnit);
+            }
         }
     }
 

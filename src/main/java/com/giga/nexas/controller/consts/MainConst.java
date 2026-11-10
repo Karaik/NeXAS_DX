@@ -18,5 +18,6 @@ public class MainConst {
     public static final String GRP_EXT ="grp";
     public static final String BIN_EXT ="bin";
     public static final String DAT_EXT ="dat";
+    public static final String MAP_EXT ="map";
 
 }

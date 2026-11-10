@@ -34,6 +34,9 @@ public class BranchGridController {
     @Setter
     private BranchActionHandler actionHandler;
 
+    @Setter
+    private ModeTreeController treeController;
+
     public BranchGridController(MainViewController view, WorkspaceState state) {
         this.view = view;
         this.state = state;
@@ -185,9 +188,6 @@ public class BranchGridController {
     }
 
     private void triggerSelection(WorkspaceCategory category) {
-        ModeTreeController treeController = view.getTree().getProperties().containsKey("modeTreeController")
-                ? (ModeTreeController) view.getTree().getProperties().get("modeTreeController")
-                : null;
         if (treeController != null) {
             selectCategoryFromCard(category.getId(), treeController);
         }

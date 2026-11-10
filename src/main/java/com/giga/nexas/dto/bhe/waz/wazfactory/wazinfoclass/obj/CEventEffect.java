@@ -27,7 +27,7 @@ public class CEventEffect extends SkillInfoObject {
             new CEventEffectType(0xFFFFFFFF, "エフェクトタイプ1"),
             new CEventEffectType(0xFFFFFFFF, "エフェクトタイプ2"),
             new CEventEffectType(0xFFFFFFFF, "フラグ"),
-            new CEventEffectType(0x6, "エフェクト番号"),
+            new CEventEffectType(0x6, "エフェクト番号"), // 20260331 7 todo 弹幕修复
             new CEventEffectType(0x2, "同時発射数"),
             new CEventEffectType(0x2, "最大発射数"),
             new CEventEffectType(0x2, "発射間隔"),

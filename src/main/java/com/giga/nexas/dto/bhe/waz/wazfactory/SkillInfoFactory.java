@@ -54,15 +54,15 @@ public class SkillInfoFactory {
             new SkillInfoTypeEntry(0x00, 0x00E0E0E0, "死亡(自爆)"), // 43
             new SkillInfoTypeEntry(0x00, 0x00C80000, "弱点"), // 44
             new SkillInfoTypeEntry(0x00, 0x00C84000, "熱量"), // 45
-            new SkillInfoTypeEntry(0x16, 0x00E61E1E, "攻撃：メカ"), // 46
-            new SkillInfoTypeEntry(0x16, 0x00E61E1E, "攻撃：弾"), // 47
+            new SkillInfoTypeEntry(0x16, 0x00E61E1E, "攻撃：メカ"), // 46 20260331 7 todo 弹幕修复
+            new SkillInfoTypeEntry(0x16, 0x00E61E1E, "攻撃：弾"), // 47 20260331 7 todo 弹幕修复
             new SkillInfoTypeEntry(0x00, 0x00E61E1E, "攻撃判定拡大縮小反映率"), // 48
             new SkillInfoTypeEntry(0x29, 0x00821E1E, "パラメータ変動"), // 49
             new SkillInfoTypeEntry(0x17, 0x001E1EE0, "ＣＰＵ回避"), // 50
             new SkillInfoTypeEntry(0x18, 0x001E1EE0, "ＣＰＵボタン入力"), // 51
             new SkillInfoTypeEntry(0x00, 0x001E1EE0, "ＣＰＵ特殊行動"), // 52
             new SkillInfoTypeEntry(0x00, 0x00000001, "ｷｬﾝｾﾙﾌﾗｸﾞ"), // 53
-            new SkillInfoTypeEntry(0x19, 0x001EC8E6, "エフェクト"), // 54
+            new SkillInfoTypeEntry(0x19, 0x001EC8E6, "エフェクト"), // 54 20260331 7 todo 弹幕修复
             new SkillInfoTypeEntry(0x1A, 0x001EC8E6, "残像"), // 55
             new SkillInfoTypeEntry(0x1B, 0x00C80000, "溜め"), // 56
             new SkillInfoTypeEntry(0x1C, 0x00E6821E, "接触"), // 57

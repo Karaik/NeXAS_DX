@@ -18,6 +18,8 @@ public class WorkspaceState {
     private final ObjectProperty<Path> outputDirectory = new SimpleObjectProperty<>();
     private final ObjectProperty<EngineType> engineType = new SimpleObjectProperty<>(EngineType.BSDX);
     private final ObjectProperty<String> charset = new SimpleObjectProperty<>(EngineType.BSDX.getDefaultCharset());
+    private final ObjectProperty<MainViewMode> mainViewMode = new SimpleObjectProperty<>(MainViewMode.WORKSPACE);
+    private final ObjectProperty<BsdxOverlayResourceSession> bsdxOverlaySession = new SimpleObjectProperty<>();
     private final ObservableList<WorkspaceCategory> categories = FXCollections.observableArrayList();
 
     public void clearCategories() {

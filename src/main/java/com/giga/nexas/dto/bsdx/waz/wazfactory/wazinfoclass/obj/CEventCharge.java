@@ -116,8 +116,14 @@ public class CEventCharge extends SkillInfoObject {
         }
 
         for (int i = 0; i < 2; i++) {
-            if (bheUnits.size() > i) {
-                var bheUnit = bheUnits.get(i);
+            com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventCharge.CEventChargeUnit bheUnit = null;
+            for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventCharge.CEventChargeUnit unit : bheUnits) {
+                if (unit.getUnitSlotNum() != null && unit.getUnitSlotNum() == i) {
+                    bheUnit = unit;
+                    break;
+                }
+            }
+            if (bheUnit != null) {
                 Integer buffer = bheUnit.getBuffer();
                 if (buffer == null) buffer = (bheUnit.getData() != null ? 1 : 0);
 
@@ -131,6 +137,7 @@ public class CEventCharge extends SkillInfoObject {
                     SkillInfoObject inner = createCEventObjectByTypeBsdx(CEVENT_CHARGE_ENTRIES[i].getType()); // 0x00
                     cn.hutool.core.bean.BeanUtil.copyProperties(bheUnit.getData(), inner);
                     inner.setSlotNum(CEVENT_CHARGE_ENTRIES[i].getType());
+                    inner.typeId = CEVENT_CHARGE_ENTRIES[i].getType(); // 修复：恢复正确的 BSDX typeId
                     bsdxUnit.setData(inner);
 
                     bsdx.getCeventChargeUnitList().add(bsdxUnit);

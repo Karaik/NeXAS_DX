@@ -3,6 +3,7 @@ package com.giga.nexas.dto.bsdx.mek.mekcpu;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.giga.nexas.dto.bhe.BheInfoCollection;
 import com.giga.nexas.dto.bsdx.BsdxInfoCollection;
 import com.giga.nexas.io.BinaryReader;
 import com.giga.nexas.io.BinaryWriter;
@@ -230,5 +231,71 @@ public class CCpuEvent {
         writer.writeShort(this.short4);
     }
 
+    public void transBheCCpuEventToBsdx(
+            com.giga.nexas.dto.bhe.mek.mekcpu.CCpuEvent src,
+            CCpuEvent bsdx
+    ) {
+        if (src == null || bsdx == null) {
+            return;
+        }
+
+        bsdx.setType(src.getType());
+        bsdx.setShort1(src.getShort1());
+        bsdx.setInt1(src.getInt1());
+        bsdx.setInt2(src.getInt2());
+        bsdx.setActivationProbability(src.getActivationProbability());
+        bsdx.setActivationProbabilityWhenCounter(src.getActivationProbabilityWhenCounter());
+        bsdx.setInt5(src.getInt5());
+        bsdx.setActivationRangeMin(src.getActivationRangeMin());
+        bsdx.setActivationRangeMax(src.getActivationRangeMax());
+        bsdx.setActivationAngleRangeMin(src.getActivationAngleRangeMin());
+        bsdx.setActivationAngleRangeMax(src.getActivationAngleRangeMax());
+        bsdx.setActivationAltitudeMin(src.getActivationAltitudeMin());
+        bsdx.setActivationAltitudeMax(src.getActivationAltitudeMax());
+        bsdx.setActivationDurabilityMinPercentage(src.getActivationDurabilityMinPercentage());
+        bsdx.setActivationDurabilityMaxPercentage(src.getActivationDurabilityMaxPercentage());
+        bsdx.setInt14(src.getInt14());
+        bsdx.setInt15(src.getInt15());
+        bsdx.setActivationHeatMin(src.getActivationHeatMin());
+        bsdx.setActivationHeatMax(src.getActivationHeatMax());
+        bsdx.setInt18(src.getInt18());
+        bsdx.setInt19(src.getInt19());
+        bsdx.setInt20(src.getInt20());
+        bsdx.setInt21(src.getInt21());
+        bsdx.setInt22(src.getInt22());
+        bsdx.setInt23(src.getInt23());
+        bsdx.setInt24(src.getInt24());
+
+        // 需要同语义对齐
+        bsdx.setInt25(src.getInt27());
+        bsdx.setInt26(src.getInt28());
+        bsdx.setShort2(src.getShort3());
+        bsdx.setInt27(src.getInt29());
+        bsdx.setInt28(src.getInt30());
+        bsdx.setShort3(src.getShort4());
+        bsdx.setShort4(src.getShort5());
+
+        List<BsdxInfoCollection> collections = new ArrayList<>();
+        if (src.getBheInfoCollectionList() != null) {
+            for (BheInfoCollection collection : src.getBheInfoCollectionList()) {
+                collections.add(convertInfoCollection(collection));
+            }
+        }
+        bsdx.setBsdxInfoCollectionList(collections);
+    }
+
+    private BsdxInfoCollection convertInfoCollection(BheInfoCollection src) {
+        BsdxInfoCollection dst = new BsdxInfoCollection();
+        if (src == null) {
+            return dst;
+        }
+        dst.setInt1(src.getInt1());
+        dst.setInt2(src.getInt2());
+        dst.setTypeList(src.getTypeList() != null ? new ArrayList<>(src.getTypeList()) : new ArrayList<>());
+        dst.setParamList(src.getParamList() != null ? new ArrayList<>(src.getParamList()) : new ArrayList<>());
+        dst.setIntList3(src.getIntList3() != null ? new ArrayList<>(src.getIntList3()) : new ArrayList<>());
+        dst.setIntList4(src.getIntList4() != null ? new ArrayList<>(src.getIntList4()) : new ArrayList<>());
+        return dst;
+    }
 
 }

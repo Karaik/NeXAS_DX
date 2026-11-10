@@ -31,7 +31,7 @@ public class BinConst {
     public final static Map<Integer, String> OPERAND_MNEMONIC_MAP;
     public final static Map<String, Integer> MNEMONIC_OPERAND_MAP;
     static {
-        Map<Integer, String> tmp = new HashMap<>(1 << 9, 1); // 512
+        Map<Integer, String> tmp = new HashMap<>(1 << 10, 1); // 1024
         Map<String, Integer> rev = new HashMap<>();
 
         for (Operand fn : Operand.values()) {

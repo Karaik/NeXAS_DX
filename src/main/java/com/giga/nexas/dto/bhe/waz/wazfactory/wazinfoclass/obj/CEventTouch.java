@@ -56,6 +56,7 @@ public class CEventTouch extends SkillInfoObject {
     public void writeInfo(BinaryWriter writer) throws IOException {
         super.writeInfo(writer);
         writer.writeBytes(this.byteData1);
+        writer.writeShort(this.short1);
     }
 
 }

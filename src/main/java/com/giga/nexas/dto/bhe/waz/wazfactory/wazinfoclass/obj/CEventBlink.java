@@ -1,9 +1,12 @@
 package com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj;
 
 import com.giga.nexas.io.BinaryReader;
+import com.giga.nexas.io.BinaryWriter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.IOException;
 
 @Data
 @NoArgsConstructor
@@ -75,5 +78,26 @@ public class CEventBlink extends SkillInfoObject {
         this.byte6 = reader.readByte();
         this.int8 = reader.readInt();
         this.int9 = reader.readInt();
+    }
+
+    @Override
+    public void writeInfo(BinaryWriter writer) throws IOException {
+        super.writeInfo(writer);
+        writer.writeInt(this.int1);
+        writer.writeInt(this.int2);
+        writer.writeInt(this.int3);
+        writer.writeInt(this.int4);
+        writer.writeShort(this.short1);
+        writer.writeInt(this.int5);
+        writer.writeInt(this.int6);
+        writer.writeByte(this.byte1);
+        writer.writeByte(this.byte2);
+        writer.writeByte(this.byte3);
+        writer.writeInt(this.int7);
+        writer.writeByte(this.byte4);
+        writer.writeByte(this.byte5);
+        writer.writeByte(this.byte6);
+        writer.writeInt(this.int8);
+        writer.writeInt(this.int9);
     }
 }

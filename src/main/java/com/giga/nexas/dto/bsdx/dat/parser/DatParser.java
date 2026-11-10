@@ -35,8 +35,8 @@ public class DatParser implements BsdxParser<Dat> {
             int columnCount = reader.readInt();
             dat.setColumnCount(columnCount);
 
-            log.info("Parsing Dat file: {}", fileName);
-            log.info("Column count   : {}", columnCount);
+//            log.info("Parsing Dat file: {}", fileName);
+//            log.info("Column count   : {}", columnCount);
 
             // 1. 读列类型
             List<String> columnTypes = readColumnTypes(reader, columnCount);

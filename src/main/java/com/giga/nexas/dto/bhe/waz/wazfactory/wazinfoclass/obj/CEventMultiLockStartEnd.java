@@ -2,10 +2,12 @@ package com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj;
 
 import com.giga.nexas.dto.bhe.waz.wazfactory.SkillInfoFactory;
 import com.giga.nexas.io.BinaryReader;
+import com.giga.nexas.io.BinaryWriter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,6 +82,22 @@ public class CEventMultiLockStartEnd extends SkillInfoObject {
             }
 
             this.unitList.add(unit);
+        }
+    }
+
+    @Override
+    public void writeInfo(BinaryWriter writer) throws IOException {
+        super.writeInfo(writer);
+        writer.writeInt(this.int1);
+        writer.writeInt(this.int2);
+        writer.writeInt(this.int3);
+        writer.writeInt(this.int4);
+        writer.writeShort(this.short1);
+        for (CEventMultiLockStartEndUnit unit : this.unitList) {
+            writer.writeInt(unit.getBuffer());
+            if (unit.getBuffer() != 0) {
+                unit.getData().writeInfo(writer);
+            }
         }
     }
 }

@@ -32,21 +32,35 @@
 | 类 | 说明 |
 | --- | --- |
 | `com.giga.nexas.clarias.TestDat` | 逻辑与 BSDX `TestDat` 完全一致，目录为 `datClariasJson` / `datClariasGenerated` / `datClariasCsvGenerated`。 | 
+| `com.giga.nexas.clarias.TestMek` | 目录为 `mekClariasJson` / `mekClariasGenerated`。当前仓库内 `game/clarias/mek` 真实样本已可完成 parse → JSON → generate → binary consistency。 |
+| `com.giga.nexas.clarias.TestGrp` | 结构参照 BSDX `TestGrp`，目录为 `grpClariasJson` / `grpClariasGenerated`。若仓库尚未放入 `game/clarias/grp` 样本则会自动跳过。 |
 
 **运行提示**
 1. `ending.dat` 达 400+ MB，解析时会把首个 `int` 误读为 `469,762,048` 列 → 非常容易 OOM。推荐：
    - 临时移动/重命名 `src/main/resources/game/clarias/dat/ending.dat`，或
    - 提前增大堆：`set MAVEN_OPTS=-Xmx4g` 再运行 `mvn "-Dtest=com.giga.nexas.clarias.TestDat#testGenerateDatJsonFiles" test`
 2. 流程结束（且无错误）会自动清空 JSON/Generated 目录，与 BSDX 行为一致。
+3. `mek` 当前已在仓库内 `clarias/mek` 真实样本集上通过 round-trip binary consistency；当前实现已移除原始块兜底，AI/voice/material 等嵌套块均走结构化 DTO 回写。
+4. `grp` 当前按现有 `CLARIAS` 反汇编中出现的同名 group 资源与现有 BSDX/BHE group 结构接入；在真实 `clarias/grp` 样本入库前，同样只能做编译与目录存在性级别验证。
 
 ---
 
-## BHE→BSDX 移植流水线
-- **入口**：`com.giga.nexas.bhe2bsdx.TransferTest#testPipeline`
-- **作用**：注册 BHE/BSDX 全部 grp/mek/waz/spm，挑选 Tsukuyomi 机体执行 `TransMeka.process`，并演示 `PacUtil.unpack`。
+## JINKI→BSDX AKAO Graft Pipeline
+- **入口**：`com.giga.nexas.jinki.TestJinki2BsdxRunner#testRunAkaoGraftPipeline`
+- **作用**：将 JINKI（Baldr Heart）的 AKAO 机体移植到 BSDX（Baldr Sky DX），通过 `AkaoGraftPipeline`（11 步流水线）完成资源 diff、索引重绑、菜单 patch、exe patch 和 pac 封包。
+- **输出目录**：`src/main/resources/out`（含 `Update3.pac`、patched exe、所有 GRP/DAT/MEK/WAZ/SPM）
 - **注意事项**
-  - 依赖 `.grp/.mek/.waz/.spm` 的完整集合，且会将数据缓存到 `src/main/resources/testBhe`。
-  - 尚未写回 PAC，且很多 TODO（详见 `README_STEP1.md` 和 `steps/TransMeka.java`），运行前请确认是否真的需要。
+  - 流水线会读取 JINKI 和 BSDX 双侧的 grp/mek/waz/spm/dat 全套资源，内存需求较高。
+  - 辅助 waz（弹幕/特效类 Tama01-05、Effect.waz 等）仅做 `Files.copy` 原样复制，其内部不递归重绑索引（已确认辅助 waz 内部无交叉引用）。
+  - `AkaoGraftRequest.planExeCapacityPatch` 默认为 true，但当前验证策略下机体容量数学条件不满足，不会触发实际 exe patch 写入。
+  - 测试断言包含：mekaIndex=32、SpriteGroup=139、BatVoice=30、SelectMekaMenu 行数不变、exe 未实际 patch 等硬编码值，若基线数据变更需同步更新。
+
+---
+- **入口**：`com.giga.nexas.bhe2bsdx.TransferTest#testPipeline`
+- **作用**：注册 BHE/BSDX 全部 grp/mek/waz/spm，挑选 Tsukuyomi 机体执行 `TransMeka.process`，写出变更文件并执行 `PacUtil.pack`。
+- **注意事项**
+  - 依赖 `.grp/.mek/.waz/.spm` 的完整集合完成索引对齐，但输出目录默认仅包含本次变更的 `grp/mek/waz/spm`。
+  - 仍有 TODO（详见 `README_STEP1.md` 和 `steps/TransMeka.java`），运行前请确认是否真的需要。
 
 ---
 
@@ -70,3 +84,9 @@
 ---
 
 维护规则：新增测试或更改输出目录时，请同步更新本文件，让每位 AGENT 能准确了解应该怎么跑、会产出什么、有哪些坑。
+
+## BHE流水线定向回归（2026-10-08）
+
+- `mvn -q "-Dtest=SouCustomizerTest" test`验证等级Material切片、过滤/AI索引、幂等、真实Sou二进制回环及其余九角色单条布局。生成文件仅写`@TempDir`。
+- 本轮测试必须显式指定类，不运行会写出/清理JSON输入的默认资源套件。逐项根因和验证记录见`docs/project-deep-dive/pipeline-fixes/`。
+- `mvn -q "-Dtest=LayeredAssetDeliveryTest,ImportStaticAssetsStepBheOutputTest,RebindMekStepBheResourceRebindTest,AuxConsumerRebindTest,MisakiCustomizerTest,SouCustomizerTest" test`覆盖本轮回归，使用临时目录进行真实资源回环与PAC解包内容验证。LayeredAssetDeliveryTest还覆盖两Importer、公共SPM输出、未用imageData条目以及实际引用图片缺失时继续处理/封包；缺图仅审计，结构损坏等错误单独检查。不能用单测通过宣称实机或整链通过。

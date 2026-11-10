@@ -29,6 +29,13 @@ import java.util.Map;
 
 @TestMethodOrder(OrderAnnotation.class)
 @Execution(ExecutionMode.SAME_THREAD)
+/**
+ * BSDX BIN 旧 parse/generate 路径的全量回归测试。
+ *
+ * <p>这个测试类不走新的 lossless DSL 主链，而是直接验证现有
+ * {@link com.giga.nexas.service.BsdxBinService} 的解析与回写结果是否保持字节一致。
+ * 它和新主链测试共同构成当前 BIN 反编译器/回编译器的双保险。
+ */
 public class TestBin {
 
     private static final Logger log = LoggerFactory.getLogger(TestBin.class);
@@ -43,6 +50,17 @@ public class TestBin {
     private static final String BIN_EXT = ".bin";
     private static final String GENERATED_SUFFIX = ".generated"; // 所有生成的二进制都带这个后缀（放在扩展名后面）
 
+    /**
+     * 判断某个 BIN 是否属于应跳过的特殊文件。
+     *
+     * <p>这类文件通常是全局容器或资源壳，不属于普通脚本入口，
+     * 因此不纳入“全量脚本 parse/generate 一致性”统计。
+     */
+    private boolean shouldSkipSpecialBin(String fileName) {
+        String upper = fileName == null ? "" : fileName.toUpperCase();
+        return upper.startsWith("__") || upper.contains("GLOBAL");
+    }
+
     @Test
     @Order(1)
     void testGenerateBinJsonFiles() throws IOException {
@@ -55,8 +73,8 @@ public class TestBin {
             for (Path path : stream) {
                 String fileName = path.getFileName().toString();
                 String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
-                if (baseName.equalsIgnoreCase("__GLOBAL")) {
-                    log.info("⚠️ skip __GLOBAL.bin !!!");
+                if (shouldSkipSpecialBin(fileName)) {
+                    log.info("skip special bin: {}", fileName);
                     continue;
                 }
                 baseNames.add(baseName);
@@ -126,8 +144,12 @@ public class TestBin {
 
         try (DirectoryStream<Path> oriStream = Files.newDirectoryStream(GAME_BIN_DIR, "*" + BIN_EXT)) {
             for (Path ori : oriStream) {
-                compared++;
                 String name = ori.getFileName().toString();
+                if (shouldSkipSpecialBin(name)) {
+                    log.info("skip special bin during binary consistency check: {}", name);
+                    continue;
+                }
+                compared++;
                 Path gen = generatedMap.get(name);
                 if (gen == null) {
                     anyIssue = true;

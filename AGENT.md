@@ -2,6 +2,8 @@
 
 > **唯一硬性规范**：所有文件保持 UTF-8（无 BOM）编码 + CRLF 换行。
 
+> **分支约束**：所有修改直接在 `develop` 上完成，不创建或保留 `codex/` 分支，不为本仓库另建开发工作树。
+
 ---
 
 ## 项目鸟瞰
@@ -26,6 +28,8 @@
 | `service/engine/*Adapter` | GUI 批处理用的桥接器（BSDX/BHE/CLARIAS） |
 | `io/BinaryReader|BinaryWriter` & `util/ParserUtil` | 统一的二进制 IO 与 `.dat` 列类型常量 |
 | `transfer/*` & `src/test/java/com/giga/nexas/bhe2bsdx/*` | 移植实验脚手架（Tsukuyomi pipeline 等） |
+| `transfer/jinki2bsdx/*` | **AKAO Graft Pipeline**：JINKI（Baldr Heart）→ BSDX（Baldr Sky DX）机体移植，11 步流水线 |
+| `docs/protocol-notes/` | **引擎协议笔记**：从逆向/动态分析得到的 grp / mek / waz / dat 等文件格式的索引语义与结构约定 |
 | `src/main/resources/game/<engine>` | 真实游戏资产，所有测试基于这些文件 |
 
 ---
@@ -57,7 +61,8 @@
 | BHE 对照数据 | `mvn "-Dtest=com.giga.nexas.bhe.TestGrp" test` 等 | 输出到 `datBheJson`、`grpBheGenerated` 等 | 主要用作移植素材，没有自动清理                                                          |
 | CLARIAS `.dat` | 同 BSDX 流程（命令将 `bsdx` 换成 `clarias`） | `datClariasJson` / `datClariasGenerated`（成功后自动清理） | `ending.dat` ~430 MB，会读取到异常列数。运行前请提高堆内存（`set MAVEN_OPTS=-Xmx4g`）或暂时移出该文件 |
 | Jinki / 其它实验资源 | `mvn "-Dtest=com.giga.nexas.jinki.TestGrp" test` 等 | `grpJinkiJson` / `grpJinkiGenerated` | 结构与 BSDX 流程一致                                                            |
-| BHE→BSDX pipeline | `mvn "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testPipeline" test` | 输出至 `src/main/resources/testBhe` | 仍在实验阶段，会读取大量资源并尝试整合，执行前确认路径与磁盘空间                                         |
+| BHE→BSDX pipeline | `mvn "-Dtest=com.giga.nexas.bhe2bsdx.TransferTest#testPipeline" test` | 输出至 `src/main/resources/testBhe` | 仍在实验阶段，会读取大量资源；默认仅写出变更的 grp/mek/waz/spm 并封包，执行前确认路径与磁盘空间                    |
+| AKAO Graft pipeline | `mvn "-Dtest=com.giga.nexas.jinki.TestJinki2BsdxRunner#testRunAkaoGraftPipeline" test` | 输出至 `src/main/resources/out` | JINKI→BSDX 机体移植；11 步流水线，产出 `Update3.pac` + patched exe |
 
 以上测试会直接在 `src/main/resources` 下生成大量 JSON / binary / CSV，全部已列入 `.gitignore`，但**提交前务必确认没有误加大文件**。
 
@@ -91,3 +96,10 @@ set MAVEN_OPTS=-Xmx4g
 ---
 
 如需了解具体测试目录、生成文件及额外注意事项，请务必阅读 [`src/test/java/AGENT.md`](src/test/java/AGENT.md)。新增或修改流程后，同步更新两个 AGENT 文件，保证下一位同学能「一眼上手」。
+
+### BHE多角色流水线修复（2026-10-08）
+
+- 实施计划与逐项笔记位于`docs/project-deep-dive/pipeline-fixes/`及`docs/superpowers/plans/2026-10-07-bhe-pipeline-fixes.md`。
+- Sou武装过滤和Lv3选择必须同步其Material切片与AI索引；三等级源尾表不能原样用于非KOU目标。容量判断依据实际武装消费者，不能只以MEK文件条目数断言153边界。
+- 验证只运行明确指定的测试；真实二进制回环使用临时输出，原版资源及共享JSON输入保持只读。
+- 静态交付按原版、继承成果和当前覆盖解析资源；`bsdxStaticAssetRoot`仅提供平铺原版媒体，不提供索引表。双Import/Pack验收最终字节，PAC真实解包一致后才报告成功。SPM声明/静态动画引用的图片未找到时仅记`unresolvedImageReferences`，不能当作必需依赖阻断流水线；不制造占位图，保留原图名引用。实际有供体的新图片正常复制，原版继承图片无需重复打包。

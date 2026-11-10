@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.giga.nexas.util.InfoCollectionMapper;
 import static com.giga.nexas.dto.bsdx.waz.wazfactory.SkillInfoFactory.createCEventObjectByTypeBsdx;
 
 /**
@@ -224,28 +225,40 @@ public class CEventEffect extends SkillInfoObject {
                             && bheUnit.getData() instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventFreeParam bheFree) {
 
                         if (inner instanceof CEventVal valTarget) {
+                            // 复制基类字段
+                            valTarget.setStartFrame(bheFree.getStartFrame() != null ? bheFree.getStartFrame() : 0);
+                            valTarget.setEndFrame(bheFree.getEndFrame() != null ? bheFree.getEndFrame() : 0);
+                            // 设置默认值
+                            valTarget.setInt1(0);
+                            valTarget.setInt2(0);
+                            valTarget.setInt3(0);
+                            valTarget.setInt4(0);
                             for (com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventFreeParam.CEventFreeParamUnit fu : bheFree.getUnitList()) {
                                 if (fu.getBuffer() != null && fu.getBuffer() == 1) continue;
                                 if (fu.getData() instanceof com.giga.nexas.dto.bhe.waz.wazfactory.wazinfoclass.obj.CEventVal v) {
-                                    valTarget.setInt1(v.getInt1());
-                                    valTarget.setInt2(v.getInt2());
-                                    valTarget.setInt3(v.getInt3());
-                                    valTarget.setInt4(v.getInt4());
+                                    valTarget.setInt1(v.getInt1() != null ? v.getInt1() : 0);
+                                    valTarget.setInt2(v.getInt2() != null ? v.getInt2() : 0);
+                                    valTarget.setInt3(v.getInt3() != null ? v.getInt3() : 0);
+                                    valTarget.setInt4(v.getInt4() != null ? v.getInt4() : 0);
                                     break;
                                 }
                             }
                         }
                     } else {
                         cn.hutool.core.bean.BeanUtil.copyProperties(bheUnit.getData(), inner);
+                        InfoCollectionMapper.copyBheToBsdx(bheUnit.getData(), inner);
                     }
 
                     inner.setSlotNum(CEVENT_EFFECT_TYPES[i].getType());
+                    inner.typeId = CEVENT_EFFECT_TYPES[i].getType(); // 修复：恢复正确的 BSDX typeId
                     bsdxUnit.setBuffer(1);
                     bsdxUnit.setData(inner);
                 }
             }
 
-            bsdx.getCeventEffectUnitList().add(bsdxUnit);
+            if (bsdxUnit.getBuffer() != null && bsdxUnit.getBuffer() != 0) {
+                bsdx.getCeventEffectUnitList().add(bsdxUnit);
+            }
         }
     }
 

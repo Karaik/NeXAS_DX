@@ -83,4 +83,26 @@ public class CCpuEventMove extends CCpuEvent {
         writer.writeInt(this.genericFlag);
         writer.writeInt(this.attackProbabilityCorrection);
     }
+
+    public void transBheCCpuEventMoveToBsdx(
+            com.giga.nexas.dto.bhe.mek.mekcpu.CCpuEventMove src,
+            CCpuEventMove bsdx
+    ) {
+        if (src == null || bsdx == null) {
+            return;
+        }
+        super.transBheCCpuEventToBsdx(src, bsdx);
+        bsdx.setMoveType(src.getMoveType());
+        bsdx.setMoveSpeed(src.getMoveSpeed());
+        bsdx.setMoveInertia(src.getMoveInertia());
+        bsdx.setMoveTargetType(src.getMoveTargetType());
+        bsdx.setMoveTargetAngleCorrection(src.getMoveTargetAngleCorrection());
+        bsdx.setViewpointType(src.getViewpointType());
+        bsdx.setViewpointAngleCorrection(src.getViewpointAngleCorrection());
+        bsdx.setJumpType(src.getJumpType());
+        bsdx.setAscentVar1(src.getAscentVar1());
+        bsdx.setAscentVar2(src.getAscentVar2());
+        bsdx.setGenericFlag(src.getGenericFlag());
+        bsdx.setAttackProbabilityCorrection(src.getAttackProbabilityCorrection());
+    }
 }

@@ -78,6 +78,7 @@ public class BinaryReader {
             position++;
         }
         byte[] bytes = ArrayUtil.sub(data, start, position);
+        checkAvailable(1);
         position++; // 跳过 null
         return StrUtil.str(bytes, charset);
     }

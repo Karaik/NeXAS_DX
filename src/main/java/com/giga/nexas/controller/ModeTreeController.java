@@ -29,7 +29,6 @@ public class ModeTreeController {
     public void setup() {
         TreeView<WorkspaceTreeNode> tree = view.getTree();
         tree.setShowRoot(true);
-        tree.getProperties().put("modeTreeController", this);
         tree.getSelectionModel().selectedItemProperty().addListener((obs, oldItem, newItem) -> {
             if (newItem != null) {
                 WorkspaceTreeNode node = newItem.getValue();
@@ -63,6 +62,14 @@ public class ModeTreeController {
         if (item != null) {
             view.getTree().getSelectionModel().select(item);
         }
+    }
+
+    /**
+     * 供其他模式在退出时恢复主工作区状态栏使用。
+     */
+    public void refreshViewState() {
+        updateSummary();
+        updateStatus();
     }
 
     private void rebuildTree() {
