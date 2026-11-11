@@ -1,0 +1,175 @@
+{
+  "schema": "nexas.bhe-runtime-preparation/v1",
+  "preparedAuditAt": "2026-11-11T07:00:52.302598+00:00",
+  "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-17",
+  "runtimeExecuted": false,
+  "runtimeValidated": false,
+  "terminalAcceptance": false,
+  "status": "prepared_not_executed",
+  "scope": "File-only preparation audit for Replay067 and Replay068. This record contains no gameplay observation.",
+  "sourceTemplate": {
+    "currentCase": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-17\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay062.dat",
+      "bytes": 861,
+      "sha256": "3298eb8deaaa4a0bec632a69cd3aa02c74c1da2c4baf75ab61d8d456d8aa05e2"
+    },
+    "originalCase16": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261110-16\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay062.dat",
+      "bytes": 861,
+      "sha256": "3298eb8deaaa4a0bec632a69cd3aa02c74c1da2c4baf75ab61d8d456d8aa05e2"
+    },
+    "wholeFileBytesEqual": true,
+    "normalUiOrigin": "Root reports that Replay062 was saved through normal UI; this audit verifies preserved file identity, not UI activity.",
+    "preservedPrefixBytes": 813,
+    "preservedPrefixSha256": "18e98e9cfcb86251a2ed794c21add1d6c42336abbfdcecb566e46e4bf4e20a57",
+    "initialState": {
+      "playerMeka": 109,
+      "enemyMeka": 0,
+      "map": 68,
+      "enemyBehaviorValue": 3,
+      "equipmentIds": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        20,
+        21,
+        22,
+        -1,
+        -1
+      ]
+    }
+  },
+  "trials": {
+    "067": {
+      "intendedWeapon": 21,
+      "runtimeExecuted": false,
+      "replay": {
+        "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-17\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay067.dat",
+        "bytes": 856,
+        "sha256": "34b609daab533373e455372d95f6b9fb757cc31d474e735842e64239c3cf98b1"
+      },
+      "input": {
+        "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-17\\naoto21-kou-startup-input.json",
+        "bytes": 158,
+        "sha256": "de829e8fc39587ecc40ac5f67bec19a4b567ac8bd1400a5d72bc63d94d84e3a3"
+      },
+      "receipt": {
+        "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-17\\naoto21-kou-startup-receipt.json",
+        "bytes": 7688,
+        "sha256": "fa5d352d31aaa33f508a70b1b6e7c970dd5f945e201b464a5ffa73c288f5ef3b"
+      },
+      "schedule": {
+        "frames": 360,
+        "tail_frames": 180,
+        "ranges": [
+          {
+            "start": 23,
+            "end": 27,
+            "held": [
+              "B"
+            ]
+          }
+        ]
+      },
+      "verification": {
+        "allEdgeHeldPairsCompared": 360,
+        "nonzeroEdgeFrames": [
+          23
+        ],
+        "heldStartInclusive": 23,
+        "heldEndExclusive": 27,
+        "inputMask": 512,
+        "last180PairsAllZero": true,
+        "threeZlibBlocksAndEOF": true,
+        "receiptFieldsAndHashesMatch": true,
+        "headerAndFirstTwoEncodedBlocksEqualOriginal062": true,
+        "decodedInputSha256": "9a165e6cd0e38bf350851d78e5eac28da5ecb5240077282b24c57bd945bfdb6f",
+        "outputInputBlock": {
+          "offset": 813,
+          "encoded_bytes": 43,
+          "decoded_bytes": 2880,
+          "encoded_sha256": "bdf1434f23ae1ece2780b015183590ec65702eb83eae0c15792c0714feddfaf5",
+          "decoded_sha256": "9a165e6cd0e38bf350851d78e5eac28da5ecb5240077282b24c57bd945bfdb6f"
+        }
+      }
+    },
+    "068": {
+      "intendedWeapon": 22,
+      "runtimeExecuted": false,
+      "replay": {
+        "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-17\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay068.dat",
+        "bytes": 856,
+        "sha256": "4318e71d7fdea1330f5408dca977a99735cabfc2f40674b6d40e5d2579c59138"
+      },
+      "input": {
+        "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-17\\naoto22-kou-startup-input.json",
+        "bytes": 158,
+        "sha256": "56ffb8795f5ea5adbf0c52c5e2d76dc7b316b07e9195c7cb0f70750da9b5c41e"
+      },
+      "receipt": {
+        "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-17\\naoto22-kou-startup-receipt.json",
+        "bytes": 7688,
+        "sha256": "c1624f0981a77ba9a3eed26431851d5d8eda6a3edb69f2b54d0ce0f46f201d32"
+      },
+      "schedule": {
+        "frames": 360,
+        "tail_frames": 180,
+        "ranges": [
+          {
+            "start": 17,
+            "end": 21,
+            "held": [
+              "C"
+            ]
+          }
+        ]
+      },
+      "verification": {
+        "allEdgeHeldPairsCompared": 360,
+        "nonzeroEdgeFrames": [
+          17
+        ],
+        "heldStartInclusive": 17,
+        "heldEndExclusive": 21,
+        "inputMask": 1024,
+        "last180PairsAllZero": true,
+        "threeZlibBlocksAndEOF": true,
+        "receiptFieldsAndHashesMatch": true,
+        "headerAndFirstTwoEncodedBlocksEqualOriginal062": true,
+        "decodedInputSha256": "901d5c40b2c791e1f4c2f58a65f7ae037fc9f7cd1a16a99375b746f4543bf016",
+        "outputInputBlock": {
+          "offset": 813,
+          "encoded_bytes": 43,
+          "decoded_bytes": 2880,
+          "encoded_sha256": "cb2d52f7b046248231cfb0fc8b7d7c8f35eada33c31f88e9b747662af4f2dcc6",
+          "decoded_sha256": "901d5c40b2c791e1f4c2f58a65f7ae037fc9f7cd1a16a99375b746f4543bf016"
+        }
+      }
+    }
+  },
+  "verification": {
+    "checksPassed": 123,
+    "checksFailed": 0,
+    "sourceFilesModified": false
+  },
+  "executionBoundary": [
+    "Both replay files are structurally ready for normal UI LOAD/PLAY when the root operator can restore UI control.",
+    "runtimeExecuted=false records the preparation stage reported by the root operator; no runtime logs, processes, memory, or UI were inspected in this audit.",
+    "Normal-template provenance and source-derived expected timings do not establish START, incoming damage, interruption, recovery, reuse, or cleanup.",
+    "No assumption is made that CPU W44 or its earlier hit timing will recur. Each trial needs its own actual events and accepted samples.",
+    "No actor, seed, game parameter, gameplay code, or binary was changed by this audit."
+  ],
+  "operations": {
+    "uiOrProcessInspection": false,
+    "runtimeEvidenceWritten": false,
+    "builds": false,
+    "commits": false,
+    "onlyAuthorizedOutput": "D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261111\\naoto21-22-prepared.json"
+  }
+}

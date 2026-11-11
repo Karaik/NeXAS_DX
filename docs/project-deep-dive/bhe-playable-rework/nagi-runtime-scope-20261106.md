@@ -66,7 +66,7 @@ BHE Tama04源206／HADOUHOU10／◆凪：単発リフレクション对应当前
 
 新P3 Hit为4～7f、初始次数1；确认在8～9f。当前`nagi.waz` offset156689的头为`[8,9,1]`；156701集合原字为`[0,4,2,6,0,0,1,0,2,0,0,0,0]`，即ATTACK/MEKAHIT==0；156753目的为`[16,1,1,2,114,30,0,0,0]`，跳新19的W30。
 
-它读取“当前攻击事件剩余对机Hit次数”，不是独立WAZAHITCOUNT>0。[66B0F0.c:24～31](../../../src/main/resources/ida-reverse/bsdx/export-for-ai/decompile/66B0F0.c)取slot41当前事件；[60E6D0.c](../../../src/main/resources/ida-reverse/bsdx/export-for-ai/decompile/60E6D0.c)第12～15行依赖当前索引；[63A7D0.c](../../../src/main/resources/ida-reverse/bsdx/export-for-ai/decompile/63A7D0.c)第32行先置索引-1，仅有效帧窗选回。slot41处理早于slot71；8～9已在4～7之外，存在读不到Hit或比较值未由此分支更新的风险。
+它读取“当前攻击事件剩余对机Hit次数”，不是独立WAZAHITCOUNT>0。[66B0F0.c:24～31](../../../src/main/resources/ida-reverse/bsdx/export-for-ai/decompile/66B0F0.c)取slot41当前事件；[60E6D0.c](../../../src/main/resources/ida-reverse/bsdx/export-for-ai/decompile/60E6D0.c)第12～15行依赖当前索引；[63A7D0.c](../../../src/main/resources/ida-reverse/bsdx/export-for-ai/decompile/63A7D0.c)第32行先置索引-1，仅有效帧窗选回。8～9已在4～7之外，存在读不到Hit或比较值未由此分支更新的风险。11/11完整生命周期复核显示，Change处理、时钟推进与Hit刷新分属不同遍，不能仅凭slot41/71的文本排列判断整帧先后；当前Hit为空时仍可能沿共享比较缓存继续求值。详见[生命周期复核](nagi22-hit-confirm-lifecycle-20261111.md)，不将此风险静态判作恒假或不可达。
 
 不预判“命中必不派生”或“落空必派生”。最小对照：真实命中后不取消，看8～9是否跳114/30；同距离偏移／远距落空不得跳；改变前技／此前条件状态再重复，排除共享比较残值。内部跳转应仍是weapon22，没有额外START19或单独扣19热费。静态测试结构断言不代替此判定。
 
@@ -83,7 +83,7 @@ BHE Tama04源206／HADOUHOU10／◆凪：単発リフレクション对应当前
 已有原生链支持用正常UI启用敌AI，无需写敌actor或伪造第二套输入：
 
 - `datBsdxJson/Button.dat.json`第156项help为`敵機の行動方法を変更します`，四选项按钮175～178；[4C08D0.c:72](../../../src/main/resources/ida-reverse/bsdx/export-for-ai/decompile/4C08D0.c)中0xAF～0xB2调用5FD490。
-- 原生72EC0D／72EC70／72ECD7／72ED3E依次绑定`0x874EEC`和值0／1／2／3。**第四项value3启用攻击AI；UI显示名未知，不猜名称。**
+- 原生72EC0D／72EC70／72ECD7／72ED3E依次绑定`0x874EEC`和值0／1／2／3。**第四项value3启用攻击AI；11/10已在Naoto正常训练UI确认显示名为CPU。Nagi仍须另存本角色正常模板。**
 - [5FD490.c:263](../../../src/main/resources/ida-reverse/bsdx/export-for-ai/decompile/5FD490.c)的3路径同时开启86CD34／86CD2B并加载原机体AI；[6604C0.c:190](../../../src/main/resources/ida-reverse/bsdx/export-for-ai/decompile/6604C0.c)在86CD2B为1时执行攻击AI选择660120(kind2)。值0木桩不能验防反核心。
 - [446140.c:34](../../../src/main/resources/ida-reverse/bsdx/export-for-ai/decompile/446140.c)保存至Replay初始seed[6]；[4492D0.c:84](../../../src/main/resources/ida-reverse/bsdx/export-for-ai/decompile/4492D0.c)恢复并应用5FD490，179行恢复随机种子。已有015／017是seed[6]=0，不能借作主动来袭模板。
 
