@@ -1,0 +1,90 @@
+{
+  "schema": "nexas.bhe-runtime-evidence/v1",
+  "scope": "Read-back of terminal case16 on 2026-11-11; no new shutdown or cleanup operation performed in this audit.",
+  "runtimeValidated": false,
+  "stateSource": {
+    "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261110-16\\state.json",
+    "bytes": 19505,
+    "sha256": "6fdff33da8080f8c6b4c8fefbd5316f9c1db31e9318025fdb85a580659c8fc6d"
+  },
+  "observedState": {
+    "status": "exited",
+    "process": {
+      "pid": 194168,
+      "thread_id": 194196,
+      "creation_filetime": 134387837381937292,
+      "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261110-16\\game\\BaldrSky.exe"
+    },
+    "launcher_pid": 193976,
+    "exit_code": 0,
+    "failure": null,
+    "finished_at": "2026-11-10T13:34:01.644760+00:00",
+    "owned_process_exit_confirmed": true,
+    "guard_cleanup_complete": true,
+    "cleanup_pending": false,
+    "original_save_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "original_base_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "source_files_check": {
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\BaldrSky_20261105_193620_157.exe": true,
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\Update3.pac": true
+    },
+    "exception_count": 55,
+    "external_write_count": 0,
+    "guard_violations": [],
+    "original_driver_state_runtime_check": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "nvAppTimestamps"
+      ],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "input_copy_cleanup": {
+      "removed": [
+        "AutoUpdate.exe",
+        "BaldrSky.exe",
+        "BaldrSky.ico",
+        "Bgm.pac",
+        "Bmp.pac",
+        "Config.pac",
+        "Dat.pac",
+        "Face.pac",
+        "Filechk.exe",
+        "Launcher.dat",
+        "Launcher.exe",
+        "Script.pac",
+        "Se.pac",
+        "Setup.exe",
+        "Setupinf.dat",
+        "Stand.pac",
+        "StartUpTool.exe",
+        "System.pac",
+        "Thumbnail.pac",
+        "Uninstall.exe",
+        "Update.exe",
+        "Update.pac",
+        "Update2.pac",
+        "UpdateInf.dat",
+        "Visual.pac",
+        "Voice.pac",
+        "autorun.inf",
+        "Update3.pac"
+      ],
+      "removed_bytes": 5805717300,
+      "retained_changed_or_unique": [],
+      "errors": []
+    }
+  },
+  "boundary": "Exit 0 does not certify all gameplay. Unclassified exceptions and driver state drift retained; attribution not inferred."
+}

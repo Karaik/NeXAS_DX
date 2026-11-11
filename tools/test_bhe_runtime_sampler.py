@@ -111,6 +111,24 @@ class SamplerTests(unittest.TestCase):
         self.assertEqual(row["target"]["actor"], "0x20000")
         self.assertEqual(row["globalFlagsRaw"], {"0x8750e8": 0, "0x8750f4": 0, "0x8750f8": 0})
 
+    def test_zero_heat_keeps_cooling_and_actor_input_diagnostics_distinct(self):
+        m = fixture()
+        # Native 61E310 reads cooling state independently of heat, and consumes
+        # actor input copied by 6221E0. Do not infer these fields from replay.
+        m.put(0x118e8, 3)
+        m.put(0x11910, 0)
+        m.put(0x1160c, 7)
+        m.put(0x115ac, 0x80000100)
+        m.put(0x115b0, 0x80000040)
+        m.put(0x21910, 1200)
+        row = s.snapshot(s.Reader(m.read), 109)
+        self.assertEqual((row["heatRaw"], row.get("heatState"), row.get("hitstop")),
+                         (0, 3, 7))
+        self.assertEqual((row.get("actualEdge"), row.get("actualHeld")),
+                         (0x80000100, 0x80000040))
+        self.assertEqual((row["target"]["heatRaw"], row["target"].get("heatState"),
+                          row["target"].get("actualEdge")), (1200, 0, 0))
+
     def test_snapshot_rejects_changed_tick_counter_player_and_active(self):
         for address, value, fmt in ((0x879a5c, 8, "<I"), (0x870ca0, 1, "<I"),
                                     (0x86cf88, 0x20000, "<I"), (0x870c9d, 0, "<B")):

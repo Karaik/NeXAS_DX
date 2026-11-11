@@ -229,6 +229,9 @@ ACTOR_FIELDS = {
     "state": (0x188C, "I"), "control": (0x18EC, "i"), "pendingReaction": (0x18F0, "i"),
     "reaction": (0x18F4, "i"), "nextState": (0x1890, "i"), "hp": (0x161C, "i"),
     "maxHp": (0x1618, "i"), "heatRaw": (0x1910, "i"), "capacityRaw": (0x1914, "i"),
+    # 61E310/6221E0: zero heat and replay input do not prove actor readiness.
+    "heatState": (0x18E8, "i"), "hitstop": (0x160C, "i"),
+    "actualEdge": (0x15AC, "I"), "actualHeld": (0x15B0, "I"),
     "normalGate": (0x1900, "i"), "sdGate": (0x1904, "i"), "sdBudgetRaw": (0x1928, "i"),
     "x": (0xA0, "i"), "y": (0xA4, "i"), "z": (0xA8, "i"),
     "fallModifier": (0x177C, "i"), "jumpModifier": (0x1780, "i"),

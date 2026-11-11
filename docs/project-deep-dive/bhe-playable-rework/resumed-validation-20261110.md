@@ -171,3 +171,9 @@ Replay STOP仅表示输入播放结束；敌跳跃在其后仍可能继续产生
 065只把第二A移至[67,71)，首A27不变，同062前缀和360总帧。首20再次真实START seq8，clock6受67伤并早释，恢复53与RESET66均在本轮实际记录中存在；A67/68/71输入亦有原生记录，但仍没有第二START/USE。这否定了将前次再用失败仅归因于早于RESET的解释，启动拒绝原因须继续查明。355接受行、缺86／156／189／210／211／321，29拒读；全窗玩家39Hit244，尾HP1756/state7/control40/pending2/Z0但Vz5120/fall60、TAMA1，不能认稳定恢复。
 
 四份新增文本证据为`naoto-eye-runner-idle-baseline.json`、`naoto-kou-idle-baseline.json`、`naoto20-kou-interrupt-reuse.json`、`naoto20-kou-interrupt-late-reuse.json`。根已逐项核原生对象/采样身份与关键状态，独立审计保留遗漏区间hash、真实缺样和拒读。所有原生窗口按各次实际tick截断，STOP后CPU继续攻击/死亡不能混入360帧结论。当前20只确认起手中断与首次硬直恢复；中断后的再用、稳定收尾尚不通过，其余五招受击中断待验。下一步先追普通出招门、冷却及使用记录与输入消费，不继续盲换时点或直接改技能。
+
+## 065重播／066与11/11继续
+
+新增四项只读诊断字段后原样重播065，再执行仅第二A后移一帧的066，完整对照见[复用门调查第五节](naoto-reuse-gates-20261110.md)。A67仍失败；066首20在clock6被真实打断后，native frame68实际再次START/USE，第二次W31顶着control0小伤自然走到clock37结束。其后CPU另一次硬直攻击与恢复分开记录，末尾玩家恢复正常但敌弹TAMA1仍在；不把稳定整场收尾或全部中断条件记通过。两份新采样各361行无缺，19／29拒读，旧065缺字段不回填。24项采样器离线测试通过，独立代码及证据复核无阻断问题。
+
+11/11恢复时，case16已在11/10 13:34:01 UTC记为exited/exit0/failure=null，owned_process_exit_confirmed与guard_cleanup_complete为true、cleanup_pending=false；当前无BaldrSky残留进程。28份5,805,717,300字节未变输入副本已由受管清理回收，原Save/base/source检查未变；全会话55条未分类system异常保留，nvAppTimestamps外部漂移归因未知，不称系统全部不变。上轮在目标短暂停/恢复前已取得完整066证据，未重复执行它；本轮先固定代码与记录，下一步从case16私有Save建立新case17并继续21/22的真实受击中断。
