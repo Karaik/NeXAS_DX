@@ -1,0 +1,115 @@
+{
+  "schema": "nexas.source-encoding-delta/v1",
+  "capturedAt": "2026-11-11T07:10:29.974008+00:00",
+  "head": "f4df67b7d95cb27abcc6908ea2490e29406c8c0b",
+  "scopeRule": "git tracked src/tools source extensions excluding resources, plus only the two original-plan FXML UI source files",
+  "baseline": {
+    "path": "D:\\Code\\NeXAS_DX\\target\\bhe-combined-fixes-20261105\\encoding-source-scan-20261105.json",
+    "sha256": "03d4bc6d67d97fe3d318bd32b4c92de3ac614cafe14c7390f5492a99ee1ec660",
+    "deltaPath": "D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261105\\source-encoding-current.json",
+    "deltaSha256": "f5d717cce8a00693c55a70c7029bfc876db7c30265acb1bc04c3f695f754db59",
+    "deltaHead": "335a128e67b74cad556ec84dd5ad6c8a9c47e80c"
+  },
+  "files": 988,
+  "extensions": {
+    ".java": 974,
+    ".fxml": 2,
+    ".ps1": 2,
+    ".py": 10
+  },
+  "unchangedAgainstBaselineAndDelta": 981,
+  "addedFiles": [
+    "tools/bhe_runtime_sampler.py",
+    "tools/test_bhe_runtime_sampler.py"
+  ],
+  "removedFiles": [],
+  "changedOrAdded": [
+    {
+      "file": "src/main/java/com/giga/nexas/dto/bhe/waz/wazfactory/SkillInfoFactory.java",
+      "baselineSha256": "6ff4fda130f6e28f4a29c7dd4960d070e2053c2aa6d0d1a20504fd6bf052fba7",
+      "currentSha256": "f3562a8de13cb1215f35766b05f87f0b2f4e2c90c7ba3e3e80cc00a5219485f4",
+      "bytes": 11394,
+      "newFile": false
+    },
+    {
+      "file": "src/main/java/com/giga/nexas/dto/bsdx/waz/wazfactory/SkillInfoFactory.java",
+      "baselineSha256": "a28cdf7a2404f26df040744aafc8bc2f5fabcab676235ee3c5247223ac440360",
+      "currentSha256": "0b53c2d4a30d46e8651fc43067f13983812f23aa93d1a2c1858f33a651fe400f",
+      "bytes": 9674,
+      "newFile": false
+    },
+    {
+      "file": "src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/naoto/NaotoAdditionalVariants.java",
+      "baselineSha256": "374fc84ed9c849d6fb4365c6c31d8e37db88be0de18ccb1e4299763877570f25",
+      "currentSha256": "5d70ae6f9305ae6c2a60902157efde1bf7c20b6588de4773a5e68628e4a89059",
+      "bytes": 21701,
+      "newFile": false
+    },
+    {
+      "file": "tools/bhe_runtime_sampler.py",
+      "baselineSha256": null,
+      "currentSha256": "70a9829e35dc9e89984c0c30245bd8eb6099a04461b8f2f794f237c9d8c0e7f2",
+      "bytes": 21982,
+      "newFile": true
+    },
+    {
+      "file": "tools/bhe_runtime_session.py",
+      "baselineSha256": "f4247936e7db54252536aa65fd2030194cb7108d2b00da747a62879c1f3ff191",
+      "currentSha256": "e15a436de731ec51f644e2f74f330f449ab3ee843aea3926e1d69f9d803ffb9d",
+      "bytes": 86783,
+      "newFile": false
+    },
+    {
+      "file": "tools/test_bhe_runtime_sampler.py",
+      "baselineSha256": null,
+      "currentSha256": "63b869e59c13c6c2ca307dc6ef503fd02002611bd5e637e19621ed45f4610ac1",
+      "bytes": 26872,
+      "newFile": true
+    },
+    {
+      "file": "tools/test_bhe_runtime_session.py",
+      "baselineSha256": "f35e93cb84d4483d22d0a5f4154094c0aa6e9e118a3a7a8068d6f3dda0e63b89",
+      "currentSha256": "6934aab7801efcc52b82383b4dc9b4d9868da228aea98283665fbf9220f5f20c",
+      "bytes": 89069,
+      "newFile": false
+    }
+  ],
+  "strictUtf8Failures": [],
+  "replacementPuaC1NulUnexpectedC0Counts": {},
+  "confirmedMarkers": [],
+  "existingBareLfFiles": 104,
+  "bareLfIdentitySetUnchanged": true,
+  "addedNonAsciiForContextReview": [
+    {
+      "file": "src/main/java/com/giga/nexas/dto/bhe/waz/wazfactory/SkillInfoFactory.java",
+      "text": "            case 0xFFFFFFFF -> new CEventTerm(typeId); // 原始类型含义未确认；当前映射为 CEventTerm。"
+    },
+    {
+      "file": "src/main/java/com/giga/nexas/dto/bsdx/waz/wazfactory/SkillInfoFactory.java",
+      "text": "            case 0xFFFFFFFF -> new CEventTerm(typeId); // 原始类型含义未确认；当前映射为 CEventTerm。"
+    },
+    {
+      "file": "src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/naoto/NaotoAdditionalVariants.java",
+      "text": "                \"踏み込んでフックを放ち、出し切ると後方へ下がる。命中後はストレートパンチへ切り替えるか、間合いを取り直すかを選べる。\", value -> {"
+    },
+    {
+      "file": "src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/naoto/NaotoAdditionalVariants.java",
+      "text": "                \"クローを展開してライズネイルへつなぎ、出し切ると収納する。展開中は排熱する。二段目の命中後は別の攻撃へ切り替えられる。\", value -> {"
+    },
+    {
+      "file": "src/main/java/com/giga/nexas/transfer/bhe2bsdx/meka/naoto/NaotoAdditionalVariants.java",
+      "text": "                \"マシンガンを三発だけ連射する。射撃開始時に追加で発熱し、三発目の発射後は別の攻撃へ切り替えられる。\", value -> {"
+    },
+    {
+      "file": "tools/test_bhe_runtime_session.py",
+      "text": "                    harness.write_json(self.path, {\"generation\": 2, \"text\": \"状态\"})"
+    },
+    {
+      "file": "tools/test_bhe_runtime_session.py",
+      "text": "                self.assertEqual(json.loads(self.path.read_bytes()), {\"generation\": 2, \"text\": \"状态\"})"
+    }
+  ],
+  "inventorySha256": "7e5dfc9d650525d1eaf0ec5734e55a2863eaa3b2f3207579a3f835776e805385",
+  "fullInventoryCopied": false,
+  "boundary": "All current source bytes screened; unchanged files inherit prior hash-bound review. Added non-ASCII lines reviewed in context by root; this is not a new sentence-by-sentence reread of all historical comments. Two question-mark placeholders rewritten as current known mapping with original type meaning explicitly unknown, not claimed as recovered original text. No behavior edits, build, or game-validation claim."
+}

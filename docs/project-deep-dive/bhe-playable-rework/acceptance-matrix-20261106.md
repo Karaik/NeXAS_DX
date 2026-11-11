@@ -153,9 +153,9 @@ Sou不是九个重做角色之一，133也不属于本页54个追加武装。今
 
 原要求是清理当前代码中的确证乱码，正常日文、半角片假名及终端显示错误不作乱码替换，见[原计划Task4及范围](../../superpowers/plans/2026-10-26-bhe-playable-rework.md)。已修记录见[encoding-recovery.md](encoding-recovery.md)，11/05小型编码证据为[source-encoding-current.json](../../../src/test/resources/bhe-runtime-evidence-20261105/source-encoding-current.json)。
 
-- 最新固定编码记录覆盖986份跟踪源码：974 Java、8 Python、2 PowerShell及原计划两份FXML。984文件继承基线hash，两份热修Java重新严格解码并人工读取3条新增非ASCII行。它不是逐句重读全部历史注释，也不包含resources、generated、二进制及未跟踪草稿。
-- 最终完成时仍需把当时实际源码清单与这份基线／增量闭合，复核之后新增或变化的文字；本轮没有再次执行986文件全扫描，不以旧日期结果冒充当前全量重扫。
-- 本轮实际读到BHE `src/main/java/com/giga/nexas/dto/bhe/waz/wazfactory/SkillInfoFactory.java:142`仍为`// ???`，BSDX同名路径`:129`仍为`// ????`。两处都在`0xFFFFFFFF -> CEventTerm`分支，既有历史结论是未知语义占位、没有可恢复原文证据；它们不能被悄悄计作确证乱码已恢复，也不能猜补协议语义。若改写，应只说明当前可证实行为并保留未知性质。
+- 11/11最新固定编码记录覆盖988份跟踪源码：974 Java、10 Python、2 PowerShell及原计划两份FXML。对11/05完整清单及其增量逐文件闭合，981份相同、7份变化/新增；7条新增非ASCII行按上下文复核正常。全部字节严格UTF-8可读，未见确证乱码标记或异常控制字符。证据见`src/test/resources/bhe-runtime-evidence-20261111/source-encoding-current.json`；不把增量复核说成逐句重读所有历史注释。
+- 当前源码已完成上述清单闭合；最终交付时若之后再新增或修改文字，须继续对应增量复核，不能沿用旧hash冒充新文件检查。
+- 两引擎`SkillInfoFactory`的问号占位已按本行可证实行为改写，说明`0xFFFFFFFF`当前映射为`CEventTerm`并明确原始类型语义未确认；仅改注释，不宣称恢复了历史原文或解析协议已解决。
 - 104份既有裸LF记录属于格式风格，不是乱码；本页不把它们自动扩大为源码语义修复任务。已完成的Clarias文字恢复与原六文件53行功能WIP保全继续分别记录，不据“全修”要求改写未证实内容。
 - 当前[使用说明](使用说明.md)及[progress](progress.md)已由主代理更新到11/06。本页只提供补充验收矩阵，不再沿用早先对它们过期状态的描述。
 

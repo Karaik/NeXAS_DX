@@ -126,7 +126,7 @@ public class SkillInfoFactory {
             case 0x21 -> new CEventNokezori(typeId); // 33
             case 0x22 -> new CEventChange(typeId); // 34
             case 0x23 -> new CEventStatus(typeId); // 35
-            case 0xFFFFFFFF -> new CEventTerm(typeId); // ????
+            case 0xFFFFFFFF -> new CEventTerm(typeId); // 原始类型含义未确认；当前映射为 CEventTerm。
             default -> throw new OperationException(500, "unexpected CEvent type: "+typeId);
         };
     }

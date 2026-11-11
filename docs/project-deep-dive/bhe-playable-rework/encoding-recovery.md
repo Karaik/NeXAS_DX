@@ -102,3 +102,13 @@
 旧BHE `SkillInfoFactory.java:142`的`// ???`及BSDX同名文件第129行的`// ????`仍为未知语义占位，没有可恢复原文证据；104份既有LF文件hash均未变化，单列为换行风格，不作乱码恢复。原六份Clarias相关WIP仍为53行新增、0删除，本轮写入前后六文件hash相同；没有修改源码、格式化、运行Maven／JVM／UI或提交。
 
 小型摘要与两文件hash增量写入[source-encoding-current.json](../../../src/test/resources/bhe-runtime-evidence-20261105/source-encoding-current.json)，SHA256 `f5d717cce8a00693c55a70c7029bfc876db7c30265acb1bc04c3f695f754db59`；未复制271KB旧清单。此结论只覆盖源文本编码，当前热修仍未取得实机成功，不据此扩展游戏验收结论。
+
+## 2026-11-11 当前源码闭合与未知注释改写
+
+当前988份跟踪源文件（974 Java、10 Python、2 PowerShell及原计划2份FXML）全部严格UTF-8可读，未发现U+FFFD、PUA、C1、NUL或异常C0及既有确证乱码标记。与11/05完整清单及其两文件增量合并后逐文件hash比较：981份完全相同，7份变化或新增；没有删除，新增仅正式采样器及其测试。104份既有LF集合保持，未为此格式化历史文件。
+
+7份增量为两引擎SkillInfoFactory、NaotoAdditionalVariants、bhe_runtime_session及其测试、新增bhe_runtime_sampler及其测试。全部7条新增非ASCII行已读上下文：两条本次中文注释、三条既有Naoto日文简介，以及session测试中两条“状态”Unicode读回文本均正常；没有新增确证乱码。完整清单不重复复制，小型hash与增量证据见`src/test/resources/bhe-runtime-evidence-20261111/source-encoding-current.json`。这是当前字节全扫描及基线继承/文字增量复核，不声称逐句重读全部历史注释。
+
+BHE SkillInfoFactory第142行的???和BSDX第129行的????改写为“原始类型含义未确认；当前映射为 CEventTerm。”。两处都是0xFFFFFFFF的既有分支，只依据本行实际返回类型解释当前行为，仍明确未知原始类型语义；不冒称找回不可恢复的历史原文。字节精确替换验证除此注释外全部字节相同，未改解析行为，未为注释新增测试或运行构建。原Clarias六文件53行功能WIP及Sou旧笔记不在本批修改范围。
+
+首次审计脚本在打印中文复核行时遇到终端CP932 UnicodeEncodeError；两个注释写入已完成，未重复替换。后续以UTF-8输出重新完成全扫描/人工文字复核并生成证据。该输出错误不属于源码编码损坏，也不作游戏结论。

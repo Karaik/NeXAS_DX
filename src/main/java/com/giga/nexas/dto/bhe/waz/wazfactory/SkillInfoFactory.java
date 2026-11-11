@@ -139,7 +139,7 @@ public class SkillInfoFactory {
             case 0x29 -> new CEventStatus(typeId); // 41
             case 0x2A -> new CEventWazaToolParam(typeId); // 42 add
             case 0x2B -> new CEventAttr(typeId); // 43 add
-            case 0xFFFFFFFF -> new CEventTerm(typeId); // ???
+            case 0xFFFFFFFF -> new CEventTerm(typeId); // 原始类型含义未确认；当前映射为 CEventTerm。
             default -> throw new OperationException(500, "unexpected CEvent type: "+typeId);
         };
     }
