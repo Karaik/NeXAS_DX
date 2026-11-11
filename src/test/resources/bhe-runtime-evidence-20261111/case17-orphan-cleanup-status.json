@@ -1,0 +1,15 @@
+{
+  "schema": "nexas.bhe-orphan-cleanup-status/v1",
+  "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-17",
+  "status": "deletion_blocked_by_automatic_policy",
+  "action": "Delete only 28 manifest-owned, byte-identical and reproducible static game input copies after final checks",
+  "reviewReason": "blocked by policy",
+  "commandExecuted": false,
+  "removedFiles": [],
+  "removedBytes": 0,
+  "retainedCandidateBytes": 5805717300,
+  "preflightEvidence": "case17-orphan-preflight.json",
+  "priorStateStillUnchanged": true,
+  "oldExitCode": null,
+  "boundary": "Original game/launcher were observed absent; old state.json remains stale running. No game exit cause, runtime success or completed cleanup claimed. Preserve Save, logs, replays, manifests and all input copies after policy rejection."
+}

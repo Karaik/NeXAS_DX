@@ -1,0 +1,1368 @@
+{
+  "schema": "nexas.bhe-runtime-evidence/v1",
+  "capturedAt": "2026-11-11T08:09:08.746345+00:00",
+  "scope": "Replay067 only: case18 normal-UI Kou CPU trial of Naoto weapon21 startup received-hit interruption. Case17 owns source fixture input and receipt. No Replay068 data included.",
+  "runtimeValidated": false,
+  "terminalAcceptance": false,
+  "startupInterruptionObserved": true,
+  "postInterruptionControlRecoveryObserved": true,
+  "naturalW32CompletionObserved": false,
+  "stableTailValidated": false,
+  "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18",
+  "operatorProvenance": "Root reports normal UI Hell/Practice/Replay LOAD and PLAY067. This audit reads saved files only and creates this one evidence JSON; it performs no UI/process control, build, production edit, commit, deletion, or external write.",
+  "identity": {
+    "process": {
+      "pid": 71360,
+      "thread_id": 47976,
+      "creation_filetime": 134388569299088782,
+      "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18\\game\\BaldrSky.exe"
+    },
+    "launcherPidRecordedByRoot": 68672,
+    "manifest": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18\\manifest.json",
+      "bytes": 41474,
+      "sha256": "b15f5a9b71f189b54889efecf646edc465ccd7e152b9909acd2cc630b2f10c43"
+    },
+    "exeSha256RecordedInManifest": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae",
+    "pacSha256RecordedInManifest": "8efe934e14fda0d7f9c429f9b8d703a710d3213d15bbfc5ec6fb9f41e40b4641",
+    "boundary": "Manifest SHA and sampler identity verified from files; no live-process query and no process-terminal conclusion."
+  },
+  "sourceEvents": {
+    "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18\\events.jsonl",
+    "replayTickBound": [41558,41918],
+    "counterBound": [0,360],
+    "prefixLastLine": 1119,
+    "prefixBytes": 568663,
+    "prefixSha256": "70631f9be96509a799891f53eea6c95d6faf88e1073a97e656414e0344235045",
+    "windowFirstLine": 1070,
+    "windowLastLine": 1119,
+    "windowLines": 50,
+    "tickBearingNativeObjects": 40,
+    "windowBytes": 27264,
+    "windowSha256": "edebb5fa4f2f2b0563e9a4387632b66b9b5ebb547d2645c3052a970b0eae8978",
+    "firstByte": 541399,
+    "lastByteExclusive": 568663,
+    "eventTypeCounts": {
+      "combat_replay_input": 4,
+      "combat_use": 9,
+      "gameplay_start": 1,
+      "combat_damage": 6,
+      "combat_reaction_applied": 6,
+      "gameplay_release_or_cancel": 1,
+      "combat_motion_transition": 10,
+      "combat_recovery_entry": 2,
+      "combat_reset": 1
+    },
+    "nonTickSaveLookups": {
+      "lineRange": [1071,1080],
+      "count": 10,
+      "success": 6,
+      "status0xc0000034": 4,
+      "boundary": "Save001..Save010 path lookups interleave the byte span; they have no combat tick and are not omitted combat samples."
+    },
+    "replayRead": {
+      "line": 1069,
+      "at": "2026-11-11T08:00:32.398360+00:00",
+      "payload": {
+        "type": "save_path_redirected",
+        "api": "NtCreateFile",
+        "from": "\\??\\C:\\Users\\30250\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay067.dat",
+        "to": "\\??\\D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay067.dat",
+        "status": "0x0",
+        "succeeded": true
+      }
+    },
+    "boundary": "Native window derives only from this sampler own tick minimum/maximum. Last native combat event is tick41899/frame341; RPM still covers STOP at41918. Later CPU events with stale lastReplayFrame359/replayReadTick41917 are excluded."
+  },
+  "fixture": {
+    "Replay067Loaded": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay067.dat",
+      "bytes": 856,
+      "sha256": "34b609daab533373e455372d95f6b9fb757cc31d474e735842e64239c3cf98b1"
+    },
+    "Replay067SourceCase17": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-17\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay067.dat",
+      "bytes": 856,
+      "sha256": "34b609daab533373e455372d95f6b9fb757cc31d474e735842e64239c3cf98b1"
+    },
+    "Replay062Template": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay062.dat",
+      "bytes": 861,
+      "sha256": "3298eb8deaaa4a0bec632a69cd3aa02c74c1da2c4baf75ab61d8d456d8aa05e2"
+    },
+    "inputSourceCase17": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-17\\naoto21-kou-startup-input.json",
+      "bytes": 158,
+      "sha256": "de829e8fc39587ecc40ac5f67bec19a4b567ac8bd1400a5d72bc63d94d84e3a3"
+    },
+    "receiptSourceCase17": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-17\\naoto21-kou-startup-receipt.json",
+      "bytes": 7688,
+      "sha256": "fa5d352d31aaa33f508a70b1b6e7c970dd5f945e201b464a5ffa73c288f5ef3b"
+    },
+    "inputAndReceiptCopiedToCase18Root": false,
+    "schedule": {
+      "frames": 360,
+      "tail_frames": 180,
+      "ranges": [
+        {
+          "start": 23,
+          "end": 27,
+          "held": ["B"]
+        }
+      ]
+    },
+    "verification": {
+      "case17Case18ReplayByteIdentical": true,
+      "all360EdgeHeldPairs": true,
+      "threeZlibBlocksAndEOF": true,
+      "receiptHashesMatch": true,
+      "onlyControls": "B[23,27); all other edge/held words zero; no direction/A/C/D input",
+      "headerAndFirstTwoEncodedBlocksEqual062": true,
+      "preservedPrefixBytes": 813,
+      "preservedPrefixSha256": "18e98e9cfcb86251a2ed794c21add1d6c42336abbfdcecb566e46e4bf4e20a57",
+      "decodedInputSha256": "9a165e6cd0e38bf350851d78e5eac28da5ecb5240077282b24c57bd945bfdb6f",
+      "mekaEnemyMap": [109,0,68],
+      "cpuSeed6": 3,
+      "equipmentIds": [-1,-1,-1,-1,-1,-1,-1,-1,-1,20,21,22,-1,-1]
+    }
+  },
+  "firstInterruption": {
+    "start": {
+      "line": 1083,
+      "tick": 41581,
+      "nativeInputFrame": 23,
+      "weapon": 21,
+      "startSeq": 1
+    },
+    "use": {
+      "line": 1084,
+      "tick": 41581,
+      "slotRaw": 7,
+      "usedBefore": 0,
+      "chainBefore": 0
+    },
+    "acceptedW32": {
+      "counterRange": [24,34],
+      "clocks": [0,1,2,3,4,5,6,7,8,9,10],
+      "group": 116,
+      "skill": 32,
+      "initialFallModifier": 20,
+      "firstAcceptedTick": 41582
+    },
+    "inputRelease": {
+      "line": 1086,
+      "tick": 41585,
+      "nativeFrame": 27,
+      "edge": 0,
+      "held": 0,
+      "laterActualReleaseTick": 41592,
+      "boundary": "B release is an input change. W32 remains active for subsequent clocks4..10, so input release is not itself the weapon release/cancel event."
+    },
+    "incoming": {
+      "enemyUseLine": 1081,
+      "enemyUseTick": 41574,
+      "enemyUseNativeFrame": 16,
+      "enemyWeapon": 10,
+      "acceptedEnemyGroupSkill": [9,44],
+      "damageLine": 1087,
+      "tick": 41591,
+      "nativeFrameContext": 33,
+      "damage": 67,
+      "hpBefore": 2000,
+      "hpAfter": 1933,
+      "playerActive": 21,
+      "playerSkill": 32,
+      "playerClock": 10,
+      "reactionLine": 1088,
+      "controlBefore": 0,
+      "controlAfter": 16,
+      "pendingReactionAfter": 1,
+      "attributionBoundary": "Kou G9/W44 is the observed runtime attacker context; native damage hook does not include an attack-source-owner field."
+    },
+    "release": {
+      "line": 1089,
+      "tick": 41592,
+      "nativeFrameContext": 34,
+      "active": 21,
+      "skill": 32,
+      "clock": 10,
+      "control": 16,
+      "pendingReaction": 1,
+      "heatRaw": 2200,
+      "tama": 0,
+      "script": 0
+    },
+    "state7Request": {
+      "line": 1090,
+      "tick": 41592,
+      "nativeFrameContext": 34,
+      "active": -1,
+      "fromState": 0,
+      "toState": 7
+    },
+    "rpmOrdering": {
+      "counter33Tick": 41591,
+      "counter33ActiveClockHp": [21,9,2000],
+      "counter34Tick": 41592,
+      "counter34ActiveClockHpControlPending": [21,10,1933,16,1],
+      "counter35Tick": 41593,
+      "counter35ActiveState": [-1,7],
+      "boundary": "Guarded RPM rows are not atomic with the native hooks. Native damage uses clock10 at41591; RPM row33 at that tick is still clock9 before damage."
+    },
+    "conclusion": "Observed incoming damage and nonzero control/pendingReaction while21 is active, followed one native tick later by release and state7, support a received-hit interruption in W32 startup. This is not inferred from HP loss alone. W32 never reaches34..36 attack,40..47 retreat,48 gate,or70 natural end in this trial; those source-defined windows are not backfilled as executed."
+  },
+  "geometry": {
+    "counterRange": [23,35],
+    "playerStartXY": [2302,1808],
+    "playerMaxXBeforeFirstHit": 2338,
+    "kouXYThroughoutFirstApproach": [2402,1808],
+    "signedTargetMinusPlayerXRange": [64,100],
+    "playerZBeforeFirstHit": 0,
+    "crossedThroughKouBeforeFirstHit": false,
+    "firstSwordMiss": false,
+    "firstSwordHitDamage": 67,
+    "targetHpEntireWindow": 6000,
+    "enemyDamageEvents": 0,
+    "boundary": "Actual approach advances36 map units and stops short with64 units positive separation. This trial cannot support a pass-through-caused first-sword miss; the actual first sword hits the player. No Naoto hook damage is observed."
+  },
+  "recoveryHeatPhysics": {
+    "firstNativeRecovery": {
+      "line": 1092,
+      "tick": 41610,
+      "nativeFrameContext": 52
+    },
+    "firstAcceptedRecoveredCounter": 53,
+    "recoveredState": {
+      "active": -1,
+      "state": 0,
+      "control": 0,
+      "pendingReaction": 0,
+      "normalGate": 1,
+      "fallModifier": 100,
+      "jumpModifier": 100,
+      "gravityRaw": 51200,
+      "z": 0,
+      "heatRaw": 2200,
+      "heatState": 3
+    },
+    "heatDecayCounterAndRaw": [
+      [54,1800],
+      [55,1400],
+      [56,1000],
+      [57,600],
+      [58,200],
+      [59,0]
+    ],
+    "heatZeroAndHeatState0Counter": 59,
+    "actualPlayerReset": {
+      "line": 1098,
+      "tick": 41640,
+      "nativeFrameContext": 82,
+      "usedBefore": 1,
+      "chainBefore": 1,
+      "playerState": 7,
+      "control": 26
+    },
+    "boundary": "First control recovery53 and heat0/heatState0 at59 are separate from used-chain RESET82. No second player input/START/USE exists in067, so reuse is not tested. W32 ends atclock10; its source-defined34 restoration was not executed. First hit sets fall0; first control recovery restores100. Later state7/8/10/11 physics belong to continued received CPU attacks, not a lingering W32 movement claim.",
+    "allPlayerGravityRaw": [51200],
+    "allArmorWazaRaw": [0],
+    "allArmorContributionCacheRaw": [0],
+    "firstW32FallCounterClockValue": [
+      [24,0,20],
+      [25,1,21],
+      [26,2,22],
+      [27,3,23],
+      [28,4,24],
+      [29,5,25],
+      [30,6,26],
+      [31,7,27],
+      [32,8,28],
+      [33,9,29],
+      [34,10,0]
+    ],
+    "maxPlayerZDuringLaterCpuCombat": 29
+  },
+  "allPlayerDamageFacts": [
+    {
+      "line": 1087,
+      "tick": 41591,
+      "context": 33,
+      "damage": 67,
+      "hpAfter": 1933,
+      "active": 21,
+      "skill": 32,
+      "clock": 10,
+      "state": 0,
+      "precontrol": 0
+    },
+    {
+      "line": 1094,
+      "tick": 41620,
+      "context": 62,
+      "damage": 35,
+      "hpAfter": 1898,
+      "active": -1,
+      "skill": 0,
+      "clock": 10,
+      "state": 0,
+      "precontrol": 0
+    },
+    {
+      "line": 1100,
+      "tick": 41661,
+      "context": 103,
+      "damage": 78,
+      "hpAfter": 1820,
+      "active": -1,
+      "skill": 4294967295,
+      "clock": 35,
+      "state": 7,
+      "precontrol": 5
+    },
+    {
+      "line": 1104,
+      "tick": 41715,
+      "context": 157,
+      "damage": 33,
+      "hpAfter": 1787,
+      "active": -1,
+      "skill": 4294967295,
+      "clock": 54,
+      "state": 8,
+      "precontrol": 81
+    },
+    {
+      "line": 1112,
+      "tick": 41865,
+      "context": 307,
+      "damage": 29,
+      "hpAfter": 1758,
+      "active": -1,
+      "skill": 0,
+      "clock": 20,
+      "state": 0,
+      "precontrol": 0
+    },
+    {
+      "line": 1116,
+      "tick": 41877,
+      "context": 319,
+      "damage": 21,
+      "hpAfter": 1737,
+      "active": -1,
+      "skill": 4294967295,
+      "clock": 30,
+      "state": 7,
+      "precontrol": 6
+    }
+  ],
+  "objectsAndTail": {
+    "all361TamaZero": true,
+    "allWatchedTamaAndGroupListsEmpty": true,
+    "scriptPeak": 2,
+    "scriptNonzeroCounterRanges": [
+      [29,30],
+      [37,42],
+      [60,74],
+      [80,82],
+      [104,138],
+      [140,151],
+      [158,164],
+      [311,315],
+      [319,331],
+      [337,339]
+    ],
+    "firstReleaseObjects": [0,0],
+    "lastScriptNonzeroCounter": 339,
+    "tail180Requested": [180,359],
+    "stableControlNotMaintained": true,
+    "lastNativeRecoveryInsideWindow": {
+      "line": 1109,
+      "tick": 41845,
+      "context": 287,
+      "firstAcceptedState0Counter": 288
+    },
+    "laterHitsInsideRequestedTailNativeContexts": [307,319],
+    "stop": {
+      "counter": 360,
+      "tick": 41918,
+      "replayActive": 0,
+      "activeWeapon": -1,
+      "state": 7,
+      "control": 6,
+      "pendingReaction": 0,
+      "hp": 1737,
+      "heatRaw": 0,
+      "heatState": 3,
+      "normalGate": 0,
+      "x": 1793,
+      "y": 1881,
+      "z": 0,
+      "vzRaw": 0,
+      "gravityRaw": 51200,
+      "fallModifier": 100,
+      "jumpModifier": 100,
+      "tama": 0,
+      "script": 0
+    },
+    "enemyAtStop": {
+      "activeWeapon": 30,
+      "group": 9,
+      "skill": 107,
+      "entry": 1,
+      "block": 1,
+      "clock": 17,
+      "state": 2,
+      "hp": 6000,
+      "heatRaw": 3480,
+      "x": 1728,
+      "y": 1730,
+      "z": 0
+    },
+    "postStopExcludedFirstFive": [
+      {
+        "line": 1120,
+        "payload": {
+          "type": "combat_recovery_entry",
+          "tick": 41924,
+          "lastReplayFrame": 359,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41917,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": -1,
+          "group": 116,
+          "skill": 4294967295,
+          "entry": 4294967295,
+          "block": 4294967295,
+          "slot71Clock": 60,
+          "state": 7,
+          "zRaw": 0,
+          "hp": 1737,
+          "maxHp": 2000,
+          "control": 0,
+          "nextState": 0,
+          "pendingReaction": 0,
+          "reaction": 0,
+          "heatRaw": 0,
+          "normalGate": 0,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      },
+      {
+        "line": 1121,
+        "payload": {
+          "type": "combat_motion_transition",
+          "tick": 41924,
+          "lastReplayFrame": 359,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41917,
+          "fromState": 7,
+          "toState": 0,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": -1,
+          "group": 116,
+          "skill": 4294967295,
+          "entry": 4294967295,
+          "block": 4294967295,
+          "slot71Clock": 60,
+          "state": 7,
+          "zRaw": 0,
+          "hp": 1737,
+          "maxHp": 2000,
+          "control": 0,
+          "nextState": 0,
+          "pendingReaction": 0,
+          "reaction": 0,
+          "heatRaw": 0,
+          "normalGate": 1,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      },
+      {
+        "line": 1122,
+        "payload": {
+          "type": "combat_damage",
+          "tick": 41932,
+          "lastReplayFrame": 359,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41917,
+          "damage": 33,
+          "hpAfter": 1704,
+          "controlBeforeReaction": 0,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": -1,
+          "group": 116,
+          "skill": 0,
+          "entry": 0,
+          "block": 0,
+          "slot71Clock": 8,
+          "state": 0,
+          "zRaw": 0,
+          "hp": 1704,
+          "maxHp": 2000,
+          "control": 0,
+          "nextState": -1,
+          "pendingReaction": 0,
+          "reaction": 0,
+          "heatRaw": 0,
+          "normalGate": 1,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      },
+      {
+        "line": 1123,
+        "payload": {
+          "type": "combat_reaction_applied",
+          "tick": 41932,
+          "lastReplayFrame": 359,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41917,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": -1,
+          "group": 116,
+          "skill": 0,
+          "entry": 0,
+          "block": 0,
+          "slot71Clock": 8,
+          "state": 0,
+          "zRaw": 0,
+          "hp": 1704,
+          "maxHp": 2000,
+          "control": 60,
+          "nextState": -1,
+          "pendingReaction": 1,
+          "reaction": 0,
+          "heatRaw": 0,
+          "normalGate": 1,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      },
+      {
+        "line": 1124,
+        "payload": {
+          "type": "combat_motion_transition",
+          "tick": 41933,
+          "lastReplayFrame": 359,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41917,
+          "fromState": 0,
+          "toState": 7,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": -1,
+          "group": 116,
+          "skill": 0,
+          "entry": 0,
+          "block": 0,
+          "slot71Clock": 8,
+          "state": 0,
+          "zRaw": 0,
+          "hp": 1704,
+          "maxHp": 2000,
+          "control": 60,
+          "nextState": -1,
+          "pendingReaction": 1,
+          "reaction": 0,
+          "heatRaw": 0,
+          "normalGate": 1,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      }
+    ],
+    "boundary": "Objects0 at STOP is a snapshot under continuing CPU combat, not stable recovery/cleanup acceptance. SCRIPT ownership is not read; later scripts cannot be attributed to21 leaks. STOP row still has playerstate7/control6/heatState3 and Kou active30. Recovery41924 and damage41932 occur after replayInactive and are excluded, despite stale frame359 context."
+  },
+  "rpm": {
+    "source": {
+      "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18\\naoto21-kou-startup-sampling.json",
+      "bytes": 878598,
+      "sha256": "afed281e236759d8624f2d016507461b4b88b6ce2c74205903904865d84c5b16"
+    },
+    "schema": "nexas.bhe-rpm-sampler/v1",
+    "readModel": "identity-checked read-only RPM; latest accepted row per observed replay counter; non-atomic guarded reads",
+    "complete": true,
+    "status": "complete",
+    "acceptedRows": 361,
+    "counterRange": [0,360],
+    "missingCounters": [],
+    "duplicateCounters": [],
+    "readErrors": [
+      {
+        "counter": 0,
+        "error": "Invalid 32-bit pointer: 0"
+      },
+      {
+        "counter": 0,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 6,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 54,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 95,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 130,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 135,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 161,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 186,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 206,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 208,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 220,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 251,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 282,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 286,
+        "error": "tick/counter/player/replayActive changed during sample"
+      },
+      {
+        "counter": 320,
+        "error": "tick/counter/player/replayActive changed during sample"
+      }
+    ],
+    "readErrorCount": 16,
+    "acceptedTickCounterOffsetCounts": {
+      "41558": 355,
+      "41557": 6
+    },
+    "rowsWithOffset41557": [
+      {
+        "counter": 106,
+        "tick": 41663
+      },
+      {
+        "counter": 166,
+        "tick": 41723
+      },
+      {
+        "counter": 309,
+        "tick": 41866
+      },
+      {
+        "counter": 311,
+        "tick": 41868
+      },
+      {
+        "counter": 312,
+        "tick": 41869
+      },
+      {
+        "counter": 326,
+        "tick": 41883
+      }
+    ],
+    "units": {
+      "x_y_z": "integer map coordinates",
+      "positionXRaw_positionYRaw_vzRaw_gravityRaw": "fixed point /1024",
+      "skillSpeedRaw": "skill speed /1024; not whole actor velocity",
+      "skillDirectionRaw": "degrees times1024",
+      "modifiers": "integer percent",
+      "globalFlagsRaw": "uninterpreted raw bits"
+    },
+    "keyPlayerColumns": ["counter","tick","replayActive","activeWeapon","skill","entry","block","clock","state","control","pendingReaction","reaction","hp","heatRaw","heatState","normalGate","sdGate","actualEdge","actualHeld","x","y","z","positionXRaw","positionYRaw","vzRaw","gravityRaw","fallModifier","jumpModifier","skillSpeedRaw","skillDirectionRaw","armorWazaRaw","armorContributionCacheRaw","protectionFlags","downTime","bounceLevel","bounceSpeed","tama","script"],
+    "keyPlayerRows": [
+      [0,41558,1,-1,0,0,0,0,0,0,0,0,2000,0,0,1,0,0,0,2302,1808,0,2357248,1851392,0,51200,100,100,0,0,0,0,0,0,0,0,0,0],
+      [17,41575,1,-1,0,0,0,16,0,0,0,0,2000,0,0,1,0,0,0,2302,1808,0,2357248,1851392,0,51200,100,100,0,0,0,0,0,0,0,0,0,0],
+      [23,41581,1,-1,0,0,0,22,0,0,0,0,2000,0,0,1,0,0,0,2302,1808,0,2357248,1851392,0,51200,100,100,0,0,0,0,0,0,0,0,0,0],
+      [24,41582,1,21,32,0,0,0,0,0,0,0,2000,0,0,0,0,512,512,2302,1808,0,2357248,1851392,0,51200,20,100,0,0,0,0,0,0,0,0,0,0],
+      [27,41585,1,21,32,0,0,3,0,0,0,0,2000,2200,0,0,0,0,512,2302,1808,0,2357248,1851392,0,51200,23,100,0,0,0,0,0,0,0,0,0,0],
+      [28,41586,1,21,32,0,0,4,0,0,0,0,2000,2200,0,0,0,0,0,2302,1808,0,2357248,1851392,0,51200,24,100,0,0,0,0,0,0,0,0,0,0],
+      [29,41587,1,21,32,0,0,5,0,0,0,0,2000,2200,0,0,0,0,0,2326,1808,0,2381824,1851392,0,51200,25,100,24576,-92160,0,0,0,0,0,0,0,2],
+      [30,41588,1,21,32,0,0,6,0,0,0,0,2000,2200,0,0,0,0,0,2338,1808,0,2394112,1851392,0,51200,26,100,23665,-92160,0,0,0,0,0,0,0,2],
+      [31,41589,1,21,32,0,0,7,0,0,0,0,2000,2200,0,0,0,0,0,2338,1808,0,2394112,1851392,0,51200,27,100,22755,-92160,0,0,0,0,0,0,0,0],
+      [33,41591,1,21,32,0,0,9,0,0,0,0,2000,2200,0,0,0,0,0,2338,1808,0,2394112,1851392,0,51200,29,100,20935,-92160,0,0,0,0,0,0,0,0],
+      [34,41592,1,21,32,0,0,10,0,16,1,0,1933,2200,3,0,0,0,0,2338,1808,0,2394112,1851392,0,51200,0,100,0,-92160,0,0,0,50,0,0,0,0],
+      [35,41593,1,-1,4294967295,4294967295,4294967295,10,7,16,0,0,1933,2200,3,0,0,0,0,2338,1808,0,2394112,1851392,0,51200,0,100,0,-92160,0,0,0,50,0,0,0,0],
+      [36,41594,1,-1,4294967295,4294967295,4294967295,10,7,16,0,0,1933,2200,3,0,0,0,0,2338,1808,0,2394112,1851392,0,51200,0,100,0,-92160,0,0,0,50,0,0,0,0],
+      [52,41610,1,-1,4294967295,4294967295,4294967295,26,7,0,0,0,1933,2200,3,0,0,0,0,2234,1808,0,2287520,1851392,0,51200,16,100,0,-92160,0,0,0,50,0,0,0,0],
+      [53,41611,1,-1,0,0,0,0,0,0,0,0,1933,2200,3,1,0,0,0,2229,1808,0,2282592,1851392,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,0],
+      [54,41612,1,-1,0,0,0,1,0,0,0,0,1933,1800,3,1,0,0,0,2224,1808,0,2277868,1851392,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,0],
+      [55,41613,1,-1,0,0,0,2,0,0,0,0,1933,1400,3,1,0,0,0,2220,1808,0,2273348,1851392,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,0],
+      [56,41614,1,-1,0,0,0,3,0,0,0,0,1933,1000,3,1,0,0,0,2216,1808,0,2269032,1851392,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,0],
+      [57,41615,1,-1,0,0,0,4,0,0,0,0,1933,600,3,1,0,0,0,2212,1808,0,2264920,1851392,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,0],
+      [58,41616,1,-1,0,0,0,5,0,0,0,0,1933,200,3,1,0,0,0,2208,1808,0,2261012,1851392,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,0],
+      [59,41617,1,-1,0,0,0,6,0,0,0,0,1933,0,0,1,0,0,0,2204,1808,0,2257308,1851392,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,0],
+      [62,41620,1,-1,0,0,0,9,0,0,0,0,1933,0,0,1,0,0,0,2195,1808,0,2247420,1851392,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,2],
+      [63,41621,1,-1,0,0,0,10,0,30,1,0,1898,0,3,1,0,0,0,2192,1808,0,2244532,1851392,0,51200,0,100,0,-92160,0,0,0,50,0,0,0,2],
+      [82,41640,1,-1,4294967295,4294967295,4294967295,13,7,27,0,0,1898,0,3,0,0,0,0,2147,1808,0,2198452,1851392,0,51200,3,100,0,-92160,0,0,0,50,0,0,0,2],
+      [83,41641,1,-1,4294967295,4294967295,4294967295,14,7,26,0,0,1898,0,3,0,0,0,0,2142,1808,0,2193332,1851392,0,51200,4,100,0,-92160,0,0,0,50,0,0,0,0],
+      [103,41661,1,-1,4294967295,4294967295,4294967295,34,7,6,0,0,1898,0,3,0,0,0,0,2142,1808,0,2193332,1851392,0,51200,24,100,0,-92160,0,0,0,50,0,0,0,0],
+      [104,41662,1,-1,4294967295,4294967295,4294967295,35,7,100,2,0,1820,0,3,0,0,0,0,2142,1808,0,2193332,1851392,1536,51200,20,100,0,-92160,0,0,0,50,0,0,0,2],
+      [113,41671,1,-1,4294967295,4294967295,4294967295,35,7,100,2,0,1820,0,3,0,0,0,0,2142,1808,0,2193332,1851392,1536,51200,20,100,0,-92160,0,0,0,50,0,0,0,2],
+      [114,41672,1,-1,4294967295,4294967295,4294967295,35,8,100,0,0,1820,0,3,0,0,0,0,2142,1808,0,2193332,1851392,1536,51200,20,100,0,-92160,0,0,0,50,0,0,0,2],
+      [158,41716,1,-1,4294967295,4294967295,4294967295,54,8,81,2,0,1787,0,3,0,0,0,0,1942,1808,17,1989044,1851392,1024,51200,10,100,0,-92160,0,0,0,50,0,0,0,2],
+      [180,41738,1,-1,4294967295,4294967295,4294967295,69,8,66,0,0,1787,0,3,0,0,0,0,1822,1780,28,1865789,1822431,340,51200,25,100,0,-92160,0,0,0,50,0,0,0,0],
+      [211,41769,1,-1,4294967295,4294967295,4294967295,100,10,50,0,0,1787,0,3,0,0,0,0,1743,1761,0,1784832,1803264,0,51200,56,100,0,-92160,0,0,0,50,0,0,0,0],
+      [218,41776,1,-1,4294967295,4294967295,4294967295,106,10,49,0,0,1787,0,0,0,0,0,0,1743,1761,0,1784832,1803264,0,51200,62,100,0,-92160,0,0,0,50,0,0,0,0],
+      [267,41825,1,-1,4294967295,4294967295,4294967295,155,10,0,0,0,1787,0,0,0,0,0,0,1743,1765,0,1784512,1807344,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,0],
+      [268,41826,1,-1,9,0,0,0,11,0,0,0,1787,0,0,0,0,0,0,1743,1765,0,1784512,1807344,0,51200,100,100,0,-92160,0,0,2,50,0,0,0,0],
+      [287,41845,1,-1,9,0,0,19,11,0,0,0,1787,0,0,0,0,0,0,1743,1765,0,1784512,1807344,0,51200,100,100,0,-92160,0,0,2,50,0,0,0,0],
+      [288,41846,1,-1,0,0,0,0,0,0,0,0,1787,0,0,1,0,0,0,1743,1765,0,1784512,1807344,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,0],
+      [307,41865,1,-1,0,0,0,19,0,0,0,0,1787,0,0,1,0,0,0,1743,1765,0,1784512,1807344,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,0],
+      [308,41866,1,-1,0,0,0,20,0,16,1,0,1758,0,3,1,0,0,0,1743,1765,0,1784512,1807344,0,51200,0,100,0,-92160,0,0,0,50,0,0,0,0],
+      [319,41877,1,-1,4294967295,4294967295,4294967295,29,7,7,0,0,1758,0,3,0,0,0,0,1768,1824,0,1810763,1868278,0,51200,9,100,0,-92160,0,0,0,50,0,0,0,2],
+      [320,41878,1,-1,4294967295,4294967295,4294967295,30,7,30,1,0,1737,0,3,0,0,0,0,1771,1830,0,1813276,1874112,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,2],
+      [359,41917,1,-1,4294967295,4294967295,4294967295,53,7,7,0,0,1737,0,3,0,0,0,0,1793,1881,0,1835551,1925812,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,0],
+      [360,41918,0,-1,4294967295,4294967295,4294967295,54,7,6,0,0,1737,0,3,0,0,0,0,1793,1881,0,1835551,1925812,0,51200,100,100,0,-92160,0,0,0,50,0,0,0,0]
+    ],
+    "keyTargetColumns": ["counter","activeWeapon","skill","entry","block","clock","state","hp","heatRaw","x","y","z","gravityRaw","fallModifier","jumpModifier"],
+    "keyTargetRows": [
+      [0,-1,0,0,0,0,0,6000,0,2402,1808,0,51200,100,100],
+      [17,10,44,0,0,0,0,6000,0,2402,1808,0,51200,100,100],
+      [23,10,44,0,0,6,0,6000,360,2402,1808,0,51200,100,67],
+      [24,10,44,0,0,7,0,6000,360,2402,1808,0,51200,100,61],
+      [27,10,44,0,0,10,0,6000,360,2402,1808,0,51200,100,44],
+      [28,10,44,0,0,11,0,6000,360,2402,1808,0,51200,100,39],
+      [29,10,44,0,0,12,0,6000,360,2402,1808,0,51200,100,33],
+      [30,10,44,0,0,13,0,6000,360,2402,1808,0,51200,100,27],
+      [31,10,44,0,0,14,0,6000,360,2402,1808,0,51200,100,22],
+      [33,10,44,0,0,16,0,6000,360,2402,1808,0,51200,100,10],
+      [34,10,44,0,0,17,0,6000,360,2402,1808,0,51200,100,10],
+      [35,10,44,0,0,17,0,6000,360,2402,1808,0,51200,100,10],
+      [36,10,44,0,0,17,0,6000,360,2402,1808,0,51200,100,10],
+      [52,23,86,0,0,2,0,6000,360,2402,1808,0,0,2,100],
+      [53,23,86,0,0,3,0,6000,660,2402,1808,0,0,3,100],
+      [54,23,86,0,0,4,0,6000,660,2402,1808,0,0,4,100],
+      [55,23,86,0,0,5,0,6000,660,2402,1808,0,0,5,100],
+      [56,23,86,0,0,6,0,6000,660,2402,1808,0,0,6,100],
+      [57,23,86,0,0,7,0,6000,660,2402,1808,0,0,7,100],
+      [58,23,86,0,0,8,0,6000,660,2400,1808,0,0,8,100],
+      [59,23,86,0,0,9,0,6000,660,2396,1808,0,0,9,100],
+      [62,23,86,0,0,12,0,6000,660,2273,1808,0,0,12,100],
+      [63,23,86,0,0,13,0,6000,660,2256,1808,0,0,13,100],
+      [82,28,101,0,0,4,0,6000,1380,2246,1808,0,0,4,100],
+      [83,28,101,0,0,5,0,6000,1380,2245,1808,0,0,5,100],
+      [103,28,101,0,0,25,2,6000,1380,2245,1808,0,0,25,100],
+      [104,28,101,0,0,26,2,6000,1380,2209,1808,0,0,26,100],
+      [113,28,101,0,0,26,2,6000,1380,2209,1808,0,0,26,100],
+      [114,28,101,0,0,26,2,6000,1380,2209,1808,0,0,26,100],
+      [158,10,44,0,0,17,2,6000,1740,2061,1836,0,51200,44,10],
+      [180,55,182,0,0,15,2,6000,2340,1954,1857,60,51200,100,100],
+      [211,55,182,2,2,21,2,6000,2340,1823,1757,146,51200,129,100],
+      [218,55,182,2,2,28,2,6000,2340,1801,1740,120,51200,122,100],
+      [267,-1,4294967295,4294967295,4294967295,30,2,6000,2340,1740,1692,0,51200,100,100],
+      [268,-1,4294967295,4294967295,4294967295,31,2,6000,2340,1737,1692,0,51200,100,100],
+      [287,-1,0,0,0,10,0,6000,2340,1713,1697,0,51200,100,100],
+      [288,-1,0,0,0,11,0,6000,2340,1713,1697,0,51200,100,100],
+      [307,10,44,0,0,16,0,6000,2700,1713,1697,0,51200,100,10],
+      [308,10,44,0,0,17,0,6000,2700,1713,1697,0,51200,100,10],
+      [319,1,17,0,0,8,0,6000,2880,1723,1719,0,51200,100,100],
+      [320,1,17,0,0,9,0,6000,2880,1728,1730,0,51200,100,100],
+      [359,30,107,1,1,16,2,6000,3480,1728,1730,0,51200,100,10],
+      [360,30,107,1,1,17,2,6000,3480,1728,1730,0,51200,100,10]
+    ],
+    "boundary": "Every counter0..360 has one accepted row, but16 rejected reads remain recorded. Six accepted rows have tick=counter+41557 rather than41558. Do not overwrite own ticks using fixed arithmetic or use RPM as an atomic exact decision snapshot. This is grounded startup interruption, not an aerial interruption trial."
+  },
+  "nativeSummary": {
+    "columns": ["line","tick","lastReplayFrame","type","role","weapon_or_active","skill","entry","block","slot71Clock","state","hp_or_hpAfter","damage","controlBeforeReaction","control","pendingReaction","normalGate","sdGate","heatRaw","fromState","toState","edge","held","usedBefore","chainBefore","slotRaw"],
+    "rows": [
+      [1070,41558,0,"combat_replay_input",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,0,null,null,null],
+      [1081,41574,16,"combat_use","enemy",10,0,0,0,15,0,6000,null,null,0,0,0,0,0,null,null,null,null,0,0,10],
+      [1082,41581,23,"combat_replay_input",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,512,512,null,null,null],
+      [1083,41581,23,"gameplay_start",null,21,0,0,0,22,0,2000,null,null,0,0,0,0,0,null,null,null,null,null,null,null],
+      [1084,41581,23,"combat_use","player",21,0,0,0,22,0,2000,null,null,0,0,0,0,0,null,null,null,null,0,0,7],
+      [1085,41582,24,"combat_replay_input",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,512,null,null,null],
+      [1086,41585,27,"combat_replay_input",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,0,null,null,null],
+      [1087,41591,33,"combat_damage","player",21,32,0,0,10,0,1933,67,0,0,0,0,0,2200,null,null,null,null,null,null,null],
+      [1088,41591,33,"combat_reaction_applied","player",21,32,0,0,10,0,1933,null,null,16,1,0,0,2200,null,null,null,null,null,null,null],
+      [1089,41592,34,"gameplay_release_or_cancel",null,21,32,0,0,10,0,1933,null,null,16,1,0,0,2200,null,null,null,null,null,null,null],
+      [1090,41592,34,"combat_motion_transition","player",-1,32,0,0,10,0,1933,null,null,16,1,1,0,2200,0,7,null,null,null,null,null],
+      [1091,41607,49,"combat_use","enemy",23,44,0,0,30,0,6000,null,null,0,0,0,0,360,null,null,null,null,1,1,23],
+      [1092,41610,52,"combat_recovery_entry","player",-1,4294967295,4294967295,4294967295,26,7,1933,null,null,0,0,0,0,2200,null,null,null,null,null,null,null],
+      [1093,41610,52,"combat_motion_transition","player",-1,4294967295,4294967295,4294967295,26,7,1933,null,null,0,0,1,0,2200,7,0,null,null,null,null,null],
+      [1094,41620,62,"combat_damage","player",-1,0,0,0,10,0,1898,35,0,0,0,1,0,0,null,null,null,null,null,null,null],
+      [1095,41620,62,"combat_reaction_applied","player",-1,0,0,0,10,0,1898,null,null,30,1,1,0,0,null,null,null,null,null,null,null],
+      [1096,41626,68,"combat_motion_transition","player",-1,0,0,0,10,0,1898,null,null,30,1,1,0,0,0,7,null,null,null,null,null],
+      [1097,41635,77,"combat_use","enemy",28,86,0,0,16,0,6000,null,null,0,0,0,0,660,null,null,null,null,2,2,28],
+      [1098,41640,82,"combat_reset","player",-1,4294967295,4294967295,4294967295,14,7,1898,null,null,26,0,0,0,0,null,null,null,null,1,1,null],
+      [1099,41652,94,"combat_motion_transition","enemy",28,101,0,0,16,0,6000,null,null,0,0,0,0,1380,0,2,null,null,null,null,null],
+      [1100,41661,103,"combat_damage","player",-1,4294967295,4294967295,4294967295,35,7,1820,78,5,5,0,0,0,0,null,null,null,null,null,null,null],
+      [1101,41661,103,"combat_reaction_applied","player",-1,4294967295,4294967295,4294967295,35,7,1820,null,null,100,2,0,0,0,null,null,null,null,null,null,null],
+      [1102,41671,113,"combat_motion_transition","player",-1,4294967295,4294967295,4294967295,35,7,1820,null,null,100,2,0,0,0,7,8,null,null,null,null,null],
+      [1103,41698,140,"combat_use","enemy",10,101,1,1,0,2,6000,null,null,0,0,0,0,1380,null,null,null,null,3,3,10],
+      [1104,41715,157,"combat_damage","player",-1,4294967295,4294967295,4294967295,54,8,1787,33,81,81,0,0,0,0,null,null,null,null,null,null,null],
+      [1105,41715,157,"combat_reaction_applied","player",-1,4294967295,4294967295,4294967295,54,8,1787,null,null,81,2,0,0,0,null,null,null,null,null,null,null],
+      [1106,41722,164,"combat_use","enemy",55,44,0,0,21,2,6000,null,null,0,0,0,0,1740,null,null,null,null,4,4,55],
+      [1107,41825,267,"combat_motion_transition","player",-1,4294967295,4294967295,4294967295,155,10,1787,null,null,0,0,0,0,0,10,11,null,null,null,null,null],
+      [1108,41834,276,"combat_motion_transition","enemy",-1,4294967295,4294967295,4294967295,39,2,6000,null,null,0,0,1,0,2340,2,0,null,null,null,null,null],
+      [1109,41845,287,"combat_recovery_entry","player",-1,9,0,0,19,11,1787,null,null,0,0,0,0,0,null,null,null,null,null,null,null],
+      [1110,41845,287,"combat_motion_transition","player",-1,9,0,0,19,11,1787,null,null,0,0,1,0,0,11,0,null,null,null,null,null],
+      [1111,41848,290,"combat_use","enemy",10,0,0,0,13,0,6000,null,null,0,0,0,0,2340,null,null,null,null,5,5,10],
+      [1112,41865,307,"combat_damage","player",-1,0,0,0,20,0,1758,29,0,0,0,1,0,0,null,null,null,null,null,null,null],
+      [1113,41865,307,"combat_reaction_applied","player",-1,0,0,0,20,0,1758,null,null,16,1,1,0,0,null,null,null,null,null,null,null],
+      [1114,41866,308,"combat_motion_transition","player",-1,0,0,0,20,0,1758,null,null,16,1,1,0,0,0,7,null,null,null,null,null],
+      [1115,41868,310,"combat_use","enemy",1,44,0,0,17,0,6000,null,null,0,0,0,0,2700,null,null,null,null,6,6,1],
+      [1116,41877,319,"combat_damage","player",-1,4294967295,4294967295,4294967295,30,7,1737,21,6,6,0,0,0,0,null,null,null,null,null,null,null],
+      [1117,41877,319,"combat_reaction_applied","player",-1,4294967295,4294967295,4294967295,30,7,1737,null,null,30,1,0,0,0,null,null,null,null,null,null,null],
+      [1118,41892,334,"combat_motion_transition","enemy",1,17,0,0,12,0,6000,null,null,0,0,1,0,2880,0,2,null,null,null,null,null],
+      [1119,41899,341,"combat_use","enemy",30,17,0,0,19,2,6000,null,null,0,0,0,0,2880,null,null,null,null,7,7,30]
+    ],
+    "playerStartCount": 1,
+    "playerUseCount": 1,
+    "playerReleaseCount": 1,
+    "playerDamageCount": 6,
+    "enemyDamageCount": 0
+  },
+  "selectedOriginalNativeObjects": {
+    "1082": {
+      "at": "2026-11-11T08:00:32.801378+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "combat_replay_input",
+          "tick": 41581,
+          "lastReplayFrame": 23,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41581,
+          "frame": 23,
+          "edge": 512,
+          "held": 512
+        }
+      }
+    },
+    "1083": {
+      "at": "2026-11-11T08:00:32.801429+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "gameplay_start",
+          "tick": 41581,
+          "lastReplayFrame": 23,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41581,
+          "startSeq": 1,
+          "weapon": 21,
+          "previewMode": 0,
+          "requestSeq": null,
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": 21,
+          "group": 116,
+          "skill": 0,
+          "entry": 0,
+          "block": 0,
+          "slot71Clock": 22,
+          "state": 0,
+          "zRaw": 0,
+          "hp": 2000,
+          "maxHp": 2000,
+          "control": 0,
+          "nextState": -1,
+          "pendingReaction": 0,
+          "reaction": 0,
+          "heatRaw": 0,
+          "normalGate": 0,
+          "sdGate": 0,
+          "sdBudgetRaw": 4,
+          "tama": 0,
+          "script": 0
+        }
+      }
+    },
+    "1084": {
+      "at": "2026-11-11T08:00:32.801449+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "combat_use",
+          "tick": 41581,
+          "lastReplayFrame": 23,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41581,
+          "manager": "0x3201cdc0",
+          "usedBefore": 0,
+          "chainBefore": 0,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": 21,
+          "group": 116,
+          "skill": 0,
+          "entry": 0,
+          "block": 0,
+          "slot71Clock": 22,
+          "state": 0,
+          "zRaw": 0,
+          "hp": 2000,
+          "maxHp": 2000,
+          "control": 0,
+          "nextState": -1,
+          "pendingReaction": 0,
+          "reaction": 0,
+          "heatRaw": 0,
+          "normalGate": 0,
+          "sdGate": 0,
+          "sdBudgetRaw": 4,
+          "slotRaw": 7
+        }
+      }
+    },
+    "1086": {
+      "at": "2026-11-11T08:00:32.902099+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "combat_replay_input",
+          "tick": 41585,
+          "lastReplayFrame": 27,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41585,
+          "frame": 27,
+          "edge": 0,
+          "held": 0
+        }
+      }
+    },
+    "1087": {
+      "at": "2026-11-11T08:00:33.002816+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "combat_damage",
+          "tick": 41591,
+          "lastReplayFrame": 33,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41591,
+          "damage": 67,
+          "hpAfter": 1933,
+          "controlBeforeReaction": 0,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": 21,
+          "group": 116,
+          "skill": 32,
+          "entry": 0,
+          "block": 0,
+          "slot71Clock": 10,
+          "state": 0,
+          "zRaw": 0,
+          "hp": 1933,
+          "maxHp": 2000,
+          "control": 0,
+          "nextState": -1,
+          "pendingReaction": 0,
+          "reaction": 0,
+          "heatRaw": 2200,
+          "normalGate": 0,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      }
+    },
+    "1088": {
+      "at": "2026-11-11T08:00:33.002909+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "combat_reaction_applied",
+          "tick": 41591,
+          "lastReplayFrame": 33,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41591,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": 21,
+          "group": 116,
+          "skill": 32,
+          "entry": 0,
+          "block": 0,
+          "slot71Clock": 10,
+          "state": 0,
+          "zRaw": 0,
+          "hp": 1933,
+          "maxHp": 2000,
+          "control": 16,
+          "nextState": -1,
+          "pendingReaction": 1,
+          "reaction": 0,
+          "heatRaw": 2200,
+          "normalGate": 0,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      }
+    },
+    "1089": {
+      "at": "2026-11-11T08:00:33.002947+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "gameplay_release_or_cancel",
+          "tick": 41592,
+          "lastReplayFrame": 34,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41592,
+          "previewMode": 0,
+          "requestSeq": null,
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": 21,
+          "group": 116,
+          "skill": 32,
+          "entry": 0,
+          "block": 0,
+          "slot71Clock": 10,
+          "state": 0,
+          "zRaw": 0,
+          "hp": 1933,
+          "maxHp": 2000,
+          "control": 16,
+          "nextState": -1,
+          "pendingReaction": 1,
+          "reaction": 0,
+          "heatRaw": 2200,
+          "normalGate": 0,
+          "sdGate": 0,
+          "sdBudgetRaw": 4,
+          "tama": 0,
+          "script": 0
+        }
+      }
+    },
+    "1090": {
+      "at": "2026-11-11T08:00:33.002980+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "combat_motion_transition",
+          "tick": 41592,
+          "lastReplayFrame": 34,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41592,
+          "fromState": 0,
+          "toState": 7,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": -1,
+          "group": 116,
+          "skill": 32,
+          "entry": 0,
+          "block": 0,
+          "slot71Clock": 10,
+          "state": 0,
+          "zRaw": 0,
+          "hp": 1933,
+          "maxHp": 2000,
+          "control": 16,
+          "nextState": -1,
+          "pendingReaction": 1,
+          "reaction": 0,
+          "heatRaw": 2200,
+          "normalGate": 1,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      }
+    },
+    "1092": {
+      "at": "2026-11-11T08:00:33.303955+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "combat_recovery_entry",
+          "tick": 41610,
+          "lastReplayFrame": 52,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41610,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": -1,
+          "group": 116,
+          "skill": 4294967295,
+          "entry": 4294967295,
+          "block": 4294967295,
+          "slot71Clock": 26,
+          "state": 7,
+          "zRaw": 0,
+          "hp": 1933,
+          "maxHp": 2000,
+          "control": 0,
+          "nextState": 0,
+          "pendingReaction": 0,
+          "reaction": 0,
+          "heatRaw": 2200,
+          "normalGate": 0,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      }
+    },
+    "1093": {
+      "at": "2026-11-11T08:00:33.303974+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "combat_motion_transition",
+          "tick": 41610,
+          "lastReplayFrame": 52,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41610,
+          "fromState": 7,
+          "toState": 0,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": -1,
+          "group": 116,
+          "skill": 4294967295,
+          "entry": 4294967295,
+          "block": 4294967295,
+          "slot71Clock": 26,
+          "state": 7,
+          "zRaw": 0,
+          "hp": 1933,
+          "maxHp": 2000,
+          "control": 0,
+          "nextState": 0,
+          "pendingReaction": 0,
+          "reaction": 0,
+          "heatRaw": 2200,
+          "normalGate": 1,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      }
+    },
+    "1098": {
+      "at": "2026-11-11T08:00:33.807634+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "combat_reset",
+          "tick": 41640,
+          "lastReplayFrame": 82,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41640,
+          "manager": "0x3201cdc0",
+          "usedBefore": 1,
+          "chainBefore": 1,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": -1,
+          "group": 116,
+          "skill": 4294967295,
+          "entry": 4294967295,
+          "block": 4294967295,
+          "slot71Clock": 14,
+          "state": 7,
+          "zRaw": 0,
+          "hp": 1898,
+          "maxHp": 2000,
+          "control": 26,
+          "nextState": -1,
+          "pendingReaction": 0,
+          "reaction": 0,
+          "heatRaw": 0,
+          "normalGate": 0,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      }
+    },
+    "1109": {
+      "at": "2026-11-11T08:00:37.222739+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "combat_recovery_entry",
+          "tick": 41845,
+          "lastReplayFrame": 287,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41845,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": -1,
+          "group": 116,
+          "skill": 9,
+          "entry": 0,
+          "block": 0,
+          "slot71Clock": 19,
+          "state": 11,
+          "zRaw": 0,
+          "hp": 1787,
+          "maxHp": 2000,
+          "control": 0,
+          "nextState": -1,
+          "pendingReaction": 0,
+          "reaction": 0,
+          "heatRaw": 0,
+          "normalGate": 0,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      }
+    },
+    "1110": {
+      "at": "2026-11-11T08:00:37.222795+00:00",
+      "event": "frida_message",
+      "message": {
+        "type": "send",
+        "payload": {
+          "type": "combat_motion_transition",
+          "tick": 41845,
+          "lastReplayFrame": 287,
+          "lastReplayConsumer": "0x86f700",
+          "replayReadTick": 41845,
+          "fromState": 11,
+          "toState": 0,
+          "role": "player",
+          "actor": "0x322879b0",
+          "meka": 109,
+          "active": -1,
+          "group": 116,
+          "skill": 9,
+          "entry": 0,
+          "block": 0,
+          "slot71Clock": 19,
+          "state": 11,
+          "zRaw": 0,
+          "hp": 1787,
+          "maxHp": 2000,
+          "control": 0,
+          "nextState": -1,
+          "pendingReaction": 0,
+          "reaction": 0,
+          "heatRaw": 0,
+          "normalGate": 1,
+          "sdGate": 0,
+          "sdBudgetRaw": 4
+        }
+      }
+    }
+  },
+  "staticOrientation": {
+    "path": "D:\\Code\\NeXAS_DX\\src\\main\\java\\com\\giga\\nexas\\transfer\\bhe2bsdx\\meka\\naoto\\NaotoAdditionalVariants.java",
+    "lines": [64,71],
+    "windows": {
+      "hit": [34,36],
+      "restore": 34,
+      "retreat": [40,47],
+      "stopAndNormalGate": 48,
+      "naturalEnd": 70
+    },
+    "boundary": "Read current source only to name later windows; none is asserted as executed or independently re-extracted from the sealed PAC in this audit."
+  },
+  "exceptions": {
+    "prefixCount": 7,
+    "records": [
+      {
+        "line": 425,
+        "classification": "unclassified_observed_exception",
+        "exceptionType": "system",
+        "address": "0x752fbae4"
+      },
+      {
+        "line": 448,
+        "classification": "unclassified_observed_exception",
+        "exceptionType": "system",
+        "address": "0x752fbae4"
+      },
+      {
+        "line": 449,
+        "classification": "unclassified_observed_exception",
+        "exceptionType": "system",
+        "address": "0x752fbae4"
+      },
+      {
+        "line": 450,
+        "classification": "unclassified_observed_exception",
+        "exceptionType": "system",
+        "address": "0x752fbae4"
+      },
+      {
+        "line": 451,
+        "classification": "unclassified_observed_exception",
+        "exceptionType": "system",
+        "address": "0x752fbae4"
+      },
+      {
+        "line": 452,
+        "classification": "unclassified_observed_exception",
+        "exceptionType": "system",
+        "address": "0x752fbae4"
+      },
+      {
+        "line": 453,
+        "classification": "unclassified_observed_exception",
+        "exceptionType": "system",
+        "address": "0x752fbae4"
+      }
+    ],
+    "selectedTrialWindowCount": 0,
+    "boundary": "Seven earlier unclassified observed system exceptions remain visible; their harmlessness and game termination cause are not established."
+  },
+  "operations": {
+    "onlyWrittenFile": "D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261111\\naoto21-kou-startup.json",
+    "fullSamplingBodiesCopied": false,
+    "binariesCopied": false,
+    "uiProcessControl": false,
+    "builds": false,
+    "productionCodeEdits": false,
+    "commits": false,
+    "deletions": false
+  }
+}
