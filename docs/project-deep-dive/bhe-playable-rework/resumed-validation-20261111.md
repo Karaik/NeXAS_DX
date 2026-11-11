@@ -35,8 +35,26 @@ case17原游戏48692／launcher52608已在独立进程查询中消失，exec ses
 
 070共896接受行，缺756/810/811/812/892，58拒读；尾900仍state8/control50/Z127、TAMA17/SCRIPT8。它证明实际复用，不证明摆脱后续CPU或整场对象清零。四份小型JSON证据位于`src/test/resources/bhe-runtime-evidence-20261111/`，分别为`naoto21-kou-startup.json`、`naoto22-kou-startup.json`、`naoto21-kou-escape-reuse.json`、`naoto22-kou-escape-reuse.json`。root逐项核原样native对象、关键RPM表、完整缺样/拒读及来源hash，独立审计结论一致。
 
+## 071／072：侧移后钩拳真实再用及有界稳定窗口
+
+071只保留首B[23,27)，再加up[53,86)，360帧。依据是实际Kou W86/Short Elbow Lv3在clock0～6准备追角，随后保留旧方向，10～17高速突进、13～18攻击；没有修改敌AI或招式。首中断仍在native33/W32clock10。up53实际进入角色输入，RPM54才读到state2及Y1801；本轮RPM53仍为重复前一tick的state7，不能套用旧轮“53已state0”。
+
+071敌clock6后方向96523保持，整个Hit13～18对应RPM63～68接受行均在，玩家HP1933、control/pending0，没有新增damage/reaction；只认可避开这一次肘击。自己的RESET在native68，事件热800，同tickRPM68仍900，保留相位差。热量与heatState首次同时归0是RPM77，80仍为state2/normalGate1/control-pending-hitstop0，支持下一次有依据的按键；后续CPU在145仍造成56伤害，侧移不是无敌。共360接受行，缺122、21拒读，整轮尾仍受击。
+
+072保持上述全部输入，只增加B[80,84)，并把后续空输入延长到720帧。native80/tick400235真实第二START/USE；接受counter81～151覆盖W32 clock0～70，Hit34～36仍落空，敌HP6000。clock40～47实际每步raw位移(-3876,-11652)、速度-12288，合计量化平面回撤约95.9356，不写成沿X退96；clock48停速开门。native151/tick400306在clock70自然释放，152已inactive，随后RESET181仍热2200，188才热量与heatState归0。
+
+072在counter188～210／tick400343～400365有连续23个接受样本：玩家state0/active-1、control/pending0、normalGate1、hitstop0、Z/Vz0、G51200、fall/jump100、热与heatState0、TAMA/SCRIPT0、HP1933。可认可这段中断后实际复用及稳定收尾窗口。211起新SCRIPT，213再受35伤，不能将之后新的CPU攻击追溯成此前收尾失败，也不能把整个720帧末端写成净空。072共718接受行，缺436/631/678，41拒读。
+
+两轮合并小证据`naoto21-kou-side-step-reuse.json`为97680字节，SHA256 `ea0f6ce2091b877ec9c1a6709d57a79728664c15c488311abc85bc18f058f84b`；root与独立审计逐项核原样事件、关键采样、缺失/拒读及实际稳定窗口。069同轴后退失败独立保留，不将其改写成成功。
+
+## 用户暂停与会话关闭
+
+用户在072完成后设目标paused。本轮只固定已完成证据并通过case18的STOP文件请求受管终止。case18现status=stopped、stop_reason=STOP_file、failure=null，子进程退出码3758096385/0xE0000001为主动终止；外层exec session49818返回1，原样保留，不能称游戏自然exit0。游戏/launcher进程和游戏窗口均已确认不存在，owned_process_exit_confirmed/guard_cleanup_complete=true、cleanup_pending=false。
+
+受管程序自动回收case18的28份未变可重建输入，共5,805,717,300字节，无保留变更项或清理错误；Save、录像、日志与清单保留，原Save/base/source检查未变。7条未分类system异常和nvAppTimestamps外部漂移归因未知分别保留。旧case17人工清理仍被审批拦截，其28份副本未被这次case18收尾删除。小终态记录为`naoto-case18-pause-closure.json`，恢复以[本日暂停交接](checkpoint-20261111-paused.md)为准。
+
 ## 下一步与完整范围
 
-Naoto20～22准备段中断已证，20/22有该条件下中断后真实再用，21再用与整体稳定收尾未完成；23～25仍须自己的中断条件。方向+D虽有正常入口，但Naoto实际Boost/W6有9帧无主动移动起手，不能据此保证54前后能逃过62追击，未盲试该方案。Kou W86实为Short Elbow Lv3，准备期追角后锁方向；下一候选只做一次恢复后侧向移动，须实际裁定碰撞与新门状态，不扫描无限时点。
+Naoto20～22准备段中断及各自有限条件再用已证，21另有上述稳定收尾窗口；其它阶段与玩家空中受击未完成，23～25仍须自己的中断条件。方向+D虽有正常入口，但Naoto实际Boost/W6有9帧无主动移动起手，未盲试54逃离。侧移候选已按W86机制执行并取得有限结果，恢复后继续后三件及其它角色，不再重做已固定的071/072。
 
 其余八角色、Sou153、原164候选菜单/实际使用、重载/关卡推进、最终说明与封包验收仍独立保留。源码编码闭合与局部实机成果不能替代这些要求，全部目标保持active。

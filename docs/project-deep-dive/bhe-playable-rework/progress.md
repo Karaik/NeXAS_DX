@@ -371,3 +371,10 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 - 从case17私有Save建立唯一新case18，游戏71360/creation134388569299088782，launcher68672/session49818，manifest b15f5a9b71f189b54889efecf646edc465ccd7e152b9909acd2cc630b2f10c43；仍封存EXE1ac677/PAC8efe，未构建。root正常UI实际LOAD/PLAY067/068/069/070，不把旧准备清单改成已执行，也不覆盖旧运行。
 - 067/068分别证明21在W32 clock10及22在W34 P0 clock16真实受击早释并恢复控制；069普通后退被更快Short Elbow追上，B200无START，保留失败。070拉距后C201真实第二START，完整W34并进入W33，两Hit窗实过但落空，clock59再次受击、未收纳。当前20～22准备中断及20/22再用有有限证据，21再用/整体稳定尾尚待。
 - 四份小型JSON已由独立代理及root核原样native、关键RPM表、缺样/拒读和hash，共274,578字节；不提交二进制或截图。正文resumed-validation-20261111.md、矩阵和手册同步真实边界。下一步仅按已核W86先追角后锁方向机制做一次侧移候选，同时继续23～25及其它八角/Sou153/原164候选/重载关卡，完整目标不缩减。
+
+### 2026-11-11 侧移复用固定与用户暂停
+
+- 071保留B23并up53..86，实际避开W86锁角后的肘击；RESET本轮68，热与heatState77归0。072只加B80并延长空尾，真实第二START/USE，W32完整clock0..70、回撤后自然结束；counter188..210有连续23个接受样本地面可控、物理/热态正常且对象0。之后新的CPU攻击与整个720尾仍分开，069失败不改写。
+- 新合并文本证据naoto21-kou-side-step-reuse.json为97,680字节，原样native/关键RPM/缺样拒读/hash均由root和独立审计复核；未修改技能、EXE或架构。矩阵与手册同步20～22准备中断及有限再用，21另有有界稳定窗口，其它阶段和23～25仍待验。
+- 用户已将目标设paused。case18通过STOP受管终止，status=stopped/failure=null、子码E0000001、外层exec1原样记录；游戏/launcher/窗口均确认消失，owned与guard完成、cleanup_pending=false。28份5,805,717,300字节输入副本自动回收，Save/Replay/log保留，原Save/base/source未变；7条未分类异常与nvAppTimestamps漂移归因未知保留。
+- 旧case17的28副本仍因自动审批blocked by policy保留，未借case18清理删除它。暂停恢复以checkpoint-20261111-paused.md为准；没有配置新R布局或播放23～25，全部原目标未完成，不标complete，不继续开发或验收直到用户恢复。

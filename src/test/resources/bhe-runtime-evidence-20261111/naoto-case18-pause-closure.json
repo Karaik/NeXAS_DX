@@ -1,0 +1,102 @@
+{
+  "schema": "nexas.bhe-pause-closure/v1",
+  "scope": "User requested pause; managed STOP shutdown and reproducible-input cleanup for case18 only",
+  "runtimeValidated": false,
+  "stateSource": {
+    "path": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18\\state.json",
+    "sha256": "7c4615710eed2d2d3f7c3cb03a9a5e77828da7fa3bd82c80c12ab94b38ce4d82",
+    "bytes": 19518
+  },
+  "observedState": {
+    "status": "stopped",
+    "stop_reason": "STOP_file",
+    "process": {
+      "pid": 71360,
+      "thread_id": 47976,
+      "creation_filetime": 134388569299088780,
+      "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18\\game\\BaldrSky.exe"
+    },
+    "launcher_pid": 68672,
+    "exit_code": 3758096385,
+    "failure": null,
+    "cleanup_pending": false,
+    "owned_process_exit_confirmed": true,
+    "guard_cleanup_complete": true,
+    "guard_session_retained": false,
+    "frida_detached": true,
+    "closed_handles": [
+      "thread_handle",
+      "process_handle"
+    ],
+    "exception_count": 7,
+    "external_write_count": 0,
+    "guard_violations": [],
+    "original_save_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "original_base_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "source_files_check": {
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\BaldrSky_20261105_193620_157.exe": true,
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\Update3.pac": true
+    },
+    "original_driver_state_runtime_check": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "nvAppTimestamps"
+      ],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "input_copy_cleanup": {
+      "removed": [
+        "AutoUpdate.exe",
+        "BaldrSky.exe",
+        "BaldrSky.ico",
+        "Bgm.pac",
+        "Bmp.pac",
+        "Config.pac",
+        "Dat.pac",
+        "Face.pac",
+        "Filechk.exe",
+        "Launcher.dat",
+        "Launcher.exe",
+        "Script.pac",
+        "Se.pac",
+        "Setup.exe",
+        "Setupinf.dat",
+        "Stand.pac",
+        "StartUpTool.exe",
+        "System.pac",
+        "Thumbnail.pac",
+        "Uninstall.exe",
+        "Update.exe",
+        "Update.pac",
+        "Update2.pac",
+        "UpdateInf.dat",
+        "Visual.pac",
+        "Voice.pac",
+        "autorun.inf",
+        "Update3.pac"
+      ],
+      "removed_bytes": 5805717300,
+      "retained_changed_or_unique": [],
+      "errors": []
+    },
+    "finished_at": "2026-11-11T18:53:45.639207+09:00"
+  },
+  "outerExecSession": 49818,
+  "outerExecExitCode": 1,
+  "gameAndLauncherAbsentAtFinalProcessQuery": true,
+  "gameWindowAbsentAtFinalCuaInventory": true,
+  "oldCase17Cleanup": "Blocked by policy; retained 28 static inputs, 5805717300 bytes. No retry or deletion performed for case17.",
+  "boundary": "Child exit code 0xE0000001 is the requested managed termination, not natural exit0. Outer shell exit1 retained. No all-gameplay acceptance inferred; unclassified exceptions and driver-state drift preserved."
+}
