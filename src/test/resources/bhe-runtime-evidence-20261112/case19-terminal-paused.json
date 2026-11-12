@@ -1,0 +1,570 @@
+{
+  "schema": "nexas.bhe-paused-terminal-case/v1",
+  "capturedAt": "2026-11-12T10:54:52.230103+00:00",
+  "reason": "user set active goal to paused",
+  "source": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\state.json",
+  "sourceBytes": 19509,
+  "sourceSha256": "f39998dc85496db7bdae5a2d789efcd5bf298ee5a255cf713c2f77b379e57704",
+  "observedProcessQuery": {
+    "methods": [
+      "Get-Process exact PID57672/51164",
+      "Win32_Process exact PIDs or BaldrSky.exe name"
+    ],
+    "matchingResults": []
+  },
+  "gameplayGoalComplete": false,
+  "newConditionProbeWrittenOrAttached": false,
+  "terminalState": {
+    "status": "exited",
+    "started_at": "2026-11-12T01:40:37.311727+00:00",
+    "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19",
+    "fresh_save": false,
+    "seed_mode": "provided",
+    "driver_state_mode": "private",
+    "seed_source": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18\\docs\\GIGA\\BALDRSKY_DIVEX\\Save",
+    "app_manifest_source": null,
+    "launcher_pid": 51164,
+    "manifest_sha256": "36d7448d0de0f785abbf6edc8fe2768236a54da62daf9e26d2314fcc9651a69e",
+    "game_files": {
+      "AutoUpdate.exe": {
+        "size": 375296,
+        "sha256": "c04777a11d8bbfcbe036661e9042f6903652b0912a052fe67bff396fcaad10b2"
+      },
+      "BaldrSky.exe": {
+        "size": 4793856,
+        "sha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae"
+      },
+      "BaldrSky.ico": {
+        "size": 4286,
+        "sha256": "cbb38a9c7b3d9fd1b3ed582fbb295867ad3de07ea74190c2c1f2168a2082d558"
+      },
+      "Bgm.pac": {
+        "size": 207100988,
+        "sha256": "24e049be1296cc072c16b51c3e5a23680ecc2ce4d0163f96c3d449e20fb3f20c"
+      },
+      "Bmp.pac": {
+        "size": 2114730366,
+        "sha256": "cead2268ad54404a267afdb4f530bd4843555d597881a3b152c7de3755ffea68"
+      },
+      "Config.pac": {
+        "size": 115962,
+        "sha256": "476db3c3eeee302f9598dfe8dff9304d9ca8014a75ad125d1f235e68f5ce3ef8"
+      },
+      "Dat.pac": {
+        "size": 1122686,
+        "sha256": "ef3e85c5e64523a5e5acfd3988dd604de1a32f15d52f0c086c534702bfbfd254"
+      },
+      "Face.pac": {
+        "size": 109529454,
+        "sha256": "e229ce13c7c75709e889698d50536b2e4e5d6a07869b71e9cb53b8b8d3226c6d"
+      },
+      "Filechk.exe": {
+        "size": 160256,
+        "sha256": "ee942d350a64dd561081dafeef3f2ea6abb48378b039c4ac803d2c622dee5552"
+      },
+      "Launcher.dat": {
+        "size": 285622,
+        "sha256": "f1fae043d354f5a98abe1a58eb44c87b8a08fe23308d9f47d803062bc219e310"
+      },
+      "Launcher.exe": {
+        "size": 304640,
+        "sha256": "d617d894cb2b486b3d49ba1a7086f045f17a6ecb9b077814c37ce90831fc212e"
+      },
+      "Script.pac": {
+        "size": 3737694,
+        "sha256": "75f83d902de90f0c3e92974c5c86975be79653a89ca9e38342d7ab9f8f177fe4"
+      },
+      "Se.pac": {
+        "size": 105137345,
+        "sha256": "b5d2349db230bfb92a52f71ebc4cf51d6bc19dc852d4b2ec47266a21f7075156"
+      },
+      "Setup.exe": {
+        "size": 163840,
+        "sha256": "7dac8a36e9a4742947b66862bb60c84740a33a30004262ec9f01d1d96069eca8"
+      },
+      "Setupinf.dat": {
+        "size": 801698,
+        "sha256": "f0621b42a8af0b25390195816315912e57da2b11be1f45198f0c690effab56f8"
+      },
+      "Stand.pac": {
+        "size": 179827311,
+        "sha256": "74a98438d30ecbe7158a94326ccc0def984d426165d242e909267bfac0d1d3f1"
+      },
+      "StartUpTool.exe": {
+        "size": 641536,
+        "sha256": "8be8dd99ea387d6b4be3e466fe0fe75441548c503a581d0eca413bbc2677347b"
+      },
+      "System.pac": {
+        "size": 632872176,
+        "sha256": "967f4d073ddef79f420b5ff551444857db34b81ff2c4118af99a46d31019708b"
+      },
+      "Thumbnail.pac": {
+        "size": 22303701,
+        "sha256": "8435819888ab2a41cdd90560219c2426bfaa1e0b09a1aa680d57d13da6bd6d60"
+      },
+      "Uninstall.exe": {
+        "size": 130048,
+        "sha256": "ad143028b4835d52cc0237faa2699029e183a600f4dd246f5b408c30579ad994"
+      },
+      "Update.exe": {
+        "size": 1040384,
+        "sha256": "e4e07157ac65f89b56ad44540cca133bb1ab894d86f5b78a2f130f04cb931d8b"
+      },
+      "Update.pac": {
+        "size": 11587052,
+        "sha256": "7de3ac83eff7b6243ae12d96350fd7224d32540e8f37db4407c877e798b8e77f"
+      },
+      "Update2.pac": {
+        "size": 1333,
+        "sha256": "9ce06842d8bb279b2b2af745c46102bd6649404aed4bc8cb7345cef8b9383c98"
+      },
+      "UpdateInf.dat": {
+        "size": 1520,
+        "sha256": "3c488407f9e646a31189d138f0b346ecda3ac3bca346a4e9a5b4e2c1ec2beff2"
+      },
+      "Visual.pac": {
+        "size": 399329685,
+        "sha256": "6bfb1a9031aba0017184c6c6335a2b31edbadbfa540492db440b1c47ddc89cf6"
+      },
+      "Voice.pac": {
+        "size": 549058706,
+        "sha256": "951f213f6d1014eec6f8d5103489888f8e62d9400c284b9f7674c022b7746b9a"
+      },
+      "autorun.inf": {
+        "size": 44,
+        "sha256": "66c2477aeda200c9b7a96eb3e66af1bb6e1e7b0d68d332a8a2f326f3b50d6659"
+      },
+      "Update3.pac": {
+        "size": 1460559815,
+        "sha256": "8efe934e14fda0d7f9c429f9b8d703a710d3213d15bbfc5ec6fb9f41e40b4641"
+      }
+    },
+    "original_save": "C:\\Users\\30250\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save",
+    "process": {
+      "pid": 57672,
+      "thread_id": 57832,
+      "creation_filetime": 134389212378677847,
+      "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\game\\BaldrSky.exe"
+    },
+    "hook_ready": true,
+    "redirect_count": 0,
+    "exception_count": 79,
+    "save_path_redirect_count": 1096,
+    "save_path_redirect_success_count": 883,
+    "driver_state_redirect_count": 41,
+    "driver_state_redirect_success_count": 41,
+    "external_write_count": 0,
+    "guard_violations": [],
+    "stop_reason": null,
+    "exit_code": 0,
+    "closed_handles": [
+      "thread_handle",
+      "process_handle"
+    ],
+    "frida_detached": true,
+    "runtime_acceptance": "not_evaluated",
+    "original_driver_state_preparation_baseline": {
+      "nvAppTimestamps": {
+        "size": 239818,
+        "sha256": "a67a737db3152a140798aed8f4fa7c8dc7e5a55abab800235693158c02aea066"
+      },
+      "nvdrsdb0.bin": {
+        "size": 2625600,
+        "sha256": "bbe5cd0ceb0fbf4a3e673f21b7acb6bd20f293d42a323b73ba7e5f81f9bcb763"
+      },
+      "nvdrsdb1.bin": {
+        "size": 2625600,
+        "sha256": "1599251eaec9d6e959ae7d3a15616f21015ecbdd260298d6fed10e6ca5b8a70c"
+      },
+      "nvdrssel.bin": {
+        "size": 1,
+        "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      },
+      "nvdrswr.lk": {
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "update.bin": {
+        "size": 368,
+        "sha256": "f72efc6b27a89d6cc220817fabcadc7512504c429fd7800967f94454be9b8c39"
+      }
+    },
+    "original_driver_state_before": {
+      "nvAppTimestamps": {
+        "size": 239818,
+        "sha256": "a67a737db3152a140798aed8f4fa7c8dc7e5a55abab800235693158c02aea066"
+      },
+      "nvdrsdb0.bin": {
+        "size": 2625600,
+        "sha256": "bbe5cd0ceb0fbf4a3e673f21b7acb6bd20f293d42a323b73ba7e5f81f9bcb763"
+      },
+      "nvdrsdb1.bin": {
+        "size": 2625600,
+        "sha256": "1599251eaec9d6e959ae7d3a15616f21015ecbdd260298d6fed10e6ca5b8a70c"
+      },
+      "nvdrssel.bin": {
+        "size": 1,
+        "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      },
+      "nvdrswr.lk": {
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "update.bin": {
+        "size": 368,
+        "sha256": "f72efc6b27a89d6cc220817fabcadc7512504c429fd7800967f94454be9b8c39"
+      }
+    },
+    "original_driver_state_prelaunch_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": [],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "hooks": {
+      "type": "hook_ready",
+      "hooks": [
+        "NtCreateFile",
+        "NtOpenFile",
+        "NtDeleteFile",
+        "NtQueryAttributesFile",
+        "NtQueryFullAttributesFile",
+        "NtWriteFile",
+        "NtSetInformationFile",
+        "NtCreateUserProcess",
+        "SHGetSpecialFolderLocation",
+        "SHGetPathFromIDListA",
+        "SHGetPathFromIDListW"
+      ],
+      "module": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\game\\BaldrSky.exe",
+      "base": "0x400000",
+      "pointerSize": 4,
+      "repository": [
+        "D:\\Code\\NeXAS_DX",
+        "\\Device\\HarddiskVolume8\\Code\\NeXAS_DX"
+      ],
+      "protectedInputs": [
+        "C:\\Users\\30250\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save",
+        "D:\\Code\\NeXAS_DX\\src\\main\\resources\\bsdx_game",
+        "C:\\ProgramData\\NVIDIA Corporation\\Drs",
+        "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\BaldrSky_20261105_193620_157.exe",
+        "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\Update3.pac",
+        "C:\\ProgramData\\NVIDIA Corporation\\ShadowPlay\\CaptureCore.log",
+        "C:\\Users\\30250\\AppData\\LocalLow\\Microsoft\\CryptnetUrlCache",
+        "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18\\docs\\GIGA\\BALDRSKY_DIVEX\\Save",
+        "\\Device\\HarddiskVolume3\\Users\\30250\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save",
+        "\\Device\\HarddiskVolume8\\Code\\NeXAS_DX\\src\\main\\resources\\bsdx_game",
+        "\\Device\\HarddiskVolume3\\ProgramData\\NVIDIA Corporation\\Drs",
+        "\\Device\\HarddiskVolume8\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\BaldrSky_20261105_193620_157.exe",
+        "\\Device\\HarddiskVolume8\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\Update3.pac",
+        "\\Device\\HarddiskVolume3\\ProgramData\\NVIDIA Corporation\\ShadowPlay\\CaptureCore.log",
+        "\\Device\\HarddiskVolume3\\Users\\30250\\AppData\\LocalLow\\Microsoft\\CryptnetUrlCache",
+        "\\Device\\HarddiskVolume8\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261111-18\\docs\\GIGA\\BALDRSKY_DIVEX\\Save"
+      ],
+      "documentsLocationReturn": "0x764fbf",
+      "documentsPathReturn": "0x764fd3",
+      "saveAliasSources": [
+        "C:\\Users\\30250\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save",
+        "\\Device\\HarddiskVolume3\\Users\\30250\\Documents\\GIGA\\BALDRSKY_DIVEX\\Save"
+      ],
+      "saveAliasTarget": "\\??\\D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\docs\\GIGA\\BALDRSKY_DIVEX\\Save",
+      "driverStateSources": [
+        "C:\\ProgramData\\NVIDIA Corporation\\Drs",
+        "\\Device\\HarddiskVolume3\\ProgramData\\NVIDIA Corporation\\Drs"
+      ],
+      "driverStateTarget": "\\??\\D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\driver-cache\\Drs",
+      "captureLogSources": [
+        "C:\\ProgramData\\NVIDIA Corporation\\ShadowPlay\\CaptureCore.log",
+        "\\Device\\HarddiskVolume3\\ProgramData\\NVIDIA Corporation\\ShadowPlay\\CaptureCore.log"
+      ],
+      "captureLogTarget": "\\??\\D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\driver-cache\\ShadowPlay\\CaptureCore.log",
+      "cryptnetCacheSources": [
+        "C:\\Users\\30250\\AppData\\LocalLow\\Microsoft\\CryptnetUrlCache",
+        "\\Device\\HarddiskVolume3\\Users\\30250\\AppData\\LocalLow\\Microsoft\\CryptnetUrlCache"
+      ],
+      "cryptnetCacheTarget": "\\??\\D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\driver-cache\\CryptnetUrlCache",
+      "cryptnetMetadataFile": "329B6147266C1E26CD774EA22B79EC2E",
+      "policy": "repository-only case writes; external disk writes and original inputs protected; exceptions never handled"
+    },
+    "resumed_at": "2026-11-12T01:40:39.291812+00:00",
+    "runtime_seconds": 32812.926,
+    "last_exception": {
+      "type": "exception",
+      "classification": "unclassified_observed_exception",
+      "diagnostic_errors": [],
+      "backtrace": {
+        "status": "unavailable",
+        "reason": "no_symbol_resolution"
+      },
+      "exceptionType": "system",
+      "address": "0x7697d444",
+      "memory": null,
+      "context": {
+        "pc": "0x7697d444",
+        "sp": "0x1b00c630",
+        "eax": "0x1b00c630",
+        "ecx": "0x3",
+        "edx": "0x0",
+        "ebx": "0x19930520",
+        "esp": "0x1b00c630",
+        "ebp": "0x1b00c68c",
+        "esi": "0x1b00c828",
+        "edi": "0x0",
+        "eip": "0x7697d444"
+      },
+      "location": {
+        "address": "0x7697d444",
+        "module": {
+          "name": "KERNELBASE.dll",
+          "path": "C:\\WINDOWS\\System32\\KERNELBASE.dll",
+          "base": "0x76810000",
+          "offset": "0x16d444"
+        }
+      }
+    },
+    "detach_reason": "process-terminated",
+    "installer_thread_alive": false,
+    "cleanup_pending": false,
+    "original_save_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "original_driver_state_after": {
+      "nvAppTimestamps": {
+        "size": 240106,
+        "sha256": "7f0af0b2aaccdc1c31052173f8d8490d379bea43bb05aff3eb09c33b1b2ca2f7"
+      },
+      "nvdrsdb0.bin": {
+        "size": 2625600,
+        "sha256": "bbe5cd0ceb0fbf4a3e673f21b7acb6bd20f293d42a323b73ba7e5f81f9bcb763"
+      },
+      "nvdrsdb1.bin": {
+        "size": 2625600,
+        "sha256": "1599251eaec9d6e959ae7d3a15616f21015ecbdd260298d6fed10e6ca5b8a70c"
+      },
+      "nvdrssel.bin": {
+        "size": 1,
+        "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      },
+      "nvdrswr.lk": {
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "update.bin": {
+        "size": 368,
+        "sha256": "f72efc6b27a89d6cc220817fabcadc7512504c429fd7800967f94454be9b8c39"
+      }
+    },
+    "original_driver_state_check": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "nvAppTimestamps"
+      ],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "original_driver_state_runtime_check": {
+      "unchanged": false,
+      "added": [],
+      "removed": [],
+      "changed": [
+        "nvAppTimestamps"
+      ],
+      "attribution": "not_determined_external_writers_possible"
+    },
+    "driver_state_copy_after": {
+      "nvAppTimestamps": {
+        "size": 240002,
+        "sha256": "e7526ffdfb93083a519dc5fcf0a6da8fdd29a12f314123bec1b3562af81c4bac"
+      },
+      "nvdrsdb0.bin": {
+        "size": 2625600,
+        "sha256": "bbe5cd0ceb0fbf4a3e673f21b7acb6bd20f293d42a323b73ba7e5f81f9bcb763"
+      },
+      "nvdrsdb1.bin": {
+        "size": 2625600,
+        "sha256": "1599251eaec9d6e959ae7d3a15616f21015ecbdd260298d6fed10e6ca5b8a70c"
+      },
+      "nvdrssel.bin": {
+        "size": 1,
+        "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      },
+      "nvdrswr.lk": {
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "update.bin": {
+        "size": 368,
+        "sha256": "f72efc6b27a89d6cc220817fabcadc7512504c429fd7800967f94454be9b8c39"
+      }
+    },
+    "game_files_after": {
+      "AutoUpdate.exe": {
+        "size": 375296,
+        "sha256": "c04777a11d8bbfcbe036661e9042f6903652b0912a052fe67bff396fcaad10b2"
+      },
+      "BaldrSky.exe": {
+        "size": 4793856,
+        "sha256": "1ac677991627e60ed4095d1874733dcc490d03182c99aaa5067bf8c1b856ebae"
+      },
+      "BaldrSky.ico": {
+        "size": 4286,
+        "sha256": "cbb38a9c7b3d9fd1b3ed582fbb295867ad3de07ea74190c2c1f2168a2082d558"
+      },
+      "Bgm.pac": {
+        "size": 207100988,
+        "sha256": "24e049be1296cc072c16b51c3e5a23680ecc2ce4d0163f96c3d449e20fb3f20c"
+      },
+      "Bmp.pac": {
+        "size": 2114730366,
+        "sha256": "cead2268ad54404a267afdb4f530bd4843555d597881a3b152c7de3755ffea68"
+      },
+      "Config.pac": {
+        "size": 115962,
+        "sha256": "476db3c3eeee302f9598dfe8dff9304d9ca8014a75ad125d1f235e68f5ce3ef8"
+      },
+      "Dat.pac": {
+        "size": 1122686,
+        "sha256": "ef3e85c5e64523a5e5acfd3988dd604de1a32f15d52f0c086c534702bfbfd254"
+      },
+      "Face.pac": {
+        "size": 109529454,
+        "sha256": "e229ce13c7c75709e889698d50536b2e4e5d6a07869b71e9cb53b8b8d3226c6d"
+      },
+      "Filechk.exe": {
+        "size": 160256,
+        "sha256": "ee942d350a64dd561081dafeef3f2ea6abb48378b039c4ac803d2c622dee5552"
+      },
+      "Launcher.dat": {
+        "size": 285622,
+        "sha256": "f1fae043d354f5a98abe1a58eb44c87b8a08fe23308d9f47d803062bc219e310"
+      },
+      "Launcher.exe": {
+        "size": 304640,
+        "sha256": "d617d894cb2b486b3d49ba1a7086f045f17a6ecb9b077814c37ce90831fc212e"
+      },
+      "Script.pac": {
+        "size": 3737694,
+        "sha256": "75f83d902de90f0c3e92974c5c86975be79653a89ca9e38342d7ab9f8f177fe4"
+      },
+      "Se.pac": {
+        "size": 105137345,
+        "sha256": "b5d2349db230bfb92a52f71ebc4cf51d6bc19dc852d4b2ec47266a21f7075156"
+      },
+      "Setup.exe": {
+        "size": 163840,
+        "sha256": "7dac8a36e9a4742947b66862bb60c84740a33a30004262ec9f01d1d96069eca8"
+      },
+      "Setupinf.dat": {
+        "size": 801698,
+        "sha256": "f0621b42a8af0b25390195816315912e57da2b11be1f45198f0c690effab56f8"
+      },
+      "Stand.pac": {
+        "size": 179827311,
+        "sha256": "74a98438d30ecbe7158a94326ccc0def984d426165d242e909267bfac0d1d3f1"
+      },
+      "StartUpTool.exe": {
+        "size": 641536,
+        "sha256": "8be8dd99ea387d6b4be3e466fe0fe75441548c503a581d0eca413bbc2677347b"
+      },
+      "System.pac": {
+        "size": 632872176,
+        "sha256": "967f4d073ddef79f420b5ff551444857db34b81ff2c4118af99a46d31019708b"
+      },
+      "Thumbnail.pac": {
+        "size": 22303701,
+        "sha256": "8435819888ab2a41cdd90560219c2426bfaa1e0b09a1aa680d57d13da6bd6d60"
+      },
+      "Uninstall.exe": {
+        "size": 130048,
+        "sha256": "ad143028b4835d52cc0237faa2699029e183a600f4dd246f5b408c30579ad994"
+      },
+      "Update.exe": {
+        "size": 1040384,
+        "sha256": "e4e07157ac65f89b56ad44540cca133bb1ab894d86f5b78a2f130f04cb931d8b"
+      },
+      "Update.pac": {
+        "size": 11587052,
+        "sha256": "7de3ac83eff7b6243ae12d96350fd7224d32540e8f37db4407c877e798b8e77f"
+      },
+      "Update2.pac": {
+        "size": 1333,
+        "sha256": "9ce06842d8bb279b2b2af745c46102bd6649404aed4bc8cb7345cef8b9383c98"
+      },
+      "Update3.pac": {
+        "size": 1460559815,
+        "sha256": "8efe934e14fda0d7f9c429f9b8d703a710d3213d15bbfc5ec6fb9f41e40b4641"
+      },
+      "UpdateInf.dat": {
+        "size": 1520,
+        "sha256": "3c488407f9e646a31189d138f0b346ecda3ac3bca346a4e9a5b4e2c1ec2beff2"
+      },
+      "Visual.pac": {
+        "size": 399329685,
+        "sha256": "6bfb1a9031aba0017184c6c6335a2b31edbadbfa540492db440b1c47ddc89cf6"
+      },
+      "Voice.pac": {
+        "size": 549058706,
+        "sha256": "951f213f6d1014eec6f8d5103489888f8e62d9400c284b9f7674c022b7746b9a"
+      },
+      "autorun.inf": {
+        "size": 44,
+        "sha256": "66c2477aeda200c9b7a96eb3e66af1bb6e1e7b0d68d332a8a2f326f3b50d6659"
+      }
+    },
+    "original_base_check": {
+      "unchanged": true,
+      "added": [],
+      "removed": [],
+      "changed": []
+    },
+    "source_files_check": {
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\BaldrSky_20261105_193620_157.exe": true,
+      "D:\\Code\\NeXAS_DX\\target\\bhe-playable-builds\\run_20261105_193350_342_bd794139\\sou\\Update3.pac": true
+    },
+    "owned_process_exit_confirmed": true,
+    "guard_cleanup_complete": true,
+    "guard_session_retained": false,
+    "input_copy_cleanup": {
+      "removed": [
+        "AutoUpdate.exe",
+        "BaldrSky.exe",
+        "BaldrSky.ico",
+        "Bgm.pac",
+        "Bmp.pac",
+        "Config.pac",
+        "Dat.pac",
+        "Face.pac",
+        "Filechk.exe",
+        "Launcher.dat",
+        "Launcher.exe",
+        "Script.pac",
+        "Se.pac",
+        "Setup.exe",
+        "Setupinf.dat",
+        "Stand.pac",
+        "StartUpTool.exe",
+        "System.pac",
+        "Thumbnail.pac",
+        "Uninstall.exe",
+        "Update.exe",
+        "Update.pac",
+        "Update2.pac",
+        "UpdateInf.dat",
+        "Visual.pac",
+        "Voice.pac",
+        "autorun.inf",
+        "Update3.pac"
+      ],
+      "removed_bytes": 5805717300,
+      "retained_changed_or_unique": [],
+      "errors": []
+    },
+    "failure": null,
+    "finished_at": "2026-11-12T10:47:57.208589+00:00"
+  }
+}

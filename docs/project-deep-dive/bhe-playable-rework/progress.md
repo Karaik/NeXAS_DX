@@ -442,3 +442,9 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 - 新baseline214796B/SHA4da6ff91…f61e固定原样46native、10256行/5862536B日志前缀、18表797行27483单元、31固定来源/1400对普通输入及两个101尾。标记FAILED_BASELINE；overallNagi22Passed/runtimeValidated/terminalAcceptance均false，后续修复不倒填基线。报告、矩阵与手册同步真实边界。
 - 根因还未实读确认。当前最强假说为窗后MEKAHIT无当前Hit仍用共享比较cache；实际比较点66B480，slot41 index/clock为actor+C7C/C88，cache位于86CDFC上下文+5C/+60。下一步仅加最小被动调用点观察及少量前序writer，不能无证据改EXE/清缓存制造通过。原版活跃窗确认与WAZAHITCOUNT先例只作方案依据，后者普通起手/释放不自动清，不能直接替换当每次latch。
 - 本轮未修改生产源码、架构或游戏包；所有新文件只在仓库，原七WIP保全，不push，不提交二进制。Nagi其余五招与原全部九角色／Sou153／原164入口／关卡／最终手册等目标仍active且未完成。
+
+### 2026-11-12 用户暂停与case19退出
+
+- 用户主动将目标设paused；本轮尚未写入或附加新条件探针，未改技能、EXE或包，未构建／重播。只读代理已中断，最新实测成果仍为15b18094b，未push，原七WIP保全。
+- 后续两种进程查询均无57672／51164或BaldrSky.exe，最终state exited/exit0/failure=null，owned退出与guard完成、cleanup_pending=false。28份5805717300B输入副本由受管程序自动回收，Save/Replay/归档/采样/log保留；原Save/base/源EXE/PAC检查未变，外写0/guard空。79未分类异常和nvAppTimestamps漂移不抹去，旧case17受阻删除不重试。
+- 终态小文本case19-terminal-paused.json与checkpoint-20261112-paused.md已固定。下一次须用户恢复后新建受管case并核旧输入hash/代次；先做被动命中条件/cache调用点证据，当前FAILED_BASELINE不改为通过，完整目标未完成。
