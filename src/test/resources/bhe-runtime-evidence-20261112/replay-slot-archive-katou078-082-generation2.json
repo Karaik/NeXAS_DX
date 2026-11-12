@@ -1,0 +1,92 @@
+{
+  "schema": "nexas.bhe-replay-slot-archive/v1",
+  "at": "2026-11-12T06:25:41.125881+00:00",
+  "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19",
+  "operation": "five explicit sealed generation2 DAT files moved within the same managed case; no file content deleted or overwritten",
+  "reason": "free UI slots for new same-battle ordinary-input trials while preserving completed generation2 bytes",
+  "archive": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\katou078-082-generation2-20261112",
+  "records": [
+    {
+      "slot": 78,
+      "generation": 2,
+      "trial": "katou20-22-combo",
+      "originalPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay078.dat",
+      "archivePath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\katou078-082-generation2-20261112\\Replay078.dat",
+      "bytes": 838,
+      "sha256": "15d2ede679cc4f0a48b258578def3cb142ff6aa5be0adca0d907ddf6faa22755",
+      "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\katou20-22-combo-receipt.json",
+      "receiptSha256": "20cdfea604c72a5ba2b0cf77d9fc68dff5f587266d1557f7c40344956abb0b3a",
+      "inputAndSamplingRemainAtOriginalPaths": true
+    },
+    {
+      "slot": 79,
+      "generation": 2,
+      "trial": "katou21-22-combo",
+      "originalPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay079.dat",
+      "archivePath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\katou078-082-generation2-20261112\\Replay079.dat",
+      "bytes": 838,
+      "sha256": "90f6fa395a61bbf33d3b11b5c50c29ba5873e329c9e42df72cd26c368bf4fef6",
+      "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\katou21-22-combo-receipt.json",
+      "receiptSha256": "ee7f8e3870550e96d7f97c21057ca971c87e509a1c4d52007050c312fb98e717",
+      "inputAndSamplingRemainAtOriginalPaths": true
+    },
+    {
+      "slot": 80,
+      "generation": 2,
+      "trial": "katou24-23-combo",
+      "originalPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay080.dat",
+      "archivePath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\katou078-082-generation2-20261112\\Replay080.dat",
+      "bytes": 858,
+      "sha256": "ecde29bdb5b706d58a14e5ba94889da5a1d735760960858f3adf9eff66f3ce34",
+      "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\katou24-23-combo-receipt.json",
+      "receiptSha256": "1e0157e7f582c92dd92b06f26f8bc320dc9b2bcc26a0e94043b523a2716144dc",
+      "inputAndSamplingRemainAtOriginalPaths": true
+    },
+    {
+      "slot": 81,
+      "generation": 2,
+      "trial": "katou23-24-combo",
+      "originalPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay081.dat",
+      "archivePath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\katou078-082-generation2-20261112\\Replay081.dat",
+      "bytes": 858,
+      "sha256": "ecce5dceb9f347867264a655eaf7597a855d2d811f158a48b95f78dd8efc9a2e",
+      "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\katou23-24-combo-receipt.json",
+      "receiptSha256": "f8499961a97687480f721496c6c4ba321a4e9d53d9e1a54ec4bd8b3a26ec8598",
+      "inputAndSamplingRemainAtOriginalPaths": true
+    },
+    {
+      "slot": 82,
+      "generation": 2,
+      "trial": "katou24-25-combo",
+      "originalPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay082.dat",
+      "archivePath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\katou078-082-generation2-20261112\\Replay082.dat",
+      "bytes": 859,
+      "sha256": "7a834f11fcb6d9f4c06425f9cc25451aa124dad988d58858223488d088d0d2d1",
+      "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\katou24-25-combo-receipt.json",
+      "receiptSha256": "9937082bde65ea35307645249e7d872ebc63b9cb32664c4195ed23dd24ed8ba9",
+      "inputAndSamplingRemainAtOriginalPaths": true
+    }
+  ],
+  "totalBytes": 4251,
+  "previousGenerationArchiveMapping": {
+    "path": "D:\\Code\\NeXAS_DX\\src\\test\\resources\\bhe-runtime-evidence-20261112\\replay-slot-archive-naoto078-083.json",
+    "sha256": "eb155838992f6205b171898384e5798416a3973e94d0fc2fa1d53e2c80b0d398"
+  },
+  "historicalResolutionRule": "Resolve a historical original absolute path with its recorded SHA256 and generation. Generation1 uses the prior mapping; these generation2 bytes use this mapping. A future generation3 file in the same slot never replaces historical evidence. Original input, receipt and sampling stay unchanged.",
+  "protectedCurrentSaveSha256": {
+    "Replay073.dat": "2d55998c66b56faed65252928028b932a4286dea99ff2608be03871d4e9128f2",
+    "Replay083.dat": "e408d9038e2caccd424c36282084e1849875e1155a88b65d1e4ad79f8f1faa8d",
+    "Replay084.dat": "e3649116c88126fac9e4477d94bace9ffe559e9fb7c26d0d5881a52b6699a026",
+    "Replay088.dat": "c84d982544e0d76369da4f0eddf6817628ef784e6a5107ddb27aa068d9b78f98",
+    "Replay091.dat": "ac61520b49ecd9ed1650313ee27d9174b5800d39fc70bed882c8555104a61154",
+    "Replay092.dat": "b25a07b2cc44c58ab14a1a85f1bfec9cd74c1b8a23843dd23e179b4c3ae798b0",
+    "Replay093.dat": "90a52e5727b5c18798703e6631ea437a986f7c5aca190665a43a3a9b7ea2ef12",
+    "Replay094.dat": "6a34ba8c232612a4f126d2b45209db97bcb2674febb975b975f6137413e71c78",
+    "Replay095.dat": "2efc328e8228ebb4a75b5ab3b60144b8557bb5e4068258500b8c4f0385b04d71",
+    "Replay096.dat": "2649bf4ad6221c003eac443c7dfa0ab0e5a8b31d0ad6826f6ca1bf6f4f33610e",
+    "Replay097.dat": "525e48c016d6c79c2172f64042af487f07d87a1f6b8dbe33ee01e36df0105948",
+    "Replay098.dat": "713437019aa714f3b901d073c3376c630dd5632cbb529f263ce3acab9c58a181"
+  },
+  "deletionPerformed": false,
+  "binaryUploadedOrTracked": false
+}
