@@ -1,0 +1,110 @@
+{
+  "schema": "nexas.bhe-replay-slot-archive/v1",
+  "at": "2026-11-12T04:12:25.975628+00:00",
+  "case": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19",
+  "operation": "six explicit newly-generated DAT files moved within the same managed case; no file content deleted or overwritten",
+  "reason": "native training UI supports only Replay001..099; preserve original bytes and free six generation-1 derived slots for later normal-input trials",
+  "runtimeStateAtPreflight": {
+    "status": "running",
+    "process": {
+      "pid": 57672,
+      "thread_id": 57832,
+      "creation_filetime": 134389212378677847,
+      "image": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\game\\BaldrSky.exe"
+    }
+  },
+  "archive": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\naoto078-083-20261112",
+  "records": [
+    {
+      "slot": 78,
+      "generation": 1,
+      "trial": "naoto23-kou-startup-early",
+      "originalPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay078.dat",
+      "archivePath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\naoto078-083-20261112\\Replay078.dat",
+      "bytes": 859,
+      "sha256": "d560e75b5130d2ac97289f581aae74c79a2744101f5eacea91f6a5cc1988717a",
+      "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\naoto23-kou-startup-early-receipt.json",
+      "receiptSha256": "04dad31a2ca3e95d344524306b6759eb66fddbb56647c359671490226a12f83a",
+      "inputAndSamplingRemainAtOriginalPaths": true
+    },
+    {
+      "slot": 79,
+      "generation": 1,
+      "trial": "naoto24-kou-startup-early",
+      "originalPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay079.dat",
+      "archivePath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\naoto078-083-20261112\\Replay079.dat",
+      "bytes": 859,
+      "sha256": "339d6bce83f6b912f6b72d62b8bdb4baa071fcd0304c62e530fcb52352b7afa5",
+      "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\naoto24-kou-startup-early-receipt.json",
+      "receiptSha256": "a45f572376b90b6cbc4909c66aeb6a78c5de40cefa38198952a9d286561398ea",
+      "inputAndSamplingRemainAtOriginalPaths": true
+    },
+    {
+      "slot": 80,
+      "generation": 1,
+      "trial": "naoto25-kou-startup-early",
+      "originalPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay080.dat",
+      "archivePath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\naoto078-083-20261112\\Replay080.dat",
+      "bytes": 859,
+      "sha256": "3087474c5af459c1633a7899536978ae80c290645849d411b0f136ab720282ca",
+      "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\naoto25-kou-startup-early-receipt.json",
+      "receiptSha256": "7c9680d95529a28055ed4c5d855ec0107121d04ec80eacff3c19f7b8683a35d7",
+      "inputAndSamplingRemainAtOriginalPaths": true
+    },
+    {
+      "slot": 81,
+      "generation": 1,
+      "trial": "naoto23-kou-reuse53",
+      "originalPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay081.dat",
+      "archivePath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\naoto078-083-20261112\\Replay081.dat",
+      "bytes": 866,
+      "sha256": "26fea73f1cd7d5d3f2ff748fffe40ab0dc97fcd6eb6f8b22e45e0698df9c28b1",
+      "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\naoto23-kou-reuse53-receipt.json",
+      "receiptSha256": "1777c45948a4b7bafc862d770fae4026fa0e23a9d1001510364bb39e934e1d75",
+      "inputAndSamplingRemainAtOriginalPaths": true
+    },
+    {
+      "slot": 82,
+      "generation": 1,
+      "trial": "naoto24-kou-reuse53",
+      "originalPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay082.dat",
+      "archivePath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\naoto078-083-20261112\\Replay082.dat",
+      "bytes": 866,
+      "sha256": "a072b88ea87b164cb1611dfc03657071223db53248384417a1fb54a7e5828d93",
+      "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\naoto24-kou-reuse53-receipt.json",
+      "receiptSha256": "8afb1c669140ba296d28baa3a707ac5e4b7b349d6a9c2d20267dec0e41cfd082",
+      "inputAndSamplingRemainAtOriginalPaths": true
+    },
+    {
+      "slot": 83,
+      "generation": 1,
+      "trial": "naoto25-kou-reuse53",
+      "originalPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\docs\\GIGA\\BALDRSKY_DIVEX\\Save\\Replay083.dat",
+      "archivePath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\replay-archive\\naoto078-083-20261112\\Replay083.dat",
+      "bytes": 867,
+      "sha256": "d9c74e161bdbc0d1d6c77194fddc70f065c7e6b57ac9d0a8b8b4e660ce7666a7",
+      "receiptPath": "D:\\Code\\NeXAS_DX\\target\\bhe-playable-runtime\\nine-naoto-20261112-19\\naoto25-kou-reuse53-receipt.json",
+      "receiptSha256": "d10af83eadf1baa8315db979d5523256869ae020441e8a649cdf15ddb3f60943",
+      "inputAndSamplingRemainAtOriginalPaths": true
+    }
+  ],
+  "totalBytes": 5176,
+  "historicalResolutionRule": "For a sealed old evidence source use originalPath plus matching old sha256 to resolve archivePath. A later file in the same slot is a new generation and never substitutes for the old hash. Original receipts remain unchanged.",
+  "protectedTemplates": [
+    "Replay073.dat",
+    "Replay084.dat",
+    "Replay088.dat"
+  ],
+  "protectedOriginalReplaySlots": [
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98
+  ],
+  "deletionPerformed": false,
+  "binaryUploadedOrTracked": false
+}
