@@ -378,3 +378,11 @@ Plan: docs/superpowers/plans/2026-10-26-bhe-playable-rework.md
 - 新合并文本证据naoto21-kou-side-step-reuse.json为97,680字节，原样native/关键RPM/缺样拒读/hash均由root和独立审计复核；未修改技能、EXE或架构。矩阵与手册同步20～22准备中断及有限再用，21另有有界稳定窗口，其它阶段和23～25仍待验。
 - 用户已将目标设paused。case18通过STOP受管终止，status=stopped/failure=null、子码E0000001、外层exec1原样记录；游戏/launcher/窗口均确认消失，owned与guard完成、cleanup_pending=false。28份5,805,717,300字节输入副本自动回收，Save/Replay/log保留，原Save/base/source未变；7条未分类异常与nvAppTimestamps漂移归因未知保留。
 - 旧case17的28副本仍因自动审批blocked by policy保留，未借case18清理删除它。暂停恢复以checkpoint-20261111-paused.md为准；没有配置新R布局或播放23～25，全部原目标未完成，不标complete，不继续开发或验收直到用户恢复。
+
+### 2026-11-12 Naoto后三招准备中断与再用
+
+- 本轮前一问答只读核term.grp命名，没有推进实机；恢复后核目标active、develop／b4841dfdb、七WIP和无残留进程，再从已关闭case18私有Save建立唯一case19。游戏57672／creation134389212378677847，launcher51164／exec59749，manifest36d7448d0de0f785abbf6edc8fe2768236a54da62daf9e26d2314fcc9651a69e；仍封存EXE1ac677/PAC8efe，未新构建、不push。
+- 正常UI设R末级23/24/25、其它普通/FC/initializer空并保存新073。817B前缀5dd5f85b20799423a548e960c09cd156a20f9ca411f12bce4f0c5c2c491fb8b8；074空输入实际首剑18而非旧33，075～077旧候选未播放。078～080只按各ABC[3,7)，均实际clock15受击→19早释/state7→37恢复；未用坐标/热量/AI内存写制造通过。
+- 081～083新增相同按钮[53,57)，均native53真实第二START/USE；二次分别clock27/18/7又被CPU击中，90/81/70转state8，没有自然完整后段，24/25未发弹。六招现在各有准备段中断与有限再用；玩家空中关键阶段/发弹后边界未代填，21既有有界稳定窗口仍按原范围保留。
+- 两份新文本证据共314757B；root独立核174条完整native对象、24294表格单元、输入/来源hash、缺样拒读及有界窗口，原生与RPM相位差保留。手册/矩阵及resumed-validation-20261112.md同步，不声明全部54追加、Sou153或原164入口通过。
+- 用户询问启用CPU的必要性，已解释仅用于实际受击中断；持续追击不作为耐打要求，也不以全场对象非零判玩家泄漏。下一角色按计划切Katou静止靶，避免重复已证明的Naoto起手。case19仍在完整Practice菜单，root独占UI。旧case17删除仍受前次审批拒绝约束，不换机制重试；所有输出只在仓库，二进制不提交/上传。
